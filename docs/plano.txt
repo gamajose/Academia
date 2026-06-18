@@ -1,0 +1,7 @@
+Projeto Academia
+
+Etapa 1: estrutura base.
+Etapa 2: banco de dados.
+Etapa 3: API.
+Etapa 4: painel web.
+Etapa 5: app mobile.
