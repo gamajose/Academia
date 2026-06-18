@@ -1,0 +1,14 @@
+Release v0.1.2
+
+Objetivo:
+Melhorar a base de escala do projeto Academia.
+
+Alteracoes:
+- View de dashboard no banco.
+- Indices de performance por academia e data.
+- Preparacao para consultas maiores.
+- Padronizacao de versionamento com VERSION e CHANGELOG.
+
+Tag sugerida:
+git tag -a v0.1.2 -m "v0.1.2"
+git push origin v0.1.2
