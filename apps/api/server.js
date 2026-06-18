@@ -2,6 +2,8 @@ const http = require('http');
 const { URL } = require('url');
 const { pool, query } = require('./lib/db');
 const { hashPassword, verifyPassword, signToken, verifyToken } = require('./lib/security');
+const { handleMemberships } = require('./features/memberships');
+const { handlePayments } = require('./features/payments');
 
 const port = Number(process.env.PORT || 3004);
 
@@ -104,9 +106,9 @@ async function recentCheckins(req, res, user) {
 }
 
 async function dashboard(req, res, user) {
-  const result = await query("SELECT (SELECT count(*) FROM members WHERE gym_id = $1 AND status = 'active') AS active_members, (SELECT count(*) FROM plans WHERE gym_id = $1 AND is_active = true) AS active_plans, (SELECT count(*) FROM checkins WHERE gym_id = $1 AND checked_at >= current_date) AS today_checkins, (SELECT count(*) FROM payments WHERE gym_id = $1 AND status = 'pending') AS pending_payments", [user.gym_id]);
+  const result = await query("SELECT (SELECT count(*) FROM members WHERE gym_id = $1 AND status = 'active') AS active_members, (SELECT count(*) FROM plans WHERE gym_id = $1 AND is_active = true) AS active_plans, (SELECT count(*) FROM memberships WHERE gym_id = $1 AND status = 'active') AS active_memberships, (SELECT count(*) FROM checkins WHERE gym_id = $1 AND checked_at >= current_date) AS today_checkins, (SELECT count(*) FROM payments WHERE gym_id = $1 AND status = 'pending') AS pending_payments", [user.gym_id]);
   const row = result.rows[0];
-  return send(res, 200, { active_members: Number(row.active_members), active_plans: Number(row.active_plans), today_checkins: Number(row.today_checkins), pending_payments: Number(row.pending_payments) });
+  return send(res, 200, { active_members: Number(row.active_members), active_plans: Number(row.active_plans), active_memberships: Number(row.active_memberships), today_checkins: Number(row.today_checkins), pending_payments: Number(row.pending_payments) });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -114,7 +116,7 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
     if (req.method === 'GET' && url.pathname === '/health') {
-      return send(res, 200, { status: 'ok', service: 'academia-api', version: '0.1.1', uptime: process.uptime() });
+      return send(res, 200, { status: 'ok', service: 'academia-api', version: '0.2.0', uptime: process.uptime() });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') return registerGym(req, res);
     if (req.method === 'POST' && url.pathname === '/api/auth/login') return login(req, res);
@@ -122,12 +124,22 @@ const server = http.createServer(async (req, res) => {
     const user = auth(req);
     if (!user) return send(res, 401, { error: 'nao_autorizado' });
 
+    const helpers = { send, body, query };
+
     if (req.method === 'GET' && url.pathname === '/api/members') return listMembers(req, res, user);
     if (req.method === 'POST' && url.pathname === '/api/members') return createMember(req, res, user);
     if (req.method === 'GET' && url.pathname === '/api/plans') return listPlans(req, res, user);
     if (req.method === 'POST' && url.pathname === '/api/plans') return createPlan(req, res, user);
+
+    const membershipsHandled = await handleMemberships(req, res, user, url, helpers);
+    if (membershipsHandled !== false) return membershipsHandled;
+
     if (req.method === 'POST' && url.pathname === '/api/checkins') return createCheckin(req, res, user);
     if (req.method === 'GET' && url.pathname === '/api/checkins/recent') return recentCheckins(req, res, user);
+
+    const paymentsHandled = await handlePayments(req, res, user, url, helpers);
+    if (paymentsHandled !== false) return paymentsHandled;
+
     if (req.method === 'GET' && url.pathname === '/api/dashboard/summary') return dashboard(req, res, user);
 
     return send(res, 404, { error: 'not_found' });
