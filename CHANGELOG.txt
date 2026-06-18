@@ -1,0 +1,10 @@
+Changelog
+
+0.1.1
+- Base inicial da API Academia.
+- Banco PostgreSQL separado para o projeto.
+- Migrations iniciais.
+- Health check.
+- Rotas iniciais de autenticacao, alunos, planos, checkins e dashboard.
+- Arquivos de deploy para VM, systemd e nginx.
+- Indices iniciais para crescimento.
