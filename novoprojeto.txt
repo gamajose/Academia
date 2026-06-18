@@ -1,0 +1,1 @@
+Criar um aplicativo mobile+web+instalador. Para academia, tendo com base, entrada, saida dos clientes, controle do finaneiro, entre outras coisas.
