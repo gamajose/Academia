@@ -1,0 +1,14 @@
+Modelo inicial do banco academia
+
+Entidades principais:
+- academias
+- usuarios
+- alunos
+- planos
+- matriculas
+- pagamentos
+- checkins
+- auditoria
+
+Toda tabela operacional devera ter referencia da academia para permitir crescimento multi unidade.
+Consultas grandes deverao usar indices por academia, status e data.
