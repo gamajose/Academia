@@ -1,0 +1,14 @@
+Arquitetura do projeto Academia
+
+A base sera separada por responsabilidades.
+O backend ficara isolado da interface web e do aplicativo mobile.
+O banco sera separado dos outros projetos da VM.
+A porta planejada para o backend sera 3004.
+O banco planejado sera academia.
+
+Principios:
+- API sem estado para permitir escala horizontal.
+- Banco PostgreSQL como fonte principal dos dados.
+- Redis em etapa futura para cache e filas.
+- Logs e auditoria para rastrear eventos importantes.
+- Configuracoes sensiveis fora do repositorio.
