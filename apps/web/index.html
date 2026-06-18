@@ -33,7 +33,10 @@
     <section class="dashboard hidden" id="dashboard">
       <div class="toolbar">
         <h2>Resumo</h2>
-        <button id="refresh-button">Atualizar</button>
+        <div class="toolbar-actions">
+          <button id="refresh-button">Atualizar</button>
+          <button id="logout-button" class="secondary">Sair</button>
+        </div>
       </div>
       <div class="cards">
         <article><span>Alunos ativos</span><strong id="active-members">0</strong></article>
@@ -53,10 +56,51 @@
         </section>
 
         <section class="panel">
+          <h3>Novo plano</h3>
+          <input id="plan-name" placeholder="Nome do plano" />
+          <input id="plan-price" type="number" placeholder="Valor em centavos. Ex: 9900" />
+          <input id="plan-days" type="number" placeholder="Duracao em dias" />
+          <button id="create-plan-button">Cadastrar plano</button>
+        </section>
+
+        <section class="panel">
+          <h3>Nova matricula</h3>
+          <select id="membership-member"></select>
+          <select id="membership-plan"></select>
+          <input id="membership-start" type="date" />
+          <button id="create-membership-button">Criar matricula</button>
+        </section>
+
+        <section class="panel">
+          <h3>Novo pagamento</h3>
+          <select id="payment-member"></select>
+          <select id="payment-membership"></select>
+          <input id="payment-amount" type="number" placeholder="Valor em centavos. Ex: 9900" />
+          <input id="payment-due" type="date" />
+          <button id="create-payment-button">Criar cobranca</button>
+        </section>
+      </div>
+
+      <div class="grid lists-grid">
+        <section class="panel">
           <h3>Alunos recentes</h3>
           <ul id="members-list"></ul>
         </section>
+        <section class="panel">
+          <h3>Planos</h3>
+          <ul id="plans-list"></ul>
+        </section>
+        <section class="panel">
+          <h3>Matriculas</h3>
+          <ul id="memberships-list"></ul>
+        </section>
+        <section class="panel">
+          <h3>Financeiro</h3>
+          <ul id="payments-list"></ul>
+        </section>
       </div>
+
+      <p class="status-line" id="action-message"></p>
     </section>
   </main>
 
