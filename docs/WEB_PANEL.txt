@@ -1,0 +1,25 @@
+Painel Web inicial
+
+Arquivos:
+apps/web/index.html
+apps/web/styles.css
+apps/web/app.js
+
+Como testar na VM:
+cd /mnt/Projetos/Academia/apps/web
+python3 -m http.server 8084
+
+Abrir no navegador:
+http://IP_DA_VM:8084
+
+API esperada:
+http://localhost:3004
+
+O painel inicial possui:
+- validacao de status da API
+- login
+- dashboard resumido
+- cadastro rapido de aluno
+- lista de alunos recentes
+
+Antes de usar o painel, crie uma academia pela API ou use um usuario ja criado.
