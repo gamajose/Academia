@@ -1,0 +1,12 @@
+Rotas principais
+
+GET health
+POST register gym
+POST login
+GET members
+POST members
+GET plans
+POST plans
+POST checkins
+GET recent checkins
+GET dashboard summary
