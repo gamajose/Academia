@@ -1,5 +1,11 @@
 Changelog
 
+0.1.2
+- Adicionada view de dashboard no banco.
+- Adicionados indices de performance por academia e data.
+- Criada documentacao de release v0.1.2.
+- Padronizado versionamento por arquivo VERSION e changelog.
+
 0.1.1
 - Base inicial da API Academia.
 - Banco PostgreSQL separado para o projeto.
