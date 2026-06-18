@@ -8,7 +8,12 @@ const { handlePayments } = require('./features/payments');
 const port = Number(process.env.PORT || 3004);
 
 function send(res, status, data) {
-  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+  });
   res.end(JSON.stringify(data));
 }
 
@@ -114,6 +119,10 @@ async function dashboard(req, res, user) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
+
+    if (req.method === 'OPTIONS') {
+      return send(res, 204, {});
+    }
 
     if (req.method === 'GET' && url.pathname === '/health') {
       return send(res, 200, { status: 'ok', service: 'academia-api', version: '0.2.0', uptime: process.uptime() });
