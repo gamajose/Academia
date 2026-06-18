@@ -17,7 +17,7 @@ body {
   color: var(--text);
 }
 
-.app-shell { width: min(1120px, 92vw); margin: 0 auto; padding: 32px 0; }
+.app-shell { width: min(1180px, 92vw); margin: 0 auto; padding: 32px 0; }
 .hero { display: flex; justify-content: space-between; gap: 24px; align-items: stretch; margin-bottom: 24px; }
 .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
 h1 { font-size: clamp(32px, 6vw, 56px); margin: 8px 0; }
@@ -34,7 +34,7 @@ p { color: var(--muted); max-width: 680px; }
 .health-card strong { color: var(--ok); }
 
 .login-card { max-width: 420px; display: grid; gap: 10px; }
-input, button {
+input, button, select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -43,19 +43,28 @@ input, button {
   color: var(--text);
 }
 button { cursor: pointer; border: 0; background: var(--accent); color: #082f49; font-weight: 700; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.mini-button { width: auto; padding: 6px 10px; margin-left: 8px; border-radius: 8px; font-size: 12px; }
 small { min-height: 18px; color: var(--muted); }
 .hidden { display: none; }
 
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.toolbar button { max-width: 160px; }
+.toolbar-actions { display: flex; gap: 10px; }
+.toolbar-actions button { min-width: 130px; }
 .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin: 18px 0; }
 .cards span { display: block; color: var(--muted); font-size: 14px; }
 .cards strong { display: block; font-size: 34px; margin-top: 8px; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.lists-grid { align-items: start; }
 .panel { display: grid; gap: 10px; }
 ul { padding-left: 18px; color: var(--muted); }
+li { margin-bottom: 10px; line-height: 1.5; }
+.status-line { color: var(--accent); font-weight: 700; }
 
 @media (max-width: 900px) {
   .hero, .grid { grid-template-columns: 1fr; display: grid; }
   .cards { grid-template-columns: repeat(2, 1fr); }
+  .toolbar { align-items: stretch; flex-direction: column; }
+  .toolbar-actions { flex-direction: column; }
 }
