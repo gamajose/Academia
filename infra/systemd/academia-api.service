@@ -1,0 +1,15 @@
+[Unit]
+Description=Academia API
+After=network.target docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/mnt/Projetos/Academia/apps/api
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
