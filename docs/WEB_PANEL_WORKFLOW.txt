@@ -1,0 +1,21 @@
+Fluxo do painel web
+
+A tela inicial do painel agora cobre o fluxo operacional basico:
+
+1. Login com usuario da academia.
+2. Visualizacao do resumo geral.
+3. Cadastro de aluno.
+4. Cadastro de plano.
+5. Criacao de matricula vinculando aluno e plano.
+6. Criacao de cobranca para o aluno.
+7. Baixa de pagamento pendente.
+8. Listagem de alunos, planos, matriculas e pagamentos.
+
+A API usada pelo painel e a mesma API da porta 3004.
+
+Para testar:
+cd /mnt/Projetos/Academia/apps/web
+python3 -m http.server 8084
+
+Depois acessar:
+http://IP_DA_VM:8084
