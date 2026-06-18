@@ -6,6 +6,7 @@ After=network.target docker.service
 Type=simple
 WorkingDirectory=/mnt/Projetos/Academia/apps/api
 Environment=NODE_ENV=production
+EnvironmentFile=/mnt/Projetos/Academia/apps/api/.env
 ExecStart=/usr/bin/npm run start
 Restart=always
 RestartSec=5
