@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Academia Platform</p>
+        <h1>Painel administrativo</h1>
+        <p>Controle alunos, planos, check-ins, matriculas e financeiro em uma base preparada para crescer.</p>
+      </div>
+      <div class="health-card">
+        <span>Status da API</span>
+        <strong id="api-status">validando...</strong>
+      </div>
+    </section>
+
+    <section class="login-card" id="login-card">
+      <h2>Acesso</h2>
+      <label>E-mail</label>
+      <input id="email" type="email" placeholder="admin@academia.com" />
+      <label>Senha</label>
+      <input id="password" type="password" placeholder="senha" />
+      <button id="login-button">Entrar</button>
+      <small id="login-message"></small>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard">
+      <div class="toolbar">
+        <h2>Resumo</h2>
+        <button id="refresh-button">Atualizar</button>
+      </div>
+      <div class="cards">
+        <article><span>Alunos ativos</span><strong id="active-members">0</strong></article>
+        <article><span>Planos ativos</span><strong id="active-plans">0</strong></article>
+        <article><span>Matriculas ativas</span><strong id="active-memberships">0</strong></article>
+        <article><span>Check-ins hoje</span><strong id="today-checkins">0</strong></article>
+        <article><span>Pagamentos pendentes</span><strong id="pending-payments">0</strong></article>
+      </div>
+
+      <div class="grid">
+        <section class="panel">
+          <h3>Novo aluno</h3>
+          <input id="member-name" placeholder="Nome do aluno" />
+          <input id="member-email" placeholder="E-mail" />
+          <input id="member-phone" placeholder="Telefone" />
+          <button id="create-member-button">Cadastrar aluno</button>
+        </section>
+
+        <section class="panel">
+          <h3>Alunos recentes</h3>
+          <ul id="members-list"></ul>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
