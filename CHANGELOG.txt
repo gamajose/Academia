@@ -1,5 +1,12 @@
 Changelog
 
+0.2.0
+- Adicionados modulos de matriculas e pagamentos na API.
+- Adicionadas rotas protegidas para listar e criar matriculas.
+- Adicionadas rotas protegidas para listar, criar e baixar pagamentos.
+- Dashboard passou a considerar matriculas ativas.
+- Health check atualizado para versao 0.2.0.
+
 0.1.2
 - Adicionada view de dashboard no banco.
 - Adicionados indices de performance por academia e data.
