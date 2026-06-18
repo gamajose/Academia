@@ -1,0 +1,30 @@
+Deploy na VM
+
+1. Atualizar projeto:
+cd /mnt/Projetos/Academia
+git pull
+
+2. Criar banco, se ainda nao existir:
+docker exec -it postgres17 psql -U jose -d postgres -c "CREATE DATABASE academia;"
+
+3. Preparar API:
+cd /mnt/Projetos/Academia/apps/api
+cp .env.example .env
+nano .env
+
+4. Instalar dependencias e migrar:
+npm install
+set -a
+source .env
+set +a
+npm run migrate
+
+5. Testar manualmente:
+npm run start
+curl http://localhost:3004/health
+
+6. Ativar systemd:
+cp /mnt/Projetos/Academia/infra/systemd/academia-api.service /etc/systemd/system/academia-api.service
+systemctl daemon-reload
+systemctl enable --now academia-api.service
+systemctl status academia-api.service
