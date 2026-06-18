@@ -1,0 +1,9 @@
+Escala
+
+API sem estado.
+Banco separado.
+Indices por academia e data.
+Porta 3004.
+Systemd com env.
+Nginx como proxy.
+Redis em etapa futura.
