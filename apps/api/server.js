@@ -114,7 +114,7 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
     if (req.method === 'GET' && url.pathname === '/health') {
-      return send(res, 200, { status: 'ok', service: 'academia-api', uptime: process.uptime() });
+      return send(res, 200, { status: 'ok', service: 'academia-api', version: '0.1.1', uptime: process.uptime() });
     }
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') return registerGym(req, res);
     if (req.method === 'POST' && url.pathname === '/api/auth/login') return login(req, res);
