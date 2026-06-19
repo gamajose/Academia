@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conta - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Conta</p>
+        <h1>Conta e academia</h1>
+        <p>Dados da academia e acesso do usuario.</p>
+      </div>
+      <div class="health-card">
+        <span>Usuario</span>
+        <strong id="account-name">carregando...</strong>
+        <small id="account-role"></small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Academia</h3>
+        <input id="gym-name" placeholder="Nome" />
+        <input id="gym-email" placeholder="Email" />
+        <input id="gym-phone" placeholder="Telefone" />
+        <input id="gym-document" placeholder="Documento" />
+        <input id="gym-address" placeholder="Endereco" />
+        <input id="gym-timezone" placeholder="Timezone" />
+        <button id="save-gym-button">Salvar</button>
+      </article>
+
+      <article class="panel">
+        <h3>Acesso</h3>
+        <input id="current-password" type="password" placeholder="Atual" />
+        <input id="new-password" type="password" placeholder="Nova" />
+        <button id="change-password-button">Atualizar acesso</button>
+        <p class="status-line" id="account-status">Aguardando.</p>
+      </article>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./account.js"></script>
+</body>
+</html>
