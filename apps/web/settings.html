@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configuracoes - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Ambiente</p>
+        <h1>Configuracoes</h1>
+        <p>Ajuste a URL da API e encerre o acesso salvo no navegador.</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>URL da API</h3>
+        <input id="api-base-url" placeholder="http://IP_DA_VM:3004" />
+        <button id="save-api-button">Salvar URL</button>
+        <button id="test-api-button" class="secondary">Testar conexao</button>
+        <p class="status-line" id="settings-status">Aguardando acao.</p>
+      </article>
+
+      <article class="panel">
+        <h3>Sessao</h3>
+        <p>Limpe o token salvo neste navegador.</p>
+        <button id="logout-settings-button" class="secondary">Sair e limpar sessao</button>
+      </article>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./settings.js"></script>
+</body>
+</html>
