@@ -46,6 +46,31 @@ function renderExercises() {
   }
 }
 
+function renderProgress(progress) {
+  const assessmentList = p('portal-progress-list');
+  const goalList = p('portal-goal-list');
+  assessmentList.innerHTML = '';
+  goalList.innerHTML = '';
+
+  for (const item of progress.assessments || []) {
+    const row = document.createElement('li');
+    row.textContent = `${item.assessment_date} | Peso: ${item.weight_kg || '-'}kg | Gordura: ${item.body_fat_percent || '-'}% | Cintura: ${item.waist_cm || '-'}cm`;
+    assessmentList.appendChild(row);
+  }
+  if (!(progress.assessments || []).length) {
+    assessmentList.innerHTML = '<li>Nenhuma avaliacao registrada ainda.</li>';
+  }
+
+  for (const item of progress.goals || []) {
+    const row = document.createElement('li');
+    row.textContent = `${item.goal_type} | Alvo: ${item.target_value || '-'} | Data: ${item.target_date || '-'} | ${item.status}`;
+    goalList.appendChild(row);
+  }
+  if (!(progress.goals || []).length) {
+    goalList.innerHTML = '<li>Nenhuma meta cadastrada ainda.</li>';
+  }
+}
+
 async function loadStudentPortal() {
   if (!STUDENT_PORTAL_TOKEN) {
     window.location.href = './student-login.html';
@@ -67,6 +92,8 @@ async function loadStudentPortal() {
     p('student-portal-meta').textContent = `Ficha: ${currentPlan.name} | Nivel: ${currentPlan.level} | Objetivo: ${currentPlan.goal || '-'} | ${currentPlan.age_days || 0} dias`;
     renderExercises();
     await loadPortalLogs();
+    const progress = await portalApi('/api/student/progress');
+    renderProgress(progress);
     setPortalStatus('Treino carregado.');
   } catch (error) {
     setPortalStatus(`Erro: ${error.message}`);
