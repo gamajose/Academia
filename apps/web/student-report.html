@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Relatorio do aluno - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Relatorio imprimivel</p>
+        <h1>Relatorio do aluno</h1>
+        <p>Gere uma versao imprimivel com dados do aluno, avaliacoes, metas e treinos recentes.</p>
+      </div>
+      <div class="health-card">
+        <span>Saida</span>
+        <strong>PDF</strong>
+        <small>use imprimir/salvar como PDF</small>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <select id="report-member"></select>
+      <div class="toolbar-actions">
+        <button id="load-report-button">Carregar</button>
+        <button id="print-report-button" class="secondary">Imprimir / PDF</button>
+      </div>
+    </section>
+
+    <section class="panel" id="report-content">
+      <h2 id="report-title">Selecione um aluno</h2>
+      <p id="report-summary">Aguardando carregamento.</p>
+      <div class="grid">
+        <article><h3>Avaliacoes</h3><ul id="report-assessments"></ul></article>
+        <article><h3>Metas</h3><ul id="report-goals"></ul></article>
+      </div>
+      <article><h3>Historico de treinos</h3><ul id="report-logs"></ul></article>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./student-report.js"></script>
+</body>
+</html>
