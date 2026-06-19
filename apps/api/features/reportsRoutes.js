@@ -1,7 +1,7 @@
 const { buildSimplePdf } = require('../lib/simplePdf');
 
 async function handleReportsRoutes(req, res, user, url, helpers) {
-  const { send, query } = helpers;
+  const { send, query, body } = helpers;
 
   if (req.method === 'GET' && url.pathname === '/api/reports/overview') {
     const result = await query(
@@ -17,6 +17,37 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
       [user.gym_id]
     );
     return send(res, 200, { data: result.rows });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/reports/finance-advanced') {
+    const result = await query(
+      `SELECT p.id, p.member_id, m.name AS member_name, p.membership_id, p.original_amount_cents, p.amount_cents, p.discount_cents, p.fee_cents, p.method, p.notes, p.status, p.due_date, p.paid_at, p.created_at, p.updated_at
+       FROM payments p INNER JOIN members m ON m.id = p.member_id
+       WHERE p.gym_id = $1 ORDER BY p.due_date DESC LIMIT 250`,
+      [user.gym_id]
+    );
+    const summary = await query(
+      "SELECT count(*) FILTER (WHERE status = 'pending') AS pending_count, count(*) FILTER (WHERE status = 'paid') AS paid_count, COALESCE(sum(amount_cents) FILTER (WHERE status = 'pending'), 0) AS pending_amount_cents, COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid'), 0) AS paid_amount_cents FROM payments WHERE gym_id = $1",
+      [user.gym_id]
+    );
+    return send(res, 200, { summary: summary.rows[0], data: result.rows });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/reports/finance-adjust') {
+    const input = await body(req);
+    if (!input.payment_id) return send(res, 400, { error: 'payment_id_obrigatorio' });
+    const current = await query('SELECT original_amount_cents, amount_cents FROM payments WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.payment_id, user.gym_id]);
+    if (!current.rowCount) return send(res, 404, { error: 'pagamento_nao_encontrado' });
+    const base = Number(current.rows[0].original_amount_cents || current.rows[0].amount_cents || 0);
+    const discount = Number(input.discount_cents || 0);
+    const fee = Number(input.fee_cents || 0);
+    const amount = Math.max(0, base - discount + fee);
+    const result = await query(
+      `UPDATE payments SET amount_cents = $3, discount_cents = $4, fee_cents = $5, method = COALESCE($6, method), notes = COALESCE($7, notes), updated_at = now()
+       WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, original_amount_cents, amount_cents, discount_cents, fee_cents, method, notes, status, due_date`,
+      [input.payment_id, user.gym_id, amount, discount, fee, input.method || null, input.notes || null]
+    );
+    return send(res, 200, result.rows[0]);
   }
 
   if (req.method === 'GET' && url.pathname === '/api/reports/memberships') {
@@ -47,11 +78,7 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
       ...goals.rows.map((item) => `${item.goal_type} | Alvo ${item.target_value || '-'} | Data ${item.target_date || '-'} | ${item.status}`)
     ];
     const pdf = buildSimplePdf(`Relatorio do aluno - ${member.rows[0].name}`, lines);
-    res.writeHead(200, {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="relatorio-aluno-${memberId}.pdf"`,
-      'Content-Length': pdf.length
-    });
+    res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="relatorio-aluno-${memberId}.pdf"`, 'Content-Length': pdf.length });
     res.end(pdf);
     return true;
   }
