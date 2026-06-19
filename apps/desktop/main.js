@@ -3,18 +3,18 @@ const path = require('path');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1180,
-    height: 760,
-    minWidth: 980,
-    minHeight: 640,
-    title: 'Academia Platform - Recepcao',
+    width: 1280,
+    height: 820,
+    minWidth: 1024,
+    minHeight: 720,
+    title: 'Academia Platform',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
     }
   });
 
-  win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  win.loadFile(path.join(__dirname, '..', 'web', 'index.html'));
 }
 
 app.whenReady().then(createWindow);
