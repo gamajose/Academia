@@ -4,6 +4,7 @@ const { pool, query } = require('./lib/db');
 const { hashPassword, verifyPassword, signToken, verifyToken } = require('./lib/security');
 const { handleMemberships } = require('./features/memberships');
 const { handlePayments } = require('./features/payments');
+const { handleAdminRoutes } = require('./features/adminRoutes');
 
 const port = Number(process.env.PORT || 3004);
 
@@ -134,6 +135,9 @@ const server = http.createServer(async (req, res) => {
     if (!user) return send(res, 401, { error: 'nao_autorizado' });
 
     const helpers = { send, body, query };
+
+    const adminHandled = await handleAdminRoutes(req, res, user, url, helpers);
+    if (adminHandled !== false) return adminHandled;
 
     if (req.method === 'GET' && url.pathname === '/api/members') return listMembers(req, res, user);
     if (req.method === 'POST' && url.pathname === '/api/members') return createMember(req, res, user);
