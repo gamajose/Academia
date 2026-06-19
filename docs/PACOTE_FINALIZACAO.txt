@@ -1,0 +1,43 @@
+Pacote de finalizacao aplicado
+
+Mobile:
+- App administrativo com alertas, treinos e avaliacoes.
+- Entrada separada para app do aluno em lib/student_main.dart.
+- Portal mobile do aluno em lib/student_portal_page.dart.
+- Script de build do app principal em scripts/build-mobile.sh.
+
+Web:
+- Central de alertas.
+- Avaliacoes e metas.
+- Portal do aluno com evolucao.
+- Relatorio imprimivel do aluno em student-report.html.
+- CSS com estados vazios, badges, graficos simples e regras de impressao para salvar como PDF.
+
+Desktop:
+- Software Python com check-in, alertas e resumo de avaliacao.
+- Script de empacotamento Python em scripts/package-desktop-python.sh.
+- Base Electron continua abrindo o painel web ativo.
+
+Backend:
+- Alertas operacionais.
+- Avaliacoes, metas e resumo de evolucao.
+- Login do aluno e rotas de portal.
+- Tabelas de eventos de login e tokens de recuperacao.
+- Helpers de seguranca com validacao de senha, TTL configuravel e hash de token.
+
+Deploy:
+- .env.example ampliado.
+- Script scripts/deploy-prod.sh para git pull, migrate, restart e health check.
+
+Pontos que ainda precisam de validacao real na VM:
+- Rodar todas as migrations.
+- Reiniciar API.
+- Testar Flutter admin.
+- Testar Flutter aluno usando -t lib/student_main.dart.
+- Testar software Python.
+- Testar impressao/salvar PDF no navegador.
+
+Pontos que ficaram como base funcional, nao acabamento final:
+- PDF e gerado via impressao do navegador, nao por motor nativo de PDF no backend.
+- Build desktop Electron ainda precisa validacao local.
+- Algumas politicas de seguranca precisam de fluxo completo de reset por e-mail futuramente.
