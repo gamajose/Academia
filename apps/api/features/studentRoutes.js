@@ -34,7 +34,8 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && url.pathname === '/api/student/accounts') {
     if (!canManageStudentAccount(user)) return send(res, 403, { error: 'sem_permissao' });
     const input = await body(req);
-    if (!input.member_id || !input.email || !input.password) return send(res, 400, { error: 'dados_invalidos' });
+    const accessKey = input.password || input.secret || input.access_key;
+    if (!input.member_id || !input.email || !accessKey) return send(res, 400, { error: 'dados_invalidos' });
     const member = await query('SELECT id, name FROM members WHERE id = $1 AND gym_id = $2', [input.member_id, user.gym_id]);
     if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
     const result = await query(
@@ -42,7 +43,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
        VALUES ($1, $2, lower($3), $4, true)
        ON CONFLICT (gym_id, member_id) DO UPDATE SET email = EXCLUDED.email, secret_hash = EXCLUDED.secret_hash, is_active = true, updated_at = now()
        RETURNING id, member_id, email, is_active, created_at, updated_at`,
-      [user.gym_id, input.member_id, input.email, hashPassword(input.password)]
+      [user.gym_id, input.member_id, input.email, hashPassword(accessKey)]
     );
     await recordAudit(user, 'upsert', 'member_account', result.rows[0].id, { member_id: input.member_id });
     return send(res, 200, result.rows[0]);
@@ -55,6 +56,12 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     );
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
     return send(res, 200, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/progress') {
+    const assessments = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
+    const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
+    return send(res, 200, { assessments: assessments.rows, goals: goals.rows });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/current') {
