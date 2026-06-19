@@ -2,6 +2,7 @@ const http = require('http');
 const { URL } = require('url');
 const { pool, query } = require('./lib/db');
 const { hashPassword, verifyPassword, signToken, verifyToken } = require('./lib/security');
+const { canAccess } = require('./lib/accessControl');
 const { handleMemberships } = require('./features/memberships');
 const { handlePayments } = require('./features/payments');
 const { handleAdminRoutes } = require('./features/adminRoutes');
@@ -133,6 +134,7 @@ const server = http.createServer(async (req, res) => {
 
     const user = auth(req);
     if (!user) return send(res, 401, { error: 'nao_autorizado' });
+    if (!canAccess(user, req.method, url.pathname)) return send(res, 403, { error: 'sem_permissao' });
 
     const helpers = { send, body, query };
 
