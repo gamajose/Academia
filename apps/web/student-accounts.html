@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contas de aluno - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Acesso do aluno</p>
+        <h1>Conta do aluno</h1>
+        <p>Crie ou atualize o acesso individual do aluno para ele entrar sem permissao administrativa.</p>
+      </div>
+      <div class="health-card">
+        <span>Portal</span>
+        <strong>student-login.html</strong>
+        <small>login exclusivo do aluno</small>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Criar acesso</h3>
+      <select id="account-member"></select>
+      <input id="account-email" type="email" placeholder="E-mail do aluno" />
+      <input id="account-secret" type="password" placeholder="Chave inicial" />
+      <button id="create-student-account-button">Salvar acesso do aluno</button>
+      <p class="status-line" id="student-account-status">Aguardando.</p>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./student-accounts.js"></script>
+</body>
+</html>
