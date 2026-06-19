@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aluno - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Area do aluno</p>
+        <h1>Entrar no meu treino</h1>
+        <p>Acesso exclusivo do aluno para ver ficha, videos, instrucoes e marcar treino como feito.</p>
+      </div>
+      <div class="health-card">
+        <span>Acesso</span>
+        <strong>Aluno</strong>
+        <small>sem permissao administrativa</small>
+      </div>
+    </section>
+
+    <section class="login-card">
+      <h2>Login do aluno</h2>
+      <label>URL da API</label>
+      <input id="student-api-url" placeholder="http://IP_DA_VM:3004" />
+      <label>E-mail</label>
+      <input id="student-email" type="email" placeholder="aluno@email.com" />
+      <label>Senha</label>
+      <input id="student-password" type="password" placeholder="senha" />
+      <button id="student-login-button">Entrar</button>
+      <small id="student-login-message"></small>
+    </section>
+  </main>
+  <script src="./student-login.js"></script>
+</body>
+</html>
