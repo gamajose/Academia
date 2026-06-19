@@ -1,4 +1,13 @@
+function loadNavigationStyles() {
+  if (document.querySelector('link[href="./professional.css"]')) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = './professional.css';
+  document.head.appendChild(link);
+}
+
 function renderNavigation() {
+  loadNavigationStyles();
   const current = window.location.pathname.split('/').pop() || 'index.html';
   const pages = [
     ['home.html', 'Inicio'],
