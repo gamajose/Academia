@@ -1,4 +1,0 @@
-Desktop software placeholder.
-
-This folder will be replaced by the local desktop screen when packaging.
-The current Electron shell can be adapted to open the web panel or a local renderer.
