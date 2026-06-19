@@ -8,6 +8,7 @@ const { handlePayments } = require('./features/payments');
 const { handleAdminRoutes } = require('./features/adminRoutes');
 const { handleTrainingRoutes } = require('./features/trainingRoutes');
 const { handleTrainingPlansRoutes } = require('./features/trainingPlansRoutes');
+const { handleStudentRoutes } = require('./features/studentRoutes');
 
 const port = Number(process.env.PORT || 3004);
 
@@ -129,11 +130,15 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') return registerGym(req, res);
     if (req.method === 'POST' && url.pathname === '/api/auth/login') return login(req, res);
 
+    const helpers = { send, body, query };
+    if (req.method === 'POST' && url.pathname === '/api/student/auth/login') return handleStudentRoutes(req, res, null, url, helpers);
+
     const user = auth(req);
     if (!user) return send(res, 401, { error: 'nao_autorizado' });
     if (!canAccess(user, req.method, url.pathname)) return send(res, 403, { error: 'sem_permissao' });
 
-    const helpers = { send, body, query };
+    const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
+    if (studentHandled !== false) return studentHandled;
 
     const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
     if (trainingHandled !== false) return trainingHandled;
