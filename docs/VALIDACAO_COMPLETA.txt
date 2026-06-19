@@ -1,0 +1,41 @@
+Validacao completa
+
+1. Atualizar projeto:
+cd /mnt/Projetos/Academia
+git pull
+
+2. Aplicar banco:
+cd /mnt/Projetos/Academia/apps/api
+set -a
+source .env
+set +a
+npm install
+npm run migrate
+
+3. Subir API:
+npm run start
+
+4. Health:
+curl http://localhost:3004/health
+
+5. Subir web:
+cd /mnt/Projetos/Academia/apps/web
+python3 -m http.server 8084
+
+6. Acessar web:
+http://IP_DA_VM:8084
+
+7. Relatorios:
+http://IP_DA_VM:8084/reports.html
+
+8. Auditoria:
+http://IP_DA_VM:8084/audit.html
+
+9. Software desktop:
+cd /mnt/Projetos/Academia/apps/software
+python3 academia_checkin.py
+
+10. Mobile:
+cd /mnt/Projetos/Academia/apps/mobile
+flutter pub get
+flutter run
