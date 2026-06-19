@@ -12,6 +12,8 @@ function renderNavigation() {
   const pages = [
     ['home.html', 'Inicio'],
     ['index.html', 'Painel'],
+    ['training.html', 'Treinos'],
+    ['student-accounts.html', 'Acesso aluno'],
     ['users.html', 'Usuarios'],
     ['account.html', 'Conta'],
     ['reports.html', 'Relatorios'],
