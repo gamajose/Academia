@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Relatorios - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Academia Platform</p>
+        <h1>Relatorios</h1>
+        <p>Resumo de alunos, matriculas e financeiro.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <button id="load-button">Carregar relatorios</button>
+      <p class="status-line" id="reports-status">Aguardando carregamento.</p>
+    </section>
+
+    <section class="cards">
+      <article><span>Total de alunos</span><strong id="total-members">0</strong></article>
+      <article><span>Alunos ativos</span><strong id="active-members-report">0</strong></article>
+      <article><span>Matriculas ativas</span><strong id="active-memberships-report">0</strong></article>
+      <article><span>A receber</span><strong id="pending-amount">R$ 0,00</strong></article>
+      <article><span>Recebido</span><strong id="paid-amount">R$ 0,00</strong></article>
+    </section>
+
+    <div class="grid lists-grid">
+      <section class="panel">
+        <h3>Financeiro</h3>
+        <ul id="financial-list"></ul>
+      </section>
+      <section class="panel">
+        <h3>Matriculas</h3>
+        <ul id="memberships-report-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script src="./reports.js"></script>
+</body>
+</html>
