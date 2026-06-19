@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:academia_mobile/alerts_page.dart';
 import 'package:academia_mobile/assessments_page.dart';
+import 'package:academia_mobile/revenue_page.dart';
 import 'package:academia_mobile/training_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -249,6 +250,7 @@ class _DashboardPageState extends State<DashboardPage> {
               actionButton(Icons.warning_amber, 'Alertas', AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.fitness_center, 'Treinos', TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.monitor_heart, 'Avaliações', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
             ]),
             const SizedBox(height: 12),
             Text('$message Sincronizacao automatica a cada 30s.'),
