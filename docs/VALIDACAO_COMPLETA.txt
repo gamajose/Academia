@@ -29,6 +29,7 @@ python3 -m http.server 8084
 7. Acessos web administrativos:
 http://IP_DA_VM:8084/home.html
 http://IP_DA_VM:8084/index.html
+http://IP_DA_VM:8084/alerts.html
 http://IP_DA_VM:8084/training.html
 http://IP_DA_VM:8084/assessments.html
 http://IP_DA_VM:8084/student-accounts.html
