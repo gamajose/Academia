@@ -1,0 +1,13 @@
+{
+  "name": "academia-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Software desktop de recepcao/check-in para Academia Platform",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "latest"
+  }
+}
