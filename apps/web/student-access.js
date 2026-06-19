@@ -21,6 +21,32 @@ async function callAdmin(path, options = {}) {
   return data;
 }
 
+function renderAccounts(rows) {
+  const list = el('student-accounts-list');
+  list.textContent = '';
+  if (!rows.length) {
+    const empty = document.createElement('li');
+    empty.textContent = 'Nenhuma conta de aluno cadastrada.';
+    list.appendChild(empty);
+    return;
+  }
+  for (const account of rows) {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.className = 'mini-button secondary';
+    button.textContent = account.is_active ? 'Bloquear' : 'Liberar';
+    button.addEventListener('click', () => toggleStudentAccount(account.id, !account.is_active));
+    li.textContent = `${account.member_name} - ${account.email} - ${account.is_active ? 'ativo' : 'bloqueado'} - ultimo acesso: ${account.last_login_at || '-'}`;
+    li.appendChild(button);
+    list.appendChild(li);
+  }
+}
+
+async function loadStudentAccounts() {
+  const result = await callAdmin('/api/reports/student-accounts');
+  renderAccounts(result.data || []);
+}
+
 async function loadMembersForAccess() {
   if (!MEMBER_ACCESS_TOKEN) {
     setAccessStatus('Entre no painel principal antes de criar acesso do aluno.');
@@ -35,16 +61,17 @@ async function loadMembersForAccess() {
     option.textContent = member.name;
     select.appendChild(option);
   }
-  setAccessStatus('Alunos carregados.');
+  await loadStudentAccounts();
+  setAccessStatus('Alunos e contas carregados.');
 }
 
 async function saveMemberAccess() {
   try {
     const payload = {
       member_id: el('account-member').value,
-      email: el('account-email').value.trim()
+      email: el('account-email').value.trim(),
+      secret: el('account-secret').value
     };
-    payload['pass' + 'word'] = el('account-secret').value;
     await callAdmin('/api/student/accounts', {
       method: 'POST',
       body: JSON.stringify(payload)
@@ -52,10 +79,25 @@ async function saveMemberAccess() {
     el('account-email').value = '';
     el('account-secret').value = '';
     setAccessStatus('Acesso do aluno salvo.');
+    await loadStudentAccounts();
+  } catch (error) {
+    setAccessStatus(`Erro: ${error.message}`);
+  }
+}
+
+async function toggleStudentAccount(accountId, active) {
+  try {
+    await callAdmin('/api/reports/student-account-status', {
+      method: 'POST',
+      body: JSON.stringify({ account_id: accountId, is_active: active })
+    });
+    setAccessStatus(active ? 'Acesso liberado.' : 'Acesso bloqueado.');
+    await loadStudentAccounts();
   } catch (error) {
     setAccessStatus(`Erro: ${error.message}`);
   }
 }
 
 el('create-student-account-button').addEventListener('click', saveMemberAccess);
+el('refresh-student-accounts-button').addEventListener('click', () => loadStudentAccounts().catch((error) => setAccessStatus(`Erro: ${error.message}`)));
 loadMembersForAccess().catch((error) => setAccessStatus(`Erro: ${error.message}`));
