@@ -8,6 +8,11 @@ function canAccess(user, method, pathname) {
   if (!user || !user.role) return false;
   if (publicRoles.includes(user.role)) return true;
 
+  if (user.role === 'student') {
+    if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
+    return false;
+  }
+
   if (user.role === 'staff') {
     const allowedExact = [
       '/api/members',
@@ -17,6 +22,7 @@ function canAccess(user, method, pathname) {
       '/api/gym/profile'
     ];
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
+    if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
     if (pathname.startsWith('/api/training') && (method === 'GET' || method === 'POST')) return true;
     if (method === 'POST' && pathname === '/api/checkins') return true;
     if (method === 'POST' && pathname === '/api/me/change-password') return true;
