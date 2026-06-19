@@ -8,13 +8,24 @@ function money(cents) {
   return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-async function request(path) {
+async function request(path, options = {}) {
   const response = await fetch(`${REPORTS_API_BASE_URL}${path}`, {
-    headers: { Authorization: `Bearer ${reportsToken}` }
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${reportsToken}`,
+      ...(options.headers || {})
+    }
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'erro_requisicao');
   return data;
+}
+
+function renderEmpty(list, text) {
+  const row = document.createElement('li');
+  row.textContent = text;
+  list.appendChild(row);
 }
 
 async function loadReports() {
@@ -25,7 +36,7 @@ async function loadReports() {
 
   try {
     const overview = await request('/api/reports/overview');
-    const financial = await request('/api/reports/financial');
+    const financial = await request('/api/reports/finance-advanced');
     const memberships = await request('/api/reports/memberships');
 
     byId('total-members').textContent = overview.total_members || 0;
@@ -36,14 +47,16 @@ async function loadReports() {
 
     const financialList = byId('financial-list');
     financialList.innerHTML = '';
+    if (!(financial.data || []).length) renderEmpty(financialList, 'Nenhum lancamento financeiro.');
     for (const item of financial.data || []) {
       const row = document.createElement('li');
-      row.textContent = `${item.member_name} - ${money(item.amount_cents)} - ${item.status} - ${item.due_date}`;
+      row.textContent = `${item.member_name} - ${money(item.amount_cents)} - ${item.status} - ${item.due_date} - ID: ${item.id} - desc ${money(item.discount_cents)} - taxa ${money(item.fee_cents)}`;
       financialList.appendChild(row);
     }
 
     const membershipsList = byId('memberships-report-list');
     membershipsList.innerHTML = '';
+    if (!(memberships.data || []).length) renderEmpty(membershipsList, 'Nenhuma matricula.');
     for (const item of memberships.data || []) {
       const row = document.createElement('li');
       row.textContent = `${item.member_name} - ${item.plan_name} - ${item.status} - ${item.starts_at} ate ${item.ends_at}`;
@@ -56,5 +69,25 @@ async function loadReports() {
   }
 }
 
+async function adjustFinance() {
+  try {
+    await request('/api/reports/finance-adjust', {
+      method: 'POST',
+      body: JSON.stringify({
+        payment_id: byId('finance-payment-id').value.trim(),
+        discount_cents: Number(byId('finance-discount').value || 0),
+        fee_cents: Number(byId('finance-fee').value || 0),
+        method: byId('finance-method').value.trim(),
+        notes: byId('finance-notes').value.trim()
+      })
+    });
+    byId('reports-status').textContent = 'Ajuste financeiro aplicado.';
+    await loadReports();
+  } catch (error) {
+    byId('reports-status').textContent = `Erro no ajuste: ${error.message}`;
+  }
+}
+
 byId('load-button').addEventListener('click', loadReports);
+byId('finance-adjust-button').addEventListener('click', adjustFinance);
 loadReports();
