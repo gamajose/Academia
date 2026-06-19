@@ -8,6 +8,7 @@ const { handleExportRoutes } = require('./exportRoutes');
 const { handleProfileRoutes } = require('./profileRoutes');
 const { handleGymRoutes } = require('./gymRoutes');
 const { handleTrainingExecutionRoutes } = require('./trainingExecutionRoutes');
+const { handleAssessmentRoutes } = require('./assessmentRoutes');
 
 async function handleAdminRoutes(req, res, user, url, helpers) {
   const profile = await handleProfileRoutes(req, res, user, url, helpers);
@@ -15,6 +16,9 @@ async function handleAdminRoutes(req, res, user, url, helpers) {
 
   const gym = await handleGymRoutes(req, res, user, url, helpers);
   if (gym !== false) return gym;
+
+  const assessment = await handleAssessmentRoutes(req, res, user, url, helpers);
+  if (assessment !== false) return assessment;
 
   const trainingExecution = await handleTrainingExecutionRoutes(req, res, user, url, helpers);
   if (trainingExecution !== false) return trainingExecution;
