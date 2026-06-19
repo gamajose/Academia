@@ -3,7 +3,7 @@ const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
 
 async function planExercises(query, gymId, planId) {
   const result = await query(
-    `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.weekday, wd.title AS day_title, e.id AS exercise_id, e.name AS exercise_name, e.muscle_group, e.video_url, e.instructions
+    `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.id AS exercise_id, e.name AS exercise_name, e.muscle_group, e.video_url, e.instructions
      FROM workout_exercises we
      INNER JOIN workout_days wd ON wd.id = we.workout_day_id
      INNER JOIN exercise_library e ON e.id = we.exercise_id
