@@ -6,6 +6,8 @@ const { canAccess } = require('./lib/accessControl');
 const { handleMemberships } = require('./features/memberships');
 const { handlePayments } = require('./features/payments');
 const { handleAdminRoutes } = require('./features/adminRoutes');
+const { handleTrainingRoutes } = require('./features/trainingRoutes');
+const { handleTrainingPlansRoutes } = require('./features/trainingPlansRoutes');
 
 const port = Number(process.env.PORT || 3004);
 
@@ -122,13 +124,8 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
-    if (req.method === 'OPTIONS') {
-      return send(res, 204, {});
-    }
-
-    if (req.method === 'GET' && url.pathname === '/health') {
-      return send(res, 200, { status: 'ok', service: 'academia-api', version: '0.2.0', uptime: process.uptime() });
-    }
+    if (req.method === 'OPTIONS') return send(res, 204, {});
+    if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { status: 'ok', service: 'academia-api', version: '0.2.0', uptime: process.uptime() });
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') return registerGym(req, res);
     if (req.method === 'POST' && url.pathname === '/api/auth/login') return login(req, res);
 
@@ -137,6 +134,12 @@ const server = http.createServer(async (req, res) => {
     if (!canAccess(user, req.method, url.pathname)) return send(res, 403, { error: 'sem_permissao' });
 
     const helpers = { send, body, query };
+
+    const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
+    if (trainingHandled !== false) return trainingHandled;
+
+    const trainingPlansHandled = await handleTrainingPlansRoutes(req, res, user, url, helpers);
+    if (trainingPlansHandled !== false) return trainingPlansHandled;
 
     const adminHandled = await handleAdminRoutes(req, res, user, url, helpers);
     if (adminHandled !== false) return adminHandled;
