@@ -1,0 +1,43 @@
+Modulo de Treinos e Analise Inteligente
+
+Objetivo:
+Adicionar fichas de treino completas dentro da Academia Platform.
+
+Entregas:
+- Biblioteca de exercicios.
+- Nome do exercicio.
+- Grupo muscular.
+- Equipamento.
+- Nivel do exercicio.
+- Instrucoes de execucao.
+- Link de video demonstrativo.
+- Perfil de treino do aluno.
+- Nivel do aluno: frango, intermediario ou avancado.
+- Objetivo do aluno.
+- Restricoes e observacoes.
+- Quantidade de dias de treino por semana.
+- Ficha de treino semanal.
+- Dias da ficha.
+- Exercicios por dia.
+- Series, repeticoes, descanso, carga sugerida e observacoes.
+- Analise inteligente da ficha.
+
+Rotas principais:
+GET /api/training/exercises
+POST /api/training/exercises
+GET /api/training/profile
+POST /api/training/profile
+GET /api/training/plans
+POST /api/training/plans
+POST /api/training/plans/day
+POST /api/training/plans/exercise
+GET /api/training/plans/detail
+POST /api/training/plans/review
+
+Regra da IA inicial:
+- Ficha com menos de 30 dias: manter e acompanhar execucao.
+- Ficha entre 45 e 89 dias: ajustar volume, carga, repeticoes ou descanso.
+- Ficha com 90 dias ou mais: sugerir troca parcial de exercicios por grupo muscular.
+
+Observacao:
+A IA atual e uma camada inicial baseada em regras do proprio sistema. Depois pode ser conectada a um modelo externo para gerar recomendacoes mais completas e personalizadas.
