@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meu treino - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Area do aluno</p>
+        <h1 id="student-portal-title">Meu treino</h1>
+        <p>Veja a ficha atual, assista aos videos, siga as instrucoes e registre a execucao do treino.</p>
+      </div>
+      <div class="health-card">
+        <span>Status</span>
+        <strong id="student-portal-status-card">carregando</strong>
+        <small>acesso do aluno</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Ficha atual</h3>
+        <p id="student-portal-meta">Carregando ficha...</p>
+        <button id="student-refresh-button">Atualizar treino</button>
+        <button id="student-logout-button" class="secondary">Sair</button>
+      </article>
+
+      <article class="panel">
+        <h3>Concluir treino</h3>
+        <input id="portal-effort" type="number" min="1" max="10" placeholder="Esforco percebido de 1 a 10" />
+        <textarea id="portal-feedback" placeholder="Feedback do treino"></textarea>
+        <button id="portal-complete-button">Marcar como feito</button>
+        <p class="status-line" id="student-portal-status">Carregando...</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h3>Exercicios do treino</h3>
+      <ul id="portal-exercise-list"></ul>
+    </section>
+
+    <section class="panel">
+      <h3>Meu historico recente</h3>
+      <ul id="portal-log-list"></ul>
+    </section>
+  </main>
+  <script src="./student-portal.js"></script>
+</body>
+</html>
