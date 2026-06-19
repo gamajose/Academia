@@ -17,6 +17,7 @@
       <div class="health-card">
         <span>Status da API</span>
         <strong id="api-status">validando...</strong>
+        <small id="api-url"></small>
       </div>
     </section>
 
@@ -79,6 +80,17 @@
           <input id="payment-due" type="date" />
           <button id="create-payment-button">Criar cobranca</button>
         </section>
+
+        <section class="panel">
+          <h3>Check-in manual</h3>
+          <select id="checkin-member"></select>
+          <button id="create-checkin-button">Registrar check-in</button>
+        </section>
+
+        <section class="panel">
+          <h3>Operacao</h3>
+          <p class="status-line" id="action-message">Pronto para operar.</p>
+        </section>
       </div>
 
       <div class="grid lists-grid">
@@ -100,7 +112,10 @@
         </section>
       </div>
 
-      <p class="status-line" id="action-message"></p>
+      <section class="panel">
+        <h3>Check-ins recentes</h3>
+        <ul id="checkins-list"></ul>
+      </section>
     </section>
   </main>
 
