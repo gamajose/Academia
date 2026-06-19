@@ -13,6 +13,7 @@ function renderNavigation() {
     ['home.html', 'Inicio'],
     ['index.html', 'Painel'],
     ['users.html', 'Usuarios'],
+    ['account.html', 'Conta'],
     ['reports.html', 'Relatorios'],
     ['exports.html', 'Exportacoes'],
     ['audit.html', 'Auditoria'],
