@@ -24,6 +24,8 @@ function canAccess(user, method, pathname) {
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
     if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
     if (pathname.startsWith('/api/training') && (method === 'GET' || method === 'POST')) return true;
+    if (pathname.startsWith('/api/assessments') && (method === 'GET' || method === 'POST')) return true;
+    if (pathname.startsWith('/api/goals') && (method === 'GET' || method === 'POST')) return true;
     if (method === 'POST' && pathname === '/api/checkins') return true;
     if (method === 'POST' && pathname === '/api/me/change-password') return true;
   }
