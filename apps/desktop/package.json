@@ -1,13 +1,21 @@
 {
   "name": "academia-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Software desktop de recepcao/check-in para Academia Platform",
+  "description": "Software desktop para Academia Platform",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "br.com.academia.platform",
+    "productName": "Academia Platform",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "../web/**/*"]
   },
   "devDependencies": {
-    "electron": "latest"
+    "electron": "latest",
+    "electron-builder": "^24.13.3"
   }
 }
