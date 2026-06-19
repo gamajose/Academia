@@ -1,0 +1,6 @@
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS phone text;
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS email text;
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS address text;
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS document_number text;
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS timezone text NOT NULL DEFAULT 'America/Sao_Paulo';
