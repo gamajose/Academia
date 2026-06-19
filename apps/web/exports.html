@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exportacoes - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Academia Platform</p>
+        <h1>Exportacoes CSV</h1>
+        <p>Baixe dados operacionais para conferencia, backup manual ou analise externa.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Arquivos disponiveis</h3>
+      <button data-export="/api/exports/members.csv">Baixar alunos</button>
+      <button data-export="/api/exports/payments.csv">Baixar pagamentos</button>
+      <button data-export="/api/exports/checkins.csv">Baixar check-ins</button>
+      <p class="status-line" id="export-status">Entre no painel principal antes de exportar.</p>
+    </section>
+  </main>
+
+  <script src="./exports.js"></script>
+</body>
+</html>
