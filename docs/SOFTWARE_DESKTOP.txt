@@ -1,11 +1,10 @@
 Software Desktop - Academia Platform
 
-Programa simples para recepcao e check-in sem depender do navegador.
+Opcoes atuais:
+- apps/software/academia_checkin.py: programa Python/Tkinter para recepcao e check-in.
+- apps/desktop: base Electron que abre o painel web ativo.
 
-Arquivo principal:
-apps/software/academia_checkin.py
-
-Funcionalidades:
+Funcionalidades do software Python:
 - Configurar URL da API.
 - Login com usuario da academia.
 - Listar alunos ativos.
@@ -13,11 +12,16 @@ Funcionalidades:
 - Registrar check-in.
 - Listar ultimos check-ins.
 
-Como testar:
+Como testar o software Python:
 cd /mnt/Projetos/Academia/apps/software
 python3 academia_checkin.py
 
 No Windows:
 python academia_checkin.py
+
+Como testar a base Electron:
+cd /mnt/Projetos/Academia/apps/desktop
+npm install
+npm run start
 
 A API precisa estar ativa na porta 3004.
