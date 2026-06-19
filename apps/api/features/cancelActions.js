@@ -1,3 +1,5 @@
+const { recordAudit } = require('../lib/audit');
+
 async function handleCancelActions(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
 
@@ -6,6 +8,7 @@ async function handleCancelActions(req, res, user, url, helpers) {
     if (!input.membership_id) return send(res, 400, { error: 'membership_id_obrigatorio' });
     const result = await query("UPDATE memberships SET status = 'cancelled', cancelled_at = now(), updated_at = now() WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, plan_id, status, cancelled_at", [input.membership_id, user.gym_id]);
     if (!result.rowCount) return send(res, 404, { error: 'matricula_nao_encontrada' });
+    await recordAudit(user, 'cancel', 'membership', result.rows[0].id, { member_id: result.rows[0].member_id, plan_id: result.rows[0].plan_id });
     return send(res, 200, result.rows[0]);
   }
 
@@ -14,6 +17,7 @@ async function handleCancelActions(req, res, user, url, helpers) {
     if (!input.payment_id) return send(res, 400, { error: 'payment_id_obrigatorio' });
     const result = await query("UPDATE payments SET status = 'cancelled', cancelled_at = now(), updated_at = now() WHERE id = $1 AND gym_id = $2 AND status <> 'paid' RETURNING id, member_id, amount_cents, status, due_date, cancelled_at", [input.payment_id, user.gym_id]);
     if (!result.rowCount) return send(res, 404, { error: 'pagamento_nao_encontrado_ou_ja_pago' });
+    await recordAudit(user, 'cancel', 'payment', result.rows[0].id, { member_id: result.rows[0].member_id, amount_cents: result.rows[0].amount_cents });
     return send(res, 200, result.rows[0]);
   }
 
