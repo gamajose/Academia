@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:academia_mobile/training_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -222,6 +223,12 @@ class _DashboardPageState extends State<DashboardPage> {
               _card('Check-ins hoje', summary['today_checkins']),
               _card('Pendências', summary['pending_payments']),
             ]),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TrainingPage(baseUrl: widget.baseUrl, token: widget.token))),
+              icon: const Icon(Icons.fitness_center),
+              label: const Text('Abrir treinos'),
+            ),
             const SizedBox(height: 12),
             Text(message),
             const Divider(),
