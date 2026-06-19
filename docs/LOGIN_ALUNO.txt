@@ -31,6 +31,3 @@ Telas web:
 apps/web/student-login.html
 apps/web/student-portal.html
 apps/web/student-accounts.html
-
-Observacao:
-A tela antiga student.html era uma area interna usando token administrativo. O fluxo correto novo e student-login.html -> student-portal.html.
