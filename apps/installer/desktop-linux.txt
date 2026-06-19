@@ -1,0 +1,4 @@
+Comando Linux para abrir o software desktop:
+
+cd /mnt/Projetos/Academia/apps/software
+python3 academia_checkin.py
