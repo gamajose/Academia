@@ -9,6 +9,10 @@ Funcionalidades atuais:
 - Lista de alunos.
 - Check-in rapido pelo celular.
 - Lista de ultimos check-ins.
+- Tela de treinos.
+- Detalhe da ficha do aluno.
+- Visualizacao de exercicios, series, repeticoes, descanso, instrucoes e video.
+- Analise inteligente da ficha pelo app.
 - Logout.
 
 Como testar:
