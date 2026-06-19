@@ -11,6 +11,24 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
     return send(res, 200, result.rows[0]);
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/reports/student-accounts') {
+    const result = await query(
+      `SELECT ma.id, ma.member_id, m.name AS member_name, ma.email, ma.is_active, ma.last_login_at, ma.created_at, ma.updated_at
+       FROM member_accounts ma INNER JOIN members m ON m.id = ma.member_id
+       WHERE ma.gym_id = $1 ORDER BY m.name ASC LIMIT 200`,
+      [user.gym_id]
+    );
+    return send(res, 200, { data: result.rows });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/reports/student-account-status') {
+    const input = await body(req);
+    if (!input.account_id || typeof input.is_active !== 'boolean') return send(res, 400, { error: 'dados_invalidos' });
+    const result = await query('UPDATE member_accounts SET is_active = $3, updated_at = now() WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, email, is_active, updated_at', [input.account_id, user.gym_id, input.is_active]);
+    if (!result.rowCount) return send(res, 404, { error: 'conta_nao_encontrada' });
+    return send(res, 200, result.rows[0]);
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/reports/financial') {
     const result = await query(
       "SELECT p.id, m.name AS member_name, p.amount_cents, p.status, p.due_date, p.paid_at, p.created_at FROM payments p INNER JOIN members m ON m.id = p.member_id WHERE p.gym_id = $1 ORDER BY p.due_date DESC LIMIT 200",
@@ -65,18 +83,7 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
     if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
     const assessments = await query('SELECT assessment_date, weight_kg, body_fat_percent, waist_cm, notes FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC LIMIT 8', [user.gym_id, memberId]);
     const goals = await query('SELECT goal_type, target_value, target_date, status FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST LIMIT 8', [user.gym_id, memberId]);
-    const lines = [
-      `Aluno: ${member.rows[0].name}`,
-      `Email: ${member.rows[0].email || '-'}`,
-      `Telefone: ${member.rows[0].phone || '-'}`,
-      `Status: ${member.rows[0].status}`,
-      '',
-      'Avaliacoes:',
-      ...assessments.rows.map((item) => `${item.assessment_date} | Peso ${item.weight_kg || '-'}kg | Gordura ${item.body_fat_percent || '-'}% | Cintura ${item.waist_cm || '-'}cm`),
-      '',
-      'Metas:',
-      ...goals.rows.map((item) => `${item.goal_type} | Alvo ${item.target_value || '-'} | Data ${item.target_date || '-'} | ${item.status}`)
-    ];
+    const lines = [`Aluno: ${member.rows[0].name}`, `Email: ${member.rows[0].email || '-'}`, `Telefone: ${member.rows[0].phone || '-'}`, `Status: ${member.rows[0].status}`, '', 'Avaliacoes:', ...assessments.rows.map((item) => `${item.assessment_date} | Peso ${item.weight_kg || '-'}kg | Gordura ${item.body_fat_percent || '-'}% | Cintura ${item.waist_cm || '-'}cm`), '', 'Metas:', ...goals.rows.map((item) => `${item.goal_type} | Alvo ${item.target_value || '-'} | Data ${item.target_date || '-'} | ${item.status}`)];
     const pdf = buildSimplePdf(`Relatorio do aluno - ${member.rows[0].name}`, lines);
     res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="relatorio-aluno-${memberId}.pdf"`, 'Content-Length': pdf.length });
     res.end(pdf);
