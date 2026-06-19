@@ -22,6 +22,9 @@ Backend/API:
 - Exportacoes CSV.
 - Treinos, fichas semanais e execucao de treino.
 - Analise inteligente inicial de fichas.
+- Avaliacoes fisicas.
+- Metas individuais.
+- Resumo comparativo de evolucao.
 
 Banco:
 - Gyms.
@@ -39,6 +42,8 @@ Banco:
 - Workout exercises.
 - Workout execution logs.
 - Workout AI reviews.
+- Member assessments.
+- Member goals.
 - Audit logs.
 - Indices.
 
@@ -53,6 +58,7 @@ Web:
 - Financeiro.
 - Check-in.
 - Treinos.
+- Avaliacoes e metas.
 - Acesso individual do aluno.
 - Login e portal do aluno.
 - Historico operacional.
