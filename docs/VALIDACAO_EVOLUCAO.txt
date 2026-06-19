@@ -1,0 +1,41 @@
+Validacao das acoes de evolucao
+
+1. Atualizar projeto:
+cd /mnt/Projetos/Academia
+git pull
+
+2. Reiniciar API:
+cd /mnt/Projetos/Academia/apps/api
+npm run migrate
+sudo systemctl restart academia-api
+curl http://localhost:3004/health
+
+3. Subir web:
+cd /mnt/Projetos/Academia/apps/web
+python3 -m http.server 8084
+
+4. Abrir tela de acoes:
+http://IP_DA_VM:8084/assessment-actions.html
+
+5. Validar edicao de avaliacao:
+- Copiar o ID de uma avaliacao exibida na lista
+- Preencher peso, gordura, cintura ou observacoes
+- Clicar em Atualizar avaliacao
+- Conferir se a lista atualiza
+
+6. Validar status da meta:
+- Copiar o ID de uma meta exibida na lista
+- Selecionar active, completed ou cancelled
+- Clicar em Atualizar meta
+- Conferir se o status muda
+
+7. Validar direto por curl:
+curl -X POST http://localhost:3004/api/training/goals/status \
+-H "Authorization: Bearer SEU_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{"goal_id":"ID_DA_META","status":"completed"}'
+
+curl -X POST http://localhost:3004/api/training/assessments/update \
+-H "Authorization: Bearer SEU_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{"assessment_id":"ID_DA_AVALIACAO","weight_kg":80,"body_fat_percent":18,"waist_cm":90}'
