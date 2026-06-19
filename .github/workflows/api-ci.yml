@@ -1,0 +1,54 @@
+name: Academia API CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  api-smoke:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: academia
+          POSTGRES_USER: jose
+          POSTGRES_PASSWORD: jose
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PORT: 3004
+      DATABASE_URL: postgresql://jose:jose@localhost:5432/academia
+      AUTH_SECRET: ci_secret
+      BASE_URL: http://localhost:3004
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install API dependencies
+        working-directory: apps/api
+        run: npm install
+      - name: Run migrations
+        working-directory: apps/api
+        run: npm run migrate
+      - name: Start API
+        working-directory: apps/api
+        run: nohup npm run start > /tmp/academia-api.log 2>&1 &
+      - name: Wait for API
+        run: |
+          for i in {1..30}; do
+            curl -fsS http://localhost:3004/health && exit 0
+            sleep 2
+          done
+          cat /tmp/academia-api.log
+          exit 1
+      - name: Smoke test
+        run: bash scripts/smoke-test.sh
