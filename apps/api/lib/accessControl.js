@@ -19,7 +19,8 @@ function canAccess(user, method, pathname) {
       '/api/checkins/recent',
       '/api/dashboard/summary',
       '/api/me',
-      '/api/gym/profile'
+      '/api/gym/profile',
+      '/api/alerts'
     ];
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
     if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
