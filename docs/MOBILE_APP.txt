@@ -1,0 +1,23 @@
+App Mobile - Academia Platform
+
+Aplicativo Flutter inicial para operacao rapida da academia.
+
+Funcionalidades atuais:
+- Login com token pela API.
+- Configuracao da URL da API.
+- Dashboard resumido.
+- Lista de alunos.
+- Check-in rapido pelo celular.
+- Lista de ultimos check-ins.
+- Logout.
+
+Como testar:
+cd /mnt/Projetos/Academia/apps/mobile
+flutter pub get
+flutter run
+
+No Android Emulator, use a URL da API:
+http://10.0.2.2:3004
+
+Em celular fisico na mesma rede, use:
+http://IP_DA_VM:3004
