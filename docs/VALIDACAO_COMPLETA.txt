@@ -22,16 +22,25 @@ curl http://localhost:3004/health
 cd /mnt/Projetos/Academia
 bash scripts/smoke-test.sh
 
-6. Subir web:
+6. Teste completo com token:
+cd /mnt/Projetos/Academia
+TOKEN=SEU_TOKEN bash scripts/validate-full.sh
+
+7. Teste treino avancado:
+cd /mnt/Projetos/Academia
+TOKEN=SEU_TOKEN PLAN_ID=ID_DA_FICHA bash scripts/validate-full.sh
+
+8. Subir web:
 cd /mnt/Projetos/Academia/apps/web
 python3 -m http.server 8084
 
-7. Acessos web administrativos:
+9. Acessos web administrativos:
 http://IP_DA_VM:8084/home.html
 http://IP_DA_VM:8084/index.html
 http://IP_DA_VM:8084/alerts.html
 http://IP_DA_VM:8084/training.html
 http://IP_DA_VM:8084/assessments.html
+http://IP_DA_VM:8084/student-report.html
 http://IP_DA_VM:8084/student-accounts.html
 http://IP_DA_VM:8084/users.html
 http://IP_DA_VM:8084/reports.html
@@ -39,22 +48,43 @@ http://IP_DA_VM:8084/exports.html
 http://IP_DA_VM:8084/audit.html
 http://IP_DA_VM:8084/settings.html
 
-8. Acesso do aluno:
+10. Acesso do aluno:
 http://IP_DA_VM:8084/student-login.html
 http://IP_DA_VM:8084/student-portal.html
 
-9. Backup manual:
+11. Backup manual:
 cd /mnt/Projetos/Academia
 set -a
 source apps/api/.env
 set +a
 bash scripts/backup-academia.sh
 
-10. Software desktop Python:
+12. Software desktop Python:
 cd /mnt/Projetos/Academia/apps/software
 python3 academia_checkin.py
 
-11. Mobile Flutter:
+13. Empacotar software desktop Python:
+cd /mnt/Projetos/Academia
+bash scripts/package-desktop-python.sh
+
+14. Desktop Electron:
+cd /mnt/Projetos/Academia/apps/desktop
+npm install
+npm run start
+npm run dist
+
+15. Mobile Flutter administrativo:
 cd /mnt/Projetos/Academia/apps/mobile
 flutter pub get
 flutter run
+bash ../../scripts/build-mobile.sh
+
+16. Mobile Flutter aluno:
+cd /mnt/Projetos/Academia/apps/mobile
+flutter pub get
+flutter run -t lib/student_main.dart
+bash ../../scripts/build-student-mobile.sh
+
+17. Deploy final:
+cd /mnt/Projetos/Academia
+bash scripts/deploy-prod.sh
