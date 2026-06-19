@@ -1,6 +1,7 @@
 const { handleMemberActions } = require('./memberActions');
 const { handlePlanActions } = require('./planActions');
 const { handleCancelActions } = require('./cancelActions');
+const { handleAuditRoutes } = require('./auditRoutes');
 
 async function handleAdminRoutes(req, res, user, url, helpers) {
   const member = await handleMemberActions(req, res, user, url, helpers);
@@ -11,6 +12,9 @@ async function handleAdminRoutes(req, res, user, url, helpers) {
 
   const end = await handleCancelActions(req, res, user, url, helpers);
   if (end !== false) return end;
+
+  const audit = await handleAuditRoutes(req, res, user, url, helpers);
+  if (audit !== false) return audit;
 
   return false;
 }
