@@ -1,7 +1,7 @@
 Software Desktop - Academia Platform
 
 Opcoes atuais:
-- apps/software/academia_checkin.py: programa Python/Tkinter para recepcao e check-in.
+- apps/software/academia_checkin.py: programa Python/Tkinter para recepcao, check-in, alertas e resumo de evolucao.
 - apps/desktop: base Electron que abre o painel web ativo.
 
 Funcionalidades do software Python:
@@ -11,6 +11,10 @@ Funcionalidades do software Python:
 - Buscar aluno pelo nome.
 - Registrar check-in.
 - Listar ultimos check-ins.
+- Ver central de alertas operacionais.
+- Ver pagamentos vencidos.
+- Ver fichas antigas para revisao.
+- Ver resumo de avaliacao do aluno selecionado.
 
 Como testar o software Python:
 cd /mnt/Projetos/Academia/apps/software
