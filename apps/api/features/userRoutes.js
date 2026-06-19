@@ -1,4 +1,4 @@
-const { hashPassword } = require('../lib/security');
+const { hashPassword, validatePassword } = require('../lib/security');
 const { recordAudit } = require('../lib/audit');
 
 function isOwner(user) {
@@ -22,6 +22,8 @@ async function handleUserRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && url.pathname === '/api/users') {
     const input = await body(req);
     if (!input.name || !input.email || !input.password) return send(res, 400, { error: 'dados_invalidos' });
+    const passwordCheck = validatePassword(input.password);
+    if (!passwordCheck.valid) return send(res, 400, { error: passwordCheck.error });
     const allowedRoles = ['owner', 'admin', 'staff'];
     const role = allowedRoles.includes(input.role) ? input.role : 'staff';
     const exists = await query('SELECT id FROM users WHERE lower(email) = lower($1) LIMIT 1', [input.email]);
@@ -33,6 +35,20 @@ async function handleUserRoutes(req, res, user, url, helpers) {
     );
     await recordAudit(user, 'create', 'user', result.rows[0].id, { email: result.rows[0].email, role });
     return send(res, 201, result.rows[0]);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/users/reset-password') {
+    const input = await body(req);
+    if (!input.user_id || !input.new_password) return send(res, 400, { error: 'dados_invalidos' });
+    const passwordCheck = validatePassword(input.new_password);
+    if (!passwordCheck.valid) return send(res, 400, { error: passwordCheck.error });
+    const result = await query(
+      'UPDATE users SET password_hash = $3 WHERE id = $1 AND gym_id = $2 RETURNING id, name, email, role, is_active',
+      [input.user_id, user.gym_id, hashPassword(input.new_password)]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'usuario_nao_encontrado' });
+    await recordAudit(user, 'reset_password', 'user', result.rows[0].id, { email: result.rows[0].email });
+    return send(res, 200, { status: 'senha_redefinida', user: result.rows[0] });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/users/deactivate') {
