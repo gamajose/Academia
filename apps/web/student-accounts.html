@@ -12,7 +12,7 @@
       <div>
         <p class="eyebrow">Acesso do aluno</p>
         <h1>Conta do aluno</h1>
-        <p>Crie ou atualize o acesso individual do aluno para ele entrar sem permissao administrativa.</p>
+        <p>Crie, atualize e bloqueie o acesso individual do aluno ao portal.</p>
       </div>
       <div class="health-card">
         <span>Portal</span>
@@ -21,13 +21,29 @@
       </div>
     </section>
 
+    <section class="grid">
+      <article class="panel">
+        <h3>Criar ou atualizar acesso</h3>
+        <select id="account-member"></select>
+        <input id="account-email" type="email" placeholder="E-mail do aluno" />
+        <input id="account-secret" type="password" placeholder="Chave inicial ou nova chave" />
+        <button id="create-student-account-button">Salvar acesso do aluno</button>
+        <p class="status-line" id="student-account-status">Aguardando.</p>
+      </article>
+
+      <article class="panel">
+        <h3>Regras</h3>
+        <p>A conta do aluno usa o mesmo banco e a mesma API do painel web, mobile e software.</p>
+        <p>Ao atualizar aqui, o aluno verá a alteração no app/portal assim que recarregar ou consultar novamente.</p>
+      </article>
+    </section>
+
     <section class="panel">
-      <h3>Criar acesso</h3>
-      <select id="account-member"></select>
-      <input id="account-email" type="email" placeholder="E-mail do aluno" />
-      <input id="account-secret" type="password" placeholder="Chave inicial" />
-      <button id="create-student-account-button">Salvar acesso do aluno</button>
-      <p class="status-line" id="student-account-status">Aguardando.</p>
+      <div class="toolbar">
+        <h3>Contas cadastradas</h3>
+        <button id="refresh-student-accounts-button">Atualizar</button>
+      </div>
+      <ul id="student-accounts-list"></ul>
     </section>
   </main>
   <script src="./nav.js"></script>
