@@ -1,0 +1,15 @@
+Timer systemd para backup diario
+
+Copiar para:
+/etc/systemd/system/academia-backup.timer
+
+Conteudo sugerido:
+[Unit]
+Description=Run Academia database backup daily
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
