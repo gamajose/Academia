@@ -13,13 +13,20 @@ Abrir no navegador:
 http://IP_DA_VM:8084
 
 API esperada:
-http://localhost:3004
+http://IP_DA_VM:3004
 
-O painel inicial possui:
+O painel possui:
 - validacao de status da API
-- login
+- login com token
 - dashboard resumido
 - cadastro rapido de aluno
-- lista de alunos recentes
+- cadastro de plano
+- criacao de matricula
+- criacao e baixa de pagamento
+- check-in manual
+- listas de alunos, planos, matriculas, financeiro e check-ins recentes
+
+Observacao:
+O painel calcula automaticamente o endereco da API usando o mesmo host acessado no navegador e a porta 3004. Para sobrescrever, gravar apiBaseUrl no localStorage.
 
 Antes de usar o painel, crie uma academia pela API ou use um usuario ja criado.
