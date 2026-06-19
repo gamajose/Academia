@@ -1,0 +1,113 @@
+const { hashPassword, verifyPassword, signToken } = require('../lib/security');
+const { recordAudit } = require('../lib/audit');
+
+function isStudent(user) {
+  return user && user.role === 'student' && user.member_id;
+}
+
+function canManageStudentAccount(user) {
+  return user && ['owner', 'admin', 'staff'].includes(user.role);
+}
+
+async function handleStudentRoutes(req, res, user, url, helpers) {
+  const { send, body, query } = helpers;
+
+  if (req.method === 'POST' && url.pathname === '/api/student/auth/login') {
+    const input = await body(req);
+    if (!input.email || !input.password) return send(res, 400, { error: 'dados_invalidos' });
+    const result = await query(
+      `SELECT ma.id, ma.gym_id, ma.member_id, ma.email, ma.secret_hash, ma.is_active, m.name AS member_name
+       FROM member_accounts ma INNER JOIN members m ON m.id = ma.member_id
+       WHERE lower(ma.email) = lower($1) LIMIT 1`,
+      [input.email]
+    );
+    const account = result.rows[0];
+    if (!account || !account.is_active || !verifyPassword(input.password, account.secret_hash)) return send(res, 401, { error: 'credenciais_invalidas' });
+    await query('UPDATE member_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1', [account.id]);
+    const token = signToken({ sub: account.id, gym_id: account.gym_id, role: 'student', member_id: account.member_id });
+    return send(res, 200, { token, student: { id: account.member_id, name: account.member_name, email: account.email, role: 'student', gym_id: account.gym_id } });
+  }
+
+  if (!url.pathname.startsWith('/api/student')) return false;
+  if (!user) return send(res, 401, { error: 'nao_autorizado' });
+
+  if (req.method === 'POST' && url.pathname === '/api/student/accounts') {
+    if (!canManageStudentAccount(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    if (!input.member_id || !input.email || !input.password) return send(res, 400, { error: 'dados_invalidos' });
+    const member = await query('SELECT id, name FROM members WHERE id = $1 AND gym_id = $2', [input.member_id, user.gym_id]);
+    if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    const result = await query(
+      `INSERT INTO member_accounts (gym_id, member_id, email, secret_hash, is_active)
+       VALUES ($1, $2, lower($3), $4, true)
+       ON CONFLICT (gym_id, member_id) DO UPDATE SET email = EXCLUDED.email, secret_hash = EXCLUDED.secret_hash, is_active = true, updated_at = now()
+       RETURNING id, member_id, email, is_active, created_at, updated_at`,
+      [user.gym_id, input.member_id, input.email, hashPassword(input.password)]
+    );
+    await recordAudit(user, 'upsert', 'member_account', result.rows[0].id, { member_id: input.member_id });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/me') {
+    const result = await query(
+      'SELECT m.id, m.name, m.email, m.phone, m.status, ma.email AS account_email FROM members m INNER JOIN member_accounts ma ON ma.member_id = m.id WHERE m.id = $1 AND m.gym_id = $2 LIMIT 1',
+      [user.member_id, user.gym_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/current') {
+    const plan = await query(
+      `SELECT wp.id, wp.member_id, wp.name, wp.level, wp.goal, wp.status, wp.starts_at, current_date - wp.starts_at AS age_days
+       FROM workout_plans wp WHERE wp.gym_id = $1 AND wp.member_id = $2 AND wp.status = 'active'
+       ORDER BY wp.starts_at DESC LIMIT 1`,
+      [user.gym_id, user.member_id]
+    );
+    if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
+    const exercises = await query(
+      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.name AS exercise_name, e.muscle_group, e.video_url, e.instructions
+       FROM workout_exercises we
+       INNER JOIN workout_days wd ON wd.id = we.workout_day_id
+       INNER JOIN exercise_library e ON e.id = we.exercise_id
+       WHERE we.gym_id = $1 AND wd.plan_id = $2
+       ORDER BY wd.weekday, we.order_index`,
+      [user.gym_id, plan.rows[0].id]
+    );
+    return send(res, 200, { plan: plan.rows[0], exercises: exercises.rows });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/logs') {
+    const result = await query(
+      `SELECT l.id, l.plan_id, p.name AS plan_name, l.workout_day_id, d.title AS day_title, l.status, l.feedback, l.perceived_effort, l.completed_at
+       FROM workout_day_logs l
+       INNER JOIN workout_plans p ON p.id = l.plan_id
+       INNER JOIN workout_days d ON d.id = l.workout_day_id
+       WHERE l.gym_id = $1 AND l.member_id = $2 ORDER BY l.completed_at DESC LIMIT 50`,
+      [user.gym_id, user.member_id]
+    );
+    return send(res, 200, { data: result.rows });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/complete') {
+    const input = await body(req);
+    if (!input.plan_id || !input.workout_day_id) return send(res, 400, { error: 'dados_invalidos' });
+    const valid = await query(
+      `SELECT wd.id FROM workout_days wd INNER JOIN workout_plans wp ON wp.id = wd.plan_id
+       WHERE wd.id = $1 AND wd.gym_id = $2 AND wp.id = $3 AND wp.member_id = $4`,
+      [input.workout_day_id, user.gym_id, input.plan_id, user.member_id]
+    );
+    if (!valid.rowCount) return send(res, 404, { error: 'treino_nao_encontrado' });
+    const result = await query(
+      `INSERT INTO workout_day_logs (gym_id, member_id, plan_id, workout_day_id, status, feedback, perceived_effort)
+       VALUES ($1, $2, $3, $4, 'completed', $5, $6)
+       RETURNING id, member_id, plan_id, workout_day_id, status, feedback, perceived_effort, completed_at`,
+      [user.gym_id, user.member_id, input.plan_id, input.workout_day_id, input.feedback || null, input.perceived_effort == null ? null : Number(input.perceived_effort)]
+    );
+    return send(res, 201, result.rows[0]);
+  }
+
+  return false;
+}
+
+module.exports = { handleStudentRoutes };
