@@ -30,6 +30,7 @@ python3 -m http.server 8084
 http://IP_DA_VM:8084/home.html
 http://IP_DA_VM:8084/index.html
 http://IP_DA_VM:8084/training.html
+http://IP_DA_VM:8084/assessments.html
 http://IP_DA_VM:8084/student-accounts.html
 http://IP_DA_VM:8084/users.html
 http://IP_DA_VM:8084/reports.html
