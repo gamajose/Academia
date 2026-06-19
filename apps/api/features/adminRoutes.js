@@ -5,8 +5,16 @@ const { handleAuditRoutes } = require('./auditRoutes');
 const { handleReportsRoutes } = require('./reportsRoutes');
 const { handleUserRoutes } = require('./userRoutes');
 const { handleExportRoutes } = require('./exportRoutes');
+const { handleProfileRoutes } = require('./profileRoutes');
+const { handleGymRoutes } = require('./gymRoutes');
 
 async function handleAdminRoutes(req, res, user, url, helpers) {
+  const profile = await handleProfileRoutes(req, res, user, url, helpers);
+  if (profile !== false) return profile;
+
+  const gym = await handleGymRoutes(req, res, user, url, helpers);
+  if (gym !== false) return gym;
+
   const users = await handleUserRoutes(req, res, user, url, helpers);
   if (users !== false) return users;
 
