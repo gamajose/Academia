@@ -1,6 +1,12 @@
 const { recordAudit } = require('../lib/audit');
 const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
 
+function numberOrNull(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 async function handleTrainingRoutes(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
   if (!url.pathname.startsWith('/api/training')) return false;
@@ -37,6 +43,29 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     const saved = await query('INSERT INTO workout_ai_reviews (gym_id, member_id, plan_id, plan_age_days, recommendation, suggestions) VALUES ($1, $2, $3, $4, $5, $6::jsonb) RETURNING id, recommendation, suggestions, created_at', [user.gym_id, plan.rows[0].member_id, input.plan_id, Number(plan.rows[0].age_days || 0), review.recommendation, JSON.stringify(review.suggestions)]);
     await query('UPDATE workout_plans SET reviewed_at = now() WHERE id = $1 AND gym_id = $2', [input.plan_id, user.gym_id]);
     return send(res, 201, { ...saved.rows[0], signals: review.signals || {} });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/goals/status') {
+    const input = await body(req);
+    const allowed = ['active', 'completed', 'cancelled'];
+    if (!input.goal_id || !allowed.includes(input.status)) return send(res, 400, { error: 'dados_invalidos' });
+    const result = await query('UPDATE member_goals SET status = $3, updated_at = now() WHERE id = $1 AND gym_id = $2 RETURNING *', [input.goal_id, user.gym_id, input.status]);
+    if (!result.rowCount) return send(res, 404, { error: 'meta_nao_encontrada' });
+    await recordAudit(user, 'update_status', 'member_goal', result.rows[0].id, { status: input.status });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/assessments/update') {
+    const input = await body(req);
+    if (!input.assessment_id) return send(res, 400, { error: 'assessment_id_obrigatorio' });
+    const result = await query(
+      `UPDATE member_assessments SET weight_kg = COALESCE($3, weight_kg), body_fat_percent = COALESCE($4, body_fat_percent), waist_cm = COALESCE($5, waist_cm), notes = COALESCE($6, notes)
+       WHERE id = $1 AND gym_id = $2 RETURNING *`,
+      [input.assessment_id, user.gym_id, numberOrNull(input.weight_kg), numberOrNull(input.body_fat_percent), numberOrNull(input.waist_cm), input.notes || null]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'avaliacao_nao_encontrada' });
+    await recordAudit(user, 'update', 'member_assessment', result.rows[0].id, { member_id: result.rows[0].member_id });
+    return send(res, 200, result.rows[0]);
   }
 
   if (req.method === 'GET' && url.pathname === '/api/training/exercises') {
