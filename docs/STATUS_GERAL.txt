@@ -2,9 +2,9 @@ Status geral do projeto Academia
 
 Backend/API:
 - Health check.
-- Autenticacao com token.
+- Autenticacao administrativa com token.
+- Login proprio do aluno com perfil student.
 - Cadastro de academia.
-- Login.
 - Alunos.
 - Planos.
 - Matriculas.
@@ -15,62 +15,79 @@ Backend/API:
 - Edicao e status de plano.
 - Cancelamento de matricula.
 - Cancelamento de pagamento.
+- Usuarios e permissoes.
+- Perfil da academia.
 - Auditoria.
 - Relatorios.
+- Exportacoes CSV.
+- Treinos, fichas semanais e execucao de treino.
+- Analise inteligente inicial de fichas.
 
 Banco:
 - Gyms.
 - Users.
-- Plans.
 - Members.
+- Member accounts.
+- Plans.
 - Memberships.
 - Payments.
 - Checkins.
+- Exercise library.
+- Member training profiles.
+- Workout plans.
+- Workout days.
+- Workout exercises.
+- Workout execution logs.
+- Workout AI reviews.
 - Audit logs.
 - Indices.
-- View de dashboard.
 
 Web:
 - Painel administrativo.
-- Login.
+- Portal inicial.
+- Login administrativo.
 - Dashboard.
-- Cadastro e gestao de alunos.
-- Cadastro e gestao de planos.
+- Gestao de alunos.
+- Gestao de planos.
 - Matriculas.
 - Financeiro.
 - Check-in.
+- Treinos.
+- Acesso individual do aluno.
+- Login e portal do aluno.
 - Historico operacional.
 - Relatorios.
+- Exportacoes.
+- Configuracoes.
 
 Mobile:
 - App Flutter inicial.
-- Login.
+- Login administrativo.
 - Dashboard resumido.
 - Lista de alunos.
 - Check-in rapido.
 - Ultimos check-ins.
+- Tela de treinos.
+- Detalhe de ficha.
+- Analise inteligente da ficha pelo app.
 
 Software Desktop:
-- Programa Python/Tkinter para recepcao.
-- Login.
-- Busca de aluno.
-- Check-in.
-- Ultimos check-ins.
+- Programa Python/Tkinter para recepcao e check-in.
+- Base Electron apontando para painel web ativo.
 
 Instalacao/Deploy:
 - Systemd.
 - Nginx.
-- Docker compose standalone.
-- Guias de execucao.
+- Docker Compose standalone.
+- Backup do banco.
+- CI com PostgreSQL e smoke test.
 - Scripts Windows basicos.
 
 Ainda falta para virar produto final:
-- Refinar layout do mobile.
-- Empacotar software desktop em executavel.
-- Controle de permissao por perfil.
-- Reset de senha.
-- Exportacao CSV/PDF.
-- Backup automatizado especifico.
-- Testes automatizados.
-- Tela web com navegacao mais profissional.
+- Empacotar desktop em executavel.
 - Build mobile APK assinado.
+- Refinar layout do mobile.
+- Exportacao PDF.
+- Reset de senha completo.
+- Testes automatizados mais amplos.
+- Integracao futura com IA externa para recomendacoes mais completas.
