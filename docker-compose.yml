@@ -1,0 +1,33 @@
+services:
+  academia-postgres:
+    image: postgres:17
+    container_name: academia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: academia
+      POSTGRES_USER: jose
+      POSTGRES_PASSWORD: jose
+    ports:
+      - "5434:5432"
+    volumes:
+      - academia_postgres_data:/var/lib/postgresql/data
+
+  academia-api:
+    image: node:22-alpine
+    container_name: academia-api
+    restart: unless-stopped
+    working_dir: /app/apps/api
+    volumes:
+      - .:/app
+    environment:
+      PORT: 3004
+      DATABASE_URL: postgresql://jose:jose@academia-postgres:5432/academia
+      AUTH_SECRET: trocar_em_producao
+    ports:
+      - "3004:3004"
+    command: sh -c "npm install && npm run migrate && npm run start"
+    depends_on:
+      - academia-postgres
+
+volumes:
+  academia_postgres_data:
