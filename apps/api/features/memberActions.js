@@ -1,3 +1,5 @@
+const { recordAudit } = require('../lib/audit');
+
 async function handleMemberActions(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
 
@@ -9,6 +11,7 @@ async function handleMemberActions(req, res, user, url, helpers) {
       [input.member_id, user.gym_id, input.name || null, input.email || null, input.phone || null]
     );
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    await recordAudit(user, 'update', 'member', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 200, result.rows[0]);
   }
 
@@ -17,6 +20,7 @@ async function handleMemberActions(req, res, user, url, helpers) {
     if (!input.member_id) return send(res, 400, { error: 'member_id_obrigatorio' });
     const result = await query("UPDATE members SET status = 'inactive', updated_at = now() WHERE id = $1 AND gym_id = $2 RETURNING id, name, status, updated_at", [input.member_id, user.gym_id]);
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    await recordAudit(user, 'deactivate', 'member', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 200, result.rows[0]);
   }
 
@@ -25,6 +29,7 @@ async function handleMemberActions(req, res, user, url, helpers) {
     if (!input.member_id) return send(res, 400, { error: 'member_id_obrigatorio' });
     const result = await query("UPDATE members SET status = 'active', updated_at = now() WHERE id = $1 AND gym_id = $2 RETURNING id, name, status, updated_at", [input.member_id, user.gym_id]);
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    await recordAudit(user, 'activate', 'member', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 200, result.rows[0]);
   }
 
