@@ -13,6 +13,7 @@ function renderNavigation() {
     ['home.html', 'Inicio'],
     ['index.html', 'Painel'],
     ['training.html', 'Treinos'],
+    ['assessments.html', 'Avaliacao'],
     ['student-accounts.html', 'Acesso aluno'],
     ['users.html', 'Usuarios'],
     ['account.html', 'Conta'],
