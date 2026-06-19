@@ -1,9 +1,11 @@
-const API_BASE_URL = localStorage.getItem('apiBaseUrl') || 'http://localhost:3004';
+const defaultApiHost = window.location.hostname || 'localhost';
+const API_BASE_URL = localStorage.getItem('apiBaseUrl') || `http://${defaultApiHost}:3004`;
 let token = localStorage.getItem('academiaToken') || '';
 let members = [];
 let plans = [];
 let memberships = [];
 let payments = [];
+let checkins = [];
 
 const byId = (id) => document.getElementById(id);
 
@@ -28,6 +30,7 @@ function message(text) {
 
 function fillSelect(elementId, rows, getLabel, emptyText) {
   const select = byId(elementId);
+  if (!select) return;
   select.innerHTML = '';
   const empty = document.createElement('option');
   empty.value = '';
@@ -42,6 +45,9 @@ function fillSelect(elementId, rows, getLabel, emptyText) {
 }
 
 async function checkHealth() {
+  const apiUrl = byId('api-url');
+  if (apiUrl) apiUrl.textContent = API_BASE_URL;
+
   try {
     const health = await request('/health');
     byId('api-status').textContent = `${health.status} ${health.version || ''}`.trim();
@@ -85,7 +91,7 @@ async function refreshDashboard() {
   byId('active-memberships').textContent = summary.active_memberships || 0;
   byId('today-checkins').textContent = summary.today_checkins || 0;
   byId('pending-payments').textContent = summary.pending_payments || 0;
-  await Promise.all([loadMembers(), loadPlans(), loadMemberships(), loadPayments()]);
+  await Promise.all([loadMembers(), loadPlans(), loadMemberships(), loadPayments(), loadCheckins()]);
 }
 
 async function loadMembers() {
@@ -100,6 +106,7 @@ async function loadMembers() {
   }
   fillSelect('membership-member', members, (m) => m.name, 'Selecione o aluno');
   fillSelect('payment-member', members, (m) => m.name, 'Selecione o aluno');
+  fillSelect('checkin-member', members, (m) => m.name, 'Selecione o aluno');
 }
 
 async function loadPlans() {
@@ -141,6 +148,19 @@ async function loadPayments() {
     button.disabled = payment.status === 'paid';
     button.addEventListener('click', () => markPaymentPaid(payment.id));
     item.append(`${payment.member_name} - ${money(payment.amount_cents)} - ${payment.status} - venc. ${payment.due_date} `, button);
+    list.appendChild(item);
+  }
+}
+
+async function loadCheckins() {
+  const result = await request('/api/checkins/recent');
+  checkins = result.data || [];
+  const list = byId('checkins-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const checkin of checkins) {
+    const item = document.createElement('li');
+    item.textContent = `${checkin.member_name} - ${new Date(checkin.checked_at).toLocaleString('pt-BR')} - ${checkin.source}`;
     list.appendChild(item);
   }
 }
@@ -216,6 +236,15 @@ async function markPaymentPaid(paymentId) {
   await refreshDashboard();
 }
 
+async function createCheckin() {
+  await request('/api/checkins', {
+    method: 'POST',
+    body: JSON.stringify({ member_id: byId('checkin-member').value, source: 'web' })
+  });
+  message('Check-in registrado.');
+  await refreshDashboard();
+}
+
 byId('login-button').addEventListener('click', login);
 byId('logout-button').addEventListener('click', logout);
 byId('refresh-button').addEventListener('click', refreshDashboard);
@@ -223,6 +252,7 @@ byId('create-member-button').addEventListener('click', createMember);
 byId('create-plan-button').addEventListener('click', createPlan);
 byId('create-membership-button').addEventListener('click', createMembership);
 byId('create-payment-button').addEventListener('click', createPayment);
+byId('create-checkin-button').addEventListener('click', createCheckin);
 
 checkHealth();
 if (token) {
