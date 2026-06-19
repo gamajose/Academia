@@ -17,6 +17,7 @@ function canAccess(user, method, pathname) {
       '/api/gym/profile'
     ];
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
+    if (pathname.startsWith('/api/training') && (method === 'GET' || method === 'POST')) return true;
     if (method === 'POST' && pathname === '/api/checkins') return true;
     if (method === 'POST' && pathname === '/api/me/change-password') return true;
   }
