@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ações de evolução - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Evolução</p>
+        <h1>Ações de avaliações e metas</h1>
+        <p>Atualize avaliações físicas e altere o status das metas dos alunos.</p>
+      </div>
+      <div class="health-card">
+        <span>Operação</span>
+        <strong>ações rápidas</strong>
+        <small>usa rotas seguras da API</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Editar avaliação</h3>
+        <input id="assessment-id" placeholder="ID da avaliação" />
+        <input id="assessment-weight" placeholder="Peso kg" />
+        <input id="assessment-fat" placeholder="Gordura %" />
+        <input id="assessment-waist" placeholder="Cintura cm" />
+        <textarea id="assessment-notes" placeholder="Observações"></textarea>
+        <button id="update-assessment-button">Atualizar avaliação</button>
+      </article>
+
+      <article class="panel">
+        <h3>Status da meta</h3>
+        <input id="goal-id" placeholder="ID da meta" />
+        <select id="goal-status">
+          <option value="active">Ativa</option>
+          <option value="completed">Concluída</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+        <button id="update-goal-button">Atualizar meta</button>
+        <p class="status-line" id="actions-status">Aguardando ação.</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <h3>Últimas avaliações e metas</h3>
+        <button id="reload-actions-button">Atualizar lista</button>
+      </div>
+      <div class="grid">
+        <article><h3>Avaliações</h3><ul id="assessment-action-list"></ul></article>
+        <article><h3>Metas</h3><ul id="goal-action-list"></ul></article>
+      </div>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./assessment-actions.js"></script>
+</body>
+</html>
