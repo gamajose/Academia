@@ -1,3 +1,5 @@
+const { buildSimplePdf } = require('../lib/simplePdf');
+
 async function handleReportsRoutes(req, res, user, url, helpers) {
   const { send, query } = helpers;
 
@@ -23,6 +25,35 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
       [user.gym_id]
     );
     return send(res, 200, { data: result.rows });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/reports/student-pdf') {
+    const memberId = url.searchParams.get('member_id');
+    if (!memberId) return send(res, 400, { error: 'member_id_obrigatorio' });
+    const member = await query('SELECT id, name, email, phone, status FROM members WHERE id = $1 AND gym_id = $2 LIMIT 1', [memberId, user.gym_id]);
+    if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    const assessments = await query('SELECT assessment_date, weight_kg, body_fat_percent, waist_cm, notes FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC LIMIT 8', [user.gym_id, memberId]);
+    const goals = await query('SELECT goal_type, target_value, target_date, status FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST LIMIT 8', [user.gym_id, memberId]);
+    const lines = [
+      `Aluno: ${member.rows[0].name}`,
+      `Email: ${member.rows[0].email || '-'}`,
+      `Telefone: ${member.rows[0].phone || '-'}`,
+      `Status: ${member.rows[0].status}`,
+      '',
+      'Avaliacoes:',
+      ...assessments.rows.map((item) => `${item.assessment_date} | Peso ${item.weight_kg || '-'}kg | Gordura ${item.body_fat_percent || '-'}% | Cintura ${item.waist_cm || '-'}cm`),
+      '',
+      'Metas:',
+      ...goals.rows.map((item) => `${item.goal_type} | Alvo ${item.target_value || '-'} | Data ${item.target_date || '-'} | ${item.status}`)
+    ];
+    const pdf = buildSimplePdf(`Relatorio do aluno - ${member.rows[0].name}`, lines);
+    res.writeHead(200, {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="relatorio-aluno-${memberId}.pdf"`,
+      'Content-Length': pdf.length
+    });
+    res.end(pdf);
+    return true;
   }
 
   return false;
