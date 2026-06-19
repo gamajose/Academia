@@ -12,6 +12,7 @@ class AcademiaCheckinApp:
         self.token = ''
         self.members = []
         self.alerts = {}
+        self.auto_sync_enabled = False
 
         self.api_url = tk.StringVar(value='http://localhost:3004')
         self.email = tk.StringVar()
@@ -55,6 +56,7 @@ class AcademiaCheckinApp:
         shortcuts.pack(fill='x', pady=(10, 8))
         tk.Button(shortcuts, text='Check-ins', command=self.load_data).pack(side='left', padx=(0, 8))
         tk.Button(shortcuts, text='Alertas', command=self.load_alerts).pack(side='left', padx=(0, 8))
+        tk.Button(shortcuts, text='Financeiro', command=self.load_finance_summary).pack(side='left', padx=(0, 8))
         tk.Button(shortcuts, text='Resumo de avaliacao', command=self.load_selected_assessment_summary).pack(side='left', padx=(0, 8))
 
         tk.Entry(self.panel_frame, textvariable=self.search).pack(fill='x', pady=8)
@@ -78,7 +80,7 @@ class AcademiaCheckinApp:
 
         right = tk.Frame(content)
         right.pack(side='right', fill='both', expand=True, padx=(10, 0))
-        tk.Label(right, text='Alertas / evolucao').pack(anchor='w')
+        tk.Label(right, text='Alertas / evolucao / financeiro').pack(anchor='w')
         self.alerts_list = tk.Listbox(right, height=18)
         self.alerts_list.pack(fill='both', expand=True)
 
@@ -113,11 +115,18 @@ class AcademiaCheckinApp:
             self.token = result['token']
             self.login_frame.pack_forget()
             self.panel_frame.pack(fill='both', expand=True)
+            self.auto_sync_enabled = True
             self.load_data()
+            self.schedule_sync()
         except Exception as exc:
             messagebox.showerror('Falha no login', str(exc))
 
-    def load_data(self):
+    def schedule_sync(self):
+        if self.auto_sync_enabled:
+            self.load_data(silent=True)
+            self.root.after(30000, self.schedule_sync)
+
+    def load_data(self, silent=False):
         try:
             members = self.api_request('/api/members').get('data', [])
             self.members = [m for m in members if m.get('status') == 'active']
@@ -126,12 +135,14 @@ class AcademiaCheckinApp:
             self.checkins_list.delete(0, tk.END)
             for row in checkins:
                 self.checkins_list.insert(tk.END, f"{row.get('member_name')} - {row.get('checked_at')}")
-            self.load_alerts()
-            self.status.set('Dados atualizados.')
+            self.load_alerts(silent=True)
+            if not silent:
+                self.status.set('Dados atualizados. Sincronizacao automatica a cada 30s.')
         except Exception as exc:
-            self.status.set(f'Erro ao carregar: {exc}')
+            if not silent:
+                self.status.set(f'Erro ao carregar: {exc}')
 
-    def load_alerts(self):
+    def load_alerts(self, silent=False):
         try:
             self.alerts = self.api_request('/api/alerts')
             self.alerts_list.delete(0, tk.END)
@@ -148,9 +159,26 @@ class AcademiaCheckinApp:
             self.alerts_list.insert(tk.END, '--- Fichas antigas ---')
             for row in self.alerts.get('training_reviews_due', [])[:10]:
                 self.alerts_list.insert(tk.END, f"{row.get('member_name')} - {row.get('plan_name')} - {row.get('age_days')} dias")
-            self.status.set('Alertas atualizados.')
+            if not silent:
+                self.status.set('Alertas atualizados.')
         except Exception as exc:
-            self.status.set(f'Erro ao carregar alertas: {exc}')
+            if not silent:
+                self.status.set(f'Erro ao carregar alertas: {exc}')
+
+    def load_finance_summary(self):
+        try:
+            finance = self.api_request('/api/reports/finance-advanced')
+            summary = finance.get('summary', {})
+            self.alerts_list.delete(0, tk.END)
+            self.alerts_list.insert(tk.END, f"A receber: R$ {int(summary.get('pending_amount_cents') or 0) / 100:.2f}")
+            self.alerts_list.insert(tk.END, f"Recebido: R$ {int(summary.get('paid_amount_cents') or 0) / 100:.2f}")
+            self.alerts_list.insert(tk.END, '--- Lancamentos ---')
+            for row in finance.get('data', [])[:15]:
+                amount = int(row.get('amount_cents') or 0) / 100
+                self.alerts_list.insert(tk.END, f"{row.get('member_name')} - R$ {amount:.2f} - {row.get('status')} - {row.get('due_date')}")
+            self.status.set('Resumo financeiro carregado.')
+        except Exception as exc:
+            self.status.set(f'Erro financeiro: {exc}')
 
     def render_members(self):
         term = self.search.get().lower()
