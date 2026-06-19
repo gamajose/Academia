@@ -1,0 +1,36 @@
+Login do aluno
+
+Objetivo:
+Separar corretamente o acesso do aluno do acesso administrativo.
+
+Fluxo correto:
+- Administrador ou staff cria o acesso individual do aluno.
+- Aluno entra pelo portal proprio.
+- Aluno recebe token com perfil student.
+- Aluno ve somente os proprios dados e a propria ficha.
+- Aluno marca treino como feito.
+- Aluno envia feedback e esforco percebido.
+- Aluno nao acessa usuarios, financeiro, relatorios, exportacoes ou painel administrativo.
+
+Banco:
+- member_accounts guarda a conta de acesso do aluno vinculada ao cadastro do member.
+
+Rotas publicas:
+POST /api/student/auth/login
+
+Rotas protegidas do aluno:
+GET /api/student/me
+GET /api/student/training/current
+GET /api/student/training/logs
+POST /api/student/training/complete
+
+Rota administrativa para criar acesso do aluno:
+POST /api/student/accounts
+
+Telas web:
+apps/web/student-login.html
+apps/web/student-portal.html
+apps/web/student-accounts.html
+
+Observacao:
+A tela antiga student.html era uma area interna usando token administrativo. O fluxo correto novo e student-login.html -> student-portal.html.
