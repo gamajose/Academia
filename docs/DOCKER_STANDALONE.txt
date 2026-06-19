@@ -1,0 +1,19 @@
+Docker standalone
+
+Objetivo:
+Subir a plataforma completa sem depender do PostgreSQL ja existente na VM.
+
+Arquivo:
+docker-compose.yml
+
+Comandos:
+docker compose up -d
+
+docker logs -f academia-api
+
+Servicos:
+- academia-postgres na porta 5434 externa.
+- academia-api na porta 3004.
+
+Observacao:
+O docker-compose usa senha simples apenas para desenvolvimento. Em producao, trocar POSTGRES_PASSWORD e AUTH_SECRET.
