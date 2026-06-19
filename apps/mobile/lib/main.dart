@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:academia_mobile/alerts_page.dart';
+import 'package:academia_mobile/assessments_page.dart';
 import 'package:academia_mobile/training_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -205,6 +207,14 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget actionButton(IconData icon, String label, Widget page) {
+    return FilledButton.icon(
+      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      icon: Icon(icon),
+      label: Text(label),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,11 +234,11 @@ class _DashboardPageState extends State<DashboardPage> {
               _card('Pendências', summary['pending_payments']),
             ]),
             const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TrainingPage(baseUrl: widget.baseUrl, token: widget.token))),
-              icon: const Icon(Icons.fitness_center),
-              label: const Text('Abrir treinos'),
-            ),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              actionButton(Icons.warning_amber, 'Alertas', AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.fitness_center, 'Treinos', TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.monitor_heart, 'Avaliações', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
+            ]),
             const SizedBox(height: 12),
             Text(message),
             const Divider(),
