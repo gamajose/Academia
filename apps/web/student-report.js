@@ -57,6 +57,17 @@ async function loadReport() {
   renderList('report-logs', [], () => '', 'Historico detalhado de treinos disponivel no portal do aluno.');
 }
 
+async function openNativePdf() {
+  const memberId = r('report-member').value;
+  if (!memberId) return;
+  const response = await fetch(`${REPORT_API}/api/reports/student-pdf?member_id=${encodeURIComponent(memberId)}`, { headers: { Authorization: `Bearer ${REPORT_TOKEN}` } });
+  if (!response.ok) throw new Error('erro_pdf');
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
 r('load-report-button').addEventListener('click', loadReport);
+r('download-pdf-button').addEventListener('click', () => openNativePdf().catch((error) => { r('report-summary').textContent = `Erro PDF: ${error.message}`; }));
 r('print-report-button').addEventListener('click', () => window.print());
 loadMembers().catch((error) => { r('report-summary').textContent = `Erro: ${error.message}`; });
