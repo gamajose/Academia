@@ -1,5 +1,18 @@
 Changelog
 
+0.3.0
+- Adicionado painel web operacional em HTML, CSS e JavaScript.
+- Painel passou a realizar login com token.
+- Painel passou a exibir status da API e resumo do dashboard.
+- Adicionado cadastro de aluno pela tela.
+- Adicionado cadastro de plano pela tela.
+- Adicionada criacao de matricula pela tela.
+- Adicionada criacao e baixa de pagamento pela tela.
+- Adicionado check-in manual pela tela.
+- Adicionadas listas de alunos, planos, matriculas, pagamentos e check-ins recentes.
+- API recebeu suporte basico a CORS para uso do painel web.
+- Documentacao do painel web atualizada.
+
 0.2.0
 - Adicionados modulos de matriculas e pagamentos na API.
 - Adicionadas rotas protegidas para listar e criar matriculas.
