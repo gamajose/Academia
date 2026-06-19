@@ -1,0 +1,76 @@
+Status geral do projeto Academia
+
+Backend/API:
+- Health check.
+- Autenticacao com token.
+- Cadastro de academia.
+- Login.
+- Alunos.
+- Planos.
+- Matriculas.
+- Pagamentos.
+- Check-ins.
+- Dashboard.
+- Edicao e status de aluno.
+- Edicao e status de plano.
+- Cancelamento de matricula.
+- Cancelamento de pagamento.
+- Auditoria.
+- Relatorios.
+
+Banco:
+- Gyms.
+- Users.
+- Plans.
+- Members.
+- Memberships.
+- Payments.
+- Checkins.
+- Audit logs.
+- Indices.
+- View de dashboard.
+
+Web:
+- Painel administrativo.
+- Login.
+- Dashboard.
+- Cadastro e gestao de alunos.
+- Cadastro e gestao de planos.
+- Matriculas.
+- Financeiro.
+- Check-in.
+- Historico operacional.
+- Relatorios.
+
+Mobile:
+- App Flutter inicial.
+- Login.
+- Dashboard resumido.
+- Lista de alunos.
+- Check-in rapido.
+- Ultimos check-ins.
+
+Software Desktop:
+- Programa Python/Tkinter para recepcao.
+- Login.
+- Busca de aluno.
+- Check-in.
+- Ultimos check-ins.
+
+Instalacao/Deploy:
+- Systemd.
+- Nginx.
+- Docker compose standalone.
+- Guias de execucao.
+- Scripts Windows basicos.
+
+Ainda falta para virar produto final:
+- Refinar layout do mobile.
+- Empacotar software desktop em executavel.
+- Controle de permissao por perfil.
+- Reset de senha.
+- Exportacao CSV/PDF.
+- Backup automatizado especifico.
+- Testes automatizados.
+- Tela web com navegacao mais profissional.
+- Build mobile APK assinado.
