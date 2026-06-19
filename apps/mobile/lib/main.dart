@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:academia_mobile/alerts_page.dart';
@@ -150,6 +151,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late final ApiClient api;
+  Timer? syncTimer;
   Map<String, dynamic> summary = {};
   List<dynamic> members = [];
   List<dynamic> checkins = [];
@@ -160,21 +162,29 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     api = ApiClient(widget.baseUrl, widget.token);
     _refresh();
+    syncTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refresh(silent: true));
   }
 
-  Future<void> _refresh() async {
+  @override
+  void dispose() {
+    syncTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh({bool silent = false}) async {
     try {
       final dashboard = await api.get('/api/dashboard/summary');
       final membersResult = await api.get('/api/members');
       final checkinsResult = await api.get('/api/checkins/recent');
+      if (!mounted) return;
       setState(() {
         summary = dashboard;
         members = membersResult['data'] as List<dynamic>? ?? [];
         checkins = checkinsResult['data'] as List<dynamic>? ?? [];
-        message = 'Atualizado.';
+        if (!silent) message = 'Atualizado.';
       });
     } catch (error) {
-      setState(() => message = 'Erro ao carregar: $error');
+      if (!silent && mounted) setState(() => message = 'Erro ao carregar: $error');
     }
   }
 
@@ -191,6 +201,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    syncTimer?.cancel();
     if (!mounted) return;
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
   }
@@ -240,7 +251,7 @@ class _DashboardPageState extends State<DashboardPage> {
               actionButton(Icons.monitor_heart, 'Avaliações', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
             ]),
             const SizedBox(height: 12),
-            Text(message),
+            Text('$message Sincronizacao automatica a cada 30s.'),
             const Divider(),
             const Text('Check-in rápido', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ...members.map((member) => ListTile(
