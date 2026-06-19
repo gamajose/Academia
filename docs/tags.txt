@@ -12,11 +12,7 @@ git push origin v0.1.2
 git tag -a v0.2.0 -m "v0.2.0"
 git push origin v0.2.0
 
-git tag -a v0.3.0 -m "v0.3.0"
-git push origin v0.3.0
-
 Padrao:
 v0.1.1 base inicial
 v0.1.2 performance e dashboard
-v0.2.0 rotas de matriculas e financeiro
-v0.3.0 painel web operacional
+v0.2.0 MVP operacional com painel, matriculas, financeiro, treinos e area do aluno
