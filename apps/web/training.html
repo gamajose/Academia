@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Treinos - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Treinos inteligentes</p>
+        <h1>Ficha semanal e exercicios</h1>
+        <p>Cadastre exercicios com instrucoes e video, monte fichas semanais e use a analise inteligente para revisar treinos antigos.</p>
+      </div>
+      <div class="health-card">
+        <span>Niveis</span>
+        <strong>frango / intermediario / avancado</strong>
+        <small>evolucao por tempo de ficha</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Novo exercicio</h3>
+        <input id="exercise-name" placeholder="Nome do exercicio" />
+        <input id="exercise-group" placeholder="Grupo muscular" />
+        <input id="exercise-equipment" placeholder="Equipamento" />
+        <select id="exercise-level"><option value="frango">Frango</option><option value="intermediario">Intermediario</option><option value="avancado">Avancado</option></select>
+        <textarea id="exercise-instructions" placeholder="Instrucoes de execucao"></textarea>
+        <input id="exercise-video" placeholder="URL do video" />
+        <button id="create-exercise-button">Cadastrar exercicio</button>
+      </article>
+
+      <article class="panel">
+        <h3>Perfil de treino do aluno</h3>
+        <select id="profile-member"></select>
+        <select id="profile-level"><option value="frango">Frango</option><option value="intermediario">Intermediario</option><option value="avancado">Avancado</option></select>
+        <input id="profile-goal" placeholder="Objetivo" />
+        <input id="profile-days" type="number" placeholder="Dias por semana" />
+        <textarea id="profile-restrictions" placeholder="Restricoes, dores ou observacoes"></textarea>
+        <button id="save-profile-button">Salvar perfil</button>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Nova ficha</h3>
+        <select id="plan-member"></select>
+        <input id="plan-name" placeholder="Nome da ficha" />
+        <select id="plan-level"><option value="frango">Frango</option><option value="intermediario">Intermediario</option><option value="avancado">Avancado</option></select>
+        <input id="plan-goal" placeholder="Objetivo da ficha" />
+        <input id="plan-start" type="date" />
+        <button id="create-plan-button">Criar ficha</button>
+      </article>
+
+      <article class="panel">
+        <h3>Montar dia da ficha</h3>
+        <select id="day-plan"></select>
+        <input id="day-weekday" type="number" placeholder="Dia da semana 1 a 7" />
+        <input id="day-title" placeholder="Titulo do dia. Ex: Peito e triceps" />
+        <input id="day-notes" placeholder="Observacoes" />
+        <button id="create-day-button">Adicionar dia</button>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Adicionar exercicio na ficha</h3>
+        <select id="exercise-day"></select>
+        <select id="exercise-select"></select>
+        <input id="workout-order" type="number" placeholder="Ordem" />
+        <input id="workout-sets" type="number" placeholder="Series" />
+        <input id="workout-reps" placeholder="Repeticoes" />
+        <input id="workout-rest" type="number" placeholder="Descanso em segundos" />
+        <input id="workout-load" placeholder="Carga ou orientacao" />
+        <button id="add-workout-exercise-button">Adicionar exercicio</button>
+      </article>
+
+      <article class="panel">
+        <h3>Analise inteligente</h3>
+        <select id="review-plan"></select>
+        <button id="review-plan-button">Analisar ficha</button>
+        <p class="status-line" id="training-status">Aguardando acao.</p>
+        <ul id="review-list"></ul>
+      </article>
+    </section>
+
+    <section class="grid lists-grid">
+      <article class="panel"><h3>Exercicios cadastrados</h3><ul id="exercise-list"></ul></article>
+      <article class="panel"><h3>Fichas</h3><ul id="plan-list"></ul></article>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./training.js"></script>
+</body>
+</html>
