@@ -11,6 +11,7 @@ Plataforma para gestao de academias com API, painel web, app mobile, software de
 - Cadastro de alunos, planos, matriculas e pagamentos.
 - Check-ins.
 - Treinos, fichas semanais, exercicios, videos e instrucoes.
+- Avaliacoes fisicas, metas e evolucao do aluno.
 - Analise inteligente inicial de fichas.
 - Relatorios e exportacoes CSV.
 - Auditoria operacional.
