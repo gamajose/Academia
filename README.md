@@ -28,7 +28,7 @@ Plataforma para gestao de academias com API, painel web, app mobile, software de
 - database: migrations SQL.
 - scripts: automacoes e testes.
 - infra: arquivos de infraestrutura.
-- docs: documentacao operacional.
+- docs: documentacao operacional consolidada.
 
 ## Documentos uteis
 
@@ -38,3 +38,5 @@ Plataforma para gestao de academias com API, painel web, app mobile, software de
 - docs/TREINOS_IA.txt
 - docs/SOFTWARE_DESKTOP.txt
 - docs/MOBILE_APP.txt
+- docs/DOCKER_STANDALONE.txt
+- docs/tags.txt
