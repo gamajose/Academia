@@ -1,0 +1,9 @@
+[Unit]
+Description=Academia database backup
+
+[Service]
+Type=oneshot
+EnvironmentFile=/mnt/Projetos/Academia/apps/api/.env
+Environment=BACKUP_DIR=/mnt/backups/academia
+Environment=RETENTION_DAYS=7
+ExecStart=/bin/bash /mnt/Projetos/Academia/scripts/backup-academia.sh
