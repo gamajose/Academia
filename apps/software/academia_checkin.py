@@ -7,10 +7,11 @@ from urllib import request, error
 class AcademiaCheckinApp:
     def __init__(self, root):
         self.root = root
-        self.root.title('Academia Platform - Check-in')
-        self.root.geometry('820x620')
+        self.root.title('Academia Platform - Operacao')
+        self.root.geometry('980x700')
         self.token = ''
         self.members = []
+        self.alerts = {}
 
         self.api_url = tk.StringVar(value='http://localhost:3004')
         self.email = tk.StringVar()
@@ -27,7 +28,7 @@ class AcademiaCheckinApp:
         self.login_frame.pack(fill='both', expand=True)
 
         tk.Label(self.login_frame, text='Academia Platform', font=('Arial', 22, 'bold')).pack(anchor='w')
-        tk.Label(self.login_frame, text='Software desktop de recepcao e check-in').pack(anchor='w', pady=(0, 18))
+        tk.Label(self.login_frame, text='Software desktop de recepcao, check-in e alertas').pack(anchor='w', pady=(0, 18))
 
         tk.Label(self.login_frame, text='URL da API').pack(anchor='w')
         tk.Entry(self.login_frame, textvariable=self.api_url, width=60).pack(anchor='w', pady=(0, 10))
@@ -47,10 +48,16 @@ class AcademiaCheckinApp:
 
         top = tk.Frame(self.panel_frame)
         top.pack(fill='x')
-        tk.Label(top, text='Check-in de alunos', font=('Arial', 20, 'bold')).pack(side='left')
-        tk.Button(top, text='Atualizar', command=self.load_data).pack(side='right')
+        tk.Label(top, text='Operacao da academia', font=('Arial', 20, 'bold')).pack(side='left')
+        tk.Button(top, text='Atualizar tudo', command=self.load_data).pack(side='right')
 
-        tk.Entry(self.panel_frame, textvariable=self.search).pack(fill='x', pady=12)
+        shortcuts = tk.Frame(self.panel_frame)
+        shortcuts.pack(fill='x', pady=(10, 8))
+        tk.Button(shortcuts, text='Check-ins', command=self.load_data).pack(side='left', padx=(0, 8))
+        tk.Button(shortcuts, text='Alertas', command=self.load_alerts).pack(side='left', padx=(0, 8))
+        tk.Button(shortcuts, text='Resumo de avaliacao', command=self.load_selected_assessment_summary).pack(side='left', padx=(0, 8))
+
+        tk.Entry(self.panel_frame, textvariable=self.search).pack(fill='x', pady=8)
         self.search.trace_add('write', lambda *_: self.render_members())
 
         content = tk.Frame(self.panel_frame)
@@ -59,15 +66,21 @@ class AcademiaCheckinApp:
         left = tk.Frame(content)
         left.pack(side='left', fill='both', expand=True, padx=(0, 10))
         tk.Label(left, text='Alunos ativos').pack(anchor='w')
-        self.members_list = tk.Listbox(left, height=20)
+        self.members_list = tk.Listbox(left, height=18)
         self.members_list.pack(fill='both', expand=True)
         tk.Button(left, text='Registrar check-in', command=self.checkin_selected).pack(fill='x', pady=8)
 
+        center = tk.Frame(content)
+        center.pack(side='left', fill='both', expand=True, padx=10)
+        tk.Label(center, text='Ultimos check-ins').pack(anchor='w')
+        self.checkins_list = tk.Listbox(center, height=18)
+        self.checkins_list.pack(fill='both', expand=True)
+
         right = tk.Frame(content)
         right.pack(side='right', fill='both', expand=True, padx=(10, 0))
-        tk.Label(right, text='Ultimos check-ins').pack(anchor='w')
-        self.checkins_list = tk.Listbox(right, height=20)
-        self.checkins_list.pack(fill='both', expand=True)
+        tk.Label(right, text='Alertas / evolucao').pack(anchor='w')
+        self.alerts_list = tk.Listbox(right, height=18)
+        self.alerts_list.pack(fill='both', expand=True)
 
         tk.Label(self.panel_frame, textvariable=self.status).pack(anchor='w', pady=(12, 0))
 
@@ -113,9 +126,31 @@ class AcademiaCheckinApp:
             self.checkins_list.delete(0, tk.END)
             for row in checkins:
                 self.checkins_list.insert(tk.END, f"{row.get('member_name')} - {row.get('checked_at')}")
+            self.load_alerts()
             self.status.set('Dados atualizados.')
         except Exception as exc:
             self.status.set(f'Erro ao carregar: {exc}')
+
+    def load_alerts(self):
+        try:
+            self.alerts = self.api_request('/api/alerts')
+            self.alerts_list.delete(0, tk.END)
+            summary = self.alerts.get('summary', {})
+            self.alerts_list.insert(tk.END, f"Total de pendencias: {summary.get('total', 0)}")
+            self.alerts_list.insert(tk.END, f"Pagamentos vencidos: {summary.get('overdue_payments', 0)}")
+            self.alerts_list.insert(tk.END, f"Matriculas vencendo: {summary.get('memberships_due_soon', 0)}")
+            self.alerts_list.insert(tk.END, f"Fichas para revisar: {summary.get('training_reviews_due', 0)}")
+            self.alerts_list.insert(tk.END, f"Avaliacoes pendentes: {summary.get('assessments_due', 0)}")
+            self.alerts_list.insert(tk.END, '--- Pagamentos vencidos ---')
+            for row in self.alerts.get('overdue_payments', [])[:10]:
+                amount = int(row.get('amount_cents') or 0) / 100
+                self.alerts_list.insert(tk.END, f"{row.get('member_name')} - R$ {amount:.2f} - {row.get('days_overdue')} dias")
+            self.alerts_list.insert(tk.END, '--- Fichas antigas ---')
+            for row in self.alerts.get('training_reviews_due', [])[:10]:
+                self.alerts_list.insert(tk.END, f"{row.get('member_name')} - {row.get('plan_name')} - {row.get('age_days')} dias")
+            self.status.set('Alertas atualizados.')
+        except Exception as exc:
+            self.status.set(f'Erro ao carregar alertas: {exc}')
 
     def render_members(self):
         term = self.search.get().lower()
@@ -124,19 +159,45 @@ class AcademiaCheckinApp:
             if term in member.get('name', '').lower():
                 self.members_list.insert(tk.END, f"{member.get('name')} | {member.get('id')}")
 
-    def checkin_selected(self):
+    def selected_member_id(self):
         selected = self.members_list.curselection()
         if not selected:
+            return None
+        row = self.members_list.get(selected[0])
+        return row.split('|')[-1].strip()
+
+    def checkin_selected(self):
+        member_id = self.selected_member_id()
+        if not member_id:
             messagebox.showwarning('Check-in', 'Selecione um aluno.')
             return
-        row = self.members_list.get(selected[0])
-        member_id = row.split('|')[-1].strip()
         try:
             self.api_request('/api/checkins', 'POST', {'member_id': member_id, 'source': 'desktop'})
             self.status.set('Check-in registrado.')
             self.load_data()
         except Exception as exc:
             messagebox.showerror('Erro no check-in', str(exc))
+
+    def load_selected_assessment_summary(self):
+        member_id = self.selected_member_id()
+        if not member_id:
+            messagebox.showwarning('Avaliacao', 'Selecione um aluno.')
+            return
+        try:
+            summary = self.api_request(f'/api/assessments/summary?member_id={member_id}')
+            current = summary.get('current')
+            delta = summary.get('delta') or {}
+            self.alerts_list.delete(0, tk.END)
+            if not current:
+                self.alerts_list.insert(tk.END, 'Nenhuma avaliacao encontrada para este aluno.')
+            else:
+                self.alerts_list.insert(tk.END, f"Data: {current.get('assessment_date')}")
+                self.alerts_list.insert(tk.END, f"Peso: {current.get('weight_kg') or '-'} kg | variacao {delta.get('weight_kg') or '-'}")
+                self.alerts_list.insert(tk.END, f"Gordura: {current.get('body_fat_percent') or '-'}% | variacao {delta.get('body_fat_percent') or '-'}")
+                self.alerts_list.insert(tk.END, f"Cintura: {current.get('waist_cm') or '-'} cm | variacao {delta.get('waist_cm') or '-'}")
+            self.status.set('Resumo de avaliacao carregado.')
+        except Exception as exc:
+            self.status.set(f'Erro no resumo: {exc}')
 
 
 if __name__ == '__main__':
