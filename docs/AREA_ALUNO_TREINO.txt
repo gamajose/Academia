@@ -1,0 +1,29 @@
+Area do aluno - Treino
+
+Objetivo:
+Criar uma tela simples para o cliente visualizar o treino do dia, ver instrucoes e videos dos exercicios, marcar o treino como feito e enviar feedback.
+
+Arquivos adicionados:
+apps/web/student.html
+apps/web/student.js
+
+Fluxo:
+- Selecionar aluno ativo.
+- Carregar ficha ativa.
+- Identificar o dia da semana atual.
+- Mostrar os exercicios do dia.
+- Exibir series, repeticoes, descanso, instrucoes e link de video.
+- Permitir marcar treino como feito.
+- Permitir informar esforco percebido.
+- Permitir registrar feedback.
+- Exibir historico recente de execucoes.
+
+Rotas usadas:
+GET /api/members
+GET /api/training/plans
+GET /api/training/plans/detail
+GET /api/training/execution/logs
+POST /api/training/execution/day
+
+Observacao:
+Essa tela ainda usa o token salvo do painel. Em etapa futura pode virar acesso proprio do aluno com login simplificado, QR Code ou link seguro.
