@@ -15,6 +15,8 @@ function renderNavigation() {
     ['alerts.html', 'Alertas'],
     ['training.html', 'Treinos'],
     ['assessments.html', 'Avaliacao'],
+    ['assessment-actions.html', 'Acoes evolucao'],
+    ['student-report.html', 'Relatorio aluno'],
     ['student-accounts.html', 'Acesso aluno'],
     ['users.html', 'Usuarios'],
     ['account.html', 'Conta'],
