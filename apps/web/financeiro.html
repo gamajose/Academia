@@ -11,14 +11,9 @@
 <body>
   <main class="app-shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">Administração</p>
-        <h1>Financeiro</h1>
-        <p>Dashboard de recebimentos, pendências, atrasos e ações vinculadas ao aluno.</p>
-      </div>
+      <div><p class="eyebrow">Administração</p><h1>Financeiro</h1><p>Dashboard de recebimentos, pendências, atrasos e ações vinculadas ao aluno.</p></div>
       <div class="health-card"><span>Módulo</span><strong>Financeiro</strong><small>recebidos, pendentes e atrasados</small></div>
     </section>
-
     <section class="cards finance-summary">
       <article><span>Total de alunos</span><strong id="total-members">0</strong></article>
       <article><span>Alunos ativos</span><strong id="active-members-report">0</strong></article>
@@ -26,34 +21,27 @@
       <article><span>A receber</span><strong id="pending-amount">R$ 0,00</strong></article>
       <article><span>Recebido</span><strong id="paid-amount">R$ 0,00</strong></article>
     </section>
-
     <section class="panel">
-      <div class="toolbar">
-        <h2>Lançamentos financeiros</h2>
-        <button id="load-button">Atualizar</button>
-      </div>
+      <div class="toolbar"><h2>Lançamentos financeiros</h2><button id="load-button">Atualizar</button></div>
       <p class="status-line" id="reports-status">Carregando...</p>
       <ul id="financial-list"></ul>
     </section>
-
-    <section class="panel">
-      <div class="toolbar"><h2>Ajuste financeiro</h2><button id="finance-adjust-button">Aplicar ajuste</button></div>
+  </main>
+  <div class="modal hidden" id="finance-modal">
+    <div class="modal-card">
+      <div class="toolbar"><h3 id="finance-title">Ajuste financeiro</h3><button class="secondary" id="close-finance-modal">Fechar</button></div>
+      <input id="finance-payment-id" type="hidden" />
       <div class="grid">
-        <input id="finance-payment-id" placeholder="ID do pagamento" />
         <input id="finance-discount" type="number" placeholder="Desconto em centavos" />
         <input id="finance-fee" type="number" placeholder="Taxa ou juros em centavos" />
         <input id="finance-method" placeholder="Forma de pagamento" />
       </div>
       <textarea id="finance-notes" placeholder="Observações"></textarea>
-    </section>
-
-    <section class="panel">
-      <h3>Matrículas vinculadas</h3>
-      <ul id="memberships-report-list"></ul>
-    </section>
-  </main>
+      <button id="finance-adjust-button">Aplicar ajuste</button>
+    </div>
+  </div>
   <script src="./guard.js"></script>
   <script src="./nav.js"></script>
-  <script src="./reports.js"></script>
+  <script src="./fin-core.js"></script>
 </body>
 </html>
