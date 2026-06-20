@@ -1,4 +1,5 @@
 const { handleMemberActions } = require('./memberActions');
+const { handleMemberDetailRoutes } = require('./memberDetailRoutes');
 const { handlePlanActions } = require('./planActions');
 const { handleCancelActions } = require('./cancelActions');
 const { handleAuditRoutes } = require('./auditRoutes');
@@ -12,6 +13,9 @@ const { handleAssessmentRoutes } = require('./assessmentRoutes');
 const { handleAlertRoutes } = require('./alertRoutes');
 
 async function handleAdminRoutes(req, res, user, url, helpers) {
+  const memberDetail = await handleMemberDetailRoutes(req, res, user, url, helpers);
+  if (memberDetail !== false) return memberDetail;
+
   const profile = await handleProfileRoutes(req, res, user, url, helpers);
   if (profile !== false) return profile;
 
