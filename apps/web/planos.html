@@ -6,6 +6,7 @@
   <title>Planos - Academia Platform</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./product-layout.css" />
 </head>
 <body>
   <main class="app-shell">
@@ -13,27 +14,39 @@
       <div>
         <p class="eyebrow">Administração</p>
         <h1>Planos</h1>
-        <p>Crie e mantenha os planos que serão usados em matrículas, pagamentos e tela pública.</p>
+        <p>Planos comerciais com preço, duração, benefícios, regras e destaque público.</p>
       </div>
-      <div class="health-card"><span>Módulo</span><strong>Planos</strong><small>valor, duração e status</small></div>
+      <div class="health-card"><span>Módulo</span><strong>Planos</strong><small>preço, benefícios e status</small></div>
     </section>
 
-    <section class="grid">
-      <article class="panel">
-        <h3>Novo ou editar plano</h3>
-        <input id="plan-id" type="hidden" />
-        <input id="plan-name-page" placeholder="Nome do plano" />
-        <input id="plan-price-page" type="number" placeholder="Valor em centavos. Ex: 9900" />
-        <input id="plan-days-page" type="number" placeholder="Duração em dias" />
-        <button id="save-plan-page-button">Salvar plano</button>
-        <p class="status-line" id="plans-status">Carregando...</p>
-      </article>
-      <article class="panel">
-        <h3>Lista de planos</h3>
-        <ul id="plans-page-list"></ul>
-      </article>
+    <section class="panel">
+      <div class="toolbar">
+        <h2>Lista de planos</h2>
+        <button id="new-plan-button">Cadastrar plano</button>
+      </div>
+      <p class="status-line" id="plans-status">Carregando...</p>
+      <ul id="plans-page-list"></ul>
     </section>
   </main>
+
+  <div class="modal hidden" id="plan-modal">
+    <div class="modal-card">
+      <div class="toolbar"><h3>Plano</h3><button class="secondary" id="close-plan-modal">Fechar</button></div>
+      <input id="plan-id" type="hidden" />
+      <div class="grid">
+        <input id="plan-name-page" placeholder="Nome do plano" />
+        <input id="plan-price-page" type="number" placeholder="Valor em centavos. Ex: 12990" />
+        <input id="plan-days-page" type="number" placeholder="Duração em dias" />
+        <input id="plan-highlight-page" placeholder="Destaque público. Ex: Mais vendido" />
+      </div>
+      <textarea id="plan-description-page" placeholder="Descrição do plano"></textarea>
+      <textarea id="plan-benefits-page" placeholder="Benefícios inclusos, um por linha"></textarea>
+      <textarea id="plan-rules-page" placeholder="Regras e observações do plano"></textarea>
+      <button id="save-plan-page-button">Salvar plano</button>
+    </div>
+  </div>
+
+  <script src="./guard.js"></script>
   <script src="./nav.js"></script>
   <script src="./planos.js"></script>
 </body>
