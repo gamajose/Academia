@@ -13,7 +13,7 @@
       <div>
         <p class="eyebrow">Administração</p>
         <h1>Alunos</h1>
-        <p>Lista de alunos com plano, status, inadimplência e ações de cadastro.</p>
+        <p>Lista de alunos com plano, status, inadimplência e cadastro completo.</p>
       </div>
       <div class="health-card"><span>Módulo</span><strong>Alunos</strong><small>cadastro, edição e status</small></div>
     </section>
@@ -27,16 +27,33 @@
       <p class="status-line" id="students-status">Carregando...</p>
       <ul id="students-list"></ul>
     </section>
-
-    <section class="panel hidden" id="student-form-panel">
-      <h3>Cadastro do aluno</h3>
-      <input id="student-id" type="hidden" />
-      <input id="student-name" placeholder="Nome do aluno" />
-      <input id="student-email" placeholder="E-mail" />
-      <input id="student-phone" placeholder="Telefone" />
-      <button id="save-student-button">Salvar aluno</button>
-    </section>
   </main>
+
+  <div class="modal hidden" id="student-form-panel">
+    <div class="modal-card">
+      <div class="toolbar">
+        <h3>Cadastro do aluno</h3>
+        <button class="secondary" id="close-student-modal">Fechar</button>
+      </div>
+      <input id="student-id" type="hidden" />
+      <div class="grid">
+        <input id="student-name" placeholder="Nome completo" />
+        <input id="student-document" placeholder="CPF/RG" />
+        <input id="student-email" placeholder="E-mail" />
+        <input id="student-phone" placeholder="Telefone" />
+        <input id="student-birth" type="date" />
+        <input id="student-emergency" placeholder="Contato de emergência" />
+      </div>
+      <textarea id="student-address" placeholder="Endereço"></textarea>
+      <textarea id="student-objective" placeholder="Objetivo do aluno"></textarea>
+      <textarea id="student-allergies" placeholder="Alergias e restrições"></textarea>
+      <textarea id="student-medical" placeholder="Ficha médica / observações clínicas"></textarea>
+      <textarea id="student-nutrition" placeholder="Ficha nutricionista / observações alimentares"></textarea>
+      <textarea id="student-notes" placeholder="Observações internas"></textarea>
+      <button id="save-student-button">Salvar aluno</button>
+    </div>
+  </div>
+
   <script src="./nav.js"></script>
   <script src="./alunos.js"></script>
 </body>
