@@ -3,34 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aluno - Academia Platform</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Área do aluno - Academia Platform</title>
+  <link rel="stylesheet" href="./landing.css" />
 </head>
 <body>
-  <main class="app-shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Area do aluno</p>
-        <h1>Entrar no meu treino</h1>
-        <p>Acesso exclusivo do aluno para ver ficha, videos, instrucoes e marcar treino como feito.</p>
-      </div>
-      <div class="health-card">
-        <span>Acesso</span>
-        <strong>Aluno</strong>
-        <small>sem permissao administrativa</small>
-      </div>
-    </section>
+  <main class="site-shell">
+    <header class="site-header">
+      <div class="brand">Academia Platform</div>
+      <nav class="site-nav">
+        <a href="./index.html">Início</a>
+        <a href="./matricula-publica.html">Matricule-se</a>
+      </nav>
+    </header>
 
-    <section class="login-card">
-      <h2>Login do aluno</h2>
-      <label>URL da API</label>
-      <input id="student-api-url" placeholder="http://IP_DA_VM:3004" />
-      <label>E-mail</label>
-      <input id="student-email" type="email" placeholder="aluno@email.com" />
-      <label>Senha</label>
-      <input id="student-password" type="password" placeholder="senha" />
-      <button id="student-login-button">Entrar</button>
-      <small id="student-login-message"></small>
+    <section class="site-hero">
+      <div>
+        <p>Área de acesso</p>
+        <h1>Entre com sua conta.</h1>
+        <p>O mesmo acesso direciona cada perfil para o lugar certo: aluno vai para o portal de treino; administração vai para o painel interno.</p>
+      </div>
+      <section class="hero-card">
+        <h2>Acessar conta</h2>
+        <label>E-mail</label>
+        <input id="student-email" type="email" placeholder="seu@email.com" />
+        <label>Senha</label>
+        <input id="student-password" type="password" placeholder="sua senha" />
+        <button class="cta" id="student-login-button">Entrar</button>
+        <div class="hero-actions">
+          <a class="cta ghost" href="./matricula-publica.html">Criar conta</a>
+          <button class="cta ghost" id="forgot-password-button" type="button">Esqueci a senha</button>
+        </div>
+        <small id="student-login-message"></small>
+      </section>
     </section>
   </main>
   <script src="./student-login.js"></script>
