@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Planos - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Administração</p>
+        <h1>Planos</h1>
+        <p>Crie e mantenha os planos que serão usados em matrículas, pagamentos e tela pública.</p>
+      </div>
+      <div class="health-card"><span>Módulo</span><strong>Planos</strong><small>valor, duração e status</small></div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Novo ou editar plano</h3>
+        <input id="plan-id" type="hidden" />
+        <input id="plan-name-page" placeholder="Nome do plano" />
+        <input id="plan-price-page" type="number" placeholder="Valor em centavos. Ex: 9900" />
+        <input id="plan-days-page" type="number" placeholder="Duração em dias" />
+        <button id="save-plan-page-button">Salvar plano</button>
+        <p class="status-line" id="plans-status">Carregando...</p>
+      </article>
+      <article class="panel">
+        <h3>Lista de planos</h3>
+        <ul id="plans-page-list"></ul>
+      </article>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./planos.js"></script>
+</body>
+</html>
