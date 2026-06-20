@@ -11,7 +11,7 @@ function renderNavigation() {
   const current = window.location.pathname.split('/').pop() || 'index.html';
   const pages = [
     ['index.html', 'Site'],
-    ['admin.html', 'Painel'],
+    ['painel.html', 'Painel'],
     ['alunos.html', 'Alunos'],
     ['planos.html', 'Planos'],
     ['financeiro.html', 'Financeiro'],
@@ -29,7 +29,7 @@ function renderNavigation() {
 }
 
 function requireSession() {
-  const publicPages = ['home.html', 'index.html', 'matricula-publica.html', 'student-login.html'];
+  const publicPages = ['home.html', 'index.html', 'matricula-publica.html', 'student-login.html', 'admin.html'];
   const current = window.location.pathname.split('/').pop() || 'index.html';
   const token = localStorage.getItem('academiaToken') || '';
   if (!token && !publicPages.includes(current)) window.location.href = './admin.html';
