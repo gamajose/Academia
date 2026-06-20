@@ -15,6 +15,7 @@ function renderNavigation() {
     ['alunos.html', 'Alunos'],
     ['planos.html', 'Planos'],
     ['vinculos.html', 'Matrículas'],
+    ['solicitacoes.html', 'Pré-matrículas'],
     ['financeiro.html', 'Financeiro'],
     ['alerts.html', 'Alertas'],
     ['training.html', 'Treinos'],
