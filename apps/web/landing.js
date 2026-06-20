@@ -23,11 +23,16 @@ function renderPlans() {
     const card = document.createElement('article');
     card.className = 'plan-card';
     card.innerHTML = `<strong>${plan.name}</strong><p>${plan.public_highlight || 'Plano para começar hoje'}</p><div class="plan-price">${money(plan.price_cents)}</div><p>${plan.duration_days} dias de acesso</p>`;
-    const btn = document.createElement('button');
-    btn.className = 'cta secondary';
-    btn.textContent = 'Ver plano';
-    btn.onclick = () => openPlan(plan);
-    card.appendChild(btn);
+    const see = document.createElement('button');
+    see.className = 'cta secondary';
+    see.textContent = 'Ver plano';
+    see.onclick = () => openPlan(plan);
+    const choose = document.createElement('a');
+    choose.className = 'cta';
+    choose.href = `./matricula-publica.html?plan=${encodeURIComponent(plan.id)}`;
+    choose.textContent = 'Matricular neste plano';
+    card.appendChild(see);
+    card.appendChild(choose);
     box.appendChild(card);
   }
 }
@@ -43,6 +48,8 @@ function openPlan(plan) {
     li.textContent = item;
     list.appendChild(li);
   }
+  const link = document.querySelector('#plan-modal a.cta');
+  if (link) link.href = `./matricula-publica.html?plan=${encodeURIComponent(plan.id)}`;
   $('plan-modal').classList.remove('hidden');
 }
 
