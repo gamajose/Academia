@@ -1,6 +1,6 @@
 import json
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 from urllib import request, error
 
 
@@ -55,6 +55,7 @@ class AcademiaCheckinApp:
         shortcuts = tk.Frame(self.panel_frame)
         shortcuts.pack(fill='x', pady=(10, 8))
         tk.Button(shortcuts, text='Check-ins', command=self.load_data).pack(side='left', padx=(0, 8))
+        tk.Button(shortcuts, text='Validar codigo/QR', command=self.validate_signup_code).pack(side='left', padx=(0, 8))
         tk.Button(shortcuts, text='Alertas', command=self.load_alerts).pack(side='left', padx=(0, 8))
         tk.Button(shortcuts, text='Financeiro', command=self.load_finance_summary).pack(side='left', padx=(0, 8))
         tk.Button(shortcuts, text='Resumo de avaliacao', command=self.load_selected_assessment_summary).pack(side='left', padx=(0, 8))
@@ -164,6 +165,23 @@ class AcademiaCheckinApp:
         except Exception as exc:
             if not silent:
                 self.status.set(f'Erro ao carregar alertas: {exc}')
+
+    def validate_signup_code(self):
+        code = simpledialog.askstring('Validar codigo/QR', 'Informe ou cole o codigo apresentado pelo aluno:')
+        if not code:
+            return
+        try:
+            result = self.api_request(f'/api/signups/check?code={code.strip()}')
+            data = result.get('data') or {}
+            if result.get('valid'):
+                messagebox.showinfo('Codigo valido', f"Acesso liberado para: {data.get('name')}\nCodigo: {data.get('enrollment_code')}")
+                self.status.set('Codigo validado com sucesso.')
+            else:
+                messagebox.showwarning('Codigo nao liberado', f"Codigo encontrado, mas status atual: {data.get('status')}")
+                self.status.set('Codigo encontrado, mas ainda nao liberado.')
+        except Exception as exc:
+            messagebox.showerror('Codigo invalido', str(exc))
+            self.status.set('Codigo invalido ou nao encontrado.')
 
     def load_finance_summary(self):
         try:
