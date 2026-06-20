@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matricule-se - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Matrícula online</p>
+        <h1>Comece seu treino hoje</h1>
+        <p>Escolha um plano, envie seus dados e acompanhe a liberação do acesso com código ou QR Code após a confirmação financeira.</p>
+      </div>
+      <div class="health-card"><span>Fluxo</span><strong>Cadastro + Pagamento + QR</strong><small>pré-matrícula pública</small></div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Dados do aluno</h3>
+        <input id="public-name" placeholder="Nome completo" />
+        <input id="public-email" placeholder="E-mail" />
+        <input id="public-phone" placeholder="Telefone" />
+        <select id="public-plan"><option>Selecione o plano</option></select>
+        <button id="public-submit">Enviar pré-matrícula</button>
+        <p class="status-line" id="public-status">Após o envio, a academia confirma o pagamento e libera o código de validação.</p>
+      </article>
+      <article class="panel">
+        <h3>Como funciona</h3>
+        <p>1. O aluno escolhe o plano e envia os dados.</p>
+        <p>2. O financeiro confirma Pix, cartão ou boleto.</p>
+        <p>3. O sistema libera um código ou QR Code.</p>
+        <p>4. A recepção valida o código no software da academia.</p>
+      </article>
+    </section>
+  </main>
+  <script src="./matricula-publica.js"></script>
+</body>
+</html>
