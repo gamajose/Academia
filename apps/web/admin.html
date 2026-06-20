@@ -11,9 +11,9 @@
   <main class="app-shell">
     <section class="hero">
       <div>
-        <p class="eyebrow">Administração</p>
+        <p class="eyebrow">Academia Platform</p>
         <h1>Painel administrativo</h1>
-        <p>Área restrita para gestão da academia. A partir daqui o admin acessa alunos, planos, matrículas, financeiro, treinos, avaliações e relatórios.</p>
+        <p>Controle alunos, planos, check-ins, matriculas e financeiro.</p>
       </div>
       <div class="health-card">
         <span>Status da API</span>
@@ -43,26 +43,62 @@
       <div class="cards">
         <article><span>Alunos ativos</span><strong id="active-members">0</strong></article>
         <article><span>Planos ativos</span><strong id="active-plans">0</strong></article>
-        <article><span>Matrículas ativas</span><strong id="active-memberships">0</strong></article>
+        <article><span>Matriculas ativas</span><strong id="active-memberships">0</strong></article>
         <article><span>Check-ins hoje</span><strong id="today-checkins">0</strong></article>
         <article><span>Pagamentos pendentes</span><strong id="pending-payments">0</strong></article>
       </div>
 
-      <section class="panel">
-        <h3>Atalhos de gestão</h3>
-        <div class="quick-grid">
-          <a class="quick-card" href="./alunos.html"><strong>Alunos</strong><span>Lista, cadastro, edição, status e vínculo com plano.</span></a>
-          <a class="quick-card" href="./planos.html"><strong>Planos</strong><span>Cadastro e manutenção dos planos da academia.</span></a>
-          <a class="quick-card" href="./matriculas.html"><strong>Matrículas</strong><span>Controle de matrículas internas e ativações.</span></a>
-          <a class="quick-card" href="./reports.html"><strong>Financeiro</strong><span>Recebimentos, inadimplência e ajustes.</span></a>
-          <a class="quick-card" href="./training.html"><strong>Treinos</strong><span>Ficha, evolução e revisão de treino.</span></a>
-          <a class="quick-card" href="./assessments.html"><strong>Avaliações</strong><span>Evolução corporal e metas.</span></a>
-        </div>
-        <p class="status-line" id="action-message">Pronto para operar.</p>
-      </section>
+      <div class="grid">
+        <section class="panel">
+          <h3>Novo aluno</h3>
+          <input id="member-name" placeholder="Nome do aluno" />
+          <input id="member-email" placeholder="E-mail" />
+          <input id="member-phone" placeholder="Telefone" />
+          <button id="create-member-button">Cadastrar aluno</button>
+        </section>
+        <section class="panel">
+          <h3>Novo plano</h3>
+          <input id="plan-name" placeholder="Nome do plano" />
+          <input id="plan-price" type="number" placeholder="Valor em centavos. Ex: 9900" />
+          <input id="plan-days" type="number" placeholder="Duracao em dias" />
+          <button id="create-plan-button">Cadastrar plano</button>
+        </section>
+        <section class="panel">
+          <h3>Nova matricula</h3>
+          <select id="membership-member"></select>
+          <select id="membership-plan"></select>
+          <input id="membership-start" type="date" />
+          <button id="create-membership-button">Criar matricula</button>
+        </section>
+        <section class="panel">
+          <h3>Novo pagamento</h3>
+          <select id="payment-member"></select>
+          <select id="payment-membership"></select>
+          <input id="payment-amount" type="number" placeholder="Valor em centavos. Ex: 9900" />
+          <input id="payment-due" type="date" />
+          <button id="create-payment-button">Criar cobranca</button>
+        </section>
+        <section class="panel">
+          <h3>Check-in manual</h3>
+          <select id="checkin-member"></select>
+          <button id="create-checkin-button">Registrar check-in</button>
+        </section>
+        <section class="panel">
+          <h3>Operacao</h3>
+          <p class="status-line" id="action-message">Pronto para operar.</p>
+        </section>
+      </div>
+
+      <div class="grid lists-grid">
+        <section class="panel"><h3>Alunos recentes</h3><ul id="members-list"></ul></section>
+        <section class="panel"><h3>Planos</h3><ul id="plans-list"></ul></section>
+        <section class="panel"><h3>Matriculas</h3><ul id="memberships-list"></ul></section>
+        <section class="panel"><h3>Financeiro</h3><ul id="payments-list"></ul></section>
+      </div>
+
+      <section class="panel"><h3>Check-ins recentes</h3><ul id="checkins-list"></ul></section>
     </section>
   </main>
-
   <script src="./app.js"></script>
 </body>
 </html>
