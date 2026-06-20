@@ -36,6 +36,7 @@ function render() {
     const li = document.createElement('li');
     li.append(`${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)} | ${item.status} | código ${item.enrollment_code || '-'} `);
     li.appendChild(button('Confirmar recebimento', () => approve(item), item.status === 'confirmed'));
+    li.appendChild(button('Ver código/QR', () => showQr(item), item.status !== 'confirmed'));
     list.appendChild(li);
   }
   if (!list.children.length) {
@@ -67,6 +68,18 @@ async function approve(item) {
   }
 }
 
+function showQr(item) {
+  const code = item.enrollment_code || '';
+  s('qr-name').textContent = `${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)}`;
+  s('qr-code').textContent = code;
+  s('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(code)}`;
+  s('qr-modal').classList.remove('hidden');
+}
+
+function closeQr() {
+  s('qr-modal').classList.add('hidden');
+}
+
 async function checkCode() {
   try {
     const code = encodeURIComponent(s('check-code').value.trim());
@@ -80,4 +93,5 @@ async function checkCode() {
 s('reload-signups').onclick = load;
 s('signup-search').oninput = render;
 s('check-code-button').onclick = checkCode;
+s('close-qr-modal').onclick = closeQr;
 load();
