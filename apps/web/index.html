@@ -4,42 +4,76 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Academia Platform</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./product-layout.css" />
+  <link rel="stylesheet" href="./landing.css" />
 </head>
 <body>
-  <main class="app-shell">
-    <section class="hero">
+  <main class="site-shell">
+    <header class="site-header">
+      <div class="brand">Academia Platform</div>
+      <nav class="site-nav">
+        <a href="#planos">Planos</a>
+        <a href="#beneficios">Benefícios</a>
+        <a href="./student-login.html">Área do aluno</a>
+        <a href="./admin.html">Login</a>
+      </nav>
+    </header>
+
+    <section class="site-hero">
       <div>
-        <p class="eyebrow">Academia Platform</p>
-        <h1>Academia conectada, simples e moderna</h1>
-        <p>Treine melhor, acompanhe sua evolução e tenha sua matrícula conectada ao app, ao painel web e ao atendimento da academia.</p>
-        <div class="toolbar-actions">
-          <a href="./admin.html">Já tenho acesso</a>
-          <a href="./matricula-publica.html">Matricule-se</a>
-          <a href="./student-login.html">Área do aluno</a>
+        <p>Academia completa para treinar, acompanhar evolução e manter sua matrícula em dia.</p>
+        <h1>Seu treino, seu acesso e sua evolução em um só lugar.</h1>
+        <p>Escolha um plano, faça sua pré-matrícula online e receba seu código de liberação após a confirmação financeira.</p>
+        <div class="hero-actions">
+          <a class="cta" href="./matricula-publica.html">Matricule-se agora</a>
+          <a class="cta secondary" href="./student-login.html">Área do aluno</a>
+          <a class="cta ghost" href="./admin.html">Já tenho acesso</a>
         </div>
       </div>
-      <div class="health-card">
-        <span>Ambiente integrado</span>
-        <strong>Web + Mobile + Desktop</strong>
-        <small>mesma API e mesma base de dados</small>
+      <div class="hero-card">
+        <div class="hero-photo">TREINO</div>
+        <div class="metric-row">
+          <div class="metric"><strong>QR</strong><span>Entrada validada</span></div>
+          <div class="metric"><strong>App</strong><span>Ficha e evolução</span></div>
+          <div class="metric"><strong>Web</strong><span>Matrícula online</span></div>
+        </div>
       </div>
     </section>
 
-    <section class="cards">
-      <article><span>Planos</span><strong>Flexível</strong></article>
-      <article><span>Check-in</span><strong>QR Code</strong></article>
-      <article><span>Treinos</span><strong>Online</strong></article>
-      <article><span>Evolução</span><strong>Metas</strong></article>
-      <article><span>Pagamentos</span><strong>Pix</strong></article>
+    <section class="site-section" id="beneficios">
+      <div class="section-title"><h2>O que você encontra aqui</h2></div>
+      <div class="feature-grid">
+        <article class="feature"><strong>Matrícula online</strong><p>Escolha seu plano, envie seus dados e acompanhe a liberação pela academia.</p></article>
+        <article class="feature"><strong>Área do aluno</strong><p>Acesse treinos, avaliações, metas, histórico e comprovantes pelo portal.</p></article>
+        <article class="feature"><strong>Entrada por código/QR</strong><p>Após a confirmação, apresente o código ou QR Code na recepção.</p></article>
+      </div>
     </section>
 
-    <section class="grid">
-      <article class="panel"><h3>Para alunos</h3><p>Acesse sua ficha, metas, avaliações, histórico e comprovantes pelo portal do aluno ou pelo aplicativo.</p></article>
-      <article class="panel"><h3>Para a academia</h3><p>O time administrativo gerencia alunos, planos, matrículas, financeiro, treinos, avaliações e relatórios em telas separadas.</p></article>
+    <section class="site-section" id="planos">
+      <div class="section-title"><h2>Planos disponíveis</h2><a class="cta secondary" href="./matricula-publica.html">Ver matrícula</a></div>
+      <div class="plan-grid" id="landing-plans">
+        <article class="plan-card"><strong>Carregando planos...</strong><p>Aguarde enquanto buscamos os planos disponíveis.</p></article>
+      </div>
     </section>
+
+    <section class="site-band">
+      <div><h2>Pronto para começar?</h2><p>Faça sua pré-matrícula e aguarde a confirmação para liberar seu código de acesso.</p></div>
+      <a class="cta secondary" href="./matricula-publica.html">Quero me matricular</a>
+    </section>
+
+    <footer class="site-footer">Academia Platform - ambiente web, mobile e desktop integrado.</footer>
   </main>
+
+  <div class="plan-modal hidden" id="plan-modal">
+    <div class="plan-modal-card">
+      <button class="cta ghost" id="close-plan-modal">Fechar</button>
+      <h2 id="modal-plan-name"></h2>
+      <div class="plan-price" id="modal-plan-price"></div>
+      <p id="modal-plan-desc"></p>
+      <ul class="benefit-list" id="modal-plan-benefits"></ul>
+      <a class="cta" href="./matricula-publica.html">Escolher este plano</a>
+    </div>
+  </div>
+
+  <script src="./landing.js"></script>
 </body>
 </html>
