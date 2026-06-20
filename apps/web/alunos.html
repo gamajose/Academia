@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alunos - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Administração</p>
+        <h1>Alunos</h1>
+        <p>Lista de alunos com plano, status, inadimplência e ações de cadastro.</p>
+      </div>
+      <div class="health-card"><span>Módulo</span><strong>Alunos</strong><small>cadastro, edição e status</small></div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <h2>Lista de alunos</h2>
+        <button id="new-student-button">Cadastrar aluno</button>
+      </div>
+      <input id="student-search" placeholder="Buscar aluno por nome, e-mail ou telefone" />
+      <p class="status-line" id="students-status">Carregando...</p>
+      <ul id="students-list"></ul>
+    </section>
+
+    <section class="panel hidden" id="student-form-panel">
+      <h3>Cadastro do aluno</h3>
+      <input id="student-id" type="hidden" />
+      <input id="student-name" placeholder="Nome do aluno" />
+      <input id="student-email" placeholder="E-mail" />
+      <input id="student-phone" placeholder="Telefone" />
+      <button id="save-student-button">Salvar aluno</button>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./alunos.js"></script>
+</body>
+</html>
