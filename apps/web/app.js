@@ -91,6 +91,14 @@ async function checkHealth() {
   }
 }
 
+function currentPage() {
+  return window.location.pathname.split('/').pop() || 'index.html';
+}
+
+function goPanel() {
+  window.location.href = './painel.html';
+}
+
 async function login() {
   const email = byId('email').value.trim();
   const password = byId('password').value;
@@ -99,6 +107,7 @@ async function login() {
     const data = await request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     token = data.token;
     localStorage.setItem('academiaToken', token);
+    if (currentPage() === 'admin.html') return goPanel();
     byId('login-card').classList.add('hidden');
     byId('dashboard').classList.remove('hidden');
     byId('login-message').textContent = '';
@@ -111,6 +120,10 @@ async function login() {
 function logout() {
   localStorage.removeItem('academiaToken');
   token = '';
+  if (currentPage() !== 'admin.html') {
+    window.location.href = './admin.html';
+    return;
+  }
   if (byId('login-card')) byId('login-card').classList.remove('hidden');
   if (byId('dashboard')) byId('dashboard').classList.add('hidden');
 }
@@ -288,6 +301,7 @@ bind('create-payment-button', 'click', createPayment);
 bind('create-checkin-button', 'click', createCheckin);
 
 checkHealth();
+if (token && currentPage() === 'admin.html') goPanel();
 if (token && byId('login-card') && byId('dashboard')) {
   byId('login-card').classList.add('hidden');
   byId('dashboard').classList.remove('hidden');
