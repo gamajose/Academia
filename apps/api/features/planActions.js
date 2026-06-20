@@ -9,6 +9,18 @@ async function handlePlanActions(req, res, user, url, helpers) {
     return send(res, 200, { data: result.rows });
   }
 
+  if (req.method === 'POST' && url.pathname === '/api/plans/detail') {
+    const input = await body(req);
+    if (!input.name) return send(res, 400, { error: 'nome_obrigatorio' });
+    const result = await query(
+      `INSERT INTO plans (gym_id, name, price_cents, duration_days, description, benefits, rules, public_highlight)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       RETURNING id, name, price_cents, duration_days, is_active, description, benefits, rules, public_highlight, created_at`,
+      [user.gym_id, input.name, Number(input.price_cents || 0), Number(input.duration_days || 30), input.description || null, input.benefits || null, input.rules || null, input.public_highlight || null]
+    );
+    return send(res, 201, result.rows[0]);
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/plans/update') {
     const input = await body(req);
     if (!input.plan_id) return send(res, 400, { error: 'plan_id_obrigatorio' });
