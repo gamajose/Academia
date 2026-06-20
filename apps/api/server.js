@@ -6,6 +6,7 @@ const { canAccess } = require('./lib/accessControl');
 const { handleMemberships } = require('./features/memberships');
 const { handlePayments } = require('./features/payments');
 const { handleAdminRoutes } = require('./features/adminRoutes');
+const { handleMemberDetailRoutes } = require('./features/memberDetailRoutes');
 const { handleTrainingRoutes } = require('./features/trainingRoutes');
 const { handleTrainingPlansRoutes } = require('./features/trainingPlansRoutes');
 const { handleStudentRoutes } = require('./features/studentRoutes');
@@ -131,6 +132,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/auth/login') return login(req, res);
 
     const helpers = { send, body, query };
+    if (url.pathname.startsWith('/api/public')) return handleMemberDetailRoutes(req, res, null, url, helpers);
     if (req.method === 'POST' && url.pathname === '/api/student/auth/login') return handleStudentRoutes(req, res, null, url, helpers);
 
     const user = auth(req);
