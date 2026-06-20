@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Financeiro - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./product-layout.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Administração</p>
+        <h1>Financeiro</h1>
+        <p>Dashboard de recebimentos, pendências, atrasos e ações vinculadas ao aluno.</p>
+      </div>
+      <div class="health-card"><span>Módulo</span><strong>Financeiro</strong><small>recebidos, pendentes e atrasados</small></div>
+    </section>
+
+    <section class="cards finance-summary">
+      <article><span>Recebido</span><strong id="fin-paid">R$ 0,00</strong></article>
+      <article><span>A receber</span><strong id="fin-pending">R$ 0,00</strong></article>
+      <article><span>Em atraso</span><strong id="fin-overdue">0</strong></article>
+      <article><span>Em dia</span><strong id="fin-ok">0</strong></article>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <h2>Lançamentos</h2>
+        <button id="reload-finance">Atualizar</button>
+      </div>
+      <input id="finance-search" placeholder="Buscar por aluno ou status" />
+      <p class="status-line" id="finance-status">Carregando...</p>
+      <ul id="finance-list"></ul>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="finance-modal">
+    <div class="modal-card">
+      <div class="toolbar"><h3>Ajuste financeiro</h3><button class="secondary" id="close-finance-modal">Fechar</button></div>
+      <input id="finance-payment-id" type="hidden" />
+      <input id="finance-student-name" disabled />
+      <input id="finance-discount" type="number" placeholder="Desconto em centavos" />
+      <input id="finance-fee" type="number" placeholder="Taxa ou juros em centavos" />
+      <input id="finance-method" placeholder="Forma de pagamento: Pix, cartão, boleto, dinheiro" />
+      <textarea id="finance-notes" placeholder="Observações"></textarea>
+      <button id="apply-finance-adjust">Aplicar ajuste</button>
+    </div>
+  </div>
+
+  <script src="./guard.js"></script>
+  <script src="./nav.js"></script>
+  <script src="./financeiro.js"></script>
+</body>
+</html>
