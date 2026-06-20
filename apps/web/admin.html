@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Administração</p>
+        <h1>Painel administrativo</h1>
+        <p>Área restrita para gestão da academia. A partir daqui o admin acessa alunos, planos, matrículas, financeiro, treinos, avaliações e relatórios.</p>
+      </div>
+      <div class="health-card">
+        <span>Status da API</span>
+        <strong id="api-status">validando...</strong>
+        <small id="api-url"></small>
+      </div>
+    </section>
+
+    <section class="login-card" id="login-card">
+      <h2>Acesso</h2>
+      <label>E-mail</label>
+      <input id="email" type="email" placeholder="admin@academia.com" />
+      <label>Senha</label>
+      <input id="password" type="password" placeholder="senha" />
+      <button id="login-button">Entrar</button>
+      <small id="login-message"></small>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard">
+      <div class="toolbar">
+        <h2>Resumo</h2>
+        <div class="toolbar-actions">
+          <button id="refresh-button">Atualizar</button>
+          <button id="logout-button" class="secondary">Sair</button>
+        </div>
+      </div>
+      <div class="cards">
+        <article><span>Alunos ativos</span><strong id="active-members">0</strong></article>
+        <article><span>Planos ativos</span><strong id="active-plans">0</strong></article>
+        <article><span>Matrículas ativas</span><strong id="active-memberships">0</strong></article>
+        <article><span>Check-ins hoje</span><strong id="today-checkins">0</strong></article>
+        <article><span>Pagamentos pendentes</span><strong id="pending-payments">0</strong></article>
+      </div>
+
+      <section class="panel">
+        <h3>Atalhos de gestão</h3>
+        <div class="quick-grid">
+          <a class="quick-card" href="./alunos.html"><strong>Alunos</strong><span>Lista, cadastro, edição, status e vínculo com plano.</span></a>
+          <a class="quick-card" href="./planos.html"><strong>Planos</strong><span>Cadastro e manutenção dos planos da academia.</span></a>
+          <a class="quick-card" href="./matriculas.html"><strong>Matrículas</strong><span>Controle de matrículas internas e ativações.</span></a>
+          <a class="quick-card" href="./reports.html"><strong>Financeiro</strong><span>Recebimentos, inadimplência e ajustes.</span></a>
+          <a class="quick-card" href="./training.html"><strong>Treinos</strong><span>Ficha, evolução e revisão de treino.</span></a>
+          <a class="quick-card" href="./assessments.html"><strong>Avaliações</strong><span>Evolução corporal e metas.</span></a>
+        </div>
+        <p class="status-line" id="action-message">Pronto para operar.</p>
+      </section>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
