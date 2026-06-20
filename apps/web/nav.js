@@ -14,7 +14,7 @@ function renderNavigation() {
     ['admin.html', 'Painel'],
     ['alunos.html', 'Alunos'],
     ['planos.html', 'Planos'],
-    ['reports.html', 'Financeiro'],
+    ['financeiro.html', 'Financeiro'],
     ['alerts.html', 'Alertas'],
     ['training.html', 'Treinos'],
     ['assessments.html', 'Avaliacao'],
@@ -29,10 +29,10 @@ function renderNavigation() {
 }
 
 function requireSession() {
-  const publicPages = ['home.html', 'index.html', 'matricula-publica.html'];
+  const publicPages = ['home.html', 'index.html', 'matricula-publica.html', 'student-login.html'];
   const current = window.location.pathname.split('/').pop() || 'index.html';
   const token = localStorage.getItem('academiaToken') || '';
-  if (!token && !publicPages.includes(current)) window.location.href = './index.html';
+  if (!token && !publicPages.includes(current)) window.location.href = './admin.html';
 }
 
 renderNavigation();
