@@ -12,114 +12,39 @@
     <section class="hero">
       <div>
         <p class="eyebrow">Academia Platform</p>
-        <h1>Painel administrativo</h1>
-        <p>Controle alunos, planos, check-ins, matriculas e financeiro em uma base preparada para crescer.</p>
-      </div>
-      <div class="health-card">
-        <span>Status da API</span>
-        <strong id="api-status">validando...</strong>
-        <small id="api-url"></small>
-      </div>
-    </section>
-
-    <section class="login-card" id="login-card">
-      <h2>Acesso</h2>
-      <label>E-mail</label>
-      <input id="email" type="email" placeholder="admin@academia.com" />
-      <label>Senha</label>
-      <input id="password" type="password" placeholder="senha" />
-      <button id="login-button">Entrar</button>
-      <small id="login-message"></small>
-    </section>
-
-    <section class="dashboard hidden" id="dashboard">
-      <div class="toolbar">
-        <h2>Resumo</h2>
+        <h1>Academia conectada, simples e moderna</h1>
+        <p>Treine melhor, acompanhe sua evolução e tenha sua matrícula conectada ao app, ao painel web e ao atendimento da academia.</p>
         <div class="toolbar-actions">
-          <button id="refresh-button">Atualizar</button>
-          <button id="logout-button" class="secondary">Sair</button>
+          <a class="quick-card" href="./admin.html">Já tenho acesso</a>
+          <a class="quick-card" href="./matricula-publica.html">Quero me matricular</a>
+          <a class="quick-card" href="./student-login.html">Área do aluno</a>
         </div>
       </div>
-      <div class="cards">
-        <article><span>Alunos ativos</span><strong id="active-members">0</strong></article>
-        <article><span>Planos ativos</span><strong id="active-plans">0</strong></article>
-        <article><span>Matriculas ativas</span><strong id="active-memberships">0</strong></article>
-        <article><span>Check-ins hoje</span><strong id="today-checkins">0</strong></article>
-        <article><span>Pagamentos pendentes</span><strong id="pending-payments">0</strong></article>
+      <div class="health-card">
+        <span>Ambiente integrado</span>
+        <strong>Web + Mobile + Desktop</strong>
+        <small>mesma API e mesma base de dados</small>
       </div>
+    </section>
 
-      <div class="grid">
-        <section class="panel">
-          <h3>Novo aluno</h3>
-          <input id="member-name" placeholder="Nome do aluno" />
-          <input id="member-email" placeholder="E-mail" />
-          <input id="member-phone" placeholder="Telefone" />
-          <button id="create-member-button">Cadastrar aluno</button>
-        </section>
+    <section class="cards">
+      <article><span>Planos</span><strong>Flexível</strong></article>
+      <article><span>Check-in</span><strong>QR Code</strong></article>
+      <article><span>Treinos</span><strong>Online</strong></article>
+      <article><span>Evolução</span><strong>Metas</strong></article>
+      <article><span>Pagamentos</span><strong>Pix</strong></article>
+    </section>
 
-        <section class="panel">
-          <h3>Novo plano</h3>
-          <input id="plan-name" placeholder="Nome do plano" />
-          <input id="plan-price" type="number" placeholder="Valor em centavos. Ex: 9900" />
-          <input id="plan-days" type="number" placeholder="Duracao em dias" />
-          <button id="create-plan-button">Cadastrar plano</button>
-        </section>
-
-        <section class="panel">
-          <h3>Nova matricula</h3>
-          <select id="membership-member"></select>
-          <select id="membership-plan"></select>
-          <input id="membership-start" type="date" />
-          <button id="create-membership-button">Criar matricula</button>
-        </section>
-
-        <section class="panel">
-          <h3>Novo pagamento</h3>
-          <select id="payment-member"></select>
-          <select id="payment-membership"></select>
-          <input id="payment-amount" type="number" placeholder="Valor em centavos. Ex: 9900" />
-          <input id="payment-due" type="date" />
-          <button id="create-payment-button">Criar cobranca</button>
-        </section>
-
-        <section class="panel">
-          <h3>Check-in manual</h3>
-          <select id="checkin-member"></select>
-          <button id="create-checkin-button">Registrar check-in</button>
-        </section>
-
-        <section class="panel">
-          <h3>Operacao</h3>
-          <p class="status-line" id="action-message">Pronto para operar.</p>
-        </section>
-      </div>
-
-      <div class="grid lists-grid">
-        <section class="panel">
-          <h3>Alunos recentes</h3>
-          <ul id="members-list"></ul>
-        </section>
-        <section class="panel">
-          <h3>Planos</h3>
-          <ul id="plans-list"></ul>
-        </section>
-        <section class="panel">
-          <h3>Matriculas</h3>
-          <ul id="memberships-list"></ul>
-        </section>
-        <section class="panel">
-          <h3>Financeiro</h3>
-          <ul id="payments-list"></ul>
-        </section>
-      </div>
-
-      <section class="panel">
-        <h3>Check-ins recentes</h3>
-        <ul id="checkins-list"></ul>
-      </section>
+    <section class="grid">
+      <article class="panel">
+        <h3>Para alunos</h3>
+        <p>Acesse sua ficha, metas, avaliações, histórico e comprovantes pelo portal do aluno ou pelo aplicativo.</p>
+      </article>
+      <article class="panel">
+        <h3>Para a academia</h3>
+        <p>O time administrativo gerencia alunos, planos, matrículas, financeiro, treinos, avaliações e relatórios em telas separadas.</p>
+      </article>
     </section>
   </main>
-
-  <script src="./app.js"></script>
 </body>
 </html>
