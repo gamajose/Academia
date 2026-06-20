@@ -10,6 +10,7 @@ const { handleMemberDetailRoutes } = require('./features/memberDetailRoutes');
 const { handleTrainingRoutes } = require('./features/trainingRoutes');
 const { handleTrainingPlansRoutes } = require('./features/trainingPlansRoutes');
 const { handleStudentRoutes } = require('./features/studentRoutes');
+const { handleOnlineSignupRoutes } = require('./features/onlineSignupRoutes');
 
 const port = Number(process.env.PORT || 3004);
 
@@ -138,6 +139,9 @@ const server = http.createServer(async (req, res) => {
     const user = auth(req);
     if (!user) return send(res, 401, { error: 'nao_autorizado' });
     if (!canAccess(user, req.method, url.pathname)) return send(res, 403, { error: 'sem_permissao' });
+
+    const signupHandled = await handleOnlineSignupRoutes(req, res, user, url, helpers);
+    if (signupHandled !== false) return signupHandled;
 
     const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
     if (studentHandled !== false) return studentHandled;
