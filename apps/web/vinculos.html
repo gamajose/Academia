@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matrículas - Academia Platform</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./product-layout.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Administração</p>
+        <h1>Matrículas</h1>
+        <p>Gerencie o vínculo entre aluno e plano, validade, status e cancelamentos.</p>
+      </div>
+      <div class="health-card"><span>Módulo</span><strong>Matrículas</strong><small>aluno + plano + validade</small></div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <h2>Lista de matrículas</h2>
+        <button id="new-link-button">Nova matrícula</button>
+      </div>
+      <input id="link-search" placeholder="Buscar por aluno, plano ou status" />
+      <p class="status-line" id="link-status">Carregando...</p>
+      <ul id="link-list"></ul>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="link-modal">
+    <div class="modal-card">
+      <div class="toolbar"><h3>Nova matrícula</h3><button class="secondary" id="close-link-modal">Fechar</button></div>
+      <select id="link-member"></select>
+      <select id="link-plan"></select>
+      <input id="link-start" type="date" />
+      <button id="save-link-button">Salvar matrícula</button>
+    </div>
+  </div>
+
+  <script src="./guard.js"></script>
+  <script src="./nav.js"></script>
+  <script src="./vinculos.js"></script>
+</body>
+</html>
