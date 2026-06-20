@@ -1,116 +1,99 @@
-const studentsHost = window.location.hostname || 'localhost';
-const STUDENTS_API = localStorage.getItem('apiBaseUrl') || `http://${studentsHost}:3004`;
-const STUDENTS_TOKEN = localStorage.getItem('academiaToken') || '';
-const s = (id) => document.getElementById(id);
-let students = [];
-let memberships = [];
-let payments = [];
+const host = window.location.hostname || 'localhost';
+const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+const TOKEN = localStorage.getItem('academiaToken') || '';
+const $ = (id) => document.getElementById(id);
+let rows = [];
 
-async function api(path, options = {}) {
-  const response = await fetch(`${STUDENTS_API}${path}`, {
+async function req(path, options = {}) {
+  const response = await fetch(`${API}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${STUDENTS_TOKEN}`,
-      ...(options.headers || {})
-    }
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}`, ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'erro_requisicao');
   return data;
 }
 
-function money(cents) {
-  return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+function brl(v) { return (Number(v || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+function btn(text, fn) { const b = document.createElement('button'); b.className = 'mini-button'; b.textContent = text; b.onclick = fn; return b; }
+function val(id) { return $(id)?.value?.trim() || ''; }
 
-function currentMembership(memberId) {
-  return memberships.find((item) => item.member_id === memberId || item.member_id == memberId);
-}
-
-function debt(memberId) {
-  return payments.filter((item) => item.member_id === memberId && item.status === 'pending').reduce((total, item) => total + Number(item.amount_cents || 0), 0);
-}
-
-function rowButton(text, handler) {
-  const button = document.createElement('button');
-  button.className = 'mini-button';
-  button.textContent = text;
-  button.addEventListener('click', handler);
-  return button;
-}
-
-function renderStudents() {
-  const list = s('students-list');
-  const term = s('student-search').value.toLowerCase();
+function render() {
+  const list = $('students-list');
+  const term = val('student-search').toLowerCase();
   list.innerHTML = '';
-  const rows = students.filter((item) => `${item.name} ${item.email || ''} ${item.phone || ''}`.toLowerCase().includes(term));
-  if (!rows.length) {
-    const empty = document.createElement('li');
-    empty.textContent = 'Nenhum aluno encontrado.';
-    list.appendChild(empty);
-    return;
+  for (const item of rows.filter((x) => `${x.name} ${x.email || ''} ${x.phone || ''}`.toLowerCase().includes(term))) {
+    const li = document.createElement('li');
+    const pending = Number(item.pending_amount_cents || 0);
+    li.append(`${item.name} | ${item.status} | ${item.plan_name || 'sem plano'} | ${pending > 0 ? 'pendente ' + brl(pending) : 'em dia'} `);
+    li.appendChild(btn('Cadastro', () => openModal(item)));
+    li.appendChild(btn(item.status === 'active' ? 'Desativar' : 'Ativar', () => toggle(item)));
+    list.appendChild(li);
   }
-  for (const student of rows) {
-    const item = document.createElement('li');
-    const membership = currentMembership(student.id);
-    const pending = debt(student.id);
-    item.append(`${student.name} | ${student.status} | plano: ${membership ? membership.plan_name : 'sem plano'} | financeiro: ${pending > 0 ? `inadimplente ${money(pending)}` : 'em dia'} `);
-    item.appendChild(rowButton('Editar', () => openForm(student)));
-    item.appendChild(rowButton(student.status === 'active' ? 'Desativar' : 'Ativar', () => toggleStudent(student)));
-    list.appendChild(item);
-  }
+  if (!list.children.length) { const li = document.createElement('li'); li.textContent = 'Nenhum aluno encontrado.'; list.appendChild(li); }
 }
 
-async function loadStudents() {
-  if (!STUDENTS_TOKEN) {
-    s('students-status').textContent = 'Faça login no painel antes de acessar alunos.';
-    return;
-  }
+async function load() {
+  if (!TOKEN) { location.href = './admin.html'; return; }
   try {
-    const [membersResult, membershipsResult, paymentsResult] = await Promise.all([
-      api('/api/members'),
-      api('/api/memberships'),
-      api('/api/payments')
-    ]);
-    students = membersResult.data || [];
-    memberships = membershipsResult.data || [];
-    payments = paymentsResult.data || [];
-    renderStudents();
-    s('students-status').textContent = 'Alunos carregados.';
-  } catch (error) {
-    s('students-status').textContent = `Erro: ${error.message}`;
-  }
+    const result = await req('/api/members/detail');
+    rows = result.data || [];
+    render();
+    $('students-status').textContent = 'Alunos carregados.';
+  } catch (error) { $('students-status').textContent = `Erro: ${error.message}`; }
 }
 
-function openForm(student = null) {
-  s('student-form-panel').classList.remove('hidden');
-  s('student-id').value = student?.id || '';
-  s('student-name').value = student?.name || '';
-  s('student-email').value = student?.email || '';
-  s('student-phone').value = student?.phone || '';
+function openModal(item = {}) {
+  $('student-form-panel').classList.remove('hidden');
+  $('student-id').value = item.id || '';
+  $('student-name').value = item.name || '';
+  $('student-document').value = item.document || '';
+  $('student-email').value = item.email || '';
+  $('student-phone').value = item.phone || '';
+  $('student-birth').value = item.birth_date ? String(item.birth_date).slice(0, 10) : '';
+  $('student-emergency').value = item.emergency_contact || '';
+  $('student-address').value = item.address || '';
+  $('student-objective').value = item.objective || '';
+  $('student-allergies').value = item.allergies || '';
+  $('student-medical').value = item.medical_notes || '';
+  $('student-nutrition').value = item.nutrition_notes || '';
+  $('student-notes').value = item.notes || '';
 }
 
-async function saveStudent() {
+function closeModal() { $('student-form-panel').classList.add('hidden'); }
+
+async function save() {
   try {
-    const id = s('student-id').value;
-    const payload = { name: s('student-name').value.trim(), email: s('student-email').value.trim(), phone: s('student-phone').value.trim() };
-    if (id) await api('/api/members/update', { method: 'POST', body: JSON.stringify({ member_id: id, ...payload }) });
-    else await api('/api/members', { method: 'POST', body: JSON.stringify(payload) });
-    s('student-form-panel').classList.add('hidden');
-    await loadStudents();
-  } catch (error) {
-    s('students-status').textContent = `Erro ao salvar: ${error.message}`;
-  }
+    await req('/api/members/detail/save', {
+      method: 'POST',
+      body: JSON.stringify({
+        member_id: val('student-id') || undefined,
+        name: val('student-name'),
+        document: val('student-document'),
+        email: val('student-email'),
+        phone: val('student-phone'),
+        birth_date: val('student-birth') || null,
+        emergency_contact: val('student-emergency'),
+        address: val('student-address'),
+        objective: val('student-objective'),
+        allergies: val('student-allergies'),
+        medical_notes: val('student-medical'),
+        nutrition_notes: val('student-nutrition'),
+        notes: val('student-notes')
+      })
+    });
+    closeModal();
+    await load();
+  } catch (error) { $('students-status').textContent = `Erro ao salvar: ${error.message}`; }
 }
 
-async function toggleStudent(student) {
-  const path = student.status === 'active' ? '/api/members/deactivate' : '/api/members/activate';
-  await api(path, { method: 'POST', body: JSON.stringify({ member_id: student.id }) });
-  await loadStudents();
+async function toggle(item) {
+  await req(item.status === 'active' ? '/api/members/deactivate' : '/api/members/activate', { method: 'POST', body: JSON.stringify({ member_id: item.id }) });
+  await load();
 }
 
-s('new-student-button').addEventListener('click', () => openForm());
-s('save-student-button').addEventListener('click', saveStudent);
-s('student-search').addEventListener('input', renderStudents);
-loadStudents();
+$('new-student-button').onclick = () => openModal();
+$('close-student-modal').onclick = closeModal;
+$('save-student-button').onclick = save;
+$('student-search').oninput = render;
+load();
