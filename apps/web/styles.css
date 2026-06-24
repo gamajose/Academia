@@ -1,13 +1,14 @@
 :root {
-  --bg: #0f172a;
-  --card: #111827;
-  --muted: #94a3b8;
-  --text: #f8fafc;
-  --line: rgba(255,255,255,.12);
-  --accent: #38bdf8;
-  --ok: #22c55e;
-  --warn: #f59e0b;
-  --bad: #ef4444;
+  --bg: #f3f0ea;
+  --card: #ffffff;
+  --muted: #63707c;
+  --text: #171717;
+  --line: #ded6ca;
+  --accent: #b91c1c;
+  --accent-2: #18352f;
+  --ok: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
 }
 
 * { box-sizing: border-box; }
@@ -15,7 +16,7 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: Arial, sans-serif;
-  background: radial-gradient(circle at top left, #1e3a8a, var(--bg));
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -28,10 +29,10 @@ a { color: var(--accent); }
 
 .health-card, .login-card, .panel, .cards article {
   border: 1px solid var(--line);
-  background: rgba(15, 23, 42, .78);
-  border-radius: 18px;
+  background: var(--card);
+  border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 18px 50px rgba(0,0,0,.28);
+  box-shadow: 0 12px 32px rgba(23,23,23,.07);
 }
 .health-card { min-width: 220px; display: grid; align-content: center; gap: 8px; }
 .health-card strong { color: var(--ok); }
@@ -40,15 +41,17 @@ a { color: var(--accent); }
 input, button, select, textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 12px 14px;
-  background: #020617;
+  background: #fff;
   color: var(--text);
 }
 textarea { min-height: 96px; resize: vertical; }
-button { cursor: pointer; border: 0; background: var(--accent); color: #082f49; font-weight: 700; }
+button { cursor: pointer; border: 0; background: var(--accent); color: #fff; font-weight: 800; }
 button:disabled { opacity: .55; cursor: not-allowed; }
 .secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.login-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.login-links a, .link-button { width: auto; padding: 0; border: 0; background: transparent; color: var(--accent); font-weight: 800; text-decoration: none; box-shadow: none; }
 .mini-button { width: auto; padding: 6px 10px; margin-left: 8px; border-radius: 8px; font-size: 12px; }
 small { min-height: 18px; color: var(--muted); }
 .hidden { display: none; }
@@ -66,11 +69,11 @@ ul { padding-left: 18px; color: var(--muted); }
 li { margin-bottom: 10px; line-height: 1.5; }
 .status-line { color: var(--accent); font-weight: 700; }
 .empty-state { color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 14px; }
-.badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: rgba(56,189,248,.12); color: var(--accent); font-size: 12px; }
+.badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: rgba(185,28,28,.10); color: var(--accent); font-size: 12px; }
 .badge.warn { background: rgba(245,158,11,.15); color: var(--warn); }
 .badge.bad { background: rgba(239,68,68,.15); color: var(--bad); }
 .chart-card { min-height: 220px; }
-.chart-svg { width: 100%; min-height: 220px; border: 1px solid var(--line); border-radius: 14px; background: rgba(2,6,23,.45); }
+.chart-svg { width: 100%; min-height: 220px; border: 1px solid var(--line); border-radius: 8px; background: #fffaf1; }
 .chart-line { fill: none; stroke: var(--accent); stroke-width: 3; }
 .chart-dot { fill: var(--accent); }
 .chart-label { fill: var(--muted); font-size: 11px; }

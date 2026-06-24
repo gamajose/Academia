@@ -1,0 +1,16 @@
+[Unit]
+Description=Academia Lobo Web
+After=network.target academia-api.service
+
+[Service]
+Type=simple
+WorkingDirectory=/mnt/Projetos/Academia/apps/web
+Environment=PORT=8084
+Environment=API_BASE_URL=http://127.0.0.1:3004
+ExecStart=/usr/bin/python3 site_server.py
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

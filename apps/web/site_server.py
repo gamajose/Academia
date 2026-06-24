@@ -1,24 +1,74 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import os
+import json
+from urllib import request, error
 
 PORT = int(os.environ.get('PORT', '8084'))
+API_BASE_URL = os.environ.get('API_BASE_URL', 'http://127.0.0.1:3004').rstrip('/')
 ROOT = Path(__file__).resolve().parent
-OPEN_HTML = {'', '/', 'index.html', 'admin.html', 'matricula-publica.html', 'student-login.html', 'home.html'}
+PUBLIC_HTML = {'', '/', 'index.html', 'matricula-publica.html', 'student-login.html', 'home.html'}
+STUDENT_HTML = {'student-portal.html'}
+ADMIN_ROLES = {'owner', 'admin', 'staff'}
+
+
+def cookie_value(cookie, name):
+    prefix = f'{name}='
+    for item in cookie.split(';'):
+        part = item.strip()
+        if part.startswith(prefix):
+            return part[len(prefix):]
+    return ''
+
+
+def api_get(path, token):
+    if not token:
+        return None
+    req = request.Request(
+        f'{API_BASE_URL}{path}',
+        headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
+        method='GET'
+    )
+    try:
+        with request.urlopen(req, timeout=4) as response:
+            raw = response.read().decode('utf-8') or '{}'
+            return json.loads(raw)
+    except (error.HTTPError, error.URLError, TimeoutError, json.JSONDecodeError):
+        return None
+
 
 class SiteHandler(SimpleHTTPRequestHandler):
     def translate_path(self, path):
         name = path.split('?', 1)[0].split('#', 1)[0].lstrip('/') or 'index.html'
         return str(ROOT / name)
 
+    def redirect(self, location):
+        self.send_response(302)
+        self.send_header('Location', location)
+        self.end_headers()
+
+    def authorized_for_html(self, name):
+        if name in PUBLIC_HTML or not name.endswith('.html'):
+            return True
+
+        cookie = self.headers.get('Cookie', '')
+        admin_token = cookie_value(cookie, 'academiaAuth')
+        student_token = cookie_value(cookie, 'academiaStudentAuth')
+
+        if name in STUDENT_HTML:
+            student = api_get('/api/student/me', student_token)
+            return bool(student and student.get('id'))
+
+        profile = api_get('/api/me', admin_token)
+        return bool(profile and profile.get('role') in ADMIN_ROLES)
+
     def do_GET(self):
         name = self.path.split('?', 1)[0].split('#', 1)[0].lstrip('/') or 'index.html'
-        cookie = self.headers.get('Cookie', '')
-        allowed = name in OPEN_HTML or not name.endswith('.html') or 'academiaPortal=1' in cookie
-        if not allowed:
-            self.send_response(302)
-            self.send_header('Location', '/admin.html')
-            self.end_headers()
+        if not self.authorized_for_html(name):
+            if name in STUDENT_HTML:
+                self.redirect('/student-login.html')
+            else:
+                self.redirect('/student-login.html')
             return
         return super().do_GET()
 

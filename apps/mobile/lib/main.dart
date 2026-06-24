@@ -20,9 +20,9 @@ class AcademiaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Academia Platform',
+      title: 'Academia Lobo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xffb91c1c)),
         useMaterial3: true,
       ),
       home: const LoginPage(),
@@ -121,11 +121,11 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Academia Platform')),
+      appBar: AppBar(title: const Text('Academia Lobo')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          const Text('App mobile operacional', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Operação mobile', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           TextField(controller: apiController, decoration: const InputDecoration(labelText: 'URL da API')),
           TextField(controller: emailController, decoration: const InputDecoration(labelText: 'E-mail')),

@@ -7,7 +7,7 @@ from urllib import request, error
 class AcademiaCheckinApp:
     def __init__(self, root):
         self.root = root
-        self.root.title('Academia Platform - Operacao')
+        self.root.title('Academia Lobo - Recepcao')
         self.root.geometry('980x700')
         self.token = ''
         self.members = []
@@ -28,8 +28,8 @@ class AcademiaCheckinApp:
         self.login_frame = tk.Frame(self.root, padx=20, pady=20)
         self.login_frame.pack(fill='both', expand=True)
 
-        tk.Label(self.login_frame, text='Academia Platform', font=('Arial', 22, 'bold')).pack(anchor='w')
-        tk.Label(self.login_frame, text='Software desktop de recepcao, check-in e alertas').pack(anchor='w', pady=(0, 18))
+        tk.Label(self.login_frame, text='Academia Lobo', font=('Arial', 22, 'bold')).pack(anchor='w')
+        tk.Label(self.login_frame, text='Recepcao, check-in, validacao de codigo/QR e alertas operacionais').pack(anchor='w', pady=(0, 18))
 
         tk.Label(self.login_frame, text='URL da API').pack(anchor='w')
         tk.Entry(self.login_frame, textvariable=self.api_url, width=60).pack(anchor='w', pady=(0, 10))
@@ -49,7 +49,7 @@ class AcademiaCheckinApp:
 
         top = tk.Frame(self.panel_frame)
         top.pack(fill='x')
-        tk.Label(top, text='Operacao da academia', font=('Arial', 20, 'bold')).pack(side='left')
+        tk.Label(top, text='Operacao da recepcao', font=('Arial', 20, 'bold')).pack(side='left')
         tk.Button(top, text='Atualizar tudo', command=self.load_data).pack(side='right')
 
         shortcuts = tk.Frame(self.panel_frame)

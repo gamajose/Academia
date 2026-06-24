@@ -28,7 +28,14 @@ async function body(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
   const raw = Buffer.concat(chunks).toString('utf8');
-  return raw ? JSON.parse(raw) : {};
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    const error = new Error('json_invalido');
+    error.statusCode = 400;
+    throw error;
+  }
 }
 
 function slug(value) {
@@ -138,7 +145,7 @@ const server = http.createServer(async (req, res) => {
 
     const user = auth(req);
     if (!user) return send(res, 401, { error: 'nao_autorizado' });
-    if (!canAccess(user, req.method, url.pathname)) return send(res, 403, { error: 'sem_permissao' });
+    if (!canAccess(user, req.method, url.pathname)) return send(res, 403, { error: 'acesso_negado' });
 
     const signupHandled = await handleOnlineSignupRoutes(req, res, user, url, helpers);
     if (signupHandled !== false) return signupHandled;
@@ -173,6 +180,7 @@ const server = http.createServer(async (req, res) => {
 
     return send(res, 404, { error: 'not_found' });
   } catch (error) {
+    if (error && error.statusCode) return send(res, error.statusCode, { error: error.message || 'erro_requisicao' });
     console.error(error);
     return send(res, 500, { error: 'internal_error' });
   }

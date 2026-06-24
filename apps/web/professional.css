@@ -8,28 +8,28 @@
   gap: 18px;
   padding: 14px min(4vw, 38px);
   border-bottom: 1px solid rgba(255,255,255,.12);
-  background: rgba(2, 6, 23, .92);
+  background: rgba(24, 53, 47, .97);
 }
 .top-nav-brand { display: grid; gap: 2px; }
-.top-nav-brand span { color: #94a3b8; font-size: 12px; }
+.top-nav-brand span { color: #d8d2c8; font-size: 12px; }
 .top-nav-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .top-nav-links a {
   color: #f8fafc;
   border: 1px solid transparent;
   padding: 9px 12px;
-  border-radius: 999px;
+  border-radius: 8px;
   font-size: 14px;
   text-decoration: none;
   font-weight: 700;
 }
 .top-nav-links a.active, .top-nav-links a:hover {
   border-color: rgba(255,255,255,.12);
-  background: rgba(56,189,248,.12);
-  color: #38bdf8;
+  background: rgba(255,255,255,.12);
+  color: #ffffff;
 }
 .module-cards article { display: grid; gap: 8px; align-content: start; }
 .module-cards strong { font-size: 25px; }
-.module-cards a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+.module-cards a { color: #b91c1c; text-decoration: none; font-weight: 800; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 720px; }
 th, td { text-align: left; border-bottom: 1px solid rgba(255,255,255,.12); padding: 12px 10px; color: #94a3b8; }

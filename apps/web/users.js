@@ -11,6 +11,7 @@ function setStatus(text) {
 function friendly(error) {
   const messages = {
     sem_permissao: 'Apenas owner pode gerenciar usuarios.',
+    acesso_negado: 'Apenas owner pode gerenciar usuarios.',
     dados_invalidos: 'Preencha os campos obrigatorios.',
     email_ja_cadastrado: 'E-mail ja cadastrado.',
     usuario_nao_encontrado: 'Usuario nao encontrado.',

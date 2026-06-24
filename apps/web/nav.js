@@ -26,7 +26,7 @@ function renderNavigation() {
   ];
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
-  nav.innerHTML = `<div class="top-nav-brand"><strong>Academia Platform</strong><span>gestao completa</span></div><div class="top-nav-links">${pages.map(([href, label]) => `<a class="${current === href ? 'active' : ''}" href="./${href}">${label}</a>`).join('')}</div>`;
+  nav.innerHTML = `<div class="top-nav-brand"><strong>Academia Lobo</strong><span>gestao completa</span></div><div class="top-nav-links">${pages.map(([href, label]) => `<a class="${current === href ? 'active' : ''}" href="./${href}">${label}</a>`).join('')}</div>`;
   document.body.prepend(nav);
 }
 

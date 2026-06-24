@@ -9,6 +9,15 @@ let checkins = [];
 
 const byId = (id) => document.getElementById(id);
 
+function setPortalAccess() {
+  if (token) document.cookie = `academiaAuth=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
+}
+
+function clearPortalAccess() {
+  document.cookie = 'academiaAuth=; Path=/; Max-Age=0; SameSite=Lax';
+}
+
+
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -32,6 +41,8 @@ function errorText(error) {
   const map = {
     credenciais_invalidas: 'E-mail ou senha invalido.',
     nao_autorizado: 'Sessao expirada. Faca login novamente.',
+    acesso_negado: 'Seu perfil nao tem acesso a esta area.',
+    json_invalido: 'Dados invalidos. Revise os campos.',
     nome_obrigatorio: 'Informe o nome antes de salvar.',
     dados_invalidos: 'Confira os campos obrigatorios.',
     aluno_nao_encontrado: 'Aluno nao encontrado.',
@@ -80,11 +91,11 @@ function fillSelect(elementId, rows, getLabel, emptyText) {
 
 async function checkHealth() {
   const apiUrl = byId('api-url');
-  if (apiUrl) apiUrl.textContent = API_BASE_URL;
+  if (apiUrl) apiUrl.textContent = '';
   try {
     const health = await request('/health');
     const status = byId('api-status');
-    if (status) status.textContent = `${health.status} ${health.version || ''}`.trim();
+    if (status) status.textContent = health.status === 'ok' ? 'online' : 'verificar';
   } catch (error) {
     const status = byId('api-status');
     if (status) status.textContent = 'offline';
@@ -107,6 +118,7 @@ async function login() {
     const data = await request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     token = data.token;
     localStorage.setItem('academiaToken', token);
+    setPortalAccess();
     if (currentPage() === 'admin.html') return goPanel();
     byId('login-card').classList.add('hidden');
     byId('dashboard').classList.remove('hidden');
@@ -119,6 +131,7 @@ async function login() {
 
 function logout() {
   localStorage.removeItem('academiaToken');
+  clearPortalAccess();
   token = '';
   if (currentPage() !== 'admin.html') {
     window.location.href = './admin.html';
@@ -301,6 +314,7 @@ bind('create-payment-button', 'click', createPayment);
 bind('create-checkin-button', 'click', createCheckin);
 
 checkHealth();
+if (token) setPortalAccess();
 if (token && currentPage() === 'admin.html') goPanel();
 if (token && byId('login-card') && byId('dashboard')) {
   byId('login-card').classList.add('hidden');

@@ -31,12 +31,13 @@ class _StudentLoginPageState extends State<StudentLoginPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Aluno')),
+        appBar: AppBar(title: const Text('Academia Lobo')),
         body: ListView(padding: const EdgeInsets.all(18), children: [
-          const Text('Area do aluno', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Acesso do aluno', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Treinos, evolucao, metas e historico em um unico portal.'),
           TextField(controller: api, decoration: const InputDecoration(labelText: 'URL da API')),
           TextField(controller: email, decoration: const InputDecoration(labelText: 'E-mail')),
-          TextField(controller: key, decoration: const InputDecoration(labelText: 'Chave de acesso'), obscureText: true),
+          TextField(controller: key, decoration: const InputDecoration(labelText: 'Senha'), obscureText: true),
           const SizedBox(height: 16),
           FilledButton(onPressed: login, child: const Text('Entrar')),
           Text(message),
@@ -131,7 +132,7 @@ class _StudentPortalPageState extends State<StudentPortalPage> {
         body: RefreshIndicator(
           onRefresh: refresh,
           child: ListView(padding: const EdgeInsets.all(12), children: [
-            Card(child: ListTile(title: Text(plan['name'] ?? 'Ficha atual'), subtitle: Text('Nivel: ${plan['level'] ?? '-'} | ${plan['age_days'] ?? 0} dias'))),
+            Card(child: ListTile(title: Text(plan['name'] ?? 'Ficha atual'), subtitle: Text('Nivel: ${plan['level'] ?? '-'} | objetivo ${plan['goal'] ?? '-'} | ${plan['age_days'] ?? 0} dias'))),
             FilledButton.icon(onPressed: completeWorkout, icon: const Icon(Icons.check), label: const Text('Marcar treino como feito')),
             Text(message),
             section('Exercicios', exercises, (e) => '${e['day_title']} - ${e['exercise_name']} | ${e['sets']}x ${e['reps']}', 'Nenhum exercicio.'),

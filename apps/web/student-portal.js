@@ -138,6 +138,7 @@ async function completePortalWorkout() {
 function logoutPortal() {
   localStorage.removeItem('studentToken');
   localStorage.removeItem('studentName');
+  document.cookie = 'academiaStudentAuth=; Path=/; Max-Age=0; SameSite=Lax';
   window.location.href = './student-login.html';
 }
 

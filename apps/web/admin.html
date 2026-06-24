@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin - Academia Platform</title>
+  <title>Painel interno - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
 </head>
@@ -11,14 +11,14 @@
   <main class="app-shell">
     <section class="hero">
       <div>
-        <p class="eyebrow">Academia Platform</p>
+        <p class="eyebrow">Academia Lobo</p>
         <h1>Painel administrativo</h1>
-        <p>Controle alunos, planos, check-ins, matriculas e financeiro.</p>
+        <p>Operação interna para alunos, planos, matrículas, check-ins e financeiro.</p>
       </div>
       <div class="health-card">
         <span>Status da API</span>
         <strong id="api-status">validando...</strong>
-        <small id="api-url"></small>
+        <small>conexão interna</small>
       </div>
     </section>
 
@@ -29,6 +29,10 @@
       <label>Senha</label>
       <input id="password" type="password" placeholder="senha" />
       <button id="login-button">Entrar</button>
+      <div class="login-links">
+        <a href="./matricula-publica.html">Criar conta de aluno</a>
+        <button class="link-button" type="button" onclick="document.getElementById('login-message').textContent='Redefinição de senha deve ser feita pelo owner ou pela recepção autorizada.'">Esqueci a senha</button>
+      </div>
       <small id="login-message"></small>
     </section>
 

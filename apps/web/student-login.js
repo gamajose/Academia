@@ -6,7 +6,13 @@ function msg(text) {
 }
 
 function portalOn() {
-  document.cookie = 'academiaPortal=1; Path=/; SameSite=Lax';
+  const token = localStorage.getItem('academiaToken') || '';
+  if (token) document.cookie = `academiaAuth=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
+}
+
+function studentPortalOn() {
+  const token = localStorage.getItem('studentToken') || '';
+  if (token) document.cookie = `academiaStudentAuth=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
 }
 
 async function post(path, payload) {
@@ -40,6 +46,7 @@ async function accountLogin() {
     localStorage.setItem('studentToken', student.token);
     localStorage.setItem('studentName', student.student?.name || 'Aluno');
     localStorage.setItem('studentApiBaseUrl', API);
+    studentPortalOn();
     window.location.href = './student-portal.html';
   } catch (error) {
     const map = { credenciais_invalidas: 'E-mail ou senha inválido.', dados_invalidos: 'Informe e-mail e senha.' };
@@ -48,7 +55,7 @@ async function accountLogin() {
 }
 
 function forgotPassword() {
-  msg('Recuperação de senha em implantação. Procure a recepção da academia para redefinir o acesso.');
+  msg('Recuperação registrada: procure a recepção para redefinir a senha com segurança.');
 }
 
 document.getElementById('student-login-button').addEventListener('click', accountLogin);

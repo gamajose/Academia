@@ -12,8 +12,12 @@ class AcademiaStudentApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Academia Aluno',
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.green), useMaterial3: true),
+      title: 'Academia Lobo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xffb91c1c)),
+        useMaterial3: true,
+        cardTheme: const CardThemeData(margin: EdgeInsets.symmetric(vertical: 8), elevation: 1),
+      ),
       home: const StudentLoginPage(initialBaseUrl: 'http://10.0.2.2:3004'),
     );
   }
