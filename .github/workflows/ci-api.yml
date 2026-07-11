@@ -1,0 +1,47 @@
+name: Validar API
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/api/**'
+      - 'database/**'
+      - '.github/workflows/ci-api.yml'
+  push:
+    branches:
+      - 'agent/**'
+    paths:
+      - 'apps/api/**'
+      - 'database/**'
+      - '.github/workflows/ci-api.yml'
+
+jobs:
+  api:
+    name: Testes e sintaxe da API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: apps/api
+
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar sintaxe e regras
+        env:
+          NODE_ENV: test
+          AUTH_SECRET: test-secret-with-more-than-thirty-two-characters
+        run: npm run check
