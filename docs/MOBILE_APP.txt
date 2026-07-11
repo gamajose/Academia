@@ -1,8 +1,22 @@
 App Mobile - Academia Platform
 
-Aplicativo Flutter inicial para operacao rapida da academia.
+Aplicativo Flutter com interfaces separadas por perfil.
 
-Funcionalidades atuais:
+Perfis atuais:
+- Aluno: login proprio, situacao de acesso, QR Code temporario para catraca e resumo do treino ativo.
+- Equipe: dashboard operacional, alunos, check-ins, alertas, treinos, avaliacoes e financeiro.
+- Owner e administrador usam a interface da equipe com as permissoes da API.
+- Professor/instrutor usa a interface da equipe, limitada pelas regras do perfil staff.
+
+Acesso do aluno por QR:
+- O aluno precisa estar autenticado.
+- O aplicativo solicita um QR temporario e de uso unico.
+- O leitor da catraca valida o QR diretamente na API.
+- Mensalidade ou matricula vencida por ate 10 dias libera com alerta.
+- A partir do 11o dia o QR nao e emitido e a entrada fica bloqueada.
+- A situacao e revalidada no momento da leitura para impedir uso indevido.
+
+Funcionalidades da equipe:
 - Login com token pela API.
 - Configuracao da URL da API.
 - Dashboard resumido.
@@ -10,14 +24,11 @@ Funcionalidades atuais:
 - Check-in rapido pelo celular.
 - Lista de ultimos check-ins.
 - Tela de alertas operacionais.
-- Pagamentos vencidos, matriculas vencendo, fichas para revisar e avaliacoes pendentes no app.
-- Tela de treinos.
-- Detalhe da ficha do aluno.
+- Pagamentos vencidos, matriculas vencendo, fichas para revisar e avaliacoes pendentes.
+- Tela de treinos e detalhe da ficha.
 - Visualizacao de exercicios, series, repeticoes, descanso, instrucoes e video.
-- Analise inteligente da ficha pelo app.
-- Tela de avaliacoes.
-- Resumo comparativo de evolucao.
-- Historico de avaliacoes e metas.
+- Analise inteligente da ficha.
+- Tela de avaliacoes e resumo de evolucao.
 - Logout.
 
 Como testar:
@@ -30,3 +41,6 @@ http://10.0.2.2:3004
 
 Em celular fisico na mesma rede, use:
 http://IP_DA_VM:3004
+
+Documentacao da catraca e dos endpoints:
+docs/ACCESS_QR.md
