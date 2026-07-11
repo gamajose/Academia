@@ -26,12 +26,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
   Map<String, dynamic> profile = {};
   Map<String, dynamic> access = {};
   Map<String, dynamic>? trainingPlan;
+  List<dynamic> exercises = [];
+  List<dynamic> trainingLogs = [];
+  List<dynamic> assessments = [];
+  List<dynamic> goals = [];
+  String? currentDayId;
   String? qrPayload;
   DateTime? qrExpiresAt;
   Timer? countdownTimer;
   String message = 'Carregando seus dados...';
   bool loading = true;
   bool generating = false;
+  bool completingWorkout = false;
 
   Map<String, String> get headers => {
         'Content-Type': 'application/json',
@@ -79,12 +85,40 @@ class _StudentHomePageState extends State<StudentHomePage> {
     try {
       final profileResult = await _request('GET', '/api/student/me');
       final accessResult = await _request('GET', '/api/student/access/status');
+
       Map<String, dynamic>? currentPlan;
+      List<dynamic> currentExercises = [];
+      List<dynamic> logs = [];
+      List<dynamic> progressAssessments = [];
+      List<dynamic> progressGoals = [];
+      String? workoutDayId;
+
       try {
         final training = await _request('GET', '/api/student/training/current');
         currentPlan = training['plan'] as Map<String, dynamic>?;
+        final allExercises = training['exercises'] as List<dynamic>? ?? [];
+        final today = DateTime.now().weekday;
+        final todayExercises = allExercises.where((item) => int.tryParse('${item['weekday']}') == today).toList();
+        currentExercises = todayExercises.isEmpty ? allExercises : todayExercises;
+        workoutDayId = currentExercises.isEmpty ? null : currentExercises.first['workout_day_id'] as String?;
       } catch (_) {
         currentPlan = null;
+      }
+
+      try {
+        final logsResult = await _request('GET', '/api/student/training/logs');
+        logs = logsResult['data'] as List<dynamic>? ?? [];
+      } catch (_) {
+        logs = [];
+      }
+
+      try {
+        final progress = await _request('GET', '/api/student/progress');
+        progressAssessments = progress['assessments'] as List<dynamic>? ?? [];
+        progressGoals = progress['goals'] as List<dynamic>? ?? [];
+      } catch (_) {
+        progressAssessments = [];
+        progressGoals = [];
       }
 
       if (!mounted) return;
@@ -92,6 +126,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
         profile = profileResult;
         access = accessResult['access'] as Map<String, dynamic>? ?? {};
         trainingPlan = currentPlan;
+        exercises = currentExercises;
+        trainingLogs = logs;
+        assessments = progressAssessments;
+        goals = progressGoals;
+        currentDayId = workoutDayId;
         message = access['message']?.toString() ?? 'Dados atualizados.';
       });
     } catch (error) {
@@ -133,6 +172,24 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
+  Future<void> _completeWorkout() async {
+    if (trainingPlan?['id'] == null || currentDayId == null) return;
+    setState(() => completingWorkout = true);
+    try {
+      await _request('POST', '/api/student/training/complete', {
+        'plan_id': trainingPlan!['id'],
+        'workout_day_id': currentDayId,
+        'feedback': 'Concluido pelo aplicativo',
+      });
+      await _refresh();
+      if (mounted) setState(() => message = 'Treino marcado como concluido. Parabens!');
+    } catch (error) {
+      if (mounted) setState(() => message = 'Nao foi possivel concluir o treino: $error');
+    } finally {
+      if (mounted) setState(() => completingWorkout = false);
+    }
+  }
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
@@ -171,6 +228,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
       default:
         return 'Acesso bloqueado';
     }
+  }
+
+  Widget _section(String title, IconData icon, List<dynamic> items, String Function(dynamic) label, String empty) {
+    return Card(
+      child: ExpansionTile(
+        leading: Icon(icon),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(items.isEmpty ? empty : '${items.length} registro(s)'),
+        children: items.isEmpty
+            ? [Padding(padding: const EdgeInsets.all(16), child: Text(empty))]
+            : items.map((item) => ListTile(title: Text(label(item)))).toList(),
+      ),
+    );
   }
 
   @override
@@ -244,10 +314,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       const SizedBox(height: 8),
                       Text('Expira em $remainingSeconds segundos', style: const TextStyle(fontWeight: FontWeight.bold)),
                     ] else
-                      const SizedBox(
-                        height: 180,
-                        child: Center(child: Icon(Icons.qr_code_2, size: 120)),
-                      ),
+                      const SizedBox(height: 180, child: Center(child: Icon(Icons.qr_code_2, size: 120))),
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       onPressed: allowed && !generating ? _generateQr : null,
@@ -260,13 +327,53 @@ class _StudentHomePageState extends State<StudentHomePage> {
             ),
             const SizedBox(height: 12),
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.fitness_center),
-                title: Text(trainingPlan?['name']?.toString() ?? 'Nenhum treino ativo'),
-                subtitle: trainingPlan == null
-                    ? const Text('Seu professor ainda nao publicou uma ficha ativa.')
-                    : Text('Nivel: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'}'),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(children: [Icon(Icons.fitness_center), SizedBox(width: 8), Text('Treino atual', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))]),
+                    const SizedBox(height: 8),
+                    Text(trainingPlan?['name']?.toString() ?? 'Nenhum treino ativo'),
+                    if (trainingPlan != null)
+                      Text('Nivel: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: currentDayId == null || completingWorkout ? null : _completeWorkout,
+                      icon: const Icon(Icons.check_circle),
+                      label: Text(completingWorkout ? 'Salvando...' : 'Marcar treino como concluido'),
+                    ),
+                  ],
+                ),
               ),
+            ),
+            _section(
+              'Exercicios de hoje',
+              Icons.list_alt,
+              exercises,
+              (item) => '${item['exercise_name'] ?? '-'} | ${item['sets'] ?? '-'}x ${item['reps'] ?? '-'} | descanso ${item['rest_seconds'] ?? '-'}s',
+              'Nenhum exercicio para hoje.',
+            ),
+            _section(
+              'Evolucao fisica',
+              Icons.monitor_heart,
+              assessments,
+              (item) => '${item['assessment_date'] ?? '-'} | Peso ${item['weight_kg'] ?? '-'} kg | Cintura ${item['waist_cm'] ?? '-'} cm',
+              'Nenhuma avaliacao registrada.',
+            ),
+            _section(
+              'Metas',
+              Icons.flag,
+              goals,
+              (item) => '${item['goal_type'] ?? 'Meta'} | Alvo ${item['target_value'] ?? '-'} | ${item['status'] ?? '-'}',
+              'Nenhuma meta registrada.',
+            ),
+            _section(
+              'Historico de treinos',
+              Icons.history,
+              trainingLogs,
+              (item) => '${item['completed_at'] ?? '-'} | ${item['day_title'] ?? item['plan_name'] ?? 'Treino'}',
+              'Nenhum treino concluido.',
             ),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
