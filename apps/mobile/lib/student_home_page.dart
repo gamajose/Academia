@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:academia_mobile/student_tools_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_flutter/qr_flutter.dart';
@@ -25,6 +26,7 @@ class StudentHomePage extends StatefulWidget {
 class _StudentHomePageState extends State<StudentHomePage> {
   Map<String, dynamic> profile = {};
   Map<String, dynamic> access = {};
+  Map<String, dynamic> accountOverview = {};
   Map<String, dynamic>? trainingPlan;
   List<dynamic> exercises = [];
   List<dynamic> trainingLogs = [];
@@ -85,6 +87,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
     try {
       final profileResult = await _request('GET', '/api/student/me');
       final accessResult = await _request('GET', '/api/student/access/status');
+      Map<String, dynamic> overview = {};
+      try {
+        overview = await _request('GET', '/api/student/account/overview');
+      } catch (_) {
+        overview = {};
+      }
 
       Map<String, dynamic>? currentPlan;
       List<dynamic> currentExercises = [];
@@ -125,6 +133,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       setState(() {
         profile = profileResult;
         access = accessResult['access'] as Map<String, dynamic>? ?? {};
+        accountOverview = overview;
         trainingPlan = currentPlan;
         exercises = currentExercises;
         trainingLogs = logs;
@@ -202,6 +211,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
+  void _openTools(int tab) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StudentToolsPage(
+          baseUrl: widget.baseUrl,
+          token: widget.token,
+          initialTab: tab,
+        ),
+      ),
+    ).then((_) => _refresh());
+  }
+
   int get remainingSeconds {
     if (qrExpiresAt == null) return 0;
     final value = qrExpiresAt!.difference(DateTime.now()).inSeconds;
@@ -243,10 +265,27 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
+  Widget _shortcut(IconData icon, String label, int tab, {String? badge}) {
+    return SizedBox(
+      width: 165,
+      child: OutlinedButton.icon(
+        onPressed: () => _openTools(tab),
+        icon: Badge(
+          isLabelVisible: badge != null && badge != '0',
+          label: Text(badge ?? ''),
+          child: Icon(icon),
+        ),
+        label: Text(label),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final allowed = access['allowed'] == true;
     final overdueDays = access['overdue_days'] ?? 0;
+    final frequency = accountOverview['frequency'] as Map<String, dynamic>? ?? {};
+    final unread = accountOverview['unread_notifications']?.toString() ?? '0';
 
     return Scaffold(
       appBar: AppBar(
@@ -264,6 +303,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
             Text(
               profile['name'] == null ? 'Bem-vindo' : 'Ola, ${profile['name']}',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _shortcut(Icons.card_membership, 'Meu plano', 0),
+                _shortcut(Icons.payments, 'Pagamentos', 1),
+                _shortcut(Icons.history, 'Minhas entradas', 2),
+                _shortcut(Icons.notifications, 'Notificacoes', 3, badge: unread),
+              ],
             ),
             const SizedBox(height: 12),
             Card(
@@ -285,8 +335,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       const SizedBox(height: 6),
                       Text('Dias de atraso: $overdueDays de ${access['grace_days'] ?? 10} dias de carencia.'),
                     ],
-                    if (access['membership_ends_at'] != null)
-                      Text('Vigencia da matricula: ${access['membership_ends_at']}'),
+                    if (access['membership_ends_at'] != null) Text('Vigencia da matricula: ${access['membership_ends_at']}'),
+                    const SizedBox(height: 8),
+                    Text('Frequencia: ${frequency['week_checkins'] ?? 0} entrada(s) nesta semana e ${frequency['month_checkins'] ?? 0} neste mes.'),
                   ],
                 ),
               ),
@@ -335,8 +386,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     const Row(children: [Icon(Icons.fitness_center), SizedBox(width: 8), Text('Treino atual', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))]),
                     const SizedBox(height: 8),
                     Text(trainingPlan?['name']?.toString() ?? 'Nenhum treino ativo'),
-                    if (trainingPlan != null)
-                      Text('Nivel: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
+                    if (trainingPlan != null) Text('Nivel: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       onPressed: currentDayId == null || completingWorkout ? null : _completeWorkout,
