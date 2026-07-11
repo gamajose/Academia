@@ -1,0 +1,67 @@
+name: Deploy Academia
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: academia-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Atualizar servidor local
+    runs-on:
+      - self-hosted
+      - linux
+      - academia
+    timeout-minutes: 15
+
+    steps:
+      - name: Atualizar, validar e publicar
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          PROJECT_DIR="/mnt/Projetos/Academia"
+          API_DIR="$PROJECT_DIR/apps/api"
+          HEALTH_URL="http://localhost:3004/health"
+
+          exec 9>/tmp/academia-deploy.lock
+          flock -n 9 || {
+            echo "Outro deploy da Academia já está em execução."
+            exit 1
+          }
+
+          cd "$PROJECT_DIR"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "A cópia de produção possui alterações locais. O deploy foi interrompido para evitar perda de dados."
+            git status --short
+            exit 1
+          fi
+
+          git fetch --prune origin main
+          git checkout main
+          git reset --hard origin/main
+
+          cd "$API_DIR"
+
+          set -a
+          source .env
+          set +a
+
+          npm ci
+          npm test
+          npm run check
+          npm run migrate
+
+          sudo -n systemctl restart academia-api
+          sudo -n systemctl restart academia-web
+
+          sleep 2
+          curl --fail --silent --show-error "$HEALTH_URL"
+          echo
+          echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
