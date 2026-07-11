@@ -71,4 +71,18 @@ jobs:
         run: flutter pub get
 
       - name: Analisar codigo Flutter
-        run: flutter analyze
+        shell: bash
+        run: |
+          set +e
+          flutter analyze 2>&1 | tee flutter-analyze.log
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Publicar diagnostico Flutter
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-analyze-${{ github.run_id }}
+          path: apps/mobile/flutter-analyze.log
+          if-no-files-found: ignore
+          retention-days: 7
