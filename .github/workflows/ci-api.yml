@@ -1,4 +1,4 @@
-name: Validar API
+name: Validar projeto
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'apps/api/**'
+      - 'apps/mobile/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
   push:
@@ -13,6 +14,7 @@ on:
       - 'agent/**'
     paths:
       - 'apps/api/**'
+      - 'apps/mobile/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
 
@@ -45,3 +47,28 @@ jobs:
           NODE_ENV: test
           AUTH_SECRET: test-secret-with-more-than-thirty-two-characters
         run: npm run check
+
+  mobile:
+    name: Analisar aplicativo Flutter
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Analisar codigo Flutter
+        run: flutter analyze
