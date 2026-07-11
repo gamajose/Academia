@@ -12,6 +12,7 @@ const { handleTrainingRoutes } = require('./features/trainingRoutes');
 const { handleTrainingPlansRoutes } = require('./features/trainingPlansRoutes');
 const { handleStudentRoutes } = require('./features/studentRoutes');
 const { handleOnlineSignupRoutes } = require('./features/onlineSignupRoutes');
+const { handleAccessRoutes } = require('./features/accessRoutes');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -155,7 +156,7 @@ const server = http.createServer(async (req, res) => {
     if (!isOriginAllowed(req)) return send(req, res, 403, { error: 'origem_nao_permitida' });
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (req.method === 'OPTIONS') return send(req, res, 204, {});
-    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.3.0', uptime: process.uptime() });
+    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.4.0', uptime: process.uptime() });
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') {
       if (!enforceRateLimit(req, res, 'register')) return;
       return registerGym(req, res);
@@ -172,6 +173,9 @@ const server = http.createServer(async (req, res) => {
       return handleStudentRoutes(req, res, null, url, helpers);
     }
 
+    const publicAccessHandled = await handleAccessRoutes(req, res, null, url, helpers);
+    if (publicAccessHandled !== false) return publicAccessHandled;
+
     const user = auth(req);
     if (!user) return send(req, res, 401, { error: 'nao_autorizado' });
     if (!canAccess(user, req.method, url.pathname)) return send(req, res, 403, { error: 'acesso_negado' });
@@ -180,6 +184,8 @@ const server = http.createServer(async (req, res) => {
     if (signupHandled !== false) return signupHandled;
     const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
     if (studentHandled !== false) return studentHandled;
+    const accessHandled = await handleAccessRoutes(req, res, user, url, helpers);
+    if (accessHandled !== false) return accessHandled;
     const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
     if (trainingHandled !== false) return trainingHandled;
     const trainingPlansHandled = await handleTrainingPlansRoutes(req, res, user, url, helpers);
