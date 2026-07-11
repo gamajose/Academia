@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const secret = String(process.env.AUTH_SECRET || '');
 const tokenTtlMs = Number(process.env.AUTH_TOKEN_TTL_MS || 8 * 60 * 60 * 1000);
 const isProduction = process.env.NODE_ENV === 'production';
+const passwordIterations = 210000;
 
 if (!secret || secret.length < 32) {
   const message = 'AUTH_SECRET deve possuir pelo menos 32 caracteres';
@@ -10,20 +11,38 @@ if (!secret || secret.length < 32) {
   console.warn(`[security] ${message}. Ambiente nao produtivo.`);
 }
 
+function derivePassword(password, salt, iterations) {
+  return crypto.pbkdf2Sync(String(password || ''), salt, iterations, 64, 'sha512').toString('hex');
+}
+
+function safeEqualText(left, right) {
+  const a = Buffer.from(String(left || ''), 'utf8');
+  const b = Buffer.from(String(right || ''), 'utf8');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
-  const hash = crypto.pbkdf2Sync(String(password || ''), salt, 210000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
+  const hash = derivePassword(password, salt, passwordIterations);
+  return `pbkdf2$${passwordIterations}$${salt}$${hash}`;
 }
 
 function verifyPassword(password, stored) {
   try {
-    if (!stored || !stored.includes(':')) return false;
-    const [salt, original] = stored.split(':');
-    const hash = crypto.pbkdf2Sync(String(password || ''), salt, 210000, 64, 'sha512').toString('hex');
-    const a = Buffer.from(hash, 'utf8');
-    const b = Buffer.from(original, 'utf8');
-    if (a.length !== b.length) return false;
-    return crypto.timingSafeEqual(a, b);
+    if (!stored) return false;
+
+    if (stored.startsWith('pbkdf2$')) {
+      const [, iterationsText, salt, original] = stored.split('$');
+      const iterations = Number(iterationsText);
+      if (!iterations || !salt || !original) return false;
+      return safeEqualText(derivePassword(password, salt, iterations), original);
+    }
+
+    if (stored.includes(':')) {
+      const [salt, original] = stored.split(':');
+      return safeEqualText(derivePassword(password, salt, 100000), original);
+    }
+
+    return false;
   } catch (_) {
     return false;
   }
@@ -54,10 +73,7 @@ function verifyToken(token) {
     const [body, sig] = token.split('.');
     if (!body || !sig) return null;
     const expected = crypto.createHmac('sha256', signingSecret()).update(body).digest('base64url');
-    const receivedBuffer = Buffer.from(sig, 'utf8');
-    const expectedBuffer = Buffer.from(expected, 'utf8');
-    if (receivedBuffer.length !== expectedBuffer.length) return null;
-    if (!crypto.timingSafeEqual(receivedBuffer, expectedBuffer)) return null;
+    if (!safeEqualText(sig, expected)) return null;
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
     if (!payload.exp || payload.exp < Date.now()) return null;
     return payload;
