@@ -35,6 +35,7 @@ jobs:
             exit 1
           }
 
+          git config --global --add safe.directory "$PROJECT_DIR"
           cd "$PROJECT_DIR"
 
           if [ -n "$(git status --porcelain)" ]; then
@@ -61,7 +62,16 @@ jobs:
           sudo -n systemctl restart academia-api
           sudo -n systemctl restart academia-web
 
-          sleep 2
-          curl --fail --silent --show-error "$HEALTH_URL"
-          echo
-          echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error "$HEALTH_URL"; then
+              echo
+              echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
+              exit 0
+            fi
+            echo "API ainda não respondeu; nova tentativa em 2 segundos ($attempt/5)."
+            sleep 2
+          done
+
+          echo "A API não respondeu ao health check após o reinício."
+          sudo -n systemctl status academia-api --no-pager -l || true
+          exit 1
