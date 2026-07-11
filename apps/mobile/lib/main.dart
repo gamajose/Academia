@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:academia_mobile/alerts_page.dart';
 import 'package:academia_mobile/assessments_page.dart';
 import 'package:academia_mobile/revenue_page.dart';
+import 'package:academia_mobile/student_home_page.dart';
 import 'package:academia_mobile/training_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -73,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
   final apiController = TextEditingController(text: 'http://10.0.2.2:3004');
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  String loginType = 'student';
   String message = '';
   bool loading = false;
 
@@ -87,10 +89,23 @@ class _LoginPageState extends State<LoginPage> {
     apiController.text = prefs.getString('apiBaseUrl') ?? apiController.text;
     final token = prefs.getString('token');
     final baseUrl = prefs.getString('apiBaseUrl');
-    if (token != null && baseUrl != null) {
-      if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardPage(baseUrl: baseUrl, token: token)));
+    final role = prefs.getString('sessionRole');
+    if (token != null && baseUrl != null && role != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _openHome(baseUrl, token, role);
+      });
     }
+  }
+
+  void _openHome(String baseUrl, String token, String role) {
+    final page = role == 'student'
+        ? StudentHomePage(
+            baseUrl: baseUrl,
+            token: token,
+            loginPageBuilder: () => const LoginPage(),
+          )
+        : DashboardPage(baseUrl: baseUrl, token: token);
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
   }
 
   Future<void> _login() async {
@@ -100,21 +115,26 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final baseUrl = apiController.text.trim();
+      final baseUrl = apiController.text.trim().replaceAll(RegExp(r'/$'), '');
       final api = ApiClient(baseUrl, null);
-      final result = await api.post('/api/auth/login', {
+      final endpoint = loginType == 'student' ? '/api/student/auth/login' : '/api/auth/login';
+      final result = await api.post(endpoint, {
         'email': emailController.text.trim(),
         'password': passwordController.text,
       });
+      final identity = (loginType == 'student' ? result['student'] : result['user']) as Map<String, dynamic>? ?? {};
+      final role = identity['role']?.toString() ?? (loginType == 'student' ? 'student' : 'staff');
+      final token = result['token'] as String;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('apiBaseUrl', baseUrl);
-      await prefs.setString('token', result['token'] as String);
+      await prefs.setString('token', token);
+      await prefs.setString('sessionRole', role);
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardPage(baseUrl: baseUrl, token: result['token'] as String)));
+      _openHome(baseUrl, token, role);
     } catch (error) {
-      setState(() => message = 'Falha no login: $error');
+      if (mounted) setState(() => message = 'Falha no login: $error');
     } finally {
-      setState(() => loading = false);
+      if (mounted) setState(() => loading = false);
     }
   }
 
@@ -125,7 +145,18 @@ class _LoginPageState extends State<LoginPage> {
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          const Text('Operação mobile', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Acesse sua conta', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text('Alunos, professores e administradores usam a mesma aplicacao com areas diferentes.'),
+          const SizedBox(height: 16),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'student', icon: Icon(Icons.person), label: Text('Aluno')),
+              ButtonSegment(value: 'team', icon: Icon(Icons.badge), label: Text('Equipe')),
+            ],
+            selected: {loginType},
+            onSelectionChanged: loading ? null : (value) => setState(() => loginType = value.first),
+          ),
           const SizedBox(height: 16),
           TextField(controller: apiController, decoration: const InputDecoration(labelText: 'URL da API')),
           TextField(controller: emailController, decoration: const InputDecoration(labelText: 'E-mail')),
@@ -193,15 +224,16 @@ class _DashboardPageState extends State<DashboardPage> {
     try {
       await api.post('/api/checkins', {'member_id': memberId, 'source': 'mobile'});
       await _refresh();
-      setState(() => message = 'Check-in registrado.');
+      if (mounted) setState(() => message = 'Check-in registrado.');
     } catch (error) {
-      setState(() => message = 'Erro no check-in: $error');
+      if (mounted) setState(() => message = 'Erro no check-in: $error');
     }
   }
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('sessionRole');
     syncTimer?.cancel();
     if (!mounted) return;
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
@@ -231,7 +263,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Painel Mobile'),
+        title: const Text('Painel da equipe'),
         actions: [IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)), IconButton(onPressed: _logout, icon: const Icon(Icons.logout))],
       ),
       body: RefreshIndicator(
@@ -241,28 +273,28 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             Wrap(spacing: 8, runSpacing: 8, children: [
               _card('Alunos', summary['active_members']),
-              _card('Matrículas', summary['active_memberships']),
+              _card('Matriculas', summary['active_memberships']),
               _card('Check-ins hoje', summary['today_checkins']),
-              _card('Pendências', summary['pending_payments']),
+              _card('Pendencias', summary['pending_payments']),
             ]),
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
               actionButton(Icons.warning_amber, 'Alertas', AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.fitness_center, 'Treinos', TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
-              actionButton(Icons.monitor_heart, 'Avaliações', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.monitor_heart, 'Avaliacoes', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
             ]),
             const SizedBox(height: 12),
             Text('$message Sincronizacao automatica a cada 30s.'),
             const Divider(),
-            const Text('Check-in rápido', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Check-in rapido', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ...members.map((member) => ListTile(
                   title: Text(member['name'] ?? ''),
                   subtitle: Text(member['status'] ?? ''),
                   trailing: FilledButton(onPressed: member['status'] == 'active' ? () => _quickCheckin(member['id']) : null, child: const Text('Check-in')),
                 )),
             const Divider(),
-            const Text('Últimos check-ins', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Ultimos check-ins', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ...checkins.map((item) => ListTile(title: Text(item['member_name'] ?? ''), subtitle: Text(item['checked_at'] ?? ''))),
           ],
         ),
