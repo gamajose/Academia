@@ -1,12 +1,13 @@
 App Mobile - Academia Platform
 
-Aplicativo Flutter com interfaces separadas por perfil.
+Aplicativo Flutter com login unico e interfaces separadas automaticamente por perfil.
 
 Perfis atuais:
-- Aluno: login proprio, situacao de acesso, QR Code temporario para catraca e resumo do treino ativo.
-- Equipe: dashboard operacional, alunos, check-ins, alertas, treinos, avaliacoes e financeiro.
-- Owner e administrador usam a interface da equipe com as permissoes da API.
-- Professor/instrutor usa a interface da equipe, limitada pelas regras do perfil staff.
+- Aluno: situacao de acesso, QR Code temporario para catraca, treino do dia, conclusao de treino, evolucao, metas e historico.
+- Professor/instrutor: painel operacional com alunos, check-ins, alertas, treinos e avaliacoes.
+- Owner e administrador: painel administrativo completo, incluindo financeiro.
+
+O usuario informa somente e-mail e senha. O aplicativo identifica o perfil retornado pela API e abre a area correspondente, mantendo a sessao salva ate o logout.
 
 Acesso do aluno por QR:
 - O aluno precisa estar autenticado.
@@ -19,12 +20,12 @@ Acesso do aluno por QR:
 Funcionalidades da equipe:
 - Login com token pela API.
 - Configuracao da URL da API.
-- Dashboard resumido.
+- Dashboard adequado ao perfil.
 - Lista de alunos.
 - Check-in rapido pelo celular.
 - Lista de ultimos check-ins.
 - Tela de alertas operacionais.
-- Pagamentos vencidos, matriculas vencendo, fichas para revisar e avaliacoes pendentes.
+- Pagamentos e financeiro somente para administracao.
 - Tela de treinos e detalhe da ficha.
 - Visualizacao de exercicios, series, repeticoes, descanso, instrucoes e video.
 - Analise inteligente da ficha.

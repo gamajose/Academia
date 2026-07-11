@@ -74,7 +74,6 @@ class _LoginPageState extends State<LoginPage> {
   final apiController = TextEditingController(text: 'http://10.0.2.2:3004');
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  String loginType = 'student';
   String message = '';
   bool loading = false;
 
@@ -104,26 +103,35 @@ class _LoginPageState extends State<LoginPage> {
             token: token,
             loginPageBuilder: () => const LoginPage(),
           )
-        : DashboardPage(baseUrl: baseUrl, token: token);
+        : DashboardPage(baseUrl: baseUrl, token: token, role: role);
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
   }
 
   Future<void> _login() async {
     setState(() {
       loading = true;
-      message = 'Validando acesso...';
+      message = 'Identificando seu perfil...';
     });
 
     try {
       final baseUrl = apiController.text.trim().replaceAll(RegExp(r'/$'), '');
       final api = ApiClient(baseUrl, null);
-      final endpoint = loginType == 'student' ? '/api/student/auth/login' : '/api/auth/login';
-      final result = await api.post(endpoint, {
+      final credentials = {
         'email': emailController.text.trim(),
         'password': passwordController.text,
-      });
-      final identity = (loginType == 'student' ? result['student'] : result['user']) as Map<String, dynamic>? ?? {};
-      final role = identity['role']?.toString() ?? (loginType == 'student' ? 'student' : 'staff');
+      };
+
+      Map<String, dynamic> result;
+      Map<String, dynamic> identity;
+      try {
+        result = await api.post('/api/auth/login', credentials);
+        identity = result['user'] as Map<String, dynamic>? ?? {};
+      } catch (_) {
+        result = await api.post('/api/student/auth/login', credentials);
+        identity = result['student'] as Map<String, dynamic>? ?? {};
+      }
+
+      final role = identity['role']?.toString() ?? 'student';
       final token = result['token'] as String;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('apiBaseUrl', baseUrl);
@@ -132,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       _openHome(baseUrl, token, role);
     } catch (error) {
-      if (mounted) setState(() => message = 'Falha no login: $error');
+      if (mounted) setState(() => message = 'Falha no login: credenciais invalidas ou servidor indisponivel.');
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -147,16 +155,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           const Text('Acesse sua conta', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          const Text('Alunos, professores e administradores usam a mesma aplicacao com areas diferentes.'),
-          const SizedBox(height: 16),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'student', icon: Icon(Icons.person), label: Text('Aluno')),
-              ButtonSegment(value: 'team', icon: Icon(Icons.badge), label: Text('Equipe')),
-            ],
-            selected: {loginType},
-            onSelectionChanged: loading ? null : (value) => setState(() => loginType = value.first),
-          ),
+          const Text('O aplicativo identifica automaticamente se voce e aluno, professor ou administrador.'),
           const SizedBox(height: 16),
           TextField(controller: apiController, decoration: const InputDecoration(labelText: 'URL da API')),
           TextField(controller: emailController, decoration: const InputDecoration(labelText: 'E-mail')),
@@ -172,10 +171,11 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key, required this.baseUrl, required this.token});
+  const DashboardPage({super.key, required this.baseUrl, required this.token, required this.role});
 
   final String baseUrl;
   final String token;
+  final String role;
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -188,6 +188,9 @@ class _DashboardPageState extends State<DashboardPage> {
   List<dynamic> members = [];
   List<dynamic> checkins = [];
   String message = 'Carregando...';
+
+  bool get isManager => widget.role == 'owner' || widget.role == 'admin';
+  String get panelTitle => isManager ? 'Painel administrativo' : 'Painel do professor';
 
   @override
   void initState() {
@@ -263,7 +266,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Painel da equipe'),
+        title: Text(panelTitle),
         actions: [IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)), IconButton(onPressed: _logout, icon: const Icon(Icons.logout))],
       ),
       body: RefreshIndicator(
@@ -275,14 +278,14 @@ class _DashboardPageState extends State<DashboardPage> {
               _card('Alunos', summary['active_members']),
               _card('Matriculas', summary['active_memberships']),
               _card('Check-ins hoje', summary['today_checkins']),
-              _card('Pendencias', summary['pending_payments']),
+              if (isManager) _card('Pendencias', summary['pending_payments']),
             ]),
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
               actionButton(Icons.warning_amber, 'Alertas', AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.fitness_center, 'Treinos', TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.monitor_heart, 'Avaliacoes', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
-              actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager) actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
             ]),
             const SizedBox(height: 12),
             Text('$message Sincronizacao automatica a cada 30s.'),
