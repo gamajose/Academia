@@ -6,33 +6,100 @@
   const catalogUrl = `${apiBase}/api/public/catalog${gymSlug ? `?gym_slug=${encodeURIComponent(gymSlug)}` : ''}`;
 
   const samplePlans = [
-    { id: 'sample-essential', name: 'Essencial', price_cents: 8990, duration_days: 30, description: 'Para começar com uma rotina simples e consistente.', services_included: ['Musculação', 'Treino organizado', 'Acompanhamento da equipe'] },
-    { id: 'sample-performance', name: 'Performance', price_cents: 12990, duration_days: 30, description: 'Mais acompanhamento para acelerar sua evolução.', services_included: ['Musculação', 'Avaliação periódica', 'Revisão de treino'], is_featured: true },
-    { id: 'sample-premium', name: 'Premium', price_cents: 17990, duration_days: 30, description: 'Experiência completa para quem busca acompanhamento contínuo.', services_included: ['Todos os benefícios', 'Aulas incluídas', 'Atendimento prioritário'] }
+    { id: 'sample-essential', name: 'Essencial', price_cents: 8990, duration_days: 30, description: '<p>Para começar com uma rotina simples e consistente.</p>', benefits: '<ul><li>Musculação</li><li>Treino organizado</li><li>Acompanhamento da equipe</li></ul>' },
+    { id: 'sample-performance', name: 'Performance', price_cents: 12990, duration_days: 30, description: '<p>Mais acompanhamento para acelerar sua evolução.</p>', benefits: '<ul><li>Musculação</li><li>Avaliação periódica</li><li>Revisão de treino</li></ul>', is_featured: true },
+    { id: 'sample-premium', name: 'Premium', price_cents: 17990, duration_days: 30, description: '<p>Experiência completa para quem busca acompanhamento contínuo.</p>', benefits: '<ul><li>Todos os benefícios</li><li>Aulas incluídas</li><li>Atendimento prioritário</li></ul>' }
   ];
 
   const sampleClasses = [
-    { name: 'Funcional', level: 'Todos os níveis', duration_minutes: 50, capacity: 16, room: 'Sala de aulas', description: 'Treino dinâmico para força, resistência e condicionamento.' },
-    { name: 'Mobilidade', level: 'Livre', duration_minutes: 40, capacity: 14, room: 'Espaço funcional', description: 'Movimento, alongamento e melhora da amplitude.' },
-    { name: 'Treino orientado', level: 'Personalizado', duration_minutes: 60, capacity: 8, room: 'Musculação', description: 'Acompanhamento próximo para executar melhor o treino.' }
+    { name: 'Funcional', level: 'Todos os níveis', duration_minutes: 50, room: 'Sala de aulas', description: 'Treino dinâmico para força, resistência e condicionamento.' },
+    { name: 'Mobilidade', level: 'Livre', duration_minutes: 40, room: 'Espaço funcional', description: 'Movimento, alongamento e melhora da amplitude.' },
+    { name: 'Treino orientado', level: 'Personalizado', duration_minutes: 60, room: 'Musculação', description: 'Acompanhamento próximo para executar melhor o treino.' }
   ];
 
   const money = (cents) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(cents || 0) / 100);
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
 
+  function sanitizeRichHtml(value) {
+    const source = document.createElement('template');
+    source.innerHTML = String(value || '');
+    const allowedTags = new Set(['P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'UL', 'OL', 'LI', 'A', 'IMG', 'SPAN', 'DIV', 'FONT']);
+    const allowedProtocols = new Set(['http:', 'https:', 'mailto:']);
+
+    function clean(node) {
+      for (const child of [...node.childNodes]) {
+        if (child.nodeType === Node.COMMENT_NODE) {
+          child.remove();
+          continue;
+        }
+        if (child.nodeType !== Node.ELEMENT_NODE) continue;
+        if (!allowedTags.has(child.tagName)) {
+          child.replaceWith(document.createTextNode(child.textContent || ''));
+          continue;
+        }
+        for (const attribute of [...child.attributes]) child.removeAttribute(attribute.name);
+        if (child.tagName === 'A') {
+          const raw = nodeHref(child, value, 'href');
+          if (raw) {
+            child.setAttribute('href', raw);
+            child.setAttribute('target', '_blank');
+            child.setAttribute('rel', 'noopener noreferrer');
+          }
+        }
+        if (child.tagName === 'IMG') {
+          const raw = nodeHref(child, value, 'src');
+          if (raw) {
+            child.setAttribute('src', raw);
+            child.setAttribute('alt', 'Imagem do plano');
+            child.setAttribute('loading', 'lazy');
+          } else {
+            child.remove();
+            continue;
+          }
+        }
+        if (child.tagName === 'FONT') {
+          const colorMatch = String(value || '').match(/color=["']?([^"'\s>]+)/i);
+          const sizeMatch = String(value || '').match(/size=["']?([1-7])/i);
+          if (colorMatch && /^#[0-9a-f]{3,8}$/i.test(colorMatch[1])) child.style.color = colorMatch[1];
+          if (sizeMatch) child.style.fontSize = ({ 1: '.78rem', 2: '.9rem', 3: '1rem', 4: '1.15rem', 5: '1.3rem', 6: '1.55rem', 7: '1.8rem' })[sizeMatch[1]];
+        }
+        clean(child);
+      }
+    }
+
+    function nodeHref(element, original, attribute) {
+      const parser = document.createElement('template');
+      parser.innerHTML = String(original || '');
+      const candidates = [...parser.content.querySelectorAll(element.tagName.toLowerCase())];
+      const index = [...element.parentNode.querySelectorAll(element.tagName.toLowerCase())].indexOf(element);
+      const candidate = candidates[index] || candidates[0];
+      const raw = candidate?.getAttribute(attribute) || '';
+      try {
+        const url = new URL(raw, window.location.href);
+        return allowedProtocols.has(url.protocol) ? url.href : '';
+      } catch (_) {
+        return '';
+      }
+    }
+
+    clean(source.content);
+    return source.innerHTML;
+  }
+
   function planCard(plan, index) {
-    const services = Array.isArray(plan.services_included) && plan.services_included.length
-      ? plan.services_included
-      : ['Acesso à academia', 'Treino organizado', 'Acompanhamento da equipe'];
     const featured = plan.is_featured || index === 1;
     const realId = plan.id && !String(plan.id).startsWith('sample-');
+    const serviceItems = Array.isArray(plan.services_included) && plan.services_included.length
+      ? `<ul>${plan.services_included.slice(0, 6).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+      : sanitizeRichHtml(plan.benefits || '<ul><li>Acesso à academia</li><li>Treino organizado</li><li>Acompanhamento da equipe</li></ul>');
     return `
       <article class="plan-card ${featured ? 'recommended' : ''}">
         <span class="plan-label">${featured ? 'Mais escolhido' : 'Plano mensal'}</span>
         <h3>${escapeHtml(plan.name)}</h3>
-        <p>${escapeHtml(plan.description || 'Plano completo para sua rotina de treinos.')}</p>
+        <div class="plan-rich plan-description">${sanitizeRichHtml(plan.description || '<p>Plano completo para sua rotina de treinos.</p>')}</div>
         <div class="plan-price">${money(plan.price_cents)}</div>
-        <ul>${services.slice(0, 6).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+        <div class="plan-rich plan-benefits">${serviceItems}</div>
+        ${plan.rules ? `<details class="plan-rules"><summary>Regras do plano</summary><div class="plan-rich">${sanitizeRichHtml(plan.rules)}</div></details>` : ''}
         <a class="cta ${featured ? '' : 'ghost'}" href="#matricula" data-plan="${realId ? escapeHtml(plan.id) : ''}">Escolher este plano</a>
       </article>`;
   }
@@ -61,9 +128,7 @@
     plansNode.innerHTML = visiblePlans.map(planCard).join('');
     classesNode.innerHTML = classes.map(classCard).join('');
     select.querySelectorAll('option:not(:first-child)').forEach((option) => option.remove());
-    if (plans.length) {
-      select.insertAdjacentHTML('beforeend', plans.map((plan) => `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)} — ${money(plan.price_cents)}</option>`).join(''));
-    }
+    if (plans.length) select.insertAdjacentHTML('beforeend', plans.map((plan) => `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)} — ${money(plan.price_cents)}</option>`).join(''));
     document.querySelectorAll('[data-plan]').forEach((button) => button.addEventListener('click', () => {
       if (button.dataset.plan) select.value = button.dataset.plan;
     }));
