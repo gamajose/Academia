@@ -36,8 +36,10 @@
         </div>
         <div class="form-field">
           <label for="student-password">Senha</label>
-          <input id="student-password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required />
+          <div class="password-row"><input id="student-password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required /><button class="password-toggle" id="password-toggle" type="button" aria-label="Mostrar senha">Mostrar</button></div>
         </div>
+
+        <label class="remember-row"><input id="remember-account" type="checkbox" /> <span>Manter conectado neste dispositivo</span></label>
 
         <button class="cta login-primary" id="student-login-button" type="button">Entrar</button>
         <div class="login-secondary-actions">

@@ -75,6 +75,14 @@ function forgotPassword() {
   msg('Procure a recepção para redefinir sua senha com segurança.');
 }
 
+document.getElementById('password-toggle').addEventListener('click', () => {
+  const visible = passwordField.type === 'text';
+  passwordField.type = visible ? 'password' : 'text';
+  const toggle = document.getElementById('password-toggle');
+  toggle.textContent = visible ? 'Mostrar' : 'Ocultar';
+  toggle.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha');
+});
+
 loginButton.addEventListener('click', accountLogin);
 document.getElementById('forgot-password-button').addEventListener('click', forgotPassword);
 [emailField, passwordField].forEach((field) => field.addEventListener('keydown', (event) => {

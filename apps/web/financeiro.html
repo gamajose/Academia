@@ -12,7 +12,6 @@
   <main class="app-shell">
     <section class="hero">
       <div><p class="eyebrow">Administração</p><h1>Financeiro</h1><p>Dashboard de recebimentos, pendências, atrasos e ações vinculadas ao aluno.</p></div>
-      <div class="health-card"><span>Módulo</span><strong>Financeiro</strong><small>recebidos, pendentes e atrasados</small></div>
     </section>
     <section class="cards finance-summary">
       <article><span>Pendente</span><strong id="pending-amount">R$ 0,00</strong></article>
@@ -22,14 +21,14 @@
       <article><span>Pagos</span><strong id="paid-count">0</strong></article>
     </section>
     <section class="panel">
-      <div class="toolbar"><h2>Lançamentos financeiros</h2><button id="load-button">Atualizar</button></div>
+      <div class="toolbar"><h2>Lançamentos financeiros</h2></div>
       <p class="status-line" id="reports-status">Carregando...</p>
       <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Valor</th><th>Status</th><th>Vencimento</th><th>Método</th><th>Ações</th></tr></thead><tbody id="financial-list"></tbody></table></div>
     </section>
   </main>
   <div class="modal hidden" id="finance-modal">
     <div class="modal-card">
-      <div class="toolbar"><h3 id="finance-title">Ajuste financeiro</h3><button class="secondary" id="close-finance-modal">Fechar</button></div>
+      <div class="toolbar"><h3 id="finance-title">Ajuste financeiro</h3><button class="secondary modal-close" id="close-finance-modal" aria-label="Fechar" title="Fechar">×</button></div>
       <input id="finance-payment-id" type="hidden" />
       <div class="grid">
         <input id="finance-discount" type="number" placeholder="Desconto em centavos" />

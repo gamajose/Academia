@@ -59,6 +59,13 @@ jobs:
           npm run check
           npm run migrate
 
+          node --check "$PROJECT_DIR/apps/web/nav.js"
+          node --check "$PROJECT_DIR/apps/web/landing.js"
+          node --check "$PROJECT_DIR/apps/web/plans.js"
+          node --check "$PROJECT_DIR/apps/web/alunos.js"
+          node --check "$PROJECT_DIR/apps/web/planos.js"
+          python3 -m py_compile "$PROJECT_DIR/apps/web/site_server.py"
+
           sudo -n systemctl restart academia-api
           sudo -n systemctl restart academia-web
 
@@ -66,6 +73,8 @@ jobs:
             if curl --fail --silent --show-error "$HEALTH_URL"; then
               echo
               echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
+              echo "academia-api: $(sudo -n systemctl is-active academia-api)"
+              echo "academia-web: $(sudo -n systemctl is-active academia-web)"
               exit 0
             fi
             echo "API ainda não respondeu; nova tentativa em 2 segundos ($attempt/5)."

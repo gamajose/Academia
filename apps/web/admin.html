@@ -40,8 +40,6 @@
       <div class="toolbar">
         <h2>Resumo</h2>
         <div class="toolbar-actions">
-          <button id="refresh-button">Atualizar</button>
-          <button id="logout-button" class="secondary">Sair</button>
         </div>
       </div>
       <div class="cards">
@@ -63,8 +61,8 @@
         <section class="panel">
           <h3>Novo plano</h3>
           <input id="plan-name" placeholder="Nome do plano" />
-          <input id="plan-price" type="number" placeholder="Valor em centavos. Ex: 9900" />
-          <input id="plan-days" type="number" placeholder="Duracao em dias" />
+          <input id="plan-price" inputmode="decimal" placeholder="Preço em reais, ex.: 129,90" />
+          <input id="plan-days" type="number" min="1" placeholder="Duração em dias" />
           <button id="create-plan-button">Cadastrar plano</button>
         </section>
         <section class="panel">
@@ -78,7 +76,7 @@
           <h3>Novo pagamento</h3>
           <select id="payment-member"></select>
           <select id="payment-membership"></select>
-          <input id="payment-amount" type="number" placeholder="Valor em centavos. Ex: 9900" />
+          <input id="payment-amount" inputmode="decimal" placeholder="Valor em reais, ex.: 129,90" />
           <input id="payment-due" type="date" />
           <button id="create-payment-button">Criar cobranca</button>
         </section>

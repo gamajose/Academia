@@ -31,6 +31,12 @@ function money(cents) {
   return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function currencyToCents(value) {
+  const normalized = String(value || '').replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+}
+
 function message(text) {
   const element = byId('action-message');
   if (element) element.textContent = text;
@@ -253,7 +259,7 @@ async function toggleMember(member) {
 
 async function createPlan() {
   await runAction(async () => {
-    await request('/api/plans', { method: 'POST', body: JSON.stringify({ name: byId('plan-name').value.trim(), price_cents: Number(byId('plan-price').value || 0), duration_days: Number(byId('plan-days').value || 30) }) });
+    await request('/api/plans', { method: 'POST', body: JSON.stringify({ name: byId('plan-name').value.trim(), price_cents: currencyToCents(byId('plan-price').value), duration_days: Number(byId('plan-days').value || 30) }) });
     byId('plan-name').value = ''; byId('plan-price').value = ''; byId('plan-days').value = '';
   }, 'Plano cadastrado.');
 }
@@ -261,9 +267,9 @@ async function createPlan() {
 async function editPlan(plan) {
   const name = prompt('Nome do plano', plan.name);
   if (!name) return;
-  const price = prompt('Valor em centavos', plan.price_cents);
+  const price = prompt('Preço em reais', (Number(plan.price_cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
   const days = prompt('Duracao em dias', plan.duration_days);
-  await runAction(() => request('/api/plans/update', { method: 'POST', body: JSON.stringify({ plan_id: plan.id, name, price_cents: Number(price || plan.price_cents), duration_days: Number(days || plan.duration_days) }) }), 'Plano atualizado.');
+  await runAction(() => request('/api/plans/update', { method: 'POST', body: JSON.stringify({ plan_id: plan.id, name, price_cents: currencyToCents(price || Number(plan.price_cents || 0) / 100), duration_days: Number(days || plan.duration_days) }) }), 'Plano atualizado.');
 }
 
 async function togglePlan(plan) {
@@ -285,7 +291,7 @@ async function cancelMembership(membership) {
 
 async function createPayment() {
   await runAction(async () => {
-    await request('/api/payments', { method: 'POST', body: JSON.stringify({ member_id: byId('payment-member').value, membership_id: byId('payment-membership').value || null, amount_cents: Number(byId('payment-amount').value || 0), due_date: byId('payment-due').value }) });
+    await request('/api/payments', { method: 'POST', body: JSON.stringify({ member_id: byId('payment-member').value, membership_id: byId('payment-membership').value || null, amount_cents: currencyToCents(byId('payment-amount').value), due_date: byId('payment-due').value }) });
     byId('payment-amount').value = ''; byId('payment-due').value = '';
   }, 'Cobranca criada.');
 }

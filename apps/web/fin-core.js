@@ -126,7 +126,7 @@ async function pay(item) {
   await load();
 }
 
-f('load-button').addEventListener('click', load);
-f('close-finance-modal').addEventListener('click', closeM);
-f('finance-adjust-button').addEventListener('click', adjust);
+f('load-button')?.addEventListener('click', load);
+f('close-finance-modal')?.addEventListener('click', closeM);
+f('finance-adjust-button')?.addEventListener('click', adjust);
 load();
