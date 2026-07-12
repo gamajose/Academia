@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { digits, validEmail } = require('../features/memberDetailRoutes');
+const { digits, validEmail } = require('../lib/memberValidation');
 
 test('digits mantém somente números e respeita o limite', () => {
   assert.equal(digits('166.233.555-55', 11), '16623355555');
