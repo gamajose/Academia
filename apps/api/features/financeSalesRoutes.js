@@ -300,7 +300,7 @@ async function operationsSearch(res,user,url,helpers){
     `SELECT m.id,m.name,m.email,m.phone,m.status,m.photo_url,ms.ends_at,
       EXISTS(SELECT 1 FROM payments p WHERE p.member_id=m.id AND p.gym_id=m.gym_id AND p.status IN ('pending','overdue') AND p.due_date<current_date-10) AS financially_blocked
      FROM members m LEFT JOIN LATERAL(SELECT ends_at FROM memberships WHERE member_id=m.id AND gym_id=m.gym_id ORDER BY ends_at DESC LIMIT 1)ms ON true
-     WHERE m.gym_id=$1 AND (unaccent(lower(m.name)) LIKE unaccent(lower($2)) OR lower(COALESCE(m.email,'')) LIKE lower($2) OR COALESCE(m.phone,'') LIKE $3)
+     WHERE m.gym_id=$1 AND (lower(m.name) LIKE lower($2) OR lower(COALESCE(m.email,'')) LIKE lower($2) OR COALESCE(m.phone,'') LIKE $3)
      ORDER BY m.name LIMIT 30`,[user.gym_id,`%${q}%`,`%${q.replace(/\D/g,'')}%`]);
   return helpers.send(res,200,{data:result.rows});
 }
