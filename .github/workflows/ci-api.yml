@@ -7,6 +7,7 @@ on:
     paths:
       - 'apps/api/**'
       - 'apps/mobile/**'
+      - 'apps/web/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
   push:
@@ -15,6 +16,7 @@ on:
     paths:
       - 'apps/api/**'
       - 'apps/mobile/**'
+      - 'apps/web/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
 
@@ -23,25 +25,20 @@ jobs:
     name: Testes e sintaxe da API
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     defaults:
       run:
         working-directory: apps/api
-
     steps:
       - name: Baixar repositorio
         uses: actions/checkout@v4
-
       - name: Preparar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
           cache-dependency-path: apps/api/package-lock.json
-
       - name: Instalar dependencias
         run: npm ci
-
       - name: Validar sintaxe e regras
         shell: bash
         env:
@@ -52,7 +49,6 @@ jobs:
           npm run check 2>&1 | tee api-check.log
           status=${PIPESTATUS[0]}
           exit "$status"
-
       - name: Publicar diagnostico da API
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,28 +58,45 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  web:
+    name: Validar interface web
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Baixar repositorio
+        uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validar JavaScript da interface
+        shell: bash
+        run: |
+          set -e
+          node --check apps/web/nav.js
+          node --check apps/web/landing.js
+          node --check apps/web/plans.js
+          node --check apps/web/alunos.js
+          node --check apps/web/planos.js
+          node --check apps/web/dashboard-auto-refresh.js
+
   mobile:
     name: Analisar aplicativo Flutter
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     defaults:
       run:
         working-directory: apps/mobile
-
     steps:
       - name: Baixar repositorio
         uses: actions/checkout@v4
-
       - name: Preparar Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
       - name: Instalar dependencias
         run: flutter pub get
-
       - name: Analisar codigo Flutter
         shell: bash
         run: |
@@ -91,7 +104,6 @@ jobs:
           flutter analyze 2>&1 | tee flutter-analyze.log
           status=${PIPESTATUS[0]}
           exit "$status"
-
       - name: Publicar diagnostico Flutter
         if: always()
         uses: actions/upload-artifact@v4
