@@ -61,7 +61,8 @@ class _ScanGymQrPageState extends State<ScanGymQrPage> {
   }
 
   void onDetect(BarcodeCapture capture) {
-    final value = capture.barcodes.firstOrNull?.rawValue;
+    if (capture.barcodes.isEmpty) return;
+    final value = capture.barcodes.first.rawValue;
     if (value == null || value.isEmpty) return;
     redeem(value);
   }
