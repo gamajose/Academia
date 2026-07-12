@@ -6,7 +6,7 @@
   <title>Funcionários - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./users-access.css?v=20260712-2126" />
+  <link rel="stylesheet" href="./users-access.css?v=20260712-2310" />
 </head>
 <body>
   <main class="app-shell employees-page">
@@ -24,7 +24,7 @@
         </div>
         <div class="toolbar-actions">
           <button id="new-user-button" type="button">Cadastrar funcionário</button>
-          <a class="secondary site-button" href="./permissions.html">Gerenciar permissões</a>
+          <button id="manage-permissions-button" class="secondary" type="button">Gerenciar permissões</button>
         </div>
       </div>
       <p class="status-line" id="users-status" aria-live="polite">Carregando equipe.</p>
@@ -84,7 +84,7 @@
           <input id="user-role" type="hidden" value="staff" />
           <div class="field"><label for="user-access-profile">Perfil de acesso *</label><select id="user-access-profile" required></select><small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small></div>
         </div>
-        <p class="section-help" id="permission-help">Consulte e edite as permissões deste perfil na tela de Permissões.</p>
+        <p class="section-help" id="permission-help">Consulte e edite as permissões pelo botão Gerenciar permissões.</p>
       </section>
 
       <section class="form-section">
@@ -109,7 +109,48 @@
     </form>
   </div>
 
-  <script src="./nav.js"></script>
-  <script src="./users.js?v=20260712-2126"></script>
+  <div class="modal hidden" id="permissions-manager-modal" role="dialog" aria-modal="true" aria-labelledby="permissions-manager-title" aria-hidden="true">
+    <section class="modal-card permissions-modal-card">
+      <div class="modal-header permissions-modal-header">
+        <div>
+          <h3 id="permissions-manager-title">Gerenciar permissões</h3>
+          <p>Crie perfis e defina quais módulos cada funcionário poderá acessar.</p>
+        </div>
+        <button type="button" id="close-permissions-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+
+      <div class="toolbar permissions-modal-toolbar">
+        <div>
+          <h4>Perfis de acesso</h4>
+          <p class="section-help">O perfil escolhido no cadastro do funcionário determina o acesso dele.</p>
+        </div>
+        <button id="new-access-profile-button" type="button">Novo perfil</button>
+      </div>
+
+      <form id="access-profile-form" class="access-profile-form hidden">
+        <input id="access-profile-id" type="hidden" />
+        <div class="field profile-name-field">
+          <label for="access-profile-name">Nome do perfil *</label>
+          <input id="access-profile-name" maxlength="60" placeholder="Ex.: Atendimento, Coordenação ou Caixa" required />
+          <small>Esse nome aparecerá no cadastro e no perfil do funcionário.</small>
+        </div>
+        <fieldset class="permissions-fieldset">
+          <legend>Permissões do perfil</legend>
+          <p class="section-help">Marque os módulos que este perfil poderá visualizar e operar.</p>
+          <div id="permissions-grid" class="permissions-grid"><span class="permissions-loading">Carregando módulos...</span></div>
+        </fieldset>
+        <div class="form-actions">
+          <button class="secondary" id="cancel-access-profile-button" type="button">Cancelar</button>
+          <button id="save-access-profile-button" type="submit">Salvar perfil</button>
+        </div>
+      </form>
+
+      <div id="access-profile-list" class="access-profile-list"></div>
+      <p class="status-line" id="access-profiles-status" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <script src="./nav.js?v=20260712-2310"></script>
+  <script src="./users.js?v=20260712-2310"></script>
 </body>
 </html>
