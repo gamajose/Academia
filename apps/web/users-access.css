@@ -18,10 +18,25 @@
 .permissions-page .hero { margin-bottom: 28px; }
 .permissions-page .form-actions { justify-content: flex-end; }
 
+body.modal-open { overflow: hidden; }
+.employee-list-panel { gap: 16px; }
+.employee-list-toolbar .toolbar-actions { justify-content: flex-end; }
+.employee-list-panel table th { color: #5b625e; border-bottom: 1px solid var(--line); }
+.employee-list-panel table td { color: var(--text); border-bottom: 1px solid #ebe4da; vertical-align: middle; }
+.employee-list-panel table td:first-child { color: var(--text); }
+.employee-row-actions { white-space: nowrap; }
+.employee-empty-row { padding: 28px 12px !important; text-align: center !important; color: var(--muted) !important; font-weight: 700 !important; }
+.employee-modal-card { width: min(1120px, 96vw); }
+.employee-modal-card .modal-header { position: sticky; top: -28px; z-index: 4; margin: -28px -28px 20px; padding: 24px 28px 18px; border-bottom: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
+.employee-form-actions { position: sticky; bottom: -28px; z-index: 3; margin: 4px -28px -28px; padding: 18px 28px 24px; border-top: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
+
 @media (max-width: 760px) {
   .permissions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .access-profile-card { grid-template-columns: 1fr; }
   .access-profile-actions { justify-content: flex-start; }
+  .employee-list-toolbar .toolbar-actions > * { width: 100% !important; }
+  .employee-modal-card .modal-header { top: -20px; margin: -20px -20px 18px; padding: 20px; }
+  .employee-form-actions { bottom: -20px; margin: 4px -20px -20px; padding: 16px 20px 20px; }
 }
 
 @media (max-width: 480px) {
