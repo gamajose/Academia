@@ -38,7 +38,7 @@ function canSeePage(href, role, accessProfile, permissions = null) {
     'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments',
     'financeiro.html': 'finance', 'alerts.html': 'alerts', 'training.html': 'training',
     'assessments.html': 'assessments', 'student-accounts.html': 'student_access',
-    'users.html': 'users'
+    'users.html': 'users', 'permissions.html': 'users'
   };
   if (permissions && pageModules[href]) return permissions[pageModules[href]] === true;
   if (role === 'staff' && accessProfile === 'trainer') return ['painel.html', 'alunos.html', 'training.html', 'assessments.html', 'student-accounts.html'].includes(href);
@@ -62,7 +62,7 @@ function renderNavigation() {
     ['painel.html', 'Painel'], ['alunos.html', 'Alunos'], ['planos.html', 'Planos'],
     ['vinculos.html', 'Matrículas'], ['solicitacoes.html', 'Pré-matrículas'],
     ['financeiro.html', 'Financeiro'], ['alerts.html', 'Alertas'], ['training.html', 'Treinos'],
-    ['assessments.html', 'Avaliações'], ['student-accounts.html', 'Acesso'], ['users.html', 'Funcionários']
+    ['assessments.html', 'Avaliações'], ['student-accounts.html', 'Acesso'], ['users.html', 'Funcionários'], ['permissions.html', 'Permissões']
   ];
 
   const nav = document.createElement('nav');

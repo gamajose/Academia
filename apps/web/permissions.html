@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Permissões - Academia Lobo</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./users-access.css" />
+</head>
+<body>
+  <main class="app-shell permissions-page">
+    <section class="hero">
+      <div><p class="eyebrow">Configuração da equipe</p><h1>Permissões</h1><p>Crie os perfis da academia, escolha o nome que será exibido e defina os módulos liberados para cada um.</p></div>
+    </section>
+
+    <section class="panel permissions-manager-panel">
+      <div class="toolbar">
+        <div><h3>Perfis de acesso</h3><p class="section-help">Os nomes abaixo são editáveis. O perfil escolhido no cadastro do funcionário determina o acesso dele.</p></div>
+        <button id="new-access-profile-button" type="button">Novo perfil</button>
+      </div>
+
+      <form id="access-profile-form" class="access-profile-form hidden">
+        <input id="access-profile-id" type="hidden" />
+        <div class="field profile-name-field"><label for="access-profile-name">Nome do perfil *</label><input id="access-profile-name" maxlength="60" placeholder="Ex.: Atendimento, Coordenação ou Caixa" required /><small>Esse nome aparecerá na tela de funcionários e no perfil de quem entrar no sistema.</small></div>
+        <fieldset class="permissions-fieldset"><legend>Permissões do perfil</legend><p class="section-help">Marque os módulos que este perfil poderá visualizar e operar.</p><div id="permissions-grid" class="permissions-grid"><span class="permissions-loading">Carregando módulos...</span></div></fieldset>
+        <div class="form-actions"><button class="secondary" id="cancel-access-profile-button" type="button">Cancelar</button><button id="save-access-profile-button" type="submit">Salvar perfil</button></div>
+      </form>
+
+      <div id="access-profile-list" class="access-profile-list"></div>
+      <p class="status-line" id="access-profiles-status">Carregando perfis...</p>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./permissions.js"></script>
+</body>
+</html>

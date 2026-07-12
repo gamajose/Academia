@@ -3,35 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Funcionários e permissões - Academia Lobo</title>
+  <title>Funcionários - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./users-access.css" />
 </head>
 <body>
   <main class="app-shell">
-    <section class="hero"><p class="eyebrow">Equipe</p><h1>Funcionários e permissões</h1><p>Cadastre a equipe com dados completos e defina o que cada função pode acessar.</p></section>
-
-    <section class="panel access-profiles-panel">
-      <div class="toolbar">
-        <div><h3>Perfis de acesso</h3><p class="section-help">Crie os perfis da sua academia e marque os módulos que cada perfil pode usar.</p></div>
-        <button class="secondary" id="new-access-profile-button" type="button">Novo perfil</button>
-      </div>
-      <form id="access-profile-form" class="access-profile-form hidden">
-        <input id="access-profile-id" type="hidden" />
-        <div class="form-grid">
-          <div class="field"><label for="access-profile-name">Nome do perfil *</label><input id="access-profile-name" maxlength="60" placeholder="Ex.: Atendimento" required /></div>
-          <div class="field"><label for="access-profile-role">Tipo de conta</label><select id="access-profile-role"><option value="staff">Equipe</option><option value="operator">Operação</option><option value="admin">Administrador</option><option value="owner">Proprietário</option></select><small>Define o nível técnico da conta; as caixas abaixo definem os módulos.</small></div>
-        </div>
-        <fieldset class="permissions-fieldset"><legend>Módulos permitidos</legend><div id="permissions-grid" class="permissions-grid"></div></fieldset>
-        <div class="form-actions"><button class="secondary" id="cancel-access-profile-button" type="button">Cancelar</button><button id="save-access-profile-button" type="submit">Salvar perfil</button></div>
-      </form>
-      <div id="access-profile-list" class="access-profile-list"></div>
-      <p class="status-line" id="access-profiles-status">Carregando perfis.</p>
-    </section>
+    <section class="hero"><p class="eyebrow">Equipe</p><h1>Funcionários</h1><p>Cadastre os funcionários e atribua a cada pessoa um perfil de acesso já configurado.</p></section>
 
     <form class="panel employee-form" id="employee-form">
-      <div class="toolbar"><div><h3 id="employee-form-title">Cadastrar funcionário</h3><small>O cargo descreve a função. O perfil de acesso define as permissões.</small></div><button class="secondary" id="cancel-edit-button" type="button" hidden>Cancelar edição</button></div>
+      <div class="toolbar"><div><h3 id="employee-form-title">Cadastrar funcionário</h3><small>O cargo descreve a função. As permissões são gerenciadas na tela de perfis.</small></div><div class="toolbar-actions"><a class="secondary site-button" href="./permissions.html">Gerenciar permissões</a><button class="secondary" id="cancel-edit-button" type="button" hidden>Cancelar edição</button></div></div>
       <input id="user-id" type="hidden" />
       <section class="form-section">
         <h4>Dados pessoais</h4>
@@ -50,9 +32,9 @@
         <h4>Perfil de acesso</h4>
         <div class="form-grid">
           <input id="user-role" type="hidden" value="staff" />
-          <div class="field"><label for="user-access-profile">Perfil de acesso *</label><select id="user-access-profile" required></select><small id="user-role-preview">Tipo de conta: Equipe</small></div>
+          <div class="field"><label for="user-access-profile">Perfil de acesso *</label><select id="user-access-profile" required></select><small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small></div>
         </div>
-        <p class="section-help" id="permission-help">Recepção acessa alunos, matrículas, alertas e check-in. Não acessa financeiro, usuários ou configurações.</p>
+        <p class="section-help" id="permission-help">Consulte e edite as permissões deste perfil na tela de Permissões.</p>
       </section>
       <section class="form-section">
         <h4>Endereço</h4>
