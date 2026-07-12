@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+process.env.DATABASE_URL = 'postgresql://test:test@127.0.0.1:5432/test';
+
 const { integerInRange } = require('../features/memberWorkspaceRoutes');
 
 test('integerInRange aceita valores dentro do intervalo', () => {
