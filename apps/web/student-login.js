@@ -1,5 +1,8 @@
 const defaultHost = window.location.hostname || 'localhost';
 const API = localStorage.getItem('apiBaseUrl') || `http://${defaultHost}:3004`;
+const emailField = document.getElementById('student-email');
+const passwordField = document.getElementById('student-password');
+const loginButton = document.getElementById('student-login-button');
 
 function msg(text) {
   document.getElementById('student-login-message').textContent = text;
@@ -27,19 +30,31 @@ async function post(path, payload) {
 }
 
 async function accountLogin() {
-  const email = document.getElementById('student-email').value.trim();
-  const password = document.getElementById('student-password').value;
-  const payload = { email, password };
+  const email = emailField.value.trim();
+  const password = passwordField.value;
+  if (!email || !password) {
+    msg('Informe e-mail e senha.');
+    (email ? passwordField : emailField).focus();
+    return;
+  }
+
+  loginButton.disabled = true;
+  loginButton.textContent = 'Entrando...';
   msg('Validando acesso...');
+  const payload = { email, password };
 
   try {
     const admin = await post('/api/auth/login', payload);
     localStorage.setItem('academiaToken', admin.token);
     localStorage.setItem('apiBaseUrl', API);
+    localStorage.setItem('academiaUserName', admin.user?.name || 'Minha conta');
+    localStorage.setItem('academiaRole', admin.user?.role || 'admin');
     portalOn();
     window.location.href = './painel.html';
     return;
-  } catch (_) {}
+  } catch (_) {
+    // O mesmo formulário atende aluno e equipe; tenta o perfil de aluno em seguida.
+  }
 
   try {
     const student = await post('/api/student/auth/login', payload);
@@ -49,14 +64,19 @@ async function accountLogin() {
     studentPortalOn();
     window.location.href = './student-portal.html';
   } catch (error) {
-    const map = { credenciais_invalidas: 'E-mail ou senha inválido.', dados_invalidos: 'Informe e-mail e senha.' };
-    msg(map[error.message] || `Falha no acesso: ${error.message}`);
+    const map = { credenciais_invalidas: 'E-mail ou senha inválidos.', dados_invalidos: 'Informe e-mail e senha.' };
+    msg(map[error.message] || 'Não foi possível acessar sua conta. Confira os dados e tente novamente.');
+    loginButton.disabled = false;
+    loginButton.textContent = 'Entrar';
   }
 }
 
 function forgotPassword() {
-  msg('Recuperação registrada: procure a recepção para redefinir a senha com segurança.');
+  msg('Procure a recepção para redefinir sua senha com segurança.');
 }
 
-document.getElementById('student-login-button').addEventListener('click', accountLogin);
+loginButton.addEventListener('click', accountLogin);
 document.getElementById('forgot-password-button').addEventListener('click', forgotPassword);
+[emailField, passwordField].forEach((field) => field.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') accountLogin();
+}));
