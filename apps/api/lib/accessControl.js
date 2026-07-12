@@ -23,6 +23,7 @@ function canAccess(user, method, pathname) {
       '/api/gym/profile',
       '/api/alerts',
       '/api/classes',
+      '/api/classes/sessions/upcoming',
       '/api/classes/session/roster'
     ];
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
