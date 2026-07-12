@@ -1,6 +1,30 @@
 const { recordAudit } = require('../lib/audit');
 const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
 
+function canManageTrainingLevels(user) {
+  return user && ['owner', 'admin'].includes(user.role);
+}
+
+function slugifyLevel(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+}
+
+async function resolveTrainingLevel(query, gymId, value) {
+  const requested = String(value || '').trim().toLowerCase();
+  const result = await query(
+    'SELECT slug FROM training_levels WHERE gym_id = $1 AND lower(slug) = $2 AND is_active = true LIMIT 1',
+    [gymId, requested]
+  );
+  return result.rows[0]?.slug || normalizeLevel(requested);
+}
+
 function validVideoSource(value) {
   const text = String(value || '').trim();
   if (!text) return true;
@@ -25,6 +49,55 @@ function numberOrNull(value) {
 async function handleTrainingRoutes(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
   if (!url.pathname.startsWith('/api/training')) return false;
+
+  if (req.method === 'GET' && url.pathname === '/api/training/levels') {
+    const visibility = canManageTrainingLevels(user) ? '' : ' AND is_active = true';
+    const result = await query(
+      `SELECT id, slug, name, sort_order, is_active, created_at, updated_at
+       FROM training_levels WHERE gym_id = $1${visibility} ORDER BY sort_order, name`,
+      [user.gym_id]
+    );
+    return send(res, 200, { data: result.rows });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/levels') {
+    if (!canManageTrainingLevels(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    const name = String(input.name || '').trim();
+    const slug = slugifyLevel(name);
+    if (name.length < 2 || name.length > 60 || !slug) return send(res, 400, { error: 'nivel_invalido' });
+    const duplicate = await query('SELECT id FROM training_levels WHERE gym_id = $1 AND (lower(name) = lower($2) OR lower(slug) = lower($3)) LIMIT 1', [user.gym_id, name, slug]);
+    if (duplicate.rowCount) return send(res, 409, { error: 'nivel_ja_cadastrado' });
+    const order = await query('SELECT COALESCE(MAX(sort_order), 0) + 10 AS next_order FROM training_levels WHERE gym_id = $1', [user.gym_id]);
+    const result = await query(
+      'INSERT INTO training_levels (gym_id, slug, name, sort_order) VALUES ($1, $2, $3, $4) RETURNING id, slug, name, sort_order, is_active, created_at, updated_at',
+      [user.gym_id, slug, name, Number(order.rows[0]?.next_order || 10)]
+    );
+    await recordAudit(user, 'create', 'training_level', result.rows[0].id, { name });
+    return send(res, 201, result.rows[0]);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/levels/update') {
+    if (!canManageTrainingLevels(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    const name = String(input.name || '').trim();
+    if (!input.id || name.length < 2 || name.length > 60) return send(res, 400, { error: 'nivel_invalido' });
+    const duplicate = await query('SELECT id FROM training_levels WHERE gym_id = $1 AND lower(name) = lower($2) AND id <> $3 LIMIT 1', [user.gym_id, name, input.id]);
+    if (duplicate.rowCount) return send(res, 409, { error: 'nivel_ja_cadastrado' });
+    if (input.is_active === false) {
+      const active = await query('SELECT count(*)::integer AS total FROM training_levels WHERE gym_id = $1 AND is_active = true AND id <> $2', [user.gym_id, input.id]);
+      if (Number(active.rows[0]?.total || 0) < 1) return send(res, 400, { error: 'mantenha_um_nivel_ativo' });
+    }
+    const result = await query(
+      `UPDATE training_levels SET name = $3, is_active = $4, updated_at = now()
+       WHERE id = $1 AND gym_id = $2
+       RETURNING id, slug, name, sort_order, is_active, created_at, updated_at`,
+      [input.id, user.gym_id, name, input.is_active !== false]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'nivel_nao_encontrado' });
+    await recordAudit(user, 'update', 'training_level', result.rows[0].id, { name, is_active: result.rows[0].is_active });
+    return send(res, 200, result.rows[0]);
+  }
 
   if (req.method === 'GET' && url.pathname === '/api/training/advanced/detail') {
     const planId = url.searchParams.get('plan_id');
@@ -93,7 +166,8 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     if (!input.name || !input.muscle_group) return send(res, 400, { error: 'dados_invalidos' });
     const videoUrl = String(input.video_url || '').trim();
     if (videoUrl.length > 1000 || !validVideoSource(videoUrl)) return send(res, 400, { error: 'video_invalido' });
-    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, muscle_group, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, input.muscle_group, input.equipment || null, normalizeLevel(input.level), input.instructions || null, videoUrl || null]);
+    const level = await resolveTrainingLevel(query, user.gym_id, input.level);
+    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, muscle_group, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, input.muscle_group, input.equipment || null, level, input.instructions || null, videoUrl || null]);
     await recordAudit(user, 'create', 'exercise', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 201, result.rows[0]);
   }
@@ -108,7 +182,7 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
        VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (gym_id, member_id) DO UPDATE SET level = EXCLUDED.level, goal = EXCLUDED.goal, restrictions = EXCLUDED.restrictions, training_days_per_week = EXCLUDED.training_days_per_week, updated_at = now()
        RETURNING id, member_id, level, goal, restrictions, training_days_per_week, updated_at`,
-      [user.gym_id, input.member_id, normalizeLevel(input.level), input.goal || null, input.restrictions || null, Number(input.training_days_per_week || 3)]
+      [user.gym_id, input.member_id, await resolveTrainingLevel(query, user.gym_id, input.level), input.goal || null, input.restrictions || null, Number(input.training_days_per_week || 3)]
     );
     await recordAudit(user, 'upsert', 'training_profile', result.rows[0].id, { member_id: input.member_id, level: result.rows[0].level });
     return send(res, 200, result.rows[0]);
@@ -124,4 +198,4 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
   return false;
 }
 
-module.exports = { handleTrainingRoutes, validVideoSource };
+module.exports = { handleTrainingRoutes, validVideoSource, canManageTrainingLevels, slugifyLevel, resolveTrainingLevel };

@@ -22,8 +22,19 @@
 .exercise-video-preview[hidden] { display: none; }
 .video-preview-slot { display: grid; gap: 8px; margin-top: 10px; }
 .video-preview-slot .mini-button { justify-self: start; margin: 0; }
+.training-levels-panel { margin-bottom: 18px; }
+.training-levels-panel .section-help { margin: 5px 0 0; color: var(--muted, #68716b); }
+.training-level-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.training-level-list { display: grid; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.training-level-list > li { border: 1px solid var(--line, #e0d8cc); border-radius: 12px; padding: 10px 12px; background: #fff; }
+.training-level-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.training-level-row input[type="text"], .training-level-row > input:not([type]) { min-height: 40px; }
+.training-level-active { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--muted, #68716b); font-size: 13px; }
+.training-level-active input { width: auto; }
 
 @media (max-width: 620px) {
   .video-source-fields { padding: 13px; }
   .exercise-video-preview { width: 100%; }
+  .training-level-form, .training-level-row { grid-template-columns: 1fr; align-items: stretch; }
+  .training-level-row button { justify-self: start; }
 }

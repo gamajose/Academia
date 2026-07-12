@@ -5,6 +5,7 @@ let members = [];
 let exercises = [];
 let plans = [];
 let days = [];
+let trainingLevels = [];
 
 const t = (id) => document.getElementById(id);
 
@@ -42,6 +43,85 @@ function fillSelect(id, rows, label, empty) {
   }
 }
 
+const defaultTrainingLevels = [
+  { slug: 'frango', name: 'Frango', is_active: true },
+  { slug: 'intermediario', name: 'Intermediario', is_active: true },
+  { slug: 'avancado', name: 'Avancado', is_active: true }
+];
+
+function fillLevelSelect(id) {
+  const select = t(id);
+  const selected = select.value;
+  const activeLevels = (trainingLevels.length ? trainingLevels : defaultTrainingLevels).filter((level) => level.is_active !== false);
+  select.innerHTML = '';
+  for (const level of activeLevels) {
+    const option = document.createElement('option');
+    option.value = level.slug;
+    option.textContent = level.name;
+    option.selected = level.slug === selected;
+    select.appendChild(option);
+  }
+  if (!activeLevels.some((level) => level.slug === selected) && activeLevels[0]) select.value = activeLevels[0].slug;
+}
+
+function canManageTrainingLevels() {
+  return ['owner', 'admin'].includes(localStorage.getItem('academiaRole'));
+}
+
+function setTrainingLevelStatus(text) {
+  t('training-level-status').textContent = text;
+}
+
+function renderTrainingLevels() {
+  const panel = t('training-levels-panel');
+  const list = t('training-level-list');
+  if (!canManageTrainingLevels()) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+  list.innerHTML = '';
+  for (const level of trainingLevels) {
+    const item = document.createElement('li');
+    const form = document.createElement('form');
+    form.className = 'training-level-row';
+    const input = document.createElement('input');
+    input.value = level.name;
+    input.maxLength = 60;
+    input.required = true;
+    input.setAttribute('aria-label', `Nome do nivel ${level.name}`);
+    const activeLabel = document.createElement('label');
+    activeLabel.className = 'training-level-active';
+    const active = document.createElement('input');
+    active.type = 'checkbox';
+    active.checked = level.is_active;
+    activeLabel.append(active, document.createTextNode(' Ativo'));
+    const save = document.createElement('button');
+    save.type = 'submit';
+    save.className = 'mini-button';
+    save.textContent = 'Salvar';
+    form.append(input, activeLabel, save);
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      save.disabled = true;
+      try {
+        await api('/api/training/levels/update', {
+          method: 'POST',
+          body: JSON.stringify({ id: level.id, name: input.value.trim(), is_active: active.checked })
+        });
+        setTrainingLevelStatus('Nivel atualizado.');
+        await loadBase();
+      } catch (error) {
+        setTrainingLevelStatus(`Erro: ${error.message}`);
+      } finally {
+        save.disabled = false;
+      }
+    });
+    item.appendChild(form);
+    list.appendChild(item);
+  }
+}
+
 async function loadBase() {
   if (!trainingToken) {
     setTrainingStatus('Entre no painel principal antes de acessar treinos.');
@@ -50,19 +130,25 @@ async function loadBase() {
   const memberResult = await api('/api/members');
   const exerciseResult = await api('/api/training/exercises');
   const planResult = await api('/api/training/plans');
+  const levelResult = await api('/api/training/levels');
   members = memberResult.data || [];
   exercises = exerciseResult.data || [];
   plans = planResult.data || [];
+  trainingLevels = levelResult.data || [];
   renderAll();
   setTrainingStatus('Treinos carregados.');
 }
 
 function renderAll() {
+  fillLevelSelect('exercise-level');
+  fillLevelSelect('profile-level');
+  fillLevelSelect('plan-level');
   fillSelect('profile-member', members, (m) => m.name, 'Selecione o aluno');
   fillSelect('plan-member', members, (m) => m.name, 'Selecione o aluno');
   fillSelect('exercise-select', exercises, (e) => `${e.name} - ${e.muscle_group}`, 'Selecione o exercicio');
   fillSelect('day-plan', plans, (p) => `${p.member_name} - ${p.name}`, 'Selecione a ficha');
   fillSelect('review-plan', plans, (p) => `${p.member_name} - ${p.name} (${p.age_days || 0} dias)`, 'Selecione a ficha');
+  renderTrainingLevels();
 
   const exerciseList = t('exercise-list');
   exerciseList.innerHTML = '';
@@ -96,6 +182,23 @@ function renderAll() {
     button.addEventListener('click', () => loadPlanDetail(item.id));
     row.append(`${item.member_name} - ${item.name} - ${item.level} - ${item.age_days || 0} dias `, button);
     planList.appendChild(row);
+  }
+}
+
+async function createTrainingLevel(event) {
+  event.preventDefault();
+  const input = t('training-level-name');
+  const button = event.submitter;
+  button.disabled = true;
+  try {
+    await api('/api/training/levels', { method: 'POST', body: JSON.stringify({ name: input.value.trim() }) });
+    input.value = '';
+    setTrainingLevelStatus('Nivel adicionado.');
+    await loadBase();
+  } catch (error) {
+    setTrainingLevelStatus(`Erro: ${error.message}`);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -319,6 +422,7 @@ async function reviewPlan() {
 }
 
 t('create-exercise-button').addEventListener('click', createExercise);
+t('training-level-form').addEventListener('submit', createTrainingLevel);
 t('exercise-video-source').addEventListener('change', setVideoSourceMode);
 t('exercise-video-file').addEventListener('change', (event) => previewSelectedFile(event.target.files[0]));
 t('exercise-video-url').addEventListener('input', (event) => previewVideoLink(event.target.value));

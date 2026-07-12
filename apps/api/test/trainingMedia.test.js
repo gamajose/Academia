@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 process.env.DATABASE_URL ||= 'postgres://localhost/academia_test';
-const { validVideoSource } = require('../features/trainingRoutes');
+const { validVideoSource, slugifyLevel } = require('../features/trainingRoutes');
 const { videoSignatureMatches, MAX_VIDEO_BYTES } = require('../features/editorRoutes');
 
 test('aceita fontes de video http, https e uploads locais', () => {
@@ -26,4 +26,10 @@ test('valida assinaturas dos formatos de video aceitos', () => {
   assert.equal(videoSignatureMatches(Buffer.from('OggS'), 'video/ogg'), true);
   assert.equal(videoSignatureMatches(Buffer.from('not-a-video'), 'video/mp4'), false);
   assert.equal(MAX_VIDEO_BYTES, 50 * 1024 * 1024);
+});
+
+test('cria slug seguro para niveis personalizados', () => {
+  assert.equal(slugifyLevel('Força e Hipertrofia'), 'forca-e-hipertrofia');
+  assert.equal(slugifyLevel('  Nível 2  '), 'nivel-2');
+  assert.equal(slugifyLevel('!!!'), '');
 });

@@ -1,5 +1,6 @@
 const { recordAudit } = require('../lib/audit');
-const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
+const { buildTrainingReview } = require('./trainingRules');
+const { resolveTrainingLevel } = require('./trainingRoutes');
 
 async function planExercises(query, gymId, planId) {
   const result = await query(
@@ -39,7 +40,7 @@ async function handleTrainingPlansRoutes(req, res, user, url, helpers) {
 
     const result = await query(
       'INSERT INTO workout_plans (gym_id, member_id, name, level, goal, starts_at) VALUES ($1, $2, $3, $4, $5, COALESCE($6::date, current_date)) RETURNING id, member_id, name, level, goal, status, starts_at, created_at',
-      [user.gym_id, input.member_id, input.name, normalizeLevel(input.level), input.goal || null, input.starts_at || null]
+      [user.gym_id, input.member_id, input.name, await resolveTrainingLevel(query, user.gym_id, input.level), input.goal || null, input.starts_at || null]
     );
     await recordAudit(user, 'create', 'workout_plan', result.rows[0].id, { member_id: input.member_id, level: result.rows[0].level });
     return send(res, 201, result.rows[0]);
