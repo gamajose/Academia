@@ -30,6 +30,13 @@
 .module-cards article { display: grid; gap: 8px; align-content: start; }
 .module-cards strong { font-size: 25px; }
 .module-cards a { color: #b91c1c; text-decoration: none; font-weight: 800; }
+.panel > button,
+.form-actions > button,
+.toolbar > button,
+.toolbar-actions > button { justify-self: start; width: auto !important; min-width: 0; }
+.toolbar-actions a,
+.site-button { min-width: 0; padding: 10px 14px; }
+.alert-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 720px; }
 th, td { text-align: left; border-bottom: 1px solid rgba(255,255,255,.12); padding: 12px 10px; color: #94a3b8; }

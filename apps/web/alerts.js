@@ -34,11 +34,11 @@ function renderList(id, rows, formatter, emptyText) {
 
 async function loadAlerts() {
   if (!ALERTS_TOKEN) {
-    g('alerts-total').textContent = 'login';
+    if (g('alerts-total')) g('alerts-total').textContent = 'login';
     return;
   }
   const data = await api('/api/alerts');
-  g('alerts-total').textContent = data.summary.total;
+  if (g('alerts-total')) g('alerts-total').textContent = data.summary.total;
   g('overdue-count').textContent = data.summary.overdue_payments;
   g('membership-count').textContent = data.summary.memberships_due_soon;
   g('training-count').textContent = data.summary.training_reviews_due;
@@ -51,6 +51,6 @@ async function loadAlerts() {
 }
 
 loadAlerts().catch((error) => {
-  g('alerts-total').textContent = 'erro';
+  if (g('alerts-total')) g('alerts-total').textContent = 'erro';
   renderList('overdue-list', [], () => '', `Erro ao carregar alertas: ${error.message}`);
 });

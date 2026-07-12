@@ -45,7 +45,7 @@ function renderNavigation() {
         <span aria-hidden="true">⌄</span>
       </button>
       <div class="profile-dropdown hidden" id="profile-dropdown">
-        <a href="./account.html">Minha conta</a>
+        <a href="./account.html">Perfil</a>
         <a href="./settings.html">Configurações</a>
         <a href="./account.html#security">Segurança</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
