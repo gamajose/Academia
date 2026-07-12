@@ -3,68 +3,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Planos da academia</title>
-  <style>
-    :root{font-family:Inter,system-ui,Arial,sans-serif;color:#1f2937;background:#f8fafc;line-height:1.5}
-    *{box-sizing:border-box}body{margin:0}.hero{background:linear-gradient(135deg,#7f1d1d,#dc2626);color:#fff;padding:64px 20px}.wrap{max-width:1120px;margin:auto}.hero h1{font-size:clamp(2rem,6vw,4rem);margin:0 0 12px}.hero p{max-width:720px;font-size:1.1rem}.section{padding:44px 20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 28px rgba(15,23,42,.08);border:1px solid #e2e8f0}.card.featured{border:2px solid #dc2626;transform:translateY(-4px)}.tag{display:inline-block;background:#fee2e2;color:#991b1b;border-radius:999px;padding:4px 10px;font-size:.8rem;font-weight:700}.price{font-size:2rem;font-weight:800;margin:12px 0}.muted{color:#64748b}.button{display:inline-flex;align-items:center;justify-content:center;background:#dc2626;color:#fff;border:0;border-radius:12px;padding:12px 18px;text-decoration:none;font-weight:700;cursor:pointer}.button.secondary{background:#fff;color:#991b1b;border:1px solid #fecaca}ul{padding-left:20px}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.form .full{grid-column:1/-1}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}textarea{min-height:100px}.notice{padding:12px;border-radius:10px;margin-top:12px;display:none}.notice.ok{display:block;background:#dcfce7;color:#166534}.notice.error{display:block;background:#fee2e2;color:#991b1b}.faq details{background:#fff;padding:16px;border-radius:12px;margin-bottom:10px;border:1px solid #e2e8f0}.footer{padding:28px 20px;background:#111827;color:#cbd5e1;text-align:center}@media(max-width:700px){.form{grid-template-columns:1fr}.card.featured{transform:none}}
-  </style>
+  <meta name="description" content="Compare os planos da Academia Lobo e escolha a melhor opção para sua rotina." />
+  <title>Planos - Academia Lobo</title>
+  <link rel="stylesheet" href="./landing.css" />
+  <link rel="stylesheet" href="./public-rich.css" />
 </head>
 <body>
-  <header class="hero">
-    <div class="wrap">
-      <span class="tag">TREINE DO SEU JEITO</span>
-      <h1 id="gym-name">Encontre o plano ideal</h1>
-      <p>Compare os planos, conheça as aulas e deixe seus dados para a equipe concluir sua matrícula.</p>
-      <a class="button secondary" href="#planos">Ver planos</a>
-    </div>
-  </header>
+  <main class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="./index.html"><span>Academia</span> Lobo</a>
+      <nav class="site-nav">
+        <a href="./index.html">Início</a>
+        <a href="#planos">Planos</a>
+        <a href="#aulas">Aulas</a>
+        <a class="nav-access" href="./student-login.html">Acessar conta</a>
+      </nav>
+    </header>
 
-  <main>
-    <section id="planos" class="section">
-      <div class="wrap">
-        <h2>Planos disponíveis</h2>
-        <p class="muted">Valores, serviços e regras de acesso atualizados diretamente pelo sistema da academia.</p>
-        <div id="plans" class="grid"><div class="card">Carregando planos...</div></div>
+    <section class="public-plans-hero">
+      <p class="eyebrow-light">Planos da Academia Lobo</p>
+      <h1 id="gym-name">Encontre o plano ideal para sua rotina.</h1>
+      <p>Compare as opções com calma. Depois, envie seus dados e a equipe entra em contato para concluir sua matrícula.</p>
+      <a class="cta light" href="#planos">Comparar planos</a>
+    </section>
+
+    <section id="planos" class="public-plan-section">
+      <div class="section-title">
+        <div><p class="eyebrow-public">Planos</p><h2>Escolha como deseja treinar</h2></div>
+      </div>
+      <div id="plans" class="plan-grid">
+        <article class="plan-card skeleton-card">Preparando os planos...</article>
       </div>
     </section>
 
-    <section class="section" style="background:#fff7f7">
-      <div class="wrap">
-        <h2>Aulas e modalidades</h2>
-        <div id="classes" class="grid"><div class="card">Carregando modalidades...</div></div>
+    <section id="aulas" class="public-plan-section" style="background:#fff">
+      <div class="section-title">
+        <div><p class="eyebrow-public">Modalidades</p><h2>Aulas para completar sua rotina</h2></div>
+      </div>
+      <div id="classes" class="experience-grid">
+        <article class="experience-card"><div class="experience-content"><h3>Programação em breve</h3><p>A equipe está preparando as modalidades disponíveis.</p></div></article>
       </div>
     </section>
 
-    <section id="matricula" class="section">
-      <div class="wrap">
-        <div class="card">
-          <h2>Quero começar</h2>
-          <p class="muted">Preencha os dados. A equipe entrará em contato para confirmar o plano, pagamento e primeiro acesso.</p>
-          <form id="lead-form" class="form">
-            <label>Nome completo<input name="name" required autocomplete="name"></label>
-            <label>Telefone<input name="phone" required autocomplete="tel"></label>
-            <label>E-mail<input name="email" type="email" autocomplete="email"></label>
-            <label>Plano<select name="plan_id" id="plan-select"><option value="">Quero orientação</option></select></label>
-            <label class="full">Objetivo<textarea name="objective" placeholder="Ex.: emagrecimento, hipertrofia, saúde, condicionamento"></textarea></label>
-            <label>Preferência de contato<select name="preferred_contact"><option value="whatsapp">WhatsApp</option><option value="phone">Ligação</option><option value="email">E-mail</option></select></label>
-            <div style="align-self:end"><button class="button" type="submit">Enviar interesse</button></div>
-          </form>
-          <div id="lead-message" class="notice"></div>
-        </div>
+    <section id="matricula" class="public-plan-section">
+      <div class="public-form-card">
+        <p class="eyebrow-public">Comece agora</p>
+        <h2 style="font-size:36px;margin:0 0 8px">Tenho interesse em um plano</h2>
+        <p style="color:var(--muted);margin:0 0 24px">Preencha os dados. A equipe entrará em contato para confirmar as condições e o primeiro acesso.</p>
+        <form id="lead-form" class="public-form-grid">
+          <div class="form-field"><label>Nome completo *</label><input name="name" required autocomplete="name"></div>
+          <div class="form-field"><label>Telefone *</label><input name="phone" required autocomplete="tel" inputmode="tel"></div>
+          <div class="form-field"><label>E-mail</label><input name="email" type="email" autocomplete="email"></div>
+          <div class="form-field"><label>Plano</label><select name="plan_id" id="plan-select"><option value="">Quero orientação</option></select></div>
+          <div class="form-field full"><label>Objetivo</label><textarea name="objective" placeholder="Ex.: emagrecimento, hipertrofia, saúde ou condicionamento"></textarea></div>
+          <div class="form-field"><label>Preferência de contato</label><select name="preferred_contact"><option value="whatsapp">WhatsApp</option><option value="phone">Ligação</option><option value="email">E-mail</option></select></div>
+          <div class="form-field" style="align-self:end"><button class="cta" type="submit">Enviar interesse</button></div>
+        </form>
+        <div id="lead-message" class="notice"></div>
       </div>
     </section>
 
-    <section class="section faq" style="background:#f1f5f9">
-      <div class="wrap">
-        <h2>Perguntas frequentes</h2>
-        <details><summary>Como funciona o acesso?</summary><p>Após a matrícula, o aluno entra no aplicativo e usa um QR Code temporário na catraca.</p></details>
-        <details><summary>Posso reservar aulas?</summary><p>Sim. O aplicativo mostra horários, vagas, fila de espera e permite cancelar reservas.</p></details>
-        <details><summary>Onde acompanho pagamentos e treinos?</summary><p>Na área do aluno, com plano, mensalidades, recibos, frequência, treino, evolução e metas.</p></details>
+    <section class="public-plan-section faq-list" style="background:#eee8df">
+      <div style="max-width:920px;margin:auto">
+        <p class="eyebrow-public">Dúvidas</p>
+        <h2 style="font-size:38px">Perguntas frequentes</h2>
+        <details><summary>Como funciona o acesso?</summary><p>Depois da matrícula e da liberação da equipe, o aluno usa o aplicativo para validar a entrada.</p></details>
+        <details><summary>Posso reservar aulas?</summary><p>Sim. A área do aluno mostra horários, vagas e reservas disponíveis para o plano contratado.</p></details>
+        <details><summary>Onde acompanho pagamentos e treinos?</summary><p>Na área do aluno, com mensalidades, recibos, frequência, treino, evolução e metas.</p></details>
       </div>
     </section>
+
+    <footer class="site-footer">
+      <div class="brand"><span>Academia</span> Lobo</div>
+      <p>Planos e acompanhamento para diferentes objetivos.</p>
+      <a href="./student-login.html">Acessar conta</a>
+    </footer>
   </main>
-
-  <footer class="footer">Academia Platform · Matrículas, treinos e acesso em um só lugar.</footer>
-  <script src="plans.js"></script>
+  <script src="./plans.js"></script>
 </body>
 </html>

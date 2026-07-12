@@ -1,68 +1,60 @@
 const host = window.location.hostname || 'localhost';
 const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
-const $ = (id) => document.getElementById(id);
-let plans = [];
+const box = document.getElementById('landing-plans');
+
+const samplePlans = [
+  { id: 'sample-essential', name: 'Essencial', price_cents: 8990, duration_days: 30, description: 'Para quem quer começar com uma rotina simples e consistente.', benefits: ['Musculação', 'Treino organizado', 'Acompanhamento da equipe'] },
+  { id: 'sample-performance', name: 'Performance', price_cents: 12990, duration_days: 30, description: 'Mais acompanhamento para acelerar a evolução.', benefits: ['Musculação', 'Avaliação periódica', 'Treino com revisões'], recommended: true },
+  { id: 'sample-premium', name: 'Premium', price_cents: 17990, duration_days: 30, description: 'Experiência completa para quem busca acompanhamento contínuo.', benefits: ['Todos os benefícios', 'Aulas incluídas', 'Acompanhamento prioritário'] }
+];
 
 function money(cents) {
   return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function benefits(plan) {
-  const text = plan.benefits || 'Acesso à academia\nAcompanhamento de treino\nÁrea do aluno';
-  return text.split('\n').map((x) => x.trim()).filter(Boolean);
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
 }
 
-function renderPlans() {
-  const box = $('landing-plans');
-  box.innerHTML = '';
-  if (!plans.length) {
-    box.innerHTML = '<article class="plan-card"><strong>Nenhum plano disponível</strong><p>Entre em contato com a academia para consultar as opções.</p></article>';
-    return;
-  }
-  for (const plan of plans.slice(0, 6)) {
-    const card = document.createElement('article');
-    card.className = 'plan-card';
-    card.innerHTML = `<strong>${plan.name}</strong><p>${plan.public_highlight || 'Plano para começar hoje'}</p><div class="plan-price">${money(plan.price_cents)}</div><p>${plan.duration_days} dias de acesso</p>`;
-    const see = document.createElement('button');
-    see.className = 'cta secondary';
-    see.textContent = 'Ver plano';
-    see.onclick = () => openPlan(plan);
-    const choose = document.createElement('a');
-    choose.className = 'cta';
-    choose.href = `./matricula-publica.html?plan=${encodeURIComponent(plan.id)}`;
-    choose.textContent = 'Matricular neste plano';
-    card.appendChild(see);
-    card.appendChild(choose);
-    box.appendChild(card);
-  }
+function benefitItems(plan) {
+  if (Array.isArray(plan.benefits)) return plan.benefits;
+  const raw = String(plan.benefits || '');
+  const plain = raw.replace(/<[^>]+>/g, '\n');
+  const parsed = plain.split(/\n|;/).map((item) => item.trim()).filter(Boolean);
+  return parsed.length ? parsed.slice(0, 4) : ['Acesso à academia', 'Treino organizado', 'Acompanhamento da equipe'];
 }
 
-function openPlan(plan) {
-  $('modal-plan-name').textContent = plan.name;
-  $('modal-plan-price').textContent = `${money(plan.price_cents)} / ${plan.duration_days} dias`;
-  $('modal-plan-desc').textContent = plan.description || 'Plano disponível para pré-matrícula online.';
-  const list = $('modal-plan-benefits');
-  list.innerHTML = '';
-  for (const item of benefits(plan)) {
-    const li = document.createElement('li');
-    li.textContent = item;
-    list.appendChild(li);
-  }
-  const link = document.querySelector('#plan-modal a.cta');
-  if (link) link.href = `./matricula-publica.html?plan=${encodeURIComponent(plan.id)}`;
-  $('plan-modal').classList.remove('hidden');
+function renderPlans(plans) {
+  const valid = plans.filter((plan) => Number(plan.price_cents || 0) > 0);
+  const source = valid.length ? valid.slice(0, 3) : samplePlans;
+  box.innerHTML = source.map((plan, index) => {
+    const benefits = benefitItems(plan);
+    const recommended = plan.recommended || index === 1;
+    const href = plan.id && !String(plan.id).startsWith('sample-')
+      ? `./matricula-publica.html?plan=${encodeURIComponent(plan.id)}`
+      : './plans.html';
+    return `
+      <article class="plan-card ${recommended ? 'recommended' : ''}">
+        ${recommended ? '<span class="plan-label">Mais escolhido</span>' : '<span class="plan-label">Plano mensal</span>'}
+        <h3>${escapeHtml(plan.name)}</h3>
+        <p>${escapeHtml(plan.description || 'Plano pensado para sua rotina de treino.')}</p>
+        <div class="plan-price">${money(plan.price_cents)}</div>
+        <ul>${benefits.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+        <a class="cta ${recommended ? '' : 'ghost'}" href="${href}">${valid.length ? 'Escolher plano' : 'Ver detalhes'}</a>
+      </article>`;
+  }).join('');
 }
 
 async function loadPlans() {
+  renderPlans(samplePlans);
   try {
-    const response = await fetch(`${API}/api/public/plans`);
+    const response = await fetch(`${API}/api/public/plans`, { headers: { Accept: 'application/json' } });
     const data = await response.json();
-    plans = data.data || [];
-    renderPlans();
-  } catch (error) {
-    $('landing-plans').innerHTML = '<article class="plan-card"><strong>Planos indisponíveis</strong><p>Não foi possível carregar os planos agora.</p></article>';
+    if (!response.ok) throw new Error(data.error || 'planos_indisponiveis');
+    renderPlans(data.data || []);
+  } catch (_) {
+    renderPlans(samplePlans);
   }
 }
 
-$('close-plan-modal').onclick = () => $('plan-modal').classList.add('hidden');
 loadPlans();

@@ -163,7 +163,7 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
                       return ListTile(
                         title: Text('${item['member_name']}'),
                         subtitle: Text('${item['status']} | ${item['phone'] ?? '-'}'),
-                        trailing: Wrap(mainAxisSize: MainAxisSize.min, children: [
+                        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                           IconButton(
                             tooltip: 'Presente',
                             onPressed: () async {

@@ -6,7 +6,7 @@
     "start": "node server.js",
     "migrate": "node migrate.js",
     "test": "node --test",
-    "check": "node --check server.js && node --check features/accessRoutes.js && node --check features/productToolsRoutes.js && node --check features/memberWorkspaceRoutes.js && node --check features/engagementRoutes.js && node --check features/managementRoutes.js && node --check features/financeSalesRoutes.js && node --check lib/accessPolicy.js && node --test"
+    "check": "node --check server.js && node --check features/accessRoutes.js && node --check features/productToolsRoutes.js && node --check features/memberWorkspaceRoutes.js && node --check features/memberDetailRoutes.js && node --check features/engagementRoutes.js && node --check features/managementRoutes.js && node --check features/financeSalesRoutes.js && node --check lib/accessPolicy.js && node --check lib/memberValidation.js && node --test"
   },
   "dependencies": {
     "pg": "latest"

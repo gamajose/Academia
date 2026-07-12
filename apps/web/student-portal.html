@@ -5,42 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meu treino - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
 </head>
 <body>
+  <nav class="top-nav student-top-nav">
+    <div class="top-nav-brand"><strong>Academia Lobo</strong><span>área do aluno</span></div>
+    <div class="top-nav-links"><a class="active" href="./student-portal.html">Meu treino</a></div>
+    <div class="profile-menu">
+      <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false">
+        <span class="profile-avatar" id="student-profile-avatar">A</span>
+        <span class="profile-copy"><strong id="student-profile-name">Aluno</strong><span>Minha conta</span></span>
+        <span aria-hidden="true">⌄</span>
+      </button>
+      <div class="profile-dropdown hidden" id="student-profile-dropdown">
+        <button class="logout-item" id="student-profile-logout" type="button">Sair</button>
+      </div>
+    </div>
+  </nav>
+
   <main class="app-shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">Area do aluno</p>
-        <h1 id="student-portal-title">Meu treino</h1>
-        <p>Veja a ficha atual, assista aos videos, siga as instrucoes, acompanhe sua evolucao e registre a execucao do treino.</p>
-      </div>
-      <div class="health-card">
-        <span>Status</span>
-        <strong id="student-portal-status-card">carregando</strong>
-        <small>acesso do aluno</small>
-      </div>
+      <p class="eyebrow">Área do aluno</p>
+      <h1 id="student-portal-title">Meu treino</h1>
+      <p>Consulte o treino do dia, registre a execução e acompanhe sua evolução com clareza.</p>
     </section>
 
     <section class="grid">
       <article class="panel">
-        <h3>Ficha atual</h3>
+        <div class="toolbar">
+          <div><h3>Ficha atual</h3><small id="student-auto-sync">Atualização automática ativa.</small></div>
+        </div>
         <p id="student-portal-meta">Carregando ficha...</p>
-        <button id="student-refresh-button">Atualizar treino</button>
-        <button id="student-logout-button" class="secondary">Sair</button>
       </article>
 
       <article class="panel">
         <h3>Concluir treino</h3>
-        <input id="portal-effort" type="number" min="1" max="10" placeholder="Esforco percebido de 1 a 10" />
-        <textarea id="portal-feedback" placeholder="Feedback do treino"></textarea>
-        <button id="portal-complete-button">Marcar como feito</button>
+        <div class="field"><label for="portal-effort">Esforço percebido</label><input id="portal-effort" type="number" min="1" max="10" placeholder="De 1 a 10" /></div>
+        <div class="field"><label for="portal-feedback">Como foi o treino?</label><textarea id="portal-feedback" placeholder="Registre uma observação para seu histórico"></textarea></div>
+        <div class="form-actions"><button id="portal-complete-button">Marcar como concluído</button></div>
         <p class="status-line" id="student-portal-status">Carregando...</p>
       </article>
     </section>
 
+    <section class="panel">
+      <div class="toolbar"><h3>Exercícios do treino</h3></div>
+      <ul id="portal-exercise-list"></ul>
+    </section>
+
     <section class="grid">
       <article class="panel">
-        <h3>Minha evolucao</h3>
+        <h3>Minha evolução</h3>
         <ul id="portal-progress-list"></ul>
       </article>
       <article class="panel">
@@ -50,12 +64,7 @@
     </section>
 
     <section class="panel">
-      <h3>Exercicios do treino</h3>
-      <ul id="portal-exercise-list"></ul>
-    </section>
-
-    <section class="panel">
-      <h3>Meu historico recente</h3>
+      <h3>Histórico recente</h3>
       <ul id="portal-log-list"></ul>
     </section>
   </main>
