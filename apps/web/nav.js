@@ -36,7 +36,10 @@ function renderNavigation() {
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
   nav.innerHTML = `
-    <div class="top-nav-brand"><strong>Academia Lobo</strong><span>gestão da academia</span></div>
+    <a class="top-nav-brand" href="./painel.html" aria-label="Academia Lobo, voltar ao painel">
+      <img class="top-nav-logo" src="./logo.svg" alt="" width="36" height="36" />
+      <span class="brand-wordmark"><strong><span class="brand-academia">ACADEMIA</span> LOBO</strong><small>gestão da academia</small></span>
+    </a>
     <div class="top-nav-links">${pages.map(([href, label]) => `<a class="${current === href ? 'active' : ''}" href="./${href}">${label}</a>`).join('')}</div>
     <div class="profile-menu">
       <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
