@@ -15,12 +15,33 @@ function clearSession() {
   localStorage.removeItem('academiaToken');
   localStorage.removeItem('academiaUserName');
   localStorage.removeItem('academiaRole');
+  localStorage.removeItem('academiaAccessProfile');
   document.cookie = 'academiaAuth=; Path=/; Max-Age=0; SameSite=Lax';
   window.location.href = './student-login.html';
 }
 
-function roleLabel(role) {
-  return ({ owner: 'Proprietário', admin: 'Administrador', staff: 'Professor', operator: 'Operação' })[role] || 'Usuário';
+function roleLabel(role, accessProfile = '') {
+  if (role === 'owner') return 'Proprietário';
+  if (role === 'admin') return 'Administrador';
+  if (role === 'staff' && accessProfile === 'trainer') return 'Personal trainer';
+  if (role === 'staff' && accessProfile === 'reception') return 'Recepção';
+  return ({ staff: 'Equipe', operator: 'Operação' })[role] || 'Usuário';
+}
+
+function canSeePage(href, role, accessProfile) {
+  if (role === 'owner' || role === 'admin') return true;
+  if (role === 'staff' && accessProfile === 'trainer') return ['painel.html', 'alunos.html', 'training.html', 'assessments.html', 'student-accounts.html'].includes(href);
+  if (role === 'staff') return ['painel.html', 'alunos.html', 'vinculos.html', 'solicitacoes.html', 'alerts.html', 'student-accounts.html'].includes(href);
+  if (role === 'operator') return ['painel.html', 'student-accounts.html'].includes(href);
+  return false;
+}
+
+function applyNavPermissions(user) {
+  const role = user.role || '';
+  const accessProfile = user.access_profile || (role === 'staff' ? 'reception' : role === 'operator' ? 'operator' : 'admin');
+  document.querySelectorAll('.top-nav-links a').forEach((link) => {
+    link.hidden = !canSeePage(link.getAttribute('href')?.split('/').pop(), role, accessProfile);
+  });
 }
 
 function renderNavigation() {
@@ -30,7 +51,7 @@ function renderNavigation() {
     ['painel.html', 'Painel'], ['alunos.html', 'Alunos'], ['planos.html', 'Planos'],
     ['vinculos.html', 'Matrículas'], ['solicitacoes.html', 'Pré-matrículas'],
     ['financeiro.html', 'Financeiro'], ['alerts.html', 'Alertas'], ['training.html', 'Treinos'],
-    ['assessments.html', 'Avaliações'], ['student-accounts.html', 'Acesso'], ['users.html', 'Usuários']
+    ['assessments.html', 'Avaliações'], ['student-accounts.html', 'Acesso'], ['users.html', 'Funcionários']
   ];
 
   const nav = document.createElement('nav');
@@ -44,13 +65,12 @@ function renderNavigation() {
     <div class="profile-menu">
       <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>
-        <span class="profile-copy"><strong id="profile-name">Minha conta</strong><span id="profile-role">Usuário</span></span>
+        <span class="profile-copy"><strong id="profile-name">Meu perfil</strong><span id="profile-role">Perfil</span></span>
         <span aria-hidden="true">⌄</span>
       </button>
       <div class="profile-dropdown hidden" id="profile-dropdown">
         <a href="./account.html">Perfil</a>
-        <a href="./settings.html">Configurações</a>
-        <a href="./account.html#security">Segurança</a>
+        <a href="./security.html">Segurança</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
       </div>
     </div>`;
@@ -77,25 +97,30 @@ async function loadProfile() {
     const response = await fetch(`${api}/api/me`, { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) return;
     const user = await response.json();
-    localStorage.setItem('academiaUserName', user.name || '');
+    localStorage.setItem('academiaUserName', user.name || 'Meu perfil');
     localStorage.setItem('academiaRole', user.role || '');
-    const name = user.name || 'Minha conta';
+    localStorage.setItem('academiaAccessProfile', user.access_profile || '');
+    applyNavPermissions(user);
+    const name = user.name || 'Meu perfil';
     document.getElementById('profile-name').textContent = name;
-    document.getElementById('profile-role').textContent = roleLabel(user.role);
+    document.getElementById('profile-role').textContent = roleLabel(user.role, user.access_profile);
     document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
     const accountName = document.getElementById('account-name');
     const accountRole = document.getElementById('account-role');
     if (accountName) accountName.textContent = name;
-    if (accountRole) accountRole.textContent = `${roleLabel(user.role)} · permissoes definidas pelo cargo`;
+    if (accountRole) accountRole.textContent = `${roleLabel(user.role, user.access_profile)} · permissoes definidas pelo cargo`;
   } catch (_) {
-    const name = localStorage.getItem('academiaUserName') || 'Minha conta';
+    const role = localStorage.getItem('academiaRole') || '';
+    const accessProfile = localStorage.getItem('academiaAccessProfile') || '';
+    applyNavPermissions({ role, access_profile: accessProfile });
+    const name = localStorage.getItem('academiaUserName') || 'Meu perfil';
     document.getElementById('profile-name').textContent = name;
-    document.getElementById('profile-role').textContent = roleLabel(localStorage.getItem('academiaRole'));
+    document.getElementById('profile-role').textContent = roleLabel(role, accessProfile);
     document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
     const accountName = document.getElementById('account-name');
     const accountRole = document.getElementById('account-role');
     if (accountName) accountName.textContent = name;
-    if (accountRole) accountRole.textContent = roleLabel(localStorage.getItem('academiaRole'));
+    if (accountRole) accountRole.textContent = roleLabel(role, accessProfile);
   }
 }
 

@@ -39,25 +39,26 @@ async function post(path, payload) {
 }
 
 async function accountLogin() {
-  const email = emailField.value.trim();
+  const identifier = emailField.value.trim();
   const password = passwordField.value;
-  if (!email || !password) {
-    msg('Informe e-mail e senha.');
-    (email ? passwordField : emailField).focus();
+  if (!identifier || !password) {
+    msg('Informe e-mail ou telefone e senha.');
+    (identifier ? passwordField : emailField).focus();
     return;
   }
 
   loginButton.disabled = true;
   loginButton.textContent = 'Entrando...';
   msg('Validando acesso...');
-  const payload = { email, password };
+  const payload = { identifier, password };
 
   try {
     const admin = await post('/api/auth/login', payload);
     localStorage.setItem('academiaToken', admin.token);
     localStorage.setItem('apiBaseUrl', API);
-    localStorage.setItem('academiaUserName', admin.user?.name || 'Minha conta');
+    localStorage.setItem('academiaUserName', admin.user?.name || 'Meu perfil');
     localStorage.setItem('academiaRole', admin.user?.role || 'admin');
+    localStorage.setItem('academiaAccessProfile', admin.user?.access_profile || 'admin');
     portalOn();
     window.location.href = './painel.html';
     return;
@@ -95,16 +96,16 @@ function closeForgot() {
 
 async function submitForgot(event) {
   event.preventDefault();
-  const email = document.getElementById('forgot-email').value.trim();
+  const identifier = document.getElementById('forgot-email').value.trim();
   const button = document.getElementById('submit-forgot');
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    document.getElementById('forgot-message').textContent = 'Informe um e-mail válido.';
+  if (!identifier) {
+    document.getElementById('forgot-message').textContent = 'Informe seu e-mail ou telefone.';
     return;
   }
   button.disabled = true;
   button.textContent = 'Enviando...';
   try {
-    const result = await post('/api/student/auth/forgot-password', { email });
+    const result = await post('/api/auth/forgot-password', { identifier });
     document.getElementById('forgot-message').textContent = result.message || 'Confira seu e-mail para continuar.';
   } catch (_) {
     document.getElementById('forgot-message').textContent = 'Não foi possível solicitar agora. Tente novamente em instantes.';

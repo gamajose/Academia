@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Segurança - Academia Lobo</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero"><p class="eyebrow">Segurança</p><h1>Proteja sua conta</h1><p>Troque sua senha e mantenha o acesso sob seu controle.</p></section>
+    <section class="grid">
+      <form class="panel" id="security-form">
+        <h3>Trocar senha</h3>
+        <div class="field"><label for="current-password">Senha atual</label><input id="current-password" type="password" autocomplete="current-password" required /></div>
+        <div class="field"><label for="new-password">Nova senha</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required /><small>Use pelo menos 8 caracteres, com maiúscula, minúscula e número.</small></div>
+        <div class="field"><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" autocomplete="new-password" required /></div>
+        <div class="form-actions"><button type="submit">Atualizar senha</button></div>
+        <p class="status-line" id="security-status">Aguardando.</p>
+      </form>
+      <section class="panel">
+        <h3>Não lembra a senha?</h3>
+        <p>Use a recuperação com o e-mail ou telefone cadastrado. As instruções serão encaminhadas para o e-mail seguro da conta.</p>
+        <a class="button secondary" href="./student-login.html">Abrir recuperação de acesso</a>
+      </section>
+    </section>
+  </main>
+  <script src="./nav.js"></script>
+  <script src="./security.js"></script>
+</body>
+</html>

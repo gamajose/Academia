@@ -92,6 +92,9 @@ jobs:
           node --check apps/web/student-portal.js
           node --check apps/web/training.js
           node --check apps/web/training-media.js
+          node --check apps/web/account.js
+          node --check apps/web/security.js
+          node --check apps/web/users.js
           node --check apps/web/dashboard-auto-refresh.js
           python -m py_compile apps/web/site_server.py
       - name: Proteger decisões de experiência

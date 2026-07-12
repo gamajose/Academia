@@ -3,44 +3,64 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Perfil - Academia Lobo</title>
+  <title>Meu perfil - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
 </head>
 <body>
   <main class="app-shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">Perfil</p>
-        <h1>Perfil e academia</h1>
-        <p>Dados da academia e acesso do usuario.</p>
-      </div>
+      <p class="eyebrow">Perfil</p>
+      <h1>Meu perfil</h1>
+      <p>Atualize seus dados pessoais e veja o nível de acesso definido para sua função.</p>
     </section>
 
-    <section class="grid">
-      <article class="panel">
-        <h3>Perfil de acesso</h3>
-        <strong id="account-name">Carregando...</strong>
-        <p id="account-role">Identificando permissões...</p>
-        <a class="button secondary" href="./users.html">Gerenciar perfis</a>
-      </article>
-      <article class="panel">
-        <h3>Academia</h3>
-        <input id="gym-name" placeholder="Nome" />
-        <input id="gym-email" placeholder="Email" />
-        <input id="gym-phone" placeholder="Telefone" />
-        <input id="gym-document" placeholder="Documento" />
-        <input id="gym-address" placeholder="Endereco" />
-        <input id="gym-timezone" placeholder="Timezone" />
-        <button id="save-gym-button">Salvar</button>
-      </article>
+    <section class="grid profile-page-grid">
+      <form class="panel" id="profile-form">
+        <div class="toolbar"><div><h3>Dados pessoais</h3><small>Esses dados identificam você no sistema.</small></div><span class="badge" id="profile-access-badge">Carregando</span></div>
+        <div class="form-grid">
+          <div class="field"><label for="profile-name">Nome completo *</label><input id="profile-name" autocomplete="name" required /></div>
+          <div class="field"><label for="profile-email">E-mail *</label><input id="profile-email" type="email" autocomplete="email" required /></div>
+          <div class="field"><label for="profile-phone">Telefone / WhatsApp</label><input id="profile-phone" inputmode="tel" autocomplete="tel" /></div>
+          <div class="field"><label for="profile-cpf">CPF</label><input id="profile-cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" /></div>
+          <div class="field"><label for="profile-rg">RG</label><input id="profile-rg" maxlength="30" /></div>
+          <div class="field"><label for="profile-birth">Data de nascimento</label><input id="profile-birth" type="date" /></div>
+        </div>
+        <div class="field"><label for="profile-job-title">Cargo</label><input id="profile-job-title" readonly /></div>
+        <a class="profile-whatsapp-link hidden" id="profile-whatsapp" target="_blank" rel="noopener noreferrer">Conversar pelo WhatsApp</a>
 
-      <article class="panel">
-        <h3>Acesso</h3>
-        <input id="current-password" type="password" placeholder="Atual" />
-        <input id="new-password" type="password" placeholder="Nova" />
-        <button id="change-password-button">Atualizar acesso</button>
-        <p class="status-line" id="account-status">Aguardando.</p>
-      </article>
+        <section class="form-section">
+          <h4>Endereço</h4>
+          <div class="form-grid three">
+            <div class="field"><label for="profile-postal-code">CEP</label><input id="profile-postal-code" inputmode="numeric" maxlength="9" /></div>
+            <div class="field"><label for="profile-street">Rua / Avenida</label><input id="profile-street" autocomplete="street-address" /></div>
+            <div class="field"><label for="profile-address-number">Número</label><input id="profile-address-number" /></div>
+            <div class="field"><label for="profile-address-complement">Complemento</label><input id="profile-address-complement" /></div>
+            <div class="field"><label for="profile-neighborhood">Bairro</label><input id="profile-neighborhood" /></div>
+            <div class="field"><label for="profile-city">Cidade</label><input id="profile-city" /></div>
+            <div class="field"><label for="profile-state">Estado</label><input id="profile-state" maxlength="40" /></div>
+            <div class="field"><label for="profile-country">País</label><input id="profile-country" value="Brasil" /></div>
+          </div>
+        </section>
+        <div class="form-actions"><button type="submit">Salvar perfil</button></div>
+        <p class="status-line" id="profile-status">Carregando perfil...</p>
+      </form>
+
+      <div class="grid profile-side-grid">
+        <section class="panel" id="gym-profile-panel">
+          <div><h3>Dados da academia</h3><small>Informações institucionais, separadas do seu perfil.</small></div>
+          <div class="field"><label for="gym-name">Nome da academia</label><input id="gym-name" /></div>
+          <div class="form-grid"><div class="field"><label for="gym-email">E-mail da academia</label><input id="gym-email" type="email" /></div><div class="field"><label for="gym-phone">Telefone da academia</label><input id="gym-phone" inputmode="tel" /></div></div>
+          <div class="field"><label for="gym-document">CNPJ / documento da academia</label><input id="gym-document" /></div>
+          <div class="field"><label for="gym-address">Endereço da academia</label><input id="gym-address" /></div>
+          <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
+          <div class="form-actions"><button id="save-gym-button" type="button">Salvar dados da academia</button></div>
+        </section>
+        <section class="panel">
+          <div><h3>Segurança da conta</h3><p>Troque sua senha ou inicie uma recuperação de acesso.</p></div>
+          <a class="button secondary" href="./security.html">Abrir segurança</a>
+        </section>
+      </div>
     </section>
   </main>
   <script src="./nav.js"></script>

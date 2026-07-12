@@ -3,55 +3,58 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Usuarios - Academia Lobo</title>
+  <title>Funcionários e permissões - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
 </head>
 <body>
   <main class="app-shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Controle de acesso</p>
-        <h1>Usuarios e permissoes</h1>
-        <p>Crie usuarios da academia, defina perfil de acesso e controle quem pode operar o sistema.</p>
-      </div>
-    </section>
+    <section class="hero"><p class="eyebrow">Equipe</p><h1>Funcionários e permissões</h1><p>Cadastre a equipe com dados completos e defina o que cada função pode acessar.</p></section>
 
-    <section class="grid">
-      <article class="panel">
-        <h3>Novo usuario</h3>
-        <input id="user-name" placeholder="Nome" />
-        <input id="user-email" placeholder="E-mail" />
-        <input id="user-password" type="password" placeholder="Senha inicial" />
-        <select id="user-role">
-          <option value="staff">Staff</option>
-          <option value="admin">Admin</option>
-          <option value="owner">Owner</option>
-        </select>
-        <button id="create-user-button">Criar usuario</button>
-        <p class="status-line" id="users-status">Aguardando carregamento.</p>
-      </article>
-
-      <article class="panel">
-        <h3>Regras atuais</h3>
-        <p><strong>Owner:</strong> gerencia usuarios, configuracoes e operacao completa.</p>
-        <p><strong>Admin:</strong> perfil administrativo para operacao diaria.</p>
-        <p><strong>Staff:</strong> recepcao/check-in e operacao basica.</p>
-      </article>
-    </section>
+    <form class="panel employee-form" id="employee-form">
+      <div class="toolbar"><div><h3 id="employee-form-title">Cadastrar funcionário</h3><small>O cargo descreve a função. O perfil de acesso define as permissões.</small></div><button class="secondary" id="cancel-edit-button" type="button" hidden>Cancelar edição</button></div>
+      <input id="user-id" type="hidden" />
+      <section class="form-section">
+        <h4>Dados pessoais</h4>
+        <div class="form-grid three">
+          <div class="field"><label for="user-name">Nome completo *</label><input id="user-name" autocomplete="name" required /></div>
+          <div class="field"><label for="user-email">E-mail *</label><input id="user-email" type="email" autocomplete="email" required /></div>
+          <div class="field"><label for="user-phone">Telefone / WhatsApp</label><input id="user-phone" inputmode="tel" autocomplete="tel" /></div>
+          <div class="field"><label for="user-cpf">CPF</label><input id="user-cpf" inputmode="numeric" maxlength="14" /></div>
+          <div class="field"><label for="user-rg">RG</label><input id="user-rg" maxlength="30" /></div>
+          <div class="field"><label for="user-birth">Data de nascimento</label><input id="user-birth" type="date" /></div>
+          <div class="field"><label for="user-job-title">Cargo</label><input id="user-job-title" placeholder="Ex.: Recepcionista, Personal trainer" /></div>
+          <div class="field" id="user-password-field"><label for="user-password">Senha inicial *</label><input id="user-password" type="password" autocomplete="new-password" minlength="8" /></div>
+        </div>
+      </section>
+      <section class="form-section">
+        <h4>Perfil de acesso</h4>
+        <div class="form-grid">
+          <div class="field"><label for="user-role">Nível de acesso</label><select id="user-role"><option value="staff">Equipe</option><option value="admin">Administrador</option><option value="operator">Operação</option><option value="owner">Proprietário</option></select></div>
+          <div class="field"><label for="user-access-profile">Permissões da equipe</label><select id="user-access-profile"><option value="reception">Recepção</option><option value="trainer">Personal trainer</option><option value="operator">Operação</option><option value="admin">Gestão completa</option></select></div>
+        </div>
+        <p class="section-help" id="permission-help">Recepção acessa alunos, matrículas, alertas e check-in. Não acessa financeiro, usuários ou configurações.</p>
+      </section>
+      <section class="form-section">
+        <h4>Endereço</h4>
+        <div class="form-grid three">
+          <div class="field"><label for="user-postal-code">CEP</label><input id="user-postal-code" inputmode="numeric" maxlength="9" /></div>
+          <div class="field"><label for="user-street">Rua / Avenida</label><input id="user-street" /></div>
+          <div class="field"><label for="user-address-number">Número</label><input id="user-address-number" /></div>
+          <div class="field"><label for="user-address-complement">Complemento</label><input id="user-address-complement" /></div>
+          <div class="field"><label for="user-neighborhood">Bairro</label><input id="user-neighborhood" /></div>
+          <div class="field"><label for="user-city">Cidade</label><input id="user-city" /></div>
+          <div class="field"><label for="user-state">Estado</label><input id="user-state" /></div>
+          <div class="field"><label for="user-country">País</label><input id="user-country" value="Brasil" /></div>
+        </div>
+      </section>
+      <div class="form-actions"><button id="save-user-button" type="submit">Cadastrar funcionário</button></div>
+      <p class="status-line" id="users-status">Carregando equipe.</p>
+    </form>
 
     <section class="panel">
-      <div class="toolbar">
-        <h3>Usuarios cadastrados</h3>
-        <button id="refresh-users-button">Recarregar dados</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Acoes</th></tr>
-          </thead>
-          <tbody id="users-table"></tbody>
-        </table>
-      </div>
+      <div class="toolbar"><h3>Equipe cadastrada</h3><button id="refresh-users-button" class="secondary" type="button">Atualizar lista</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Contato</th><th>Cargo</th><th>Permissão</th><th>Status</th><th>Ações</th></tr></thead><tbody id="users-table"></tbody></table></div>
     </section>
   </main>
   <script src="./nav.js"></script>

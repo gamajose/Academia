@@ -1,7 +1,8 @@
 const http = require('http');
 const { URL } = require('url');
 const { pool, query } = require('./lib/db');
-const { hashPassword, verifyPassword, validatePassword, signToken, verifyToken } = require('./lib/security');
+const { hashPassword, verifyPassword, validatePassword, signToken, verifyToken, randomToken, hashToken } = require('./lib/security');
+const { sendTransactionalEmail } = require('./lib/mailer');
 const { canAccess } = require('./lib/accessControl');
 const { applySecurityHeaders, isOriginAllowed, consumeRateLimit } = require('./lib/httpSecurity');
 const { handleMemberships } = require('./features/memberships');
@@ -106,12 +107,65 @@ async function registerGym(req, res) {
 
 async function login(req, res) {
   const input = await body(req);
-  if (!input.email || !input.password) return send(req, res, 400, { error: 'dados_invalidos' });
-  const result = await query('SELECT id, gym_id, name, email, password_hash, role, is_active FROM users WHERE lower(email) = lower($1) LIMIT 1', [input.email]);
+  const identifier = String(input.identifier || input.email || '').trim();
+  const phoneDigits = identifier.replace(/\D/g, '');
+  if (!identifier || !input.password) return send(req, res, 400, { error: 'dados_invalidos' });
+  const result = await query(
+    `SELECT id, gym_id, name, email, phone, password_hash, role, access_profile, is_active
+     FROM users
+     WHERE lower(email) = lower($1)
+        OR ($2 <> '' AND regexp_replace(COALESCE(phone, ''), '[^0-9]', '', 'g') = $2)
+     LIMIT 1`,
+    [identifier, phoneDigits]
+  );
   const user = result.rows[0];
   if (!user || !user.is_active || !verifyPassword(input.password, user.password_hash)) return send(req, res, 401, { error: 'credenciais_invalidas' });
-  const token = signToken({ sub: user.id, gym_id: user.gym_id, role: user.role });
-  return send(req, res, 200, { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, gym_id: user.gym_id } });
+  const token = signToken({ sub: user.id, gym_id: user.gym_id, role: user.role, access_profile: user.access_profile });
+  return send(req, res, 200, { token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, access_profile: user.access_profile, gym_id: user.gym_id } });
+}
+
+function publicAppUrl(path) {
+  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  return `${base}${path}`;
+}
+
+async function forgotPassword(req, res) {
+  const input = await body(req);
+  const identifier = String(input.identifier || input.email || '').trim();
+  const phoneDigits = identifier.replace(/\D/g, '');
+  const generic = { status: 'recovery_requested', message: 'Se os dados estiverem cadastrados, enviaremos as instruções para o e-mail da conta.' };
+  if (!identifier) return send(req, res, 202, generic);
+
+  const staff = await query(
+    `SELECT id, name, email FROM users
+     WHERE is_active = true AND (lower(email) = lower($1) OR ($2 <> '' AND regexp_replace(COALESCE(phone, ''), '[^0-9]', '', 'g') = $2))
+     LIMIT 1`,
+    [identifier, phoneDigits]
+  );
+  if (staff.rowCount && staff.rows[0].email) {
+    const token = randomToken();
+    await query('UPDATE user_password_reset_tokens SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [staff.rows[0].id]);
+    await query('INSERT INTO user_password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, now() + interval \'30 minutes\')', [staff.rows[0].id, hashToken(token)]);
+    const resetUrl = publicAppUrl(`/student-reset.html?token=${encodeURIComponent(token)}`);
+    await sendTransactionalEmail({ to: staff.rows[0].email, subject: 'Recuperação de acesso - Academia Lobo', text: `Use este link para criar uma nova senha: ${resetUrl}`, html: `<p>Recebemos um pedido para redefinir seu acesso.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>` });
+    return send(req, res, 202, generic);
+  }
+
+  const student = await query(
+    `SELECT ma.id, ma.email, ma.member_id, m.name AS member_name
+     FROM member_accounts ma INNER JOIN members m ON m.id = ma.member_id
+     WHERE ma.is_active = true AND (lower(ma.email) = lower($1) OR ($2 <> '' AND regexp_replace(COALESCE(m.phone, ''), '[^0-9]', '', 'g') = $2))
+     LIMIT 1`,
+    [identifier, phoneDigits]
+  );
+  if (student.rowCount && student.rows[0].email) {
+    const token = randomToken();
+    await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE member_account_id = $1 AND used_at IS NULL', [student.rows[0].id]);
+    await query('INSERT INTO member_password_reset_tokens (member_account_id, token_hash, expires_at) VALUES ($1, $2, now() + interval \'30 minutes\')', [student.rows[0].id, hashToken(token)]);
+    const resetUrl = publicAppUrl(`/student-reset.html?token=${encodeURIComponent(token)}`);
+    await sendTransactionalEmail({ to: student.rows[0].email, subject: 'Recuperação de acesso - Academia Lobo', text: `Use este link para criar uma nova senha: ${resetUrl}`, html: `<p>Recebemos um pedido para redefinir seu acesso.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>` });
+  }
+  return send(req, res, 202, generic);
 }
 
 async function listMembers(req, res, user) {
@@ -171,6 +225,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/auth/login') {
       if (!enforceRateLimit(req, res, 'admin-login')) return;
       return login(req, res);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/auth/forgot-password') {
+      if (!enforceRateLimit(req, res, 'account-recovery')) return;
+      return forgotPassword(req, res);
     }
 
     const helpers = { send: (response, status, data) => send(req, response, status, data), body, query };

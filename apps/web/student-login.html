@@ -31,8 +31,8 @@
         <p>Entre com os dados cadastrados na academia.</p>
 
         <div class="form-field">
-          <label for="student-email">E-mail</label>
-          <input id="student-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com" required />
+          <label for="student-email">E-mail ou telefone</label>
+          <input id="student-email" type="text" inputmode="email tel" autocomplete="username" placeholder="seu@email.com ou (32) 99919-2233" required />
         </div>
         <div class="form-field">
           <label for="student-password">Senha</label>
@@ -53,7 +53,7 @@
   <div class="enrollment-modal hidden" id="forgot-modal" role="dialog" aria-modal="true" aria-labelledby="forgot-title">
     <form class="enrollment-card recovery-card" id="forgot-form" novalidate>
       <div class="modal-header"><div><p class="eyebrow-public">Recuperar acesso</p><h2 id="forgot-title">Vamos devolver seu acesso</h2><p>Informe o e-mail usado na academia e enviaremos as instruções.</p></div><button class="modal-close" id="close-forgot" type="button" aria-label="Fechar" title="Fechar">×</button></div>
-      <div class="form-field"><label for="forgot-email">E-mail</label><input id="forgot-email" type="email" autocomplete="email" placeholder="voce@email.com" required /></div>
+      <div class="form-field"><label for="forgot-email">E-mail ou telefone</label><input id="forgot-email" type="text" autocomplete="username" placeholder="voce@email.com ou (32) 99919-2233" required /></div>
       <p class="enrollment-message" id="forgot-message" aria-live="polite"></p>
       <div class="form-actions"><button class="cta ghost" id="cancel-forgot" type="button">Cancelar</button><button class="cta" id="submit-forgot" type="submit">Enviar instruções</button></div>
     </form>

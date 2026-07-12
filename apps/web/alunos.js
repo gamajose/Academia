@@ -49,6 +49,19 @@ function button(text, action, className = 'mini-button') {
   return element;
 }
 
+function whatsappLink(phone) {
+  const number = digits(phone);
+  if (!number) return null;
+  const international = (number.length <= 11 ? '55' : '') + number;
+  const link = document.createElement('a');
+  link.href = 'https://wa.me/' + international;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = 'Abrir WhatsApp';
+  link.className = 'contact-link';
+  return link;
+}
+
 function render() {
   const list = $('students-list');
   const term = val('student-search').toLowerCase();
@@ -66,6 +79,8 @@ function render() {
       <strong>${item.name}</strong>
       <span>${item.email || 'Sem e-mail'} · ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
       <span>${item.plan_name || 'Sem plano'} · <span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}</span>`;
+    const whatsapp = whatsappLink(item.phone);
+    if (whatsapp) main.appendChild(whatsapp);
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
     actions.appendChild(button('Editar cadastro', () => openModal(item), 'mini-button secondary'));

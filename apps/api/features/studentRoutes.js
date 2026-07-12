@@ -20,12 +20,17 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/student/auth/login') {
     const input = await body(req);
-    if (!input.email || !input.password) return send(res, 400, { error: 'dados_invalidos' });
+    const identifier = String(input.identifier || input.email || '').trim();
+    const phoneDigits = identifier.replace(/\D/g, '');
+    if (!identifier || !input.password) return send(res, 400, { error: 'dados_invalidos' });
     const result = await query(
-      `SELECT ma.id, ma.gym_id, ma.member_id, ma.email, ma.secret_hash, ma.is_active, m.name AS member_name
+      `SELECT ma.id, ma.gym_id, ma.member_id, ma.email, ma.secret_hash, ma.is_active,
+              m.name AS member_name, m.phone
        FROM member_accounts ma INNER JOIN members m ON m.id = ma.member_id
-       WHERE lower(ma.email) = lower($1) LIMIT 1`,
-      [input.email]
+       WHERE lower(ma.email) = lower($1)
+          OR ($2 <> '' AND regexp_replace(COALESCE(m.phone, ''), '[^0-9]', '', 'g') = $2)
+       LIMIT 1`,
+      [identifier, phoneDigits]
     );
     const account = result.rows[0];
     if (!account || !account.is_active || !verifyPassword(input.password, account.secret_hash)) return send(res, 401, { error: 'credenciais_invalidas' });
@@ -36,12 +41,18 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/student/auth/forgot-password') {
     const input = await body(req);
-    const email = String(input.email || '').trim().toLowerCase();
-    const generic = { status: 'recovery_requested', message: 'Se o e-mail estiver cadastrado, enviaremos as instruções de recuperação.' };
-    if (!email) return send(res, 202, generic);
+    const identifier = String(input.identifier || input.email || '').trim();
+    const phoneDigits = identifier.replace(/\D/g, '');
+    const generic = { status: 'recovery_requested', message: 'Se os dados estiverem cadastrados, enviaremos as instruções para o e-mail da conta.' };
+    if (!identifier) return send(res, 202, generic);
     const account = await query(
-      'SELECT id, email, member_id FROM member_accounts WHERE lower(email) = lower($1) AND is_active = true LIMIT 1',
-      [email]
+      `SELECT ma.id, ma.email, ma.member_id
+       FROM member_accounts ma INNER JOIN members m ON m.id = ma.member_id
+       WHERE ma.is_active = true
+         AND (lower(ma.email) = lower($1)
+              OR ($2 <> '' AND regexp_replace(COALESCE(m.phone, ''), '[^0-9]', '', 'g') = $2))
+       LIMIT 1`,
+      [identifier, phoneDigits]
     );
     if (!account.rowCount) return send(res, 202, generic);
     const token = randomToken();
@@ -70,9 +81,19 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
        WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now() LIMIT 1`,
       [hashToken(input.token)]
     );
-    if (!token.rowCount) return send(res, 400, { error: 'token_invalido_ou_expirado' });
-    await query('UPDATE member_accounts SET secret_hash = $2, updated_at = now() WHERE id = $1', [token.rows[0].member_account_id, hashPassword(input.new_password)]);
-    await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE id = $1', [token.rows[0].id]);
+    if (token.rowCount) {
+      await query('UPDATE member_accounts SET secret_hash = $2, updated_at = now() WHERE id = $1', [token.rows[0].member_account_id, hashPassword(input.new_password)]);
+      await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE id = $1', [token.rows[0].id]);
+      return send(res, 200, { status: 'senha_redefinida' });
+    }
+    const staffToken = await query(
+      `SELECT id, user_id FROM user_password_reset_tokens
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now() LIMIT 1`,
+      [hashToken(input.token)]
+    );
+    if (!staffToken.rowCount) return send(res, 400, { error: 'token_invalido_ou_expirado' });
+    await query('UPDATE users SET password_hash = $2 WHERE id = $1', [staffToken.rows[0].user_id, hashPassword(input.new_password)]);
+    await query('UPDATE user_password_reset_tokens SET used_at = now() WHERE id = $1', [staffToken.rows[0].id]);
     return send(res, 200, { status: 'senha_redefinida' });
   }
 

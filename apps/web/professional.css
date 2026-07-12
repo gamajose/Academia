@@ -66,6 +66,10 @@
 .modal-card .tox-tinymce { width: 100%; min-height: 300px; border: 1px solid #d8d0c4; border-radius: 12px; overflow: hidden; }
 .modal-card .tox .tox-editor-header { box-shadow: none; border-bottom: 1px solid #e7dfd4; }
 .modal-card .tox .tox-edit-area__iframe { background: #fff; }
+.contact-link, .profile-whatsapp-link { color: #15803d; font-weight: 800; text-decoration: none; }
+.contact-link:hover, .profile-whatsapp-link:hover { text-decoration: underline; }
+.employee-form { gap: 20px; }
+.employee-form .form-section { margin: 0; }
 .rich-editor-meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; margin-top: -2px; }
 .rich-editor-status.dirty { color: var(--warn); font-weight: 800; }
 .rich-editor-status.error { color: var(--bad); font-weight: 800; }
