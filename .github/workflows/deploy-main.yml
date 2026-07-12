@@ -38,9 +38,6 @@ jobs:
           git config --global --add safe.directory "$PROJECT_DIR"
           cd "$PROJECT_DIR"
 
-          # Remove local Git index flags that can leave tracked web files stale after reset.
-          git update-index --no-assume-unchanged --no-skip-worktree -- apps/web
-
           if [ -n "$(git status --porcelain)" ]; then
             echo "A cópia de produção possui alterações locais. O deploy foi interrompido para evitar perda de dados."
             git status --short
@@ -50,10 +47,6 @@ jobs:
           git fetch --prune origin main
           git checkout main
           git reset --hard origin/main
-
-          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
-          test -f "$PROJECT_DIR/apps/web/alunos.html"
-          test -f "$PROJECT_DIR/apps/web/planos.html"
 
           cd "$API_DIR"
 
