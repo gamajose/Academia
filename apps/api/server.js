@@ -14,6 +14,7 @@ const { handleStudentRoutes } = require('./features/studentRoutes');
 const { handleOnlineSignupRoutes } = require('./features/onlineSignupRoutes');
 const { handleAccessRoutes } = require('./features/accessRoutes');
 const { handleProductToolsRoutes } = require('./features/productToolsRoutes');
+const { handleMemberWorkspaceRoutes } = require('./features/memberWorkspaceRoutes');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -157,7 +158,7 @@ const server = http.createServer(async (req, res) => {
     if (!isOriginAllowed(req)) return send(req, res, 403, { error: 'origem_nao_permitida' });
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (req.method === 'OPTIONS') return send(req, res, 204, {});
-    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.5.0', uptime: process.uptime() });
+    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.6.0', uptime: process.uptime() });
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') {
       if (!enforceRateLimit(req, res, 'register')) return;
       return registerGym(req, res);
@@ -191,6 +192,8 @@ const server = http.createServer(async (req, res) => {
     if (accessHandled !== false) return accessHandled;
     const productToolsHandled = await handleProductToolsRoutes(req, res, user, url, helpers);
     if (productToolsHandled !== false) return productToolsHandled;
+    const memberWorkspaceHandled = await handleMemberWorkspaceRoutes(req, res, user, url, helpers);
+    if (memberWorkspaceHandled !== false) return memberWorkspaceHandled;
     const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
     if (trainingHandled !== false) return trainingHandled;
     const trainingPlansHandled = await handleTrainingPlansRoutes(req, res, user, url, helpers);
