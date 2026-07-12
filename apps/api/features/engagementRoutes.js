@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { pool } = require('../lib/db');
 const { evaluateAccess, DEFAULT_GRACE_DAYS } = require('../lib/accessPolicy');
+const { hasModulePermission } = require('../lib/accessControl');
 
 const challengeTtlSeconds = Math.min(120, Math.max(15, Number(process.env.ACCESS_CHALLENGE_TTL_SECONDS || 30)));
 const graceDays = Math.min(60, Math.max(0, Number(process.env.ACCESS_GRACE_DAYS || DEFAULT_GRACE_DAYS)));
@@ -18,11 +19,11 @@ function isStudent(user) {
 }
 
 function isManager(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+  return hasModulePermission(user, 'alerts');
 }
 
 function canCoach(user) {
-  return user && ['owner', 'admin', 'staff'].includes(user.role);
+  return hasModulePermission(user, 'classes');
 }
 
 function integer(value, fallback, min = 1, max = 10000) {

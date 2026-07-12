@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { pool } = require('../lib/db');
 const { DEFAULT_GRACE_DAYS, evaluateAccess } = require('../lib/accessPolicy');
+const { hasModulePermission } = require('../lib/accessControl');
 
 const qrTtlSeconds = Math.min(120, Math.max(15, Number(process.env.ACCESS_QR_TTL_SECONDS || 30)));
 const graceDays = Math.min(60, Math.max(0, Number(process.env.ACCESS_GRACE_DAYS || DEFAULT_GRACE_DAYS)));
@@ -47,7 +48,7 @@ function isStudent(user) {
 }
 
 function canManageDevices(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+  return hasModulePermission(user, 'access');
 }
 
 async function loadAccessContext(db, gymId, memberId) {

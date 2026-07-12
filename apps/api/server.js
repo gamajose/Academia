@@ -3,7 +3,7 @@ const { URL } = require('url');
 const { pool, query } = require('./lib/db');
 const { hashPassword, verifyPassword, validatePassword, signToken, verifyToken, randomToken, hashToken } = require('./lib/security');
 const { sendTransactionalEmail } = require('./lib/mailer');
-const { canAccess } = require('./lib/accessControl');
+const { canAccess, loadAccessPermissions } = require('./lib/accessControl');
 const { applySecurityHeaders, isOriginAllowed, consumeRateLimit } = require('./lib/httpSecurity');
 const { handleMemberships } = require('./features/memberships');
 const { handlePayments } = require('./features/payments');
@@ -22,6 +22,7 @@ const { handleEngagementRoutes } = require('./features/engagementRoutes');
 const { handleFinanceSalesRoutes } = require('./features/financeSalesRoutes');
 const { handlePaymentWebhookRoutes } = require('./features/paymentWebhookRoutes');
 const { handleEditorRoutes } = require('./features/editorRoutes');
+const { handleAccessProfileRoutes } = require('./features/accessProfileRoutes');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -92,7 +93,7 @@ async function registerGym(req, res) {
     const gym = await client.query('INSERT INTO gyms (name, slug) VALUES ($1, $2) RETURNING id', [input.gymName, `${slug(input.gymName)}-${Date.now().toString(36)}`]);
     const gymId = gym.rows[0].id;
     const pass = hashPassword(input.password);
-    const user = await client.query("INSERT INTO users (gym_id, name, email, password_hash, role) VALUES ($1, $2, lower($3), $4, 'owner') RETURNING id, role", [gymId, input.ownerName, input.email, pass]);
+    const user = await client.query("INSERT INTO users (gym_id, name, email, password_hash, role, access_profile) VALUES ($1, $2, lower($3), $4, 'owner', 'owner') RETURNING id, role", [gymId, input.ownerName, input.email, pass]);
     await client.query("INSERT INTO plans (gym_id, name, price_cents, duration_days) VALUES ($1, 'Mensal', 0, 30)", [gymId]);
     await client.query('COMMIT');
     const token = signToken({ sub: user.rows[0].id, gym_id: gymId, role: user.rows[0].role });
@@ -251,10 +252,15 @@ const server = http.createServer(async (req, res) => {
 
     const user = auth(req);
     if (!user) return send(req, res, 401, { error: 'nao_autorizado' });
-    if (!canAccess(user, req.method, url.pathname)) return send(req, res, 403, { error: 'acesso_negado' });
+    const accessPermissions = await loadAccessPermissions(query, user);
+    user.access_permissions = accessPermissions;
+    if (!canAccess(user, req.method, url.pathname, accessPermissions)) return send(req, res, 403, { error: 'acesso_negado' });
 
     const editorHandled = await handleEditorRoutes(req, res, user, url, helpers);
     if (editorHandled !== false) return editorHandled;
+
+    const accessProfilesHandled = await handleAccessProfileRoutes(req, res, user, url, helpers);
+    if (accessProfilesHandled !== false) return accessProfilesHandled;
 
     const signupHandled = await handleOnlineSignupRoutes(req, res, user, url, helpers);
     if (signupHandled !== false) return signupHandled;

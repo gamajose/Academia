@@ -16,20 +16,31 @@ function clearSession() {
   localStorage.removeItem('academiaUserName');
   localStorage.removeItem('academiaRole');
   localStorage.removeItem('academiaAccessProfile');
+  localStorage.removeItem('academiaAccessProfileName');
+  localStorage.removeItem('academiaAccessPermissions');
   document.cookie = 'academiaAuth=; Path=/; Max-Age=0; SameSite=Lax';
   window.location.href = './student-login.html';
 }
 
-function roleLabel(role, accessProfile = '') {
+function roleLabel(role, accessProfile = '', accessProfileName = '') {
   if (role === 'owner') return 'Proprietário';
+  if (accessProfileName) return accessProfileName;
   if (role === 'admin') return 'Administrador';
   if (role === 'staff' && accessProfile === 'trainer') return 'Personal trainer';
   if (role === 'staff' && accessProfile === 'reception') return 'Recepção';
   return ({ staff: 'Equipe', operator: 'Operação' })[role] || 'Usuário';
 }
 
-function canSeePage(href, role, accessProfile) {
-  if (role === 'owner' || role === 'admin') return true;
+function canSeePage(href, role, accessProfile, permissions = null) {
+  if (role === 'owner' || (role === 'admin' && !permissions)) return true;
+  const pageModules = {
+    'painel.html': 'dashboard', 'alunos.html': 'members', 'planos.html': 'plans',
+    'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments',
+    'financeiro.html': 'finance', 'alerts.html': 'alerts', 'training.html': 'training',
+    'assessments.html': 'assessments', 'student-accounts.html': 'student_access',
+    'users.html': 'users'
+  };
+  if (permissions && pageModules[href]) return permissions[pageModules[href]] === true;
   if (role === 'staff' && accessProfile === 'trainer') return ['painel.html', 'alunos.html', 'training.html', 'assessments.html', 'student-accounts.html'].includes(href);
   if (role === 'staff') return ['painel.html', 'alunos.html', 'vinculos.html', 'solicitacoes.html', 'alerts.html', 'student-accounts.html'].includes(href);
   if (role === 'operator') return ['painel.html', 'student-accounts.html'].includes(href);
@@ -40,7 +51,7 @@ function applyNavPermissions(user) {
   const role = user.role || '';
   const accessProfile = user.access_profile || (role === 'staff' ? 'reception' : role === 'operator' ? 'operator' : 'admin');
   document.querySelectorAll('.top-nav-links a').forEach((link) => {
-    link.hidden = !canSeePage(link.getAttribute('href')?.split('/').pop(), role, accessProfile);
+    link.hidden = !canSeePage(link.getAttribute('href')?.split('/').pop(), role, accessProfile, user.access_permissions || null);
   });
 }
 
@@ -100,22 +111,25 @@ async function loadProfile() {
     localStorage.setItem('academiaUserName', user.name || 'Meu perfil');
     localStorage.setItem('academiaRole', user.role || '');
     localStorage.setItem('academiaAccessProfile', user.access_profile || '');
+    localStorage.setItem('academiaAccessProfileName', user.access_profile_name || '');
+    localStorage.setItem('academiaAccessPermissions', JSON.stringify(user.access_permissions || {}));
     applyNavPermissions(user);
     const name = user.name || 'Meu perfil';
     document.getElementById('profile-name').textContent = name;
-    document.getElementById('profile-role').textContent = roleLabel(user.role, user.access_profile);
+    document.getElementById('profile-role').textContent = roleLabel(user.role, user.access_profile, user.access_profile_name);
     document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
     const accountName = document.getElementById('account-name');
     const accountRole = document.getElementById('account-role');
     if (accountName) accountName.textContent = name;
-    if (accountRole) accountRole.textContent = `${roleLabel(user.role, user.access_profile)} · permissoes definidas pelo cargo`;
+    if (accountRole) accountRole.textContent = `${roleLabel(user.role, user.access_profile, user.access_profile_name)} · permissões definidas pelo perfil`;
   } catch (_) {
     const role = localStorage.getItem('academiaRole') || '';
     const accessProfile = localStorage.getItem('academiaAccessProfile') || '';
-    applyNavPermissions({ role, access_profile: accessProfile });
+    const accessProfileName = localStorage.getItem('academiaAccessProfileName') || '';
+    applyNavPermissions({ role, access_profile: accessProfile, access_profile_name: accessProfileName });
     const name = localStorage.getItem('academiaUserName') || 'Meu perfil';
     document.getElementById('profile-name').textContent = name;
-    document.getElementById('profile-role').textContent = roleLabel(role, accessProfile);
+    document.getElementById('profile-role').textContent = roleLabel(role, accessProfile, accessProfileName);
     document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
     const accountName = document.getElementById('account-name');
     const accountRole = document.getElementById('account-role');

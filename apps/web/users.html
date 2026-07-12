@@ -6,10 +6,29 @@
   <title>Funcionários e permissões - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./users-access.css" />
 </head>
 <body>
   <main class="app-shell">
     <section class="hero"><p class="eyebrow">Equipe</p><h1>Funcionários e permissões</h1><p>Cadastre a equipe com dados completos e defina o que cada função pode acessar.</p></section>
+
+    <section class="panel access-profiles-panel">
+      <div class="toolbar">
+        <div><h3>Perfis de acesso</h3><p class="section-help">Crie os perfis da sua academia e marque os módulos que cada perfil pode usar.</p></div>
+        <button class="secondary" id="new-access-profile-button" type="button">Novo perfil</button>
+      </div>
+      <form id="access-profile-form" class="access-profile-form hidden">
+        <input id="access-profile-id" type="hidden" />
+        <div class="form-grid">
+          <div class="field"><label for="access-profile-name">Nome do perfil *</label><input id="access-profile-name" maxlength="60" placeholder="Ex.: Atendimento" required /></div>
+          <div class="field"><label for="access-profile-role">Tipo de conta</label><select id="access-profile-role"><option value="staff">Equipe</option><option value="operator">Operação</option><option value="admin">Administrador</option><option value="owner">Proprietário</option></select><small>Define o nível técnico da conta; as caixas abaixo definem os módulos.</small></div>
+        </div>
+        <fieldset class="permissions-fieldset"><legend>Módulos permitidos</legend><div id="permissions-grid" class="permissions-grid"></div></fieldset>
+        <div class="form-actions"><button class="secondary" id="cancel-access-profile-button" type="button">Cancelar</button><button id="save-access-profile-button" type="submit">Salvar perfil</button></div>
+      </form>
+      <div id="access-profile-list" class="access-profile-list"></div>
+      <p class="status-line" id="access-profiles-status">Carregando perfis.</p>
+    </section>
 
     <form class="panel employee-form" id="employee-form">
       <div class="toolbar"><div><h3 id="employee-form-title">Cadastrar funcionário</h3><small>O cargo descreve a função. O perfil de acesso define as permissões.</small></div><button class="secondary" id="cancel-edit-button" type="button" hidden>Cancelar edição</button></div>
@@ -30,8 +49,8 @@
       <section class="form-section">
         <h4>Perfil de acesso</h4>
         <div class="form-grid">
-          <div class="field"><label for="user-role">Nível de acesso</label><select id="user-role"><option value="staff">Equipe</option><option value="admin">Administrador</option><option value="operator">Operação</option><option value="owner">Proprietário</option></select></div>
-          <div class="field"><label for="user-access-profile">Permissões da equipe</label><select id="user-access-profile"><option value="reception">Recepção</option><option value="trainer">Personal trainer</option><option value="operator">Operação</option><option value="admin">Gestão completa</option></select></div>
+          <input id="user-role" type="hidden" value="staff" />
+          <div class="field"><label for="user-access-profile">Perfil de acesso *</label><select id="user-access-profile" required></select><small id="user-role-preview">Tipo de conta: Equipe</small></div>
         </div>
         <p class="section-help" id="permission-help">Recepção acessa alunos, matrículas, alertas e check-in. Não acessa financeiro, usuários ou configurações.</p>
       </section>

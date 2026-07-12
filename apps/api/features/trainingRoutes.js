@@ -1,8 +1,9 @@
 const { recordAudit } = require('../lib/audit');
 const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
+const { hasModulePermission } = require('../lib/accessControl');
 
 function canManageTrainingLevels(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+  return hasModulePermission(user, 'training');
 }
 
 function slugifyLevel(value) {
@@ -97,6 +98,29 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     if (!result.rowCount) return send(res, 404, { error: 'nivel_nao_encontrado' });
     await recordAudit(user, 'update', 'training_level', result.rows[0].id, { name, is_active: result.rows[0].is_active });
     return send(res, 200, result.rows[0]);
+  }
+
+  if (req.method === 'DELETE' && url.pathname === '/api/training/levels') {
+    if (!canManageTrainingLevels(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    if (!input.id) return send(res, 400, { error: 'nivel_id_obrigatorio' });
+    const referenced = await query(
+      `SELECT count(*)::integer AS total FROM (
+         SELECT id FROM exercise_library WHERE gym_id = $1 AND level = (SELECT slug FROM training_levels WHERE id = $2 AND gym_id = $1)
+         UNION ALL
+         SELECT id FROM member_training_profiles WHERE gym_id = $1 AND level = (SELECT slug FROM training_levels WHERE id = $2 AND gym_id = $1)
+         UNION ALL
+         SELECT id FROM workout_plans WHERE gym_id = $1 AND level = (SELECT slug FROM training_levels WHERE id = $2 AND gym_id = $1)
+       ) references_found`,
+      [user.gym_id, input.id]
+    );
+    if (Number(referenced.rows[0]?.total || 0) > 0) return send(res, 409, { error: 'nivel_em_uso' });
+    const active = await query('SELECT count(*)::integer AS total FROM training_levels WHERE gym_id = $1 AND is_active = true AND id <> $2', [user.gym_id, input.id]);
+    if (Number(active.rows[0]?.total || 0) < 1) return send(res, 400, { error: 'mantenha_um_nivel_ativo' });
+    const result = await query('DELETE FROM training_levels WHERE id = $1 AND gym_id = $2 RETURNING id, name', [input.id, user.gym_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'nivel_nao_encontrado' });
+    await recordAudit(user, 'delete', 'training_level', result.rows[0].id, { name: result.rows[0].name });
+    return send(res, 200, { status: 'nivel_excluido' });
   }
 
   if (req.method === 'GET' && url.pathname === '/api/training/advanced/detail') {

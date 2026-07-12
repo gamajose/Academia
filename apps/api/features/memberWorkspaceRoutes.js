@@ -1,11 +1,12 @@
 const { recordAudit } = require('../lib/audit');
+const { hasModulePermission } = require('../lib/accessControl');
 
 function isManager(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+  return hasModulePermission(user, 'members');
 }
 
 function canCoach(user) {
-  return user && ['owner', 'admin', 'staff'].includes(user.role);
+  return hasModulePermission(user, 'training');
 }
 
 function isStudent(user) {

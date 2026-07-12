@@ -6,7 +6,8 @@ function profileData(row) {
   return {
     id: row.id, name: row.name, email: row.email, phone: row.phone,
     cpf: row.cpf, rg: row.rg, birth_date: row.birth_date, job_title: row.job_title,
-    access_profile: row.access_profile, role: row.role, is_active: row.is_active,
+    access_profile: row.access_profile, access_profile_name: row.access_profile_name || row.access_profile,
+    access_permissions: row.access_permissions || null, role: row.role, is_active: row.is_active,
     address_details: row.address_details || {}, created_at: row.created_at,
     gym_id: row.gym_id, gym_name: row.gym_name, gym_slug: row.gym_slug
   };
@@ -18,9 +19,11 @@ async function handleProfileRoutes(req, res, user, url, helpers) {
   if (req.method === 'GET' && url.pathname === '/api/me') {
     const result = await query(
       `SELECT u.id, u.name, u.email, u.phone, u.cpf, u.rg, u.birth_date, u.job_title,
-              u.access_profile, u.role, u.is_active, u.address_details, u.created_at,
+              u.access_profile, ap.name AS access_profile_name, ap.permissions AS access_permissions,
+              u.role, u.is_active, u.address_details, u.created_at,
               g.id AS gym_id, g.name AS gym_name, g.slug AS gym_slug
        FROM users u INNER JOIN gyms g ON g.id = u.gym_id
+       LEFT JOIN access_profiles ap ON ap.gym_id = u.gym_id AND ap.slug = u.access_profile
        WHERE u.id = $1 AND u.gym_id = $2 LIMIT 1`,
       [user.sub, user.gym_id]
     );

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { hasModulePermission } = require('../lib/accessControl');
 
 const graceDays = Math.min(60, Math.max(0, Number(process.env.ACCESS_GRACE_DAYS || 10)));
 const deviceOnlineSeconds = Math.min(600, Math.max(30, Number(process.env.ACCESS_DEVICE_ONLINE_SECONDS || 120)));
@@ -15,8 +16,8 @@ function isStudent(user) {
   return user && user.role === 'student' && user.member_id;
 }
 
-function isManager(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+function isManager(user, module = 'access') {
+  return hasModulePermission(user, module);
 }
 
 function normalizeLimit(value, fallback = 50, max = 200) {
@@ -457,7 +458,7 @@ async function completeDeviceCommand(req, res, helpers) {
 }
 
 async function createNotification(req, res, user, helpers) {
-  if (!isManager(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  if (!isManager(user, 'alerts')) return helpers.send(res, 403, { error: 'sem_permissao' });
   const input = await helpers.body(req);
   if (!input.title || !input.message) return helpers.send(res, 400, { error: 'titulo_e_mensagem_obrigatorios' });
 
@@ -484,7 +485,7 @@ async function createNotification(req, res, user, helpers) {
 }
 
 async function recentAdminNotifications(res, user, helpers) {
-  if (!isManager(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  if (!isManager(user, 'alerts')) return helpers.send(res, 403, { error: 'sem_permissao' });
   const result = await helpers.query(
     `SELECT n.id, n.type, n.title, n.message, n.action_route, n.read_at, n.created_at,
             m.id AS member_id, m.name AS member_name

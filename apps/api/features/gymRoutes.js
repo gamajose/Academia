@@ -1,7 +1,8 @@
 const { recordAudit } = require('../lib/audit');
+const { hasModulePermission } = require('../lib/accessControl');
 
 function canManageGym(user) {
-  return user.role === 'owner' || user.role === 'admin';
+  return hasModulePermission(user, 'settings');
 }
 
 async function handleGymRoutes(req, res, user, url, helpers) {

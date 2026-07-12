@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { canAccess, accessProfile } = require('../lib/accessControl');
+const { canAccess, accessProfile, hasModulePermission, moduleForPath } = require('../lib/accessControl');
 
 test('perfil de recepcao nao acessa financeiro ou usuarios', () => {
   const user = { role: 'staff', access_profile: 'reception' };
@@ -20,4 +20,21 @@ test('perfil de personal acessa treinos e evolucao, sem financeiro', () => {
 test('administrador mantem acesso total', () => {
   assert.equal(canAccess({ role: 'admin' }, 'GET', '/api/users'), true);
   assert.equal(canAccess({ role: 'owner' }, 'GET', '/api/finance/overview'), true);
+});
+
+test('perfil configuravel libera somente os modulos marcados', () => {
+  const user = { role: 'staff', access_profile: 'atendimento' };
+  const permissions = { dashboard: true, members: true, finance: true, training: false };
+  assert.equal(moduleForPath('/api/finance/receivables'), 'finance');
+  assert.equal(canAccess(user, 'GET', '/api/finance/receivables', permissions), true);
+  assert.equal(canAccess(user, 'GET', '/api/training/exercises', permissions), false);
+  assert.equal(hasModulePermission({ ...user, access_permissions: permissions }, 'finance'), true);
+  assert.equal(hasModulePermission({ ...user, access_permissions: permissions }, 'training'), false);
+});
+
+test('perfil de administrador tambem pode ser restringido pelo cadastro', () => {
+  const permissions = { dashboard: true, users: false };
+  assert.equal(canAccess({ role: 'admin' }, 'GET', '/api/users'), true);
+  assert.equal(canAccess({ role: 'admin' }, 'GET', '/api/users', permissions), false);
+  assert.equal(canAccess({ role: 'owner' }, 'GET', '/api/users', permissions), true);
 });

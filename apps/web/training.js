@@ -65,7 +65,8 @@ function fillLevelSelect(id) {
 }
 
 function canManageTrainingLevels() {
-  return ['owner', 'admin'].includes(localStorage.getItem('academiaRole'));
+  if (['owner', 'admin'].includes(localStorage.getItem('academiaRole'))) return true;
+  try { return JSON.parse(localStorage.getItem('academiaAccessPermissions') || '{}').training === true; } catch (_) { return false; }
 }
 
 function setTrainingLevelStatus(text) {
@@ -100,7 +101,26 @@ function renderTrainingLevels() {
     save.type = 'submit';
     save.className = 'mini-button';
     save.textContent = 'Salvar';
-    form.append(input, activeLabel, save);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'mini-button secondary';
+    remove.textContent = 'Excluir';
+    remove.title = 'Excluir este nível';
+    remove.addEventListener('click', async () => {
+      if (!window.confirm(`Excluir o nível "${level.name}"?`)) return;
+      remove.disabled = true;
+      try {
+        await api('/api/training/levels', { method: 'DELETE', body: JSON.stringify({ id: level.id }) });
+        setTrainingLevelStatus('Nível excluído.');
+        await loadBase();
+      } catch (error) {
+        const message = error.message === 'nivel_em_uso' ? 'Esse nível já está sendo usado. Desative-o para não aparecer em novos cadastros.' : `Erro: ${error.message}`;
+        setTrainingLevelStatus(message);
+      } finally {
+        remove.disabled = false;
+      }
+    });
+    form.append(input, activeLabel, save, remove);
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       save.disabled = true;
@@ -160,7 +180,8 @@ function renderAll() {
     const name = document.createElement('strong');
     name.textContent = item.name;
     const detail = document.createElement('span');
-    detail.textContent = `${item.muscle_group} · ${item.level}`;
+    const level = trainingLevels.find((candidate) => candidate.slug === item.level);
+    detail.textContent = `${item.muscle_group} · ${level?.name || item.level}`;
     main.append(name, detail);
     row.appendChild(main);
     if (item.video_url && window.AcademiaTrainingMedia) {
@@ -180,7 +201,8 @@ function renderAll() {
     button.className = 'mini-button';
     button.textContent = 'Detalhar';
     button.addEventListener('click', () => loadPlanDetail(item.id));
-    row.append(`${item.member_name} - ${item.name} - ${item.level} - ${item.age_days || 0} dias `, button);
+    const level = trainingLevels.find((candidate) => candidate.slug === item.level);
+    row.append(`${item.member_name} - ${item.name} - ${level?.name || item.level} - ${item.age_days || 0} dias `, button);
     planList.appendChild(row);
   }
 }

@@ -1,12 +1,13 @@
 const { pool } = require('../lib/db');
 const { recordAudit } = require('../lib/audit');
+const { hasModulePermission } = require('../lib/accessControl');
 
 function isManager(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+  return hasModulePermission(user, 'finance');
 }
 
 function canOperate(user) {
-  return user && ['owner', 'admin', 'staff', 'operator'].includes(user.role);
+  return hasModulePermission(user, 'access');
 }
 
 function boundedInteger(value, fallback = 0, min = 0, max = 100000000) {

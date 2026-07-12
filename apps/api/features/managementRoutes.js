@@ -1,5 +1,7 @@
-function isManager(user) {
-  return user && ['owner', 'admin'].includes(user.role);
+const { hasModulePermission } = require('../lib/accessControl');
+
+function isManager(user, module = 'reports') {
+  return hasModulePermission(user, module);
 }
 
 function canCoach(user) {
@@ -109,7 +111,7 @@ async function reportsOverview(res, user, url, helpers) {
 }
 
 async function listCommercialPlans(res, user, helpers) {
-  if (!isManager(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  if (!isManager(user, 'plans')) return helpers.send(res, 403, { error: 'sem_permissao' });
   const result = await helpers.query(
     `SELECT id, name, description, price_cents, duration_days, enrollment_fee_cents,
             billing_period, access_rules, services_included, auto_renew,
@@ -121,7 +123,7 @@ async function listCommercialPlans(res, user, helpers) {
 }
 
 async function saveCommercialPlan(req, res, user, helpers) {
-  if (!isManager(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  if (!isManager(user, 'plans')) return helpers.send(res, 403, { error: 'sem_permissao' });
   const input = await helpers.body(req);
   if (!input.plan_id || !input.name) return helpers.send(res, 400, { error: 'dados_invalidos' });
   const result = await helpers.query(

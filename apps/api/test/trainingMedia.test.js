@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 process.env.DATABASE_URL ||= 'postgres://localhost/academia_test';
 const { validVideoSource, slugifyLevel } = require('../features/trainingRoutes');
+const { normalizePermissions, slugifyProfile } = require('../features/accessProfileRoutes');
 const { videoSignatureMatches, MAX_VIDEO_BYTES } = require('../features/editorRoutes');
 
 test('aceita fontes de video http, https e uploads locais', () => {
@@ -32,4 +33,12 @@ test('cria slug seguro para niveis personalizados', () => {
   assert.equal(slugifyLevel('Força e Hipertrofia'), 'forca-e-hipertrofia');
   assert.equal(slugifyLevel('  Nível 2  '), 'nivel-2');
   assert.equal(slugifyLevel('!!!'), '');
+});
+
+test('cria perfil configuravel com permissoes explicitas', () => {
+  assert.equal(slugifyProfile('Operação de Acesso'), 'operacao-de-acesso');
+  const permissions = normalizePermissions({ finance: true, training: false }, 'staff');
+  assert.equal(permissions.finance, true);
+  assert.equal(permissions.training, false);
+  assert.equal(permissions.members, false);
 });

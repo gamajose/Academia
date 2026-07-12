@@ -34,7 +34,7 @@ function renderProfile(user) {
   fill('profile-rg', user.rg);
   fill('profile-birth', user.birth_date ? String(user.birth_date).slice(0, 10) : '');
   fill('profile-job-title', user.job_title || roleText(user.access_profile, user.role));
-  account('profile-access-badge').textContent = roleText(user.access_profile, user.role);
+  account('profile-access-badge').textContent = user.access_profile_name || roleText(user.access_profile, user.role);
   const address = user.address_details || {};
   for (const [id, key] of [['profile-postal-code', 'postal_code'], ['profile-street', 'street'], ['profile-address-number', 'number'], ['profile-address-complement', 'complement'], ['profile-neighborhood', 'neighborhood'], ['profile-city', 'city'], ['profile-state', 'state'], ['profile-country', 'country']]) fill(id, address[key]);
   const phone = digits(user.phone);
