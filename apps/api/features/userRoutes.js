@@ -38,6 +38,11 @@ async function handleUserRoutes(req, res, user, url, helpers) {
   if (!canManageUsers(user)) return send(res, 403, { error: 'sem_permissao' });
 
   if (req.method === 'GET' && url.pathname === '/api/users') {
+    await query(
+      'UPDATE users SET last_seen_at = now() WHERE id = $1 AND gym_id = $2',
+      [user.sub, user.gym_id]
+    );
+
     const result = await query(
       `SELECT u.id, u.name, u.email, u.phone, u.cpf, u.rg, u.birth_date, u.job_title,
               u.access_profile, ap.name AS access_profile_name, u.role, u.is_active,
@@ -54,7 +59,6 @@ async function handleUserRoutes(req, res, user, url, helpers) {
     if (!input.name || !input.email || !input.password || !validEmail(input.email)) return send(res, 400, { error: 'dados_invalidos' });
     const passwordCheck = validatePassword(input.password);
     if (!passwordCheck.valid) return send(res, 400, { error: passwordCheck.error });
-    const allowedRoles = ['admin', 'staff', 'operator'];
     const access = await resolveAccessProfile(query, user.gym_id, input.role, input.access_profile);
     const role = access.role;
     if (!canManageRole(user, role)) return send(res, 403, { error: 'sem_permissao' });
