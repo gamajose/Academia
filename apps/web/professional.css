@@ -49,6 +49,13 @@
 .toolbar-actions a,
 .site-button { min-width: 0; padding: 10px 14px; }
 #refresh-button, #logout-button { display: none !important; }
+.modal-card > .form-section + .form-section { margin-top: 18px; }
+.modal-card .rich-field { display: grid; gap: 8px; }
+.modal-card .rich-editor { min-height: 155px; padding: 14px 16px; line-height: 1.65; }
+.modal-card .rich-editor:focus { border-color: rgba(185,28,28,.65); box-shadow: 0 0 0 4px rgba(185,28,28,.08); }
+.modal-card .rich-editor p { margin: 0 0 10px; }
+.international-phone, .international-phone .iti, .international-phone .iti input { width: 100%; }
+.modal .iti__country-list { z-index: 10002; }
 .alert-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 720px; }

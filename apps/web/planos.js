@@ -68,47 +68,6 @@ function render() {
   }
 }
 
-function setupEditor(toolbar) {
-  const editor = $(toolbar.dataset.editor);
-  const controls = [
-    ['B', 'bold', 'Negrito'], ['I', 'italic', 'Itálico'], ['U', 'underline', 'Sublinhado'],
-    ['• Lista', 'insertUnorderedList', 'Lista'], ['1. Lista', 'insertOrderedList', 'Lista numerada'],
-    ['Link', 'createLink', 'Inserir link'], ['Imagem', 'insertImage', 'Inserir imagem'],
-    ['Limpar', 'removeFormat', 'Remover formatação']
-  ];
-  for (const [label, command, title] of controls) {
-    const control = document.createElement('button');
-    control.type = 'button';
-    control.textContent = label;
-    control.title = title;
-    control.addEventListener('click', () => {
-      editor.focus();
-      let value = null;
-      if (command === 'createLink') value = prompt('Cole o endereço do link:');
-      if (command === 'insertImage') value = prompt('Cole o endereço da imagem:');
-      if ((command === 'createLink' || command === 'insertImage') && !value) return;
-      document.execCommand(command, false, value);
-    });
-    toolbar.appendChild(control);
-  }
-  const color = document.createElement('input');
-  color.type = 'color';
-  color.title = 'Cor do texto';
-  color.value = '#171717';
-  color.addEventListener('input', () => { editor.focus(); document.execCommand('foreColor', false, color.value); });
-  toolbar.appendChild(color);
-  const size = document.createElement('select');
-  size.title = 'Tamanho da fonte';
-  size.innerHTML = '<option value="">Fonte</option><option value="2">Pequena</option><option value="3">Normal</option><option value="5">Grande</option>';
-  size.addEventListener('change', () => {
-    if (!size.value) return;
-    editor.focus();
-    document.execCommand('fontSize', false, size.value);
-    size.value = '';
-  });
-  toolbar.appendChild(size);
-}
-
 function durationToUi(days) {
   const value = Number(days || 30);
   if (value % 30 === 0) return { value: Math.max(1, value / 30), unit: 'months' };
@@ -189,7 +148,7 @@ async function toggle(plan) {
   } catch (error) { $('plans-status').textContent = `Erro: ${error.message}`; }
 }
 
-document.querySelectorAll('.editor-toolbar').forEach(setupEditor);
+AcademiaRichEditor.initAll();
 $('new-plan-button').onclick = () => openPlan();
 $('close-plan-modal').onclick = closePlan;
 $('cancel-plan-button').onclick = closePlan;

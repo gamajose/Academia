@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
 </head>
 <body>
   <main class="app-shell">
@@ -48,15 +49,8 @@
           <div class="field"><label for="student-birth">Data de nascimento</label><input id="student-birth" type="date" /></div>
           <div class="field"><label for="student-email">E-mail</label><input id="student-email" type="email" inputmode="email" autocomplete="email" placeholder="nome@email.com" /></div>
           <div class="field"><label for="student-phone">Telefone</label>
-            <div class="phone-row">
-              <select id="student-phone-country" aria-label="País do telefone">
-                <option value="+55">🇧🇷 +55 Brasil</option>
-                <option value="other">Outro país</option>
-              </select>
-              <input id="student-phone" inputmode="tel" autocomplete="tel" placeholder="(32) 9 9919-2233" />
-            </div>
+            <div class="international-phone"><input id="student-phone" inputmode="tel" autocomplete="tel" /></div>
           </div>
-          <div class="field hidden" id="student-phone-country-custom-wrap"><label for="student-phone-country-custom">Código do país</label><input id="student-phone-country-custom" inputmode="tel" placeholder="+1" /></div>
         </div>
       </section>
 
@@ -85,11 +79,12 @@
 
       <section class="form-section">
         <h4>Saúde, objetivo e observações</h4>
-        <div class="field"><label for="student-objective">Objetivo do aluno</label><textarea id="student-objective"></textarea></div>
-        <div class="field"><label for="student-allergies">Alergias e restrições</label><textarea id="student-allergies"></textarea></div>
-        <div class="field"><label for="student-medical">Observações clínicas</label><textarea id="student-medical"></textarea></div>
-        <div class="field"><label for="student-nutrition">Observações nutricionais</label><textarea id="student-nutrition"></textarea></div>
-        <div class="field"><label for="student-notes">Observações internas</label><textarea id="student-notes"></textarea></div>
+        <p class="section-help">Use a barra de ferramentas para organizar textos, listas, destaques e orientações detalhadas.</p>
+        <div class="rich-field"><label for="student-objective">Objetivo do aluno</label><div class="editor-toolbar" data-editor="student-objective"></div><div id="student-objective" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Descreva os objetivos e a rotina que o aluno deseja construir."></div></div>
+        <div class="rich-field"><label for="student-allergies">Alergias e restrições</label><div class="editor-toolbar" data-editor="student-allergies"></div><div id="student-allergies" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Registre alergias, restrições e cuidados importantes."></div></div>
+        <div class="rich-field"><label for="student-medical">Observações clínicas</label><div class="editor-toolbar" data-editor="student-medical"></div><div id="student-medical" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Adicione informações clínicas relevantes para o acompanhamento."></div></div>
+        <div class="rich-field"><label for="student-nutrition">Observações nutricionais</label><div class="editor-toolbar" data-editor="student-nutrition"></div><div id="student-nutrition" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Registre orientações e observações nutricionais."></div></div>
+        <div class="rich-field"><label for="student-notes">Observações internas</label><div class="editor-toolbar" data-editor="student-notes"></div><div id="student-notes" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Adicione notas internas para a equipe."></div></div>
       </section>
 
       <div class="form-actions">
@@ -101,6 +96,8 @@
 
   <script src="./guard.js"></script>
   <script src="./nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
+  <script src="./rich-editor.js"></script>
   <script src="./alunos.js"></script>
 </body>
 </html>

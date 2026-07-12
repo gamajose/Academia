@@ -3,6 +3,7 @@ const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
 const TOKEN = localStorage.getItem('academiaToken') || '';
 const $ = (id) => document.getElementById(id);
 let rows = [];
+let phoneWidget = null;
 
 async function req(path, options = {}) {
   const response = await fetch(`${API}${path}`, {
@@ -15,7 +16,12 @@ async function req(path, options = {}) {
 }
 
 const digits = (value) => String(value || '').replace(/\D/g, '');
-const val = (id) => $(id)?.value?.trim() || '';
+const fieldValue = (id) => {
+  const element = $(id);
+  if (!element) return '';
+  return element.isContentEditable ? element.innerHTML.trim() : element.value.trim();
+};
+const val = (id) => fieldValue(id);
 const brl = (value) => (Number(value || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 function formatCpf(value) {
@@ -87,7 +93,42 @@ async function load() {
   }
 }
 
-function setValue(id, value) { if ($(id)) $(id).value = value ?? ''; }
+function setValue(id, value) {
+  const element = $(id);
+  if (!element) return;
+  if (element.isContentEditable) element.innerHTML = value || '';
+  else element.value = value ?? '';
+}
+
+function initPhoneWidget() {
+  if (!window.intlTelInput || !$('student-phone')) return;
+  phoneWidget = window.intlTelInput($('student-phone'), {
+    initialCountry: 'br',
+    preferredCountries: ['br', 'pt', 'us'],
+    separateDialCode: true,
+    nationalMode: true,
+    showSelectedDialCode: true,
+    autoPlaceholder: 'aggressive',
+    formatAsYouType: true,
+    utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/utils.js'
+  });
+}
+
+function phoneCountryCode() {
+  const dialCode = phoneWidget?.getSelectedCountryData()?.dialCode;
+  return dialCode ? `+${dialCode}` : '+55';
+}
+
+function selectPhoneCountry(countryCode) {
+  if (!phoneWidget) return;
+  const normalized = String(countryCode || '+55').replace(/\D/g, '');
+  const countryData = phoneWidget.getCountryData?.()
+    || window.intlTelInput.getCountryData?.()
+    || window.intlTelInputGlobals?.getCountryData?.()
+    || [];
+  const country = countryData.find((item) => item.dialCode === normalized);
+  phoneWidget.setCountry(country?.iso2 || 'br');
+}
 
 function openModal(item = {}) {
   $('student-form-panel').classList.remove('hidden');
@@ -99,9 +140,7 @@ function openModal(item = {}) {
   setValue('student-email', item.email);
   setValue('student-birth', item.birth_date ? String(item.birth_date).slice(0, 10) : '');
   const countryCode = item.phone_country_code || '+55';
-  setValue('student-phone-country', countryCode === '+55' ? '+55' : 'other');
-  setValue('student-phone-country-custom', countryCode === '+55' ? '' : countryCode);
-  $('student-phone-country-custom-wrap').classList.toggle('hidden', countryCode === '+55');
+  selectPhoneCountry(countryCode);
   setValue('student-phone', countryCode === '+55' ? formatPhone(item.phone) : item.phone);
   setValue('student-emergency-name', item.emergency_contact_name || (item.emergency_contact || '').split('|')[0]?.trim());
   setValue('student-emergency-phone', item.emergency_contact_phone || (item.emergency_contact || '').split('|')[1]?.trim());
@@ -126,8 +165,8 @@ function closeModal() {
   document.body.style.overflow = '';
   $('student-form').reset();
   setValue('student-country', 'Brasil');
-  setValue('student-phone-country', '+55');
-  $('student-phone-country-custom-wrap').classList.add('hidden');
+  ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'].forEach((id) => AcademiaRichEditor.clearValue(id));
+  selectPhoneCountry('+55');
 }
 
 function structuredAddress() {
@@ -148,7 +187,7 @@ async function save(event) {
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('students-status').textContent = 'Informe um e-mail válido.'; $('student-email').focus(); return; }
   if (cpf && cpf.length !== 11) { $('students-status').textContent = 'O CPF deve possuir 11 dígitos.'; $('student-cpf').focus(); return; }
 
-  const countryCode = val('student-phone-country') === '+55' ? '+55' : val('student-phone-country-custom');
+  const countryCode = phoneCountryCode();
   const emergencyName = val('student-emergency-name');
   const emergencyPhone = digits(val('student-emergency-phone'));
 
@@ -197,13 +236,9 @@ $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
 $('student-search').oninput = render;
 $('student-cpf').addEventListener('input', (event) => { event.target.value = formatCpf(event.target.value); });
-$('student-phone').addEventListener('input', (event) => { if (val('student-phone-country') === '+55') event.target.value = formatPhone(event.target.value); });
+$('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });
 $('student-postal-code').addEventListener('input', (event) => { event.target.value = formatCep(event.target.value); });
-$('student-phone-country').addEventListener('change', () => {
-  const brazil = val('student-phone-country') === '+55';
-  $('student-phone-country-custom-wrap').classList.toggle('hidden', brazil);
-  $('student-phone').placeholder = brazil ? '(32) 9 9919-2233' : 'Telefone com código de área';
-  if (brazil) $('student-phone').value = formatPhone($('student-phone').value);
-});
+AcademiaRichEditor.initAll();
+initPhoneWidget();
 load();
