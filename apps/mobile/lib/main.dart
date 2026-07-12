@@ -4,7 +4,10 @@ import 'dart:convert';
 import 'package:academia_mobile/access_control_page.dart';
 import 'package:academia_mobile/alerts_page.dart';
 import 'package:academia_mobile/assessments_page.dart';
+import 'package:academia_mobile/classes_admin_page.dart';
+import 'package:academia_mobile/commercial_plans_page.dart';
 import 'package:academia_mobile/member_workspace_page.dart';
+import 'package:academia_mobile/reports_page.dart';
 import 'package:academia_mobile/revenue_page.dart';
 import 'package:academia_mobile/student_home_page.dart';
 import 'package:academia_mobile/training_page.dart';
@@ -301,8 +304,11 @@ class _DashboardPageState extends State<DashboardPage> {
               actionButton(Icons.warning_amber, 'Alertas', AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.fitness_center, 'Treinos', TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.monitor_heart, 'Avaliacoes', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.event, 'Aulas e agenda', ClassesAdminPage(baseUrl: widget.baseUrl, token: widget.token, isManager: isManager)),
               if (isManager) actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
               if (isManager) actionButton(Icons.door_front_door, 'Controle de acesso', AccessControlPage(baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager) actionButton(Icons.analytics, 'Relatorios', ReportsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager) actionButton(Icons.sell, 'Planos comerciais', CommercialPlansPage(baseUrl: widget.baseUrl, token: widget.token)),
             ]),
             const SizedBox(height: 12),
             Text('$message Sincronizacao automatica a cada 30s.'),
