@@ -6,6 +6,7 @@ const digits = (value) => String(value || '').replace(/\D/g, '');
 let accessProfiles = [];
 
 function setStatus(text) { get('users-status').textContent = text; }
+function setFormStatus(text) { get('user-form-status').textContent = text; }
 
 function friendly(error) {
   const messages = {
@@ -96,7 +97,7 @@ async function loadUsers() {
 function setField(id, value) { get(id).value = value || ''; }
 
 function resetForm() {
-  get('employee-form').reset(); setField('user-id', ''); get('user-country').value = 'Brasil';
+  get('employee-form').reset(); setField('user-id', ''); get('user-country').value = 'Brasil'; setFormStatus('');
   get('employee-form-title').textContent = 'Cadastrar funcionário'; get('save-user-button').textContent = 'Cadastrar funcionário';
   get('user-password').required = true; get('user-password-field').querySelector('label').textContent = 'Senha inicial *';
   renderProfileSelect(accessProfiles.find((profile) => profile.is_active)?.slug || '');
@@ -138,12 +139,12 @@ async function saveUser(event) {
   };
   const saveButton = get('save-user-button');
   const originalText = saveButton.textContent;
-  saveButton.disabled = true; saveButton.textContent = 'Salvando...';
+  saveButton.disabled = true; saveButton.textContent = 'Salvando...'; setFormStatus('');
   try {
     if (id) await api('/api/users/update', { method: 'POST', body: JSON.stringify(payload) });
     else await api('/api/users', { method: 'POST', body: JSON.stringify({ ...payload, password: get('user-password').value }) });
     closeUserModal(); setStatus(id ? 'Funcionário atualizado.' : 'Funcionário cadastrado.'); await loadUsers();
-  } catch (error) { setStatus(friendly(error)); }
+  } catch (error) { setFormStatus(friendly(error)); }
   finally { saveButton.disabled = false; saveButton.textContent = get('user-id').value ? 'Salvar alterações' : originalText; }
 }
 
