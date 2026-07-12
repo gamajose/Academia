@@ -4,6 +4,7 @@ const usersToken = localStorage.getItem('academiaToken') || '';
 const get = (id) => document.getElementById(id);
 const digits = (value) => String(value || '').replace(/\D/g, '');
 const REALTIME_INTERVAL_MS = 3000;
+const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
 let accessProfiles = [];
 let usersRequestInFlight = false;
 let usersRefreshTimer = null;
@@ -65,18 +66,56 @@ function whatsappLink(phone) {
   return link;
 }
 
+function formatLastSeen(value) {
+  if (!value) return 'Nunca acessou';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Nunca acessou';
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(date);
+}
+
+function presenceFor(user) {
+  if (!user.is_active) {
+    return { key: 'disabled', label: 'Desativado' };
+  }
+  const lastSeen = user.last_seen_at ? new Date(user.last_seen_at).getTime() : 0;
+  if (lastSeen && Date.now() - lastSeen <= ACTIVE_WINDOW_MS) {
+    return { key: 'active', label: 'Ativo agora' };
+  }
+  return { key: 'inactive', label: 'Inativo' };
+}
+
+function createPresenceCell(user) {
+  const cell = document.createElement('td');
+  cell.className = 'status-cell';
+  const presence = presenceFor(user);
+  const dot = document.createElement('span');
+  dot.className = `presence-dot presence-${presence.key}`;
+  dot.setAttribute('role', 'img');
+  dot.setAttribute('aria-label', presence.label);
+  dot.title = presence.label;
+  cell.appendChild(dot);
+  return cell;
+}
+
 function usersSignature(rows) {
-  return JSON.stringify(rows.map((user) => [
-    user.id,
-    user.name,
-    user.email,
-    user.phone,
-    user.job_title,
-    user.access_profile,
-    user.access_profile_name,
-    user.is_active,
-    user.updated_at
-  ]));
+  const minuteBucket = Math.floor(Date.now() / 60000);
+  return JSON.stringify({
+    minuteBucket,
+    rows: rows.map((user) => [
+      user.id,
+      user.name,
+      user.email,
+      user.phone,
+      user.job_title,
+      user.access_profile,
+      user.access_profile_name,
+      user.is_active,
+      user.last_seen_at
+    ])
+  });
 }
 
 function renderUsers(rows) {
@@ -87,7 +126,7 @@ function renderUsers(rows) {
   if (!rows.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 6;
+    cell.colSpan = 7;
     cell.className = 'employee-empty-row';
     cell.textContent = 'Nenhum funcionário cadastrado.';
     row.appendChild(cell);
@@ -124,12 +163,16 @@ function renderUsers(rows) {
     access.textContent = user.access_profile_name || profileFor(user.access_profile)?.name || 'Sem perfil';
     row.appendChild(access);
 
-    const status = document.createElement('td');
-    status.textContent = user.is_active ? 'Ativo' : 'Inativo';
-    row.appendChild(status);
+    const lastSeen = document.createElement('td');
+    lastSeen.className = 'last-seen-cell';
+    lastSeen.textContent = formatLastSeen(user.last_seen_at);
+    row.appendChild(lastSeen);
+
+    row.appendChild(createPresenceCell(user));
 
     const actions = document.createElement('td');
     actions.className = 'employee-row-actions';
+
     const edit = document.createElement('button');
     edit.className = 'mini-button secondary';
     edit.type = 'button';
@@ -369,7 +412,6 @@ function bindEvents() {
   get('new-user-button')?.addEventListener('click', newUser);
   get('close-employee-modal')?.addEventListener('click', closeUserModal);
   get('cancel-user-button')?.addEventListener('click', closeUserModal);
-
   get('employee-form-panel')?.addEventListener('click', (event) => {
     if (event.target === get('employee-form-panel')) closeUserModal();
   });
