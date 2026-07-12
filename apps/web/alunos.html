@@ -11,48 +11,92 @@
 <body>
   <main class="app-shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">Administração</p>
-        <h1>Alunos</h1>
-        <p>Lista de alunos com plano, status, inadimplência e cadastro completo.</p>
-      </div>
-      <div class="health-card"><span>Módulo</span><strong>Alunos</strong><small>cadastro, edição e status</small></div>
+      <p class="eyebrow">Administração</p>
+      <h1>Alunos</h1>
+      <p>Cadastros, contatos, documentos e informações importantes organizados em uma única área.</p>
     </section>
 
     <section class="panel">
       <div class="toolbar">
-        <h2>Lista de alunos</h2>
-        <button id="new-student-button">Cadastrar aluno</button>
+        <div><h2>Lista de alunos</h2><small>Pesquise, edite ou altere o status de cada cadastro.</small></div>
+        <button id="new-student-button" type="button">Cadastrar aluno</button>
       </div>
-      <input id="student-search" placeholder="Buscar aluno por nome, e-mail ou telefone" />
+      <input id="student-search" type="search" placeholder="Buscar por nome, e-mail, telefone, CPF ou RG" />
       <p class="status-line" id="students-status">Carregando...</p>
       <ul id="students-list"></ul>
     </section>
   </main>
 
-  <div class="modal hidden" id="student-form-panel">
-    <div class="modal-card">
-      <div class="toolbar">
-        <h3>Cadastro do aluno</h3>
-        <button class="secondary" id="close-student-modal">Fechar</button>
+  <div class="modal hidden" id="student-form-panel" role="dialog" aria-modal="true" aria-labelledby="student-modal-title">
+    <form class="modal-card" id="student-form" novalidate>
+      <div class="modal-header">
+        <div>
+          <h3 id="student-modal-title">Cadastro do aluno</h3>
+          <p>Preencha os dados por seção. Campos obrigatórios estão identificados.</p>
+        </div>
+        <button type="button" id="close-student-modal" class="secondary">Fechar</button>
       </div>
+
       <input id="student-id" type="hidden" />
-      <div class="grid">
-        <input id="student-name" placeholder="Nome completo" />
-        <input id="student-document" placeholder="CPF/RG" />
-        <input id="student-email" placeholder="E-mail" />
-        <input id="student-phone" placeholder="Telefone" />
-        <input id="student-birth" type="date" />
-        <input id="student-emergency" placeholder="Contato de emergência" />
+
+      <section class="form-section">
+        <h4>Dados pessoais</h4>
+        <div class="form-grid three">
+          <div class="field"><label for="student-name">Nome completo *</label><input id="student-name" autocomplete="name" required /></div>
+          <div class="field"><label for="student-cpf">CPF</label><input id="student-cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" /></div>
+          <div class="field"><label for="student-rg">RG</label><input id="student-rg" maxlength="30" /></div>
+          <div class="field"><label for="student-birth">Data de nascimento</label><input id="student-birth" type="date" /></div>
+          <div class="field"><label for="student-email">E-mail</label><input id="student-email" type="email" inputmode="email" autocomplete="email" placeholder="nome@email.com" /></div>
+          <div class="field"><label for="student-phone">Telefone</label>
+            <div class="phone-row">
+              <select id="student-phone-country" aria-label="País do telefone">
+                <option value="+55">🇧🇷 +55 Brasil</option>
+                <option value="other">Outro país</option>
+              </select>
+              <input id="student-phone" inputmode="tel" autocomplete="tel" placeholder="(32) 9 9919-2233" />
+            </div>
+          </div>
+          <div class="field hidden" id="student-phone-country-custom-wrap"><label for="student-phone-country-custom">Código do país</label><input id="student-phone-country-custom" inputmode="tel" placeholder="+1" /></div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h4>Contato de emergência</h4>
+        <p class="section-help">Pessoa que deve ser contatada em caso de necessidade.</p>
+        <div class="form-grid">
+          <div class="field"><label for="student-emergency-name">Nome do contato</label><input id="student-emergency-name" /></div>
+          <div class="field"><label for="student-emergency-phone">Telefone do contato</label><input id="student-emergency-phone" inputmode="tel" placeholder="(32) 9 9919-2233" /></div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h4>Endereço</h4>
+        <div class="form-grid three">
+          <div class="field"><label for="student-postal-code">CEP</label><input id="student-postal-code" inputmode="numeric" maxlength="9" placeholder="00000-000" /></div>
+          <div class="field"><label for="student-street">Rua / Avenida</label><input id="student-street" autocomplete="street-address" /></div>
+          <div class="field"><label for="student-address-number">Número</label><input id="student-address-number" /></div>
+          <div class="field"><label for="student-address-complement">Complemento</label><input id="student-address-complement" /></div>
+          <div class="field"><label for="student-neighborhood">Bairro</label><input id="student-neighborhood" /></div>
+          <div class="field"><label for="student-city">Cidade</label><input id="student-city" /></div>
+          <div class="field"><label for="student-state">Estado</label><input id="student-state" maxlength="40" /></div>
+          <div class="field"><label for="student-country">País</label><input id="student-country" value="Brasil" /></div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h4>Saúde, objetivo e observações</h4>
+        <div class="field"><label for="student-objective">Objetivo do aluno</label><textarea id="student-objective"></textarea></div>
+        <div class="field"><label for="student-allergies">Alergias e restrições</label><textarea id="student-allergies"></textarea></div>
+        <div class="field"><label for="student-medical">Observações clínicas</label><textarea id="student-medical"></textarea></div>
+        <div class="field"><label for="student-nutrition">Observações nutricionais</label><textarea id="student-nutrition"></textarea></div>
+        <div class="field"><label for="student-notes">Observações internas</label><textarea id="student-notes"></textarea></div>
+      </section>
+
+      <div class="form-actions">
+        <button class="secondary" type="button" id="cancel-student-button">Cancelar</button>
+        <button type="submit" id="save-student-button">Salvar aluno</button>
       </div>
-      <textarea id="student-address" placeholder="Endereço"></textarea>
-      <textarea id="student-objective" placeholder="Objetivo do aluno"></textarea>
-      <textarea id="student-allergies" placeholder="Alergias e restrições"></textarea>
-      <textarea id="student-medical" placeholder="Ficha médica / observações clínicas"></textarea>
-      <textarea id="student-nutrition" placeholder="Ficha nutricionista / observações alimentares"></textarea>
-      <textarea id="student-notes" placeholder="Observações internas"></textarea>
-      <button id="save-student-button">Salvar aluno</button>
-    </div>
+    </form>
   </div>
 
   <script src="./guard.js"></script>
