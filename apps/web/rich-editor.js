@@ -134,7 +134,6 @@
     const id = textarea.id;
     return {
       target: textarea,
-      license_key: 'gpl',
       menubar: 'file edit view insert format tools table help',
       plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table wordcount autosave',
       toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image table blockquote hr | removeformat fullscreen preview',
