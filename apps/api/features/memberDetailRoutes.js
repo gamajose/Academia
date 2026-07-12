@@ -1,7 +1,7 @@
 const { recordAudit } = require('../lib/audit');
 const { digits, nullable, validEmail } = require('../lib/memberValidation');
 const { hashPassword, validatePassword } = require('../lib/security');
-const { createPixPayment, createPaypalOrder, capturePaypalOrder } = require('../lib/paymentProviders');
+const { createPixPayment, getMercadoPagoPayment, createPaypalOrder, capturePaypalOrder } = require('../lib/paymentProviders');
 const { confirmEnrollmentPayment, confirmEnrollmentEmail } = require('../lib/enrollmentPayment');
 
 function code() {
@@ -198,7 +198,18 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
       [enrollmentId]
     );
     if (!result.rowCount) return send(res, 404, { error: 'matricula_nao_encontrada' });
-    const item = result.rows[0];
+    let item = result.rows[0];
+    if (item.payment_method === 'pix' && item.payment_provider === 'mercadopago' && item.payment_status !== 'paid' && item.provider_payment_id) {
+      try {
+        const providerPayment = await getMercadoPagoPayment(item.provider_payment_id);
+        if (providerPayment.status === 'approved') {
+          const confirmation = await confirmEnrollmentPayment({ enrollmentId: item.id, provider: 'mercadopago', providerPaymentId: providerPayment.id, providerStatus: providerPayment.status });
+          item = { ...item, payment_status: 'paid', email_confirmation_sent_at: confirmation.emailDelivery === 'sent' ? new Date().toISOString() : null, payment_confirmed_at: new Date().toISOString() };
+        }
+      } catch (error) {
+        if (error.code !== 'pagamento_nao_configurado') console.warn(`[payments] consulta Pix falhou: ${error.message}`);
+      }
+    }
     return send(res, 200, {
       id: item.id,
       status: item.status,
@@ -240,3 +251,4 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
 }
 
 module.exports = { handleMemberDetailRoutes };
+
