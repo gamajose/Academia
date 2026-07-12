@@ -12,6 +12,12 @@ function reportDays(value) {
   return Math.min(365, Math.max(7, parsed));
 }
 
+function boundedInteger(value, fallback, min = 0, max = 100000000) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(parsed) || parsed < min || parsed > max) return fallback;
+  return parsed;
+}
+
 async function upcomingSessions(res, user, helpers) {
   if (!canCoach(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
   const result = await helpers.query(
@@ -102,11 +108,60 @@ async function reportsOverview(res, user, url, helpers) {
   });
 }
 
+async function listCommercialPlans(res, user, helpers) {
+  if (!isManager(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  const result = await helpers.query(
+    `SELECT id, name, description, price_cents, duration_days, enrollment_fee_cents,
+            billing_period, access_rules, services_included, auto_renew,
+            cancellation_fee_cents, trial_days, is_featured, is_active, updated_at
+     FROM plans WHERE gym_id = $1 ORDER BY is_featured DESC, name`,
+    [user.gym_id]
+  );
+  return helpers.send(res, 200, { data: result.rows });
+}
+
+async function saveCommercialPlan(req, res, user, helpers) {
+  if (!isManager(user)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  const input = await helpers.body(req);
+  if (!input.plan_id || !input.name) return helpers.send(res, 400, { error: 'dados_invalidos' });
+  const result = await helpers.query(
+    `UPDATE plans SET
+       name = $3, description = $4, price_cents = $5, duration_days = $6,
+       enrollment_fee_cents = $7, billing_period = $8, access_rules = $9::jsonb,
+       services_included = $10::jsonb, auto_renew = $11,
+       cancellation_fee_cents = $12, trial_days = $13,
+       is_featured = $14, is_active = $15, updated_at = now()
+     WHERE id = $1 AND gym_id = $2
+     RETURNING *`,
+    [
+      input.plan_id,
+      user.gym_id,
+      String(input.name).trim(),
+      input.description || null,
+      boundedInteger(input.price_cents, 0),
+      boundedInteger(input.duration_days, 30, 1, 3650),
+      boundedInteger(input.enrollment_fee_cents, 0),
+      input.billing_period || 'monthly',
+      JSON.stringify(input.access_rules || {}),
+      JSON.stringify(input.services_included || []),
+      input.auto_renew === true,
+      boundedInteger(input.cancellation_fee_cents, 0),
+      boundedInteger(input.trial_days, 0, 0, 365),
+      input.is_featured === true,
+      input.is_active !== false
+    ]
+  );
+  if (!result.rowCount) return helpers.send(res, 404, { error: 'plano_nao_encontrado' });
+  return helpers.send(res, 200, result.rows[0]);
+}
+
 async function handleManagementRoutes(req, res, user, url, helpers) {
   if (!user) return false;
   if (req.method === 'GET' && url.pathname === '/api/classes/sessions/upcoming') return upcomingSessions(res, user, helpers);
   if (req.method === 'GET' && url.pathname === '/api/reports/overview') return reportsOverview(res, user, url, helpers);
+  if (req.method === 'GET' && url.pathname === '/api/plans/commercial') return listCommercialPlans(res, user, helpers);
+  if (req.method === 'POST' && url.pathname === '/api/plans/commercial') return saveCommercialPlan(req, res, user, helpers);
   return false;
 }
 
-module.exports = { handleManagementRoutes, reportDays };
+module.exports = { handleManagementRoutes, reportDays, boundedInteger };
