@@ -100,7 +100,7 @@ async function settlePayment(req, res, user, helpers) {
        VALUES($1,$2,$3,$4,$5,$6,$7::jsonb) RETURNING *`,
       [user.gym_id,input.payment_id,payment.rows[0].member_id,number,finalAmount,user.sub,JSON.stringify({member_name:payment.rows[0].member_name,method:input.method||'other'})]
     );
-    const cash = await client.query('SELECT id FROM cash_sessions WHERE gym_id=$1 AND status=\'open\' ORDER BY opened_at DESC LIMIT 1',[user.gym_id]);
+    const cash = await client.query("SELECT id FROM cash_sessions WHERE gym_id=$1 AND status='open' ORDER BY opened_at DESC LIMIT 1",[user.gym_id]);
     if (cash.rowCount) {
       await client.query(
         `INSERT INTO cash_movements(gym_id,cash_session_id,payment_id,movement_type,amount_cents,description,created_by)
@@ -232,13 +232,14 @@ async function closeCash(req,res,user,helpers){
 
 async function publicCatalog(res,url,helpers){
   const slug=url.searchParams.get('gym_slug');
-  const gym=await helpers.query('SELECT id,name,slug FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status=\'active\' ORDER BY created_at LIMIT 1',[slug||null]);
+  const gym=await helpers.query("SELECT id,name,slug FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status='active' ORDER BY created_at LIMIT 1",[slug||null]);
   if(!gym.rowCount) return helpers.send(res,404,{error:'academia_nao_encontrada'});
   const [plans,classes]=await Promise.all([
     helpers.query(
-      `SELECT id,name,description,price_cents,duration_days,enrollment_fee_cents,billing_period,
+      `SELECT id,name,description,benefits,rules,price_cents,duration_days,enrollment_fee_cents,billing_period,
        access_rules,services_included,auto_renew,cancellation_fee_cents,trial_days,is_featured
-       FROM plans WHERE gym_id=$1 AND is_active=true ORDER BY is_featured DESC,price_cents,name`,[gym.rows[0].id]),
+       FROM plans WHERE gym_id=$1 AND is_active=true AND price_cents>0
+       ORDER BY is_featured DESC,price_cents,name`,[gym.rows[0].id]),
     helpers.query('SELECT id,name,description,room,capacity,duration_minutes,level FROM gym_classes WHERE gym_id=$1 AND is_active=true ORDER BY name',[gym.rows[0].id])
   ]);
   return helpers.send(res,200,{gym:gym.rows[0],plans:plans.rows,classes:classes.rows});
@@ -247,7 +248,7 @@ async function publicCatalog(res,url,helpers){
 async function createLead(req,res,helpers){
   const input=await helpers.body(req);
   if(!input.name||(!input.email&&!input.phone)) return helpers.send(res,400,{error:'dados_invalidos'});
-  const gym=await helpers.query('SELECT id FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status=\'active\' ORDER BY created_at LIMIT 1',[input.gym_slug||null]);
+  const gym=await helpers.query("SELECT id FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status='active' ORDER BY created_at LIMIT 1",[input.gym_slug||null]);
   if(!gym.rowCount) return helpers.send(res,404,{error:'academia_nao_encontrada'});
   if(input.plan_id){const plan=await helpers.query('SELECT id FROM plans WHERE id=$1 AND gym_id=$2 AND is_active=true',[input.plan_id,gym.rows[0].id]);if(!plan.rowCount)return helpers.send(res,404,{error:'plano_nao_encontrado'});}
   const result=await helpers.query(
