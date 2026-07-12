@@ -15,8 +15,6 @@
 .access-profile-card p { margin: 6px 0 0; font-size: 13px; }
 .access-profile-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .profile-status-inactive { color: var(--warn); font-weight: 800; }
-.permissions-page .hero { margin-bottom: 28px; }
-.permissions-page .form-actions { justify-content: flex-end; }
 
 body.modal-open { overflow: hidden; }
 .employee-list-panel { gap: 16px; }
@@ -40,6 +38,13 @@ body.modal-open { overflow: hidden; }
 .employee-modal-card .modal-header { position: sticky; top: -28px; z-index: 4; margin: -28px -28px 20px; padding: 24px 28px 18px; border-bottom: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
 .employee-form-actions { position: sticky; bottom: -28px; z-index: 3; margin: 4px -28px -28px; padding: 18px 28px 24px; border-top: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
 
+.permissions-modal-card { width: min(1040px, 96vw); display: grid; gap: 18px; max-height: min(88vh, 920px); overflow: auto; }
+.permissions-modal-header { position: sticky; top: -28px; z-index: 5; margin: -28px -28px 0; padding: 24px 28px 18px; border-bottom: 1px solid #ebe4da; background: rgba(255,255,255,.98); backdrop-filter: blur(12px); }
+.permissions-modal-toolbar { align-items: flex-start; }
+.permissions-modal-toolbar h4 { margin: 0 0 5px; }
+.permissions-modal-toolbar .section-help { margin: 0; }
+.permissions-modal-card #access-profiles-status { margin: 0; min-height: 20px; }
+
 @media (max-width: 760px) {
   .permissions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .access-profile-card { grid-template-columns: 1fr; }
@@ -47,6 +52,9 @@ body.modal-open { overflow: hidden; }
   .employee-list-toolbar .toolbar-actions > * { width: 100% !important; }
   .employee-modal-card .modal-header { top: -20px; margin: -20px -20px 18px; padding: 20px; }
   .employee-form-actions { bottom: -20px; margin: 4px -20px -20px; padding: 16px 20px 20px; }
+  .permissions-modal-header { top: -20px; margin: -20px -20px 0; padding: 20px; }
+  .permissions-modal-toolbar { align-items: stretch; }
+  .permissions-modal-toolbar > button { width: 100% !important; }
 }
 
 @media (max-width: 480px) {
