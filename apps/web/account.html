@@ -3,20 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Conta - Academia Lobo</title>
+  <title>Perfil - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <main class="app-shell">
     <section class="hero">
       <div>
-        <p class="eyebrow">Conta</p>
-        <h1>Conta e academia</h1>
+        <p class="eyebrow">Perfil</p>
+        <h1>Perfil e academia</h1>
         <p>Dados da academia e acesso do usuario.</p>
       </div>
     </section>
 
     <section class="grid">
+      <article class="panel">
+        <h3>Perfil de acesso</h3>
+        <strong id="account-name">Carregando...</strong>
+        <p id="account-role">Identificando permissões...</p>
+        <a class="button secondary" href="./users.html">Gerenciar perfis</a>
+      </article>
       <article class="panel">
         <h3>Academia</h3>
         <input id="gym-name" placeholder="Nome" />

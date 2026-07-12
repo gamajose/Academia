@@ -311,8 +311,6 @@ async function createCheckin() {
 
 function bind(id, event, handler) { const el = byId(id); if (el) el.addEventListener(event, handler); }
 bind('login-button', 'click', login);
-bind('logout-button', 'click', logout);
-bind('refresh-button', 'click', () => runAction(refreshDashboard, 'Dashboard atualizado.'));
 bind('create-member-button', 'click', createMember);
 bind('create-plan-button', 'click', createPlan);
 bind('create-membership-button', 'click', createMembership);

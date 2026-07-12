@@ -80,11 +80,19 @@ async function loadProfile() {
     document.getElementById('profile-name').textContent = name;
     document.getElementById('profile-role').textContent = roleLabel(user.role);
     document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
+    const accountName = document.getElementById('account-name');
+    const accountRole = document.getElementById('account-role');
+    if (accountName) accountName.textContent = name;
+    if (accountRole) accountRole.textContent = `${roleLabel(user.role)} · permissoes definidas pelo cargo`;
   } catch (_) {
     const name = localStorage.getItem('academiaUserName') || 'Minha conta';
     document.getElementById('profile-name').textContent = name;
     document.getElementById('profile-role').textContent = roleLabel(localStorage.getItem('academiaRole'));
     document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
+    const accountName = document.getElementById('account-name');
+    const accountRole = document.getElementById('account-role');
+    if (accountName) accountName.textContent = name;
+    if (accountRole) accountRole.textContent = roleLabel(localStorage.getItem('academiaRole'));
   }
 }
 
