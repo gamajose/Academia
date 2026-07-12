@@ -21,10 +21,15 @@ function canAccess(user, method, pathname) {
       '/api/dashboard/summary',
       '/api/me',
       '/api/gym/profile',
-      '/api/alerts'
+      '/api/alerts',
+      '/api/classes',
+      '/api/classes/sessions/upcoming',
+      '/api/classes/session/roster'
     ];
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
     if (pathname === '/api/members/training-profile' && method === 'POST') return true;
+    if (pathname === '/api/classes/sessions' && method === 'POST') return true;
+    if (pathname === '/api/classes/session/attendance' && method === 'POST') return true;
     if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
     if (pathname.startsWith('/api/training') && (method === 'GET' || method === 'POST')) return true;
     if (pathname.startsWith('/api/assessments') && (method === 'GET' || method === 'POST')) return true;
