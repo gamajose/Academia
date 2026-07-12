@@ -9,31 +9,42 @@
 <body>
   <main class="site-shell">
     <header class="site-header">
-      <div class="brand"><span>Academia</span> Lobo</div>
+      <a class="brand" href="./index.html"><span>Academia</span> Lobo</a>
       <nav class="site-nav">
         <a href="./index.html">Início</a>
-        <a href="./matricula-publica.html">Matricule-se</a>
+        <a href="./plans.html">Planos</a>
       </nav>
     </header>
 
-    <section class="site-hero">
-      <div>
-        <p class="eyebrow-public">Acesso único</p>
-        <h1>Entre uma vez. O sistema leva você ao lugar certo.</h1>
-        <p>Aluno acessa treino, avaliações e histórico. Equipe acessa o painel administrativo conforme permissões.</p>
+    <section class="login-layout">
+      <div class="login-visual">
+        <div>
+          <p class="eyebrow-light">Área exclusiva</p>
+          <h1>Seu treino e sua evolução em um só lugar.</h1>
+          <p>Use seu e-mail e senha. O sistema identifica automaticamente se o acesso é de aluno, professor ou administrador.</p>
+        </div>
       </div>
-      <section class="hero-card">
-        <h2>Acessar conta</h2>
-        <label>E-mail</label>
-        <input id="student-email" type="email" placeholder="seu@email.com" />
-        <label>Senha</label>
-        <input id="student-password" type="password" placeholder="sua senha" />
-        <button class="cta" id="student-login-button">Entrar</button>
-        <div class="hero-actions">
+
+      <section class="login-card-premium" aria-labelledby="login-title">
+        <p class="eyebrow-public">Bem-vindo</p>
+        <h2 id="login-title">Acessar conta</h2>
+        <p>Entre com os dados cadastrados na academia.</p>
+
+        <div class="form-field">
+          <label for="student-email">E-mail</label>
+          <input id="student-email" type="email" inputmode="email" autocomplete="email" placeholder="seu@email.com" required />
+        </div>
+        <div class="form-field">
+          <label for="student-password">Senha</label>
+          <input id="student-password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required />
+        </div>
+
+        <button class="cta login-primary" id="student-login-button" type="button">Entrar</button>
+        <div class="login-secondary-actions">
           <a class="cta ghost" href="./matricula-publica.html">Criar conta</a>
           <button class="cta ghost" id="forgot-password-button" type="button">Esqueci a senha</button>
         </div>
-        <small id="student-login-message"></small>
+        <small class="login-message" id="student-login-message" aria-live="polite"></small>
       </section>
     </section>
   </main>
