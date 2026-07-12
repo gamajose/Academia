@@ -41,6 +41,11 @@ function whatsappLink(phone) {
 
 function renderUsers(rows) {
   const table = get('users-table'); table.innerHTML = '';
+  if (!rows.length) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td'); cell.colSpan = 6; cell.className = 'employee-empty-row'; cell.textContent = 'Nenhum funcionário cadastrado.';
+    row.appendChild(cell); table.appendChild(row); return;
+  }
   for (const user of rows) {
     const row = document.createElement('tr');
     const name = document.createElement('td'); name.textContent = user.name || ''; row.appendChild(name);
@@ -52,7 +57,7 @@ function renderUsers(rows) {
     const job = document.createElement('td'); job.textContent = user.job_title || 'Sem cargo'; row.appendChild(job);
     const access = document.createElement('td'); access.textContent = user.access_profile_name || profileFor(user.access_profile)?.name || 'Sem perfil'; row.appendChild(access);
     const status = document.createElement('td'); status.textContent = user.is_active ? 'Ativo' : 'Inativo'; row.appendChild(status);
-    const actions = document.createElement('td');
+    const actions = document.createElement('td'); actions.className = 'employee-row-actions';
     const edit = document.createElement('button'); edit.className = 'mini-button secondary'; edit.type = 'button'; edit.textContent = 'Editar'; edit.onclick = () => editUser(user); actions.appendChild(edit);
     const toggle = document.createElement('button'); toggle.className = 'mini-button'; toggle.type = 'button'; toggle.textContent = user.is_active ? 'Desativar' : 'Ativar'; toggle.onclick = () => toggleUser(user); actions.appendChild(toggle);
     row.appendChild(actions); table.appendChild(row);
@@ -93,17 +98,35 @@ function setField(id, value) { get(id).value = value || ''; }
 function resetForm() {
   get('employee-form').reset(); setField('user-id', ''); get('user-country').value = 'Brasil';
   get('employee-form-title').textContent = 'Cadastrar funcionário'; get('save-user-button').textContent = 'Cadastrar funcionário';
-  get('cancel-edit-button').hidden = true; get('user-password').required = true; get('user-password-field').querySelector('label').textContent = 'Senha inicial *';
+  get('user-password').required = true; get('user-password-field').querySelector('label').textContent = 'Senha inicial *';
   renderProfileSelect(accessProfiles.find((profile) => profile.is_active)?.slug || '');
 }
 
+function openUserModal() {
+  get('employee-form-panel').classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => get('user-name').focus());
+}
+
+function closeUserModal() {
+  get('employee-form-panel').classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  resetForm();
+}
+
+function newUser() {
+  resetForm();
+  openUserModal();
+}
+
 function editUser(user) {
+  resetForm();
   setField('user-id', user.id); setField('user-name', user.name); setField('user-email', user.email); setField('user-phone', user.phone); setField('user-cpf', user.cpf); setField('user-rg', user.rg); setField('user-birth', user.birth_date?.slice(0, 10)); setField('user-job-title', user.job_title);
   renderProfileSelect(user.access_profile);
   const address = user.address_details || {};
   for (const [id, key] of [['user-postal-code', 'postal_code'], ['user-street', 'street'], ['user-address-number', 'number'], ['user-address-complement', 'complement'], ['user-neighborhood', 'neighborhood'], ['user-city', 'city'], ['user-state', 'state'], ['user-country', 'country']]) setField(id, address[key]);
-  get('employee-form-title').textContent = 'Editar funcionário'; get('save-user-button').textContent = 'Salvar alterações'; get('cancel-edit-button').hidden = false; get('user-password').required = false; get('user-password-field').querySelector('label').textContent = 'Senha inicial (opcional)';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  get('employee-form-title').textContent = 'Editar funcionário'; get('save-user-button').textContent = 'Salvar alterações'; get('user-password').required = false; get('user-password-field').querySelector('label').textContent = 'Nova senha (opcional)';
+  openUserModal();
 }
 
 async function saveUser(event) {
@@ -113,11 +136,15 @@ async function saveUser(event) {
     user_id: id || undefined, name: get('user-name').value.trim(), email: get('user-email').value.trim(), phone: get('user-phone').value.trim(), cpf: get('user-cpf').value.trim(), rg: get('user-rg').value.trim(), birth_date: get('user-birth').value || null, job_title: get('user-job-title').value.trim(), role: get('user-role').value, access_profile: get('user-access-profile').value,
     address_details: { postal_code: get('user-postal-code').value.trim(), street: get('user-street').value.trim(), number: get('user-address-number').value.trim(), complement: get('user-address-complement').value.trim(), neighborhood: get('user-neighborhood').value.trim(), city: get('user-city').value.trim(), state: get('user-state').value.trim(), country: get('user-country').value.trim() }
   };
+  const saveButton = get('save-user-button');
+  const originalText = saveButton.textContent;
+  saveButton.disabled = true; saveButton.textContent = 'Salvando...';
   try {
     if (id) await api('/api/users/update', { method: 'POST', body: JSON.stringify(payload) });
     else await api('/api/users', { method: 'POST', body: JSON.stringify({ ...payload, password: get('user-password').value }) });
-    setStatus(id ? 'Funcionário atualizado.' : 'Funcionário cadastrado.'); resetForm(); await loadUsers();
+    closeUserModal(); setStatus(id ? 'Funcionário atualizado.' : 'Funcionário cadastrado.'); await loadUsers();
   } catch (error) { setStatus(friendly(error)); }
+  finally { saveButton.disabled = false; saveButton.textContent = get('user-id').value ? 'Salvar alterações' : originalText; }
 }
 
 async function toggleUser(user) {
@@ -127,7 +154,9 @@ async function toggleUser(user) {
 
 get('user-access-profile').addEventListener('change', updateProfileHelp);
 get('employee-form').addEventListener('submit', saveUser);
-get('cancel-edit-button').addEventListener('click', resetForm);
+get('new-user-button').addEventListener('click', newUser);
+get('close-employee-modal').addEventListener('click', closeUserModal);
+get('cancel-user-button').addEventListener('click', closeUserModal);
 get('refresh-users-button').addEventListener('click', loadUsers);
 
 (async function init() {
