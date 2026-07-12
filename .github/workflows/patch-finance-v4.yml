@@ -1,0 +1,103 @@
+name: Integrar pacote financeiro v4
+
+on:
+  push:
+    branches:
+      - agent/finance-public-desktop-v4
+    paths:
+      - '.github/workflows/patch-finance-v4.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/finance-public-desktop-v4
+          fetch-depth: 0
+
+      - name: Integrar rotas e telas
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          def replace_once(path, old, new):
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"Trecho nao encontrado em {path}: {old[:100]}")
+              file.write_text(text.replace(old, new, 1))
+
+          server = 'apps/api/server.js'
+          replace_once(
+              server,
+              "const { handleEngagementRoutes } = require('./features/engagementRoutes');",
+              "const { handleEngagementRoutes } = require('./features/engagementRoutes');\nconst { handleFinanceSalesRoutes } = require('./features/financeSalesRoutes');"
+          )
+          replace_once(
+              server,
+              "    const helpers = { send: (response, status, data) => send(req, response, status, data), body, query };\n    if (url.pathname.startsWith('/api/public')) return handleMemberDetailRoutes(req, res, null, url, helpers);",
+              "    const helpers = { send: (response, status, data) => send(req, response, status, data), body, query };\n    const publicFinanceHandled = await handleFinanceSalesRoutes(req, res, null, url, helpers);\n    if (publicFinanceHandled !== false) return publicFinanceHandled;\n    if (url.pathname.startsWith('/api/public')) return handleMemberDetailRoutes(req, res, null, url, helpers);"
+          )
+          replace_once(
+              server,
+              "    const engagementHandled = await handleEngagementRoutes(req, res, user, url, helpers);\n    if (engagementHandled !== false) return engagementHandled;",
+              "    const engagementHandled = await handleEngagementRoutes(req, res, user, url, helpers);\n    if (engagementHandled !== false) return engagementHandled;\n    const financeSalesHandled = await handleFinanceSalesRoutes(req, res, user, url, helpers);\n    if (financeSalesHandled !== false) return financeSalesHandled;"
+          )
+          replace_once(server, "version: '0.7.0'", "version: '0.8.0'")
+
+          access = 'apps/api/lib/accessControl.js'
+          replace_once(
+              access,
+              "      '/api/classes/session/roster'",
+              "      '/api/classes/session/roster',\n      '/api/operations/live',\n      '/api/operations/members'"
+          )
+          replace_once(
+              access,
+              "    if (pathname === '/api/classes/session/attendance' && method === 'POST') return true;",
+              "    if (pathname === '/api/classes/session/attendance' && method === 'POST') return true;\n    if (pathname === '/api/operations/manual-unlock' && method === 'POST') return true;"
+          )
+          replace_once(
+              access,
+              "\n  return false;\n}",
+              "\n  if (user.role === 'operator') {\n    if (method === 'GET' && ['/api/operations/live', '/api/operations/members'].includes(pathname)) return true;\n    if (method === 'POST' && pathname === '/api/operations/manual-unlock') return true;\n  }\n\n  return false;\n}"
+          )
+
+          package_path = Path('apps/api/package.json')
+          package = json.loads(package_path.read_text())
+          package['version'] = '0.8.0'
+          check = package['scripts']['check']
+          if 'features/financeSalesRoutes.js' not in check:
+              check = check.replace('node --check lib/accessPolicy.js', 'node --check features/financeSalesRoutes.js && node --check lib/accessPolicy.js')
+          package['scripts']['check'] = check
+          package_path.write_text(json.dumps(package, indent=2, ensure_ascii=False) + '\n')
+
+          mobile = 'apps/mobile/lib/main.dart'
+          replace_once(
+              mobile,
+              "import 'package:academia_mobile/commercial_plans_page.dart';",
+              "import 'package:academia_mobile/commercial_plans_page.dart';\nimport 'package:academia_mobile/finance_operations_page.dart';"
+          )
+          replace_once(
+              mobile,
+              "              if (isManager) actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),",
+              "              if (isManager) actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),\n              if (isManager) actionButton(Icons.point_of_sale, 'Financeiro e vendas', FinanceOperationsPage(baseUrl: widget.baseUrl, token: widget.token)),"
+          )
+
+          workflow = Path('.github/workflows/patch-finance-v4.yml')
+          workflow.unlink()
+          PY
+
+      - name: Salvar integracao
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: integrate finance sales and operations tools"
+          git push origin HEAD:agent/finance-public-desktop-v4
