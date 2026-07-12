@@ -147,7 +147,7 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível enviar seus dados.');
       message.className = 'notice ok';
-      message.textContent = 'Recebemos seu interesse. A equipe entrará em contato para concluir sua matrícula.';
+      message.textContent = 'Escolha seu plano para abrir o pagamento online e concluir sua matrícula.';
       form.reset();
     } catch (error) {
       message.className = 'notice error';

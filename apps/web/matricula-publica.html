@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Escolha seu plano e envie uma pré-matrícula para a Academia Lobo." />
+  <meta name="description" content="Escolha seu plano, pague online e confirme seu cadastro na Academia Lobo." />
   <title>Começar na Academia Lobo</title>
   <link rel="stylesheet" href="./landing.css" />
 </head>
@@ -22,15 +22,15 @@
       <div class="hero-copy">
         <p class="eyebrow-public">Comece com clareza</p>
         <h1>Escolha seu plano. A gente cuida do próximo passo.</h1>
-        <p class="hero-lead">Você envia seus dados e escolhe como prefere pagar. A equipe confirma o pagamento, envia a confirmação por e-mail e libera seu acesso.</p>
+        <p class="hero-lead">Escolha seu plano, pague com Pix ou PayPal e receba o e-mail para confirmar seu cadastro assim que o pagamento for reconhecido.</p>
         <div class="hero-actions"><a class="cta" href="#planos">Escolher meu plano</a><a class="cta ghost" href="./student-login.html">Já sou aluno</a></div>
       </div>
       <aside class="flow-card" aria-label="Etapas da matrícula">
         <p class="eyebrow-public">Como funciona</p>
         <div class="flow-step"><strong>01</strong><span>Escolha o plano que combina com sua rotina.</span></div>
         <div class="flow-step"><strong>02</strong><span>Envie seus dados e a forma de pagamento.</span></div>
-        <div class="flow-step"><strong>03</strong><span>Confirme seu e-mail e aguarde a equipe.</span></div>
-        <div class="flow-step"><strong>04</strong><span>Após o pagamento, sua conta é liberada.</span></div>
+        <div class="flow-step"><strong>03</strong><span>O provedor reconhece o pagamento automaticamente.</span></div>
+        <div class="flow-step"><strong>04</strong><span>Confirme seu e-mail e acesse sua conta.</span></div>
       </aside>
     </section>
 
@@ -48,7 +48,7 @@
     </section>
 
     <section class="site-band enrollment-band">
-      <div><p class="eyebrow-light">Sem compromisso antes da confirmação</p><h2>Seu cadastro só nasce quando o pagamento for confirmado.</h2><p>Até lá, seus dados ficam em uma pré-matrícula segura para a equipe acompanhar.</p></div>
+      <div><p class="eyebrow-light">Pagamento online</p><h2>Você resolve sua matrícula em poucos passos.</h2><p>Pix e PayPal processam o pagamento com confirmação automática. A Academia Lobo não precisa aprovar manualmente sua matrícula.</p></div>
       <a class="cta light" href="https://www.instagram.com/academialoboo/" target="_blank" rel="noreferrer">Falar com a equipe</a>
     </section>
 
@@ -69,14 +69,19 @@
         <div class="form-field full"><label for="enrollment-email">E-mail *</label><input id="enrollment-email" type="email" required autocomplete="email" placeholder="voce@email.com" /><small>Você receberá aqui o link para confirmar seu cadastro.</small></div>
         <div class="form-field"><label for="enrollment-password">Crie uma senha *</label><input id="enrollment-password" type="password" required autocomplete="new-password" placeholder="Mínimo de 10 caracteres" /></div>
         <div class="form-field"><label for="enrollment-password-confirmation">Confirme a senha *</label><input id="enrollment-password-confirmation" type="password" required autocomplete="new-password" /></div>
-        <div class="form-field full"><label for="enrollment-payment-method">Como prefere pagar? *</label><select id="enrollment-payment-method" required><option value="pix">Pix</option><option value="card">Cartão</option><option value="boleto">Boleto</option><option value="presencial">Pagamento na recepção</option></select><small id="payment-method-help">A equipe enviará as instruções do Pix após receber sua pré-matrícula.</small></div>
-        <label class="terms-row full"><input id="enrollment-terms" type="checkbox" required /><span>Autorizo o contato da Academia Lobo para concluir minha matrícula.</span></label>
+        <div class="form-field full"><label for="enrollment-payment-method">Como prefere pagar? *</label><select id="enrollment-payment-method" required><option value="pix">Pix</option><option value="paypal">PayPal (cartão ou conta PayPal)</option></select><small id="payment-method-help">Copie o código Pix ou escaneie o QR Code. A confirmação acontece automaticamente.</small></div>
+        <label class="terms-row full"><input id="enrollment-terms" type="checkbox" required /><span>Li e autorizo o processamento do pagamento e o envio do e-mail de confirmação.</span></label>
       </div>
       <p class="enrollment-message" id="enrollment-message" aria-live="polite"></p>
-      <div class="form-actions"><button class="cta ghost" id="cancel-enrollment" type="button">Cancelar</button><button class="cta" id="submit-enrollment" type="submit">Enviar pré-matrícula</button></div>
+      <div class="form-actions"><button class="cta ghost" id="cancel-enrollment" type="button">Cancelar</button><button class="cta" id="submit-enrollment" type="submit">Ir para o pagamento</button></div>
     </form>
-    <section class="enrollment-success hidden" id="enrollment-success" aria-live="polite">
-      <span class="success-mark">✓</span><p class="eyebrow-public">Pedido recebido</p><h2>Falta pouco para começar.</h2><p id="enrollment-success-text">Confirme seu e-mail e aguarde a confirmação do pagamento. Sua conta será liberada depois disso.</p><a class="cta" href="./index.html">Voltar para a página inicial</a>
+    <section class="enrollment-success hidden" id="payment-step" aria-live="polite">
+      <span class="success-mark">✓</span><p class="eyebrow-public">Pagamento seguro</p><h2 id="payment-status">Aguardando confirmação.</h2>
+      <p id="payment-email-status">Após a confirmação, enviaremos o link para você confirmar seu cadastro.</p>
+      <div class="payment-panel hidden" id="pix-payment-panel"><p class="payment-panel-title">Pague com Pix</p><img id="pix-qr" class="pix-qr hidden" alt="QR Code Pix" /><code id="pix-code" class="pix-code"></code><button class="cta ghost" id="copy-pix" type="button">Copiar código Pix</button><small>Esta tela verifica o pagamento automaticamente.</small></div>
+      <div class="payment-panel hidden" id="paypal-payment-panel"><p class="payment-panel-title">Continue no PayPal</p><p>Use sua conta PayPal ou pague com cartão no checkout seguro.</p><a class="cta" id="paypal-link" href="#" target="_blank" rel="noreferrer">Ir para o pagamento PayPal</a></div>
+      <p class="payment-confirmed hidden" id="payment-confirmed">Depois de confirmar o e-mail, você poderá entrar no portal do aluno.</p>
+      <a class="cta ghost" href="./index.html">Voltar para a página inicial</a>
     </section>
   </div>
   <script src="./matricula-publica.js"></script>

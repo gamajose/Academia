@@ -23,7 +23,7 @@ async function confirmEmail() {
 
 confirmEmail().then(() => {
   title.textContent = 'E-mail confirmado.';
-  message.textContent = 'Agora aguarde a confirmação do pagamento. A Academia Lobo liberará sua conta depois disso.';
+  message.textContent = 'Seu cadastro foi confirmado e sua conta já está pronta para acesso.';
   loginLink.classList.remove('hidden');
 }).catch(() => {
   title.textContent = 'Não foi possível confirmar.';

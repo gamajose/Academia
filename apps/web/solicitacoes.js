@@ -35,8 +35,8 @@ function render() {
   for (const item of filtered) {
     const li = document.createElement('li');
     const emailStatus = item.email ? (item.email_confirmed_at ? 'e-mail confirmado' : 'aguardando e-mail') : 'sem e-mail';
-    li.append(`${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)} | ${item.status} | ${emailStatus} | código ${item.enrollment_code || '-'} `);
-    li.appendChild(button('Confirmar pagamento', () => approve(item), item.status === 'confirmed' || (item.email && !item.email_confirmed_at)));
+    const paymentStatus = item.payment_status === 'paid' ? 'pagamento confirmado' : `pagamento ${item.payment_status || 'pendente'}`;
+    li.append(`${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)} | ${paymentStatus} | ${emailStatus} | código ${item.enrollment_code || '-'} `);
     li.appendChild(button('Ver código/QR', () => showQr(item), item.status !== 'confirmed'));
     list.appendChild(li);
   }
@@ -55,18 +55,6 @@ async function load() {
     s('signup-status').textContent = 'Solicitações carregadas.';
   } catch (error) {
     s('signup-status').textContent = `Erro: ${error.message}`;
-  }
-}
-
-async function approve(item) {
-  if (!confirm(`Confirmar recebimento e liberar código de ${item.name}?`)) return;
-  try {
-    const result = await call('/api/signups/approve', { method: 'POST', body: JSON.stringify({ id: item.id }) });
-    s('signup-status').textContent = `Liberado. Código: ${result.enrollment_code}`;
-    await load();
-  } catch (error) {
-    const labels = { email_nao_confirmado: 'O aluno ainda não confirmou o e-mail.', solicitacao_ja_confirmada: 'Esta solicitação já foi confirmada.', email_ja_cadastrado: 'Este e-mail já possui uma conta.' };
-    s('signup-status').textContent = `Erro ao liberar: ${labels[error.message] || error.message}`;
   }
 }
 

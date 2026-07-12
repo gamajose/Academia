@@ -7,7 +7,7 @@ from urllib import request, error
 PORT = int(os.environ.get('PORT', '8084'))
 API_BASE_URL = os.environ.get('API_BASE_URL', 'http://127.0.0.1:3004').rstrip('/')
 ROOT = Path(__file__).resolve().parent
-PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'student-login.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
+PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
 STUDENT_HTML = {'student-portal.html'}
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
 
