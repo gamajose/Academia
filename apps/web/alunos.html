@@ -80,11 +80,11 @@
       <section class="form-section">
         <h4>Saúde, objetivo e observações</h4>
         <p class="section-help">Use a barra de ferramentas para organizar textos, listas, destaques e orientações detalhadas.</p>
-        <div class="rich-field"><label for="student-objective">Objetivo do aluno</label><div class="editor-toolbar" data-editor="student-objective"></div><div id="student-objective" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Descreva os objetivos e a rotina que o aluno deseja construir."></div></div>
-        <div class="rich-field"><label for="student-allergies">Alergias e restrições</label><div class="editor-toolbar" data-editor="student-allergies"></div><div id="student-allergies" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Registre alergias, restrições e cuidados importantes."></div></div>
-        <div class="rich-field"><label for="student-medical">Observações clínicas</label><div class="editor-toolbar" data-editor="student-medical"></div><div id="student-medical" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Adicione informações clínicas relevantes para o acompanhamento."></div></div>
-        <div class="rich-field"><label for="student-nutrition">Observações nutricionais</label><div class="editor-toolbar" data-editor="student-nutrition"></div><div id="student-nutrition" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Registre orientações e observações nutricionais."></div></div>
-        <div class="rich-field"><label for="student-notes">Observações internas</label><div class="editor-toolbar" data-editor="student-notes"></div><div id="student-notes" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Adicione notas internas para a equipe."></div></div>
+        <div class="rich-field"><label for="student-objective">Objetivo do aluno</label><textarea id="student-objective" class="rich-editor" data-placeholder="Descreva os objetivos e a rotina que o aluno deseja construir."></textarea></div>
+        <div class="rich-field"><label for="student-allergies">Alergias e restrições</label><textarea id="student-allergies" class="rich-editor" data-placeholder="Registre alergias, restrições e cuidados importantes."></textarea></div>
+        <div class="rich-field"><label for="student-medical">Observações clínicas</label><textarea id="student-medical" class="rich-editor" data-placeholder="Adicione informações clínicas relevantes para o acompanhamento."></textarea></div>
+        <div class="rich-field"><label for="student-nutrition">Observações nutricionais</label><textarea id="student-nutrition" class="rich-editor" data-placeholder="Registre orientações e observações nutricionais."></textarea></div>
+        <div class="rich-field"><label for="student-notes">Observações internas</label><textarea id="student-notes" class="rich-editor" data-placeholder="Adicione notas internas para a equipe."></textarea></div>
       </section>
 
       <div class="form-actions">
@@ -96,6 +96,8 @@
 
   <script src="./guard.js"></script>
   <script src="./nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/8/tinymce.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
   <script src="./rich-editor.js"></script>
   <script src="./alunos.js"></script>

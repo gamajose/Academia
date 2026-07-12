@@ -84,6 +84,7 @@ jobs:
           node --check apps/web/plans.js
           node --check apps/web/alunos.js
           node --check apps/web/planos.js
+          node --check apps/web/rich-editor.js
           node --check apps/web/student-login.js
           node --check apps/web/matricula-publica.js
           node --check apps/web/student-reset.js

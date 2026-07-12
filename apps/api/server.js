@@ -20,6 +20,7 @@ const { handleManagementRoutes } = require('./features/managementRoutes');
 const { handleEngagementRoutes } = require('./features/engagementRoutes');
 const { handleFinanceSalesRoutes } = require('./features/financeSalesRoutes');
 const { handlePaymentWebhookRoutes } = require('./features/paymentWebhookRoutes');
+const { handleEditorRoutes } = require('./features/editorRoutes');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -193,6 +194,9 @@ const server = http.createServer(async (req, res) => {
     const user = auth(req);
     if (!user) return send(req, res, 401, { error: 'nao_autorizado' });
     if (!canAccess(user, req.method, url.pathname)) return send(req, res, 403, { error: 'acesso_negado' });
+
+    const editorHandled = await handleEditorRoutes(req, res, user, url, helpers);
+    if (editorHandled !== false) return editorHandled;
 
     const signupHandled = await handleOnlineSignupRoutes(req, res, user, url, helpers);
     if (signupHandled !== false) return signupHandled;

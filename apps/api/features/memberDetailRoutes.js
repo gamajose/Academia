@@ -3,6 +3,7 @@ const { digits, nullable, validEmail } = require('../lib/memberValidation');
 const { hashPassword, validatePassword } = require('../lib/security');
 const { createPixPayment, getMercadoPagoPayment, createPaypalOrder, capturePaypalOrder } = require('../lib/paymentProviders');
 const { confirmEnrollmentPayment, confirmEnrollmentEmail } = require('../lib/enrollmentPayment');
+const { sanitizeRichFields } = require('../lib/richContent');
 
 function code() {
   return `ACAD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -34,6 +35,8 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/members/detail/save') {
     const input = await body(req);
+    let rich;
+    try { rich = sanitizeRichFields(input, ['allergies', 'medical_notes', 'nutrition_notes', 'objective', 'notes']); } catch (error) { return send(res, 400, { error: error.code || 'conteudo_invalido', field: error.field }); }
     if (!input.name) return send(res, 400, { error: 'nome_obrigatorio' });
     if (!validEmail(input.email)) return send(res, 400, { error: 'email_invalido' });
 
@@ -69,11 +72,11 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
       emergency_contact: nullable(input.emergency_contact),
       emergency_contact_name: nullable(input.emergency_contact_name),
       emergency_contact_phone: digits(input.emergency_contact_phone, 24) || null,
-      allergies: nullable(input.allergies),
-      medical_notes: nullable(input.medical_notes),
-      nutrition_notes: nullable(input.nutrition_notes),
-      objective: nullable(input.objective),
-      notes: nullable(input.notes)
+      allergies: nullable(rich.allergies),
+      medical_notes: nullable(rich.medical_notes),
+      nutrition_notes: nullable(rich.nutrition_notes),
+      objective: nullable(rich.objective),
+      notes: nullable(rich.notes)
     };
 
     const params = [

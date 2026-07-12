@@ -19,6 +19,7 @@ const digits = (value) => String(value || '').replace(/\D/g, '');
 const fieldValue = (id) => {
   const element = $(id);
   if (!element) return '';
+  if (element.classList.contains('rich-editor') && window.AcademiaRichEditor) return window.AcademiaRichEditor.getValue(id);
   return element.isContentEditable ? element.innerHTML.trim() : element.value.trim();
 };
 const val = (id) => fieldValue(id);
@@ -96,6 +97,10 @@ async function load() {
 function setValue(id, value) {
   const element = $(id);
   if (!element) return;
+  if (element.classList.contains('rich-editor') && window.AcademiaRichEditor) {
+    window.AcademiaRichEditor.setValue(id, value);
+    return;
+  }
   if (element.isContentEditable) element.innerHTML = value || '';
   else element.value = value ?? '';
 }
@@ -152,11 +157,14 @@ function openModal(item = {}) {
   setValue('student-city', item.city);
   setValue('student-state', item.state);
   setValue('student-country', item.country || 'Brasil');
-  setValue('student-objective', item.objective);
-  setValue('student-allergies', item.allergies);
-  setValue('student-medical', item.medical_notes);
-  setValue('student-nutrition', item.nutrition_notes);
-  setValue('student-notes', item.notes);
+  const richIds = ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'];
+  AcademiaRichEditor.setScope(richIds, `member:${item.id || 'new'}`);
+  setValue('student-objective', item.objective, { preserveDraft: true });
+  setValue('student-allergies', item.allergies, { preserveDraft: true });
+  setValue('student-medical', item.medical_notes, { preserveDraft: true });
+  setValue('student-nutrition', item.nutrition_notes, { preserveDraft: true });
+  setValue('student-notes', item.notes, { preserveDraft: true });
+  AcademiaRichEditor.restoreDraft(richIds);
   setTimeout(() => $('student-name').focus(), 50);
 }
 
@@ -190,6 +198,14 @@ async function save(event) {
   const countryCode = phoneCountryCode();
   const emergencyName = val('student-emergency-name');
   const emergencyPhone = digits(val('student-emergency-phone'));
+  const richIds = ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'];
+  let richValues;
+  try {
+    richValues = await AcademiaRichEditor.prepare(richIds);
+  } catch (error) {
+    $('students-status').textContent = error.message;
+    return;
+  }
 
   try {
     $('save-student-button').disabled = true;
@@ -207,11 +223,12 @@ async function save(event) {
         address_number: val('student-address-number') || null, address_complement: val('student-address-complement') || null,
         neighborhood: val('student-neighborhood') || null, city: val('student-city') || null,
         state: val('student-state') || null, country: val('student-country') || 'Brasil',
-        address: structuredAddress() || null, objective: val('student-objective') || null,
-        allergies: val('student-allergies') || null, medical_notes: val('student-medical') || null,
-        nutrition_notes: val('student-nutrition') || null, notes: val('student-notes') || null
+        address: structuredAddress() || null, objective: richValues['student-objective'] || null,
+        allergies: richValues['student-allergies'] || null, medical_notes: richValues['student-medical'] || null,
+        nutrition_notes: richValues['student-nutrition'] || null, notes: richValues['student-notes'] || null
       })
     });
+    AcademiaRichEditor.markSaved(richIds);
     closeModal();
     await load();
     $('students-status').textContent = 'Cadastro salvo com sucesso.';
@@ -239,6 +256,6 @@ $('student-cpf').addEventListener('input', (event) => { event.target.value = for
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });
 $('student-postal-code').addEventListener('input', (event) => { event.target.value = formatCep(event.target.value); });
-AcademiaRichEditor.initAll();
+AcademiaRichEditor.initAll().catch((error) => { $('students-status').textContent = error.message; });
 initPhoneWidget();
 load();

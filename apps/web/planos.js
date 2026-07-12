@@ -82,15 +82,18 @@ function durationToDays() {
 function openPlan(plan = {}) {
   $('plan-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  const richIds = ['plan-description-page', 'plan-benefits-page', 'plan-rules-page'];
+  AcademiaRichEditor.setScope(richIds, `plan:${plan.id || 'new'}`);
   $('plan-id').value = plan.id || '';
   $('plan-name-page').value = plan.name || '';
   $('plan-price-page').value = plan.id ? currencyInput(Number(plan.price_cents || 0) / 100) : '';
   const duration = durationToUi(plan.duration_days || 30);
   $('plan-duration-value').value = duration.value;
   $('plan-duration-unit').value = duration.unit;
-  $('plan-description-page').innerHTML = plan.description || '';
-  $('plan-benefits-page').innerHTML = plan.benefits || '';
-  $('plan-rules-page').innerHTML = plan.rules || '';
+  AcademiaRichEditor.setValue('plan-description-page', plan.description || '', { preserveDraft: true });
+  AcademiaRichEditor.setValue('plan-benefits-page', plan.benefits || '', { preserveDraft: true });
+  AcademiaRichEditor.setValue('plan-rules-page', plan.rules || '', { preserveDraft: true });
+  AcademiaRichEditor.restoreDraft(richIds);
   setTimeout(() => $('plan-name-page').focus(), 50);
 }
 
@@ -98,7 +101,7 @@ function closePlan() {
   $('plan-modal').classList.add('hidden');
   document.body.style.overflow = '';
   $('plan-form').reset();
-  for (const id of ['plan-description-page', 'plan-benefits-page', 'plan-rules-page']) $(id).innerHTML = '';
+  for (const id of ['plan-description-page', 'plan-benefits-page', 'plan-rules-page']) AcademiaRichEditor.clearValue(id);
 }
 
 async function load() {
@@ -121,16 +124,19 @@ async function save(event) {
   try {
     $('save-plan-page-button').disabled = true;
     const id = $('plan-id').value;
+    const richIds = ['plan-description-page', 'plan-benefits-page', 'plan-rules-page'];
+    const richValues = await AcademiaRichEditor.prepare(richIds);
     const payload = {
       name,
       price_cents: Math.round(price * 100),
       duration_days: durationToDays(),
       public_highlight: null,
-      description: $('plan-description-page').innerHTML.trim(),
-      benefits: $('plan-benefits-page').innerHTML.trim(),
-      rules: $('plan-rules-page').innerHTML.trim()
+      description: richValues['plan-description-page'],
+      benefits: richValues['plan-benefits-page'],
+      rules: richValues['plan-rules-page']
     };
     await req(id ? '/api/plans/update' : '/api/plans/detail', { method: 'POST', body: JSON.stringify(id ? { plan_id: id, ...payload } : payload) });
+    AcademiaRichEditor.markSaved(richIds);
     closePlan();
     await load();
     $('plans-status').textContent = 'Plano salvo com sucesso.';
@@ -148,7 +154,7 @@ async function toggle(plan) {
   } catch (error) { $('plans-status').textContent = `Erro: ${error.message}`; }
 }
 
-AcademiaRichEditor.initAll();
+AcademiaRichEditor.initAll().catch((error) => { $('plans-status').textContent = error.message; });
 $('new-plan-button').onclick = () => openPlan();
 $('close-plan-modal').onclick = closePlan;
 $('cancel-plan-button').onclick = closePlan;

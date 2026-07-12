@@ -7,6 +7,7 @@ from urllib import request, error
 PORT = int(os.environ.get('PORT', '8084'))
 API_BASE_URL = os.environ.get('API_BASE_URL', 'http://127.0.0.1:3004').rstrip('/')
 ROOT = Path(__file__).resolve().parent
+UPLOAD_ROOT = Path(os.environ.get('EDITOR_UPLOAD_DIR', str(ROOT / 'uploads'))).resolve()
 PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
 STUDENT_HTML = {'student-portal.html'}
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
@@ -40,6 +41,12 @@ def api_get(path, token):
 class SiteHandler(SimpleHTTPRequestHandler):
     def translate_path(self, path):
         name = path.split('?', 1)[0].split('#', 1)[0].lstrip('/') or 'index.html'
+        if name == 'uploads' or name.startswith('uploads/'):
+            relative = Path(name.removeprefix('uploads/'))
+            candidate = (UPLOAD_ROOT / relative).resolve()
+            if UPLOAD_ROOT not in candidate.parents and candidate != UPLOAD_ROOT:
+                return str(UPLOAD_ROOT / '__missing__')
+            return str(candidate)
         return str(ROOT / name)
 
     def redirect(self, location):

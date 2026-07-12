@@ -54,6 +54,12 @@
 .modal-card .rich-editor { min-height: 155px; padding: 14px 16px; line-height: 1.65; }
 .modal-card .rich-editor:focus { border-color: rgba(185,28,28,.65); box-shadow: 0 0 0 4px rgba(185,28,28,.08); }
 .modal-card .rich-editor p { margin: 0 0 10px; }
+.modal-card .tox-tinymce { width: 100%; min-height: 300px; border: 1px solid #d8d0c4; border-radius: 12px; overflow: hidden; }
+.modal-card .tox .tox-editor-header { box-shadow: none; border-bottom: 1px solid #e7dfd4; }
+.modal-card .tox .tox-edit-area__iframe { background: #fff; }
+.rich-editor-meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; margin-top: -2px; }
+.rich-editor-status.dirty { color: var(--warn); font-weight: 800; }
+.rich-editor-status.error { color: var(--bad); font-weight: 800; }
 .international-phone, .international-phone .iti, .international-phone .iti input { width: 100%; }
 .modal .iti__country-list { z-index: 10002; }
 .alert-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -62,6 +68,10 @@ table { width: 100%; border-collapse: collapse; min-width: 720px; }
 th, td { text-align: left; border-bottom: 1px solid rgba(255,255,255,.12); padding: 12px 10px; color: #94a3b8; }
 th { color: #f8fafc; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
 td:first-child { color: #f8fafc; font-weight: 700; }
+@media (max-width: 620px) {
+  .modal-card .tox-tinymce { min-height: 260px; }
+  .modal-card .tox .tox-toolbar__primary { flex-wrap: wrap; }
+}
 @media (max-width: 900px) {
   .top-nav { align-items: flex-start; flex-direction: column; }
   .top-nav-links { justify-content: flex-start; }

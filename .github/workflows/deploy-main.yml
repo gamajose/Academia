@@ -64,6 +64,7 @@ jobs:
           node --check "$PROJECT_DIR/apps/web/plans.js"
           node --check "$PROJECT_DIR/apps/web/alunos.js"
           node --check "$PROJECT_DIR/apps/web/planos.js"
+          node --check "$PROJECT_DIR/apps/web/rich-editor.js"
           node --check "$PROJECT_DIR/apps/web/matricula-publica.js"
           node --check "$PROJECT_DIR/apps/web/payment-return.js"
           node --check "$PROJECT_DIR/apps/web/student-login.js"
