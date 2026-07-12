@@ -5,10 +5,21 @@ const get = (id) => document.getElementById(id);
 const digits = (value) => String(value || '').replace(/\D/g, '');
 const REALTIME_INTERVAL_MS = 3000;
 const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
+
 let accessProfiles = [];
+let permissionKeys = [];
 let usersRequestInFlight = false;
 let usersRefreshTimer = null;
 let lastUsersSignature = '';
+
+const moduleLabels = {
+  dashboard: 'Painel', members: 'Alunos', plans: 'Planos', memberships: 'Matrículas',
+  pre_enrollments: 'Pré-matrículas', finance: 'Financeiro', alerts: 'Alertas',
+  training: 'Treinos', assessments: 'Avaliações', student_access: 'Acesso do aluno',
+  users: 'Funcionários e usuários', account: 'Perfil e conta', reports: 'Relatórios',
+  access: 'Controle de acesso', classes: 'Aulas', settings: 'Configurações',
+  audit: 'Auditoria', exports: 'Exportações'
+};
 
 function setStatus(text) {
   const target = get('users-status');
@@ -17,6 +28,11 @@ function setStatus(text) {
 
 function setFormStatus(text) {
   const target = get('user-form-status');
+  if (target) target.textContent = text;
+}
+
+function setPermissionsStatus(text) {
+  const target = get('access-profiles-status');
   if (target) target.textContent = text;
 }
 
@@ -29,6 +45,10 @@ function friendly(error) {
     usuario_nao_encontrado: 'Funcionário não encontrado.',
     senha_fraca: 'A senha precisa ter maiúscula, minúscula e número.',
     nao_pode_desativar_proprio_usuario: 'Você não pode desativar seu próprio acesso.',
+    perfil_invalido: 'Informe um nome válido para o perfil.',
+    perfil_ja_cadastrado: 'Já existe um perfil com esse nome.',
+    perfil_nao_encontrado: 'Perfil não encontrado.',
+    perfil_em_uso: 'Esse perfil está vinculado a funcionários. Troque o perfil deles antes de excluir ou desativar.',
     not_found: 'A API de perfis ainda não foi atualizada. Aguarde o deploy da versão mais recente.'
   };
   return messages[error.message] || `Erro: ${error.message}`;
@@ -47,6 +67,11 @@ async function api(path, options = {}) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'erro_requisicao');
   return data;
+}
+
+function syncModalState() {
+  const hasOpenModal = Boolean(document.querySelector('.modal:not(.hidden)'));
+  document.body.classList.toggle('modal-open', hasOpenModal);
 }
 
 function profileFor(slug) {
@@ -77,9 +102,7 @@ function formatLastSeen(value) {
 }
 
 function presenceFor(user) {
-  if (!user.is_active) {
-    return { key: 'disabled', label: 'Desativado' };
-  }
+  if (!user.is_active) return { key: 'disabled', label: 'Desativado' };
   const lastSeen = user.last_seen_at ? new Date(user.last_seen_at).getTime() : 0;
   if (lastSeen && Date.now() - lastSeen <= ACTIVE_WINDOW_MS) {
     return { key: 'active', label: 'Ativo agora' };
@@ -216,17 +239,235 @@ function updateProfileHelp() {
   const profile = profileFor(select.value);
   get('user-role').value = profile?.role_key || 'staff';
   get('user-role-preview').textContent = profile
-    ? 'As permissões deste funcionário são definidas na tela de Permissões.'
-    : 'Cadastre um perfil na tela de Permissões antes de criar o funcionário.';
+    ? 'As permissões deste funcionário são definidas pelo perfil selecionado.'
+    : 'Cadastre um perfil pelo botão Gerenciar permissões antes de criar o funcionário.';
   get('permission-help').textContent = profile
-    ? `Perfil selecionado: ${profile.name}. Para alterar os módulos, abra a tela de Permissões.`
-    : 'Cadastre um perfil na tela de Permissões antes de criar o funcionário.';
+    ? `Perfil selecionado: ${profile.name}. Para alterar os módulos, use o botão Gerenciar permissões.`
+    : 'Cadastre um perfil pelo botão Gerenciar permissões antes de criar o funcionário.';
 }
 
-async function loadAccessProfiles() {
+function renderPermissionInputs(selected = {}) {
+  const grid = get('permissions-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  if (!permissionKeys.length) {
+    const empty = document.createElement('span');
+    empty.className = 'permissions-loading';
+    empty.textContent = 'Nenhum módulo disponível.';
+    grid.appendChild(empty);
+    return;
+  }
+
+  for (const key of permissionKeys) {
+    const label = document.createElement('label');
+    label.className = 'permission-option';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.dataset.permission = key;
+    input.checked = selected[key] === true;
+    label.append(input, document.createTextNode(moduleLabels[key] || key));
+    grid.appendChild(label);
+  }
+}
+
+function readPermissions() {
+  return Object.fromEntries(
+    [...document.querySelectorAll('#permissions-manager-modal [data-permission]')]
+      .map((input) => [input.dataset.permission, input.checked])
+  );
+}
+
+function renderPermissionProfiles() {
+  const list = get('access-profile-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (!accessProfiles.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-state';
+    empty.textContent = 'Nenhum perfil cadastrado.';
+    list.appendChild(empty);
+    return;
+  }
+
+  for (const profile of accessProfiles) {
+    const card = document.createElement('article');
+    card.className = 'access-profile-card';
+
+    const info = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = profile.name;
+    info.appendChild(title);
+
+    const modules = Object.entries(profile.permissions || {})
+      .filter(([, enabled]) => enabled)
+      .map(([key]) => moduleLabels[key] || key);
+    const summary = document.createElement('small');
+    summary.textContent = `${modules.length} módulo(s) liberado(s)`;
+    info.appendChild(summary);
+
+    const details = document.createElement('p');
+    details.textContent = modules.join(' · ') || 'Nenhum módulo liberado';
+    info.appendChild(details);
+
+    if (!profile.is_active) {
+      const inactive = document.createElement('small');
+      inactive.className = 'profile-status-inactive';
+      inactive.textContent = 'Inativo';
+      info.appendChild(inactive);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'access-profile-actions';
+
+    const edit = document.createElement('button');
+    edit.className = 'mini-button secondary';
+    edit.type = 'button';
+    edit.textContent = 'Editar';
+    edit.addEventListener('click', () => openPermissionsEditor(profile));
+    actions.appendChild(edit);
+
+    const toggle = document.createElement('button');
+    toggle.className = 'mini-button';
+    toggle.type = 'button';
+    toggle.textContent = profile.is_active ? 'Desativar' : 'Ativar';
+    toggle.addEventListener('click', () => toggleAccessProfile(profile));
+    actions.appendChild(toggle);
+
+    const remove = document.createElement('button');
+    remove.className = 'mini-button secondary';
+    remove.type = 'button';
+    remove.textContent = 'Excluir';
+    remove.addEventListener('click', () => deleteAccessProfile(profile));
+    actions.appendChild(remove);
+
+    card.append(info, actions);
+    list.appendChild(card);
+  }
+}
+
+async function loadAccessProfiles({ renderManager = false } = {}) {
   const result = await api('/api/access-profiles');
   accessProfiles = result.data || [];
+  permissionKeys = result.permission_keys || Object.keys(moduleLabels);
   renderProfileSelect(get('user-access-profile')?.value || '');
+  if (renderManager || !get('permissions-manager-modal')?.classList.contains('hidden')) {
+    renderPermissionProfiles();
+  }
+}
+
+function openPermissionsEditor(profile = null) {
+  const form = get('access-profile-form');
+  if (!form) return;
+  form.classList.remove('hidden');
+  get('access-profile-id').value = profile?.id || '';
+  get('access-profile-name').value = profile?.name || '';
+  get('save-access-profile-button').textContent = profile ? 'Salvar alterações' : 'Salvar perfil';
+  renderPermissionInputs(profile?.permissions || {});
+  requestAnimationFrame(() => get('access-profile-name')?.focus());
+}
+
+function closePermissionsEditor() {
+  const form = get('access-profile-form');
+  if (!form) return;
+  form.classList.add('hidden');
+  form.reset();
+  get('access-profile-id').value = '';
+  get('save-access-profile-button').textContent = 'Salvar perfil';
+  renderPermissionInputs();
+}
+
+async function openPermissionsModal() {
+  const modal = get('permissions-manager-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  syncModalState();
+  closePermissionsEditor();
+  setPermissionsStatus('Carregando perfis...');
+
+  try {
+    await loadAccessProfiles({ renderManager: true });
+    setPermissionsStatus('');
+  } catch (error) {
+    setPermissionsStatus(friendly(error));
+  }
+}
+
+function closePermissionsModal() {
+  const modal = get('permissions-manager-modal');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+  closePermissionsEditor();
+  setPermissionsStatus('');
+  syncModalState();
+}
+
+async function saveAccessProfile(event) {
+  event.preventDefault();
+  const id = get('access-profile-id').value;
+  const profile = accessProfiles.find((item) => item.id === id);
+  const saveButton = get('save-access-profile-button');
+  const payload = {
+    id: id || undefined,
+    name: get('access-profile-name').value.trim(),
+    role_key: profile?.role_key || 'staff',
+    permissions: readPermissions()
+  };
+
+  saveButton.disabled = true;
+  saveButton.textContent = 'Salvando...';
+  setPermissionsStatus('');
+
+  try {
+    await api(id ? '/api/access-profiles/update' : '/api/access-profiles', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    closePermissionsEditor();
+    await loadAccessProfiles({ renderManager: true });
+    setPermissionsStatus('Perfil salvo com sucesso.');
+  } catch (error) {
+    setPermissionsStatus(friendly(error));
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent = id ? 'Salvar alterações' : 'Salvar perfil';
+  }
+}
+
+async function toggleAccessProfile(profile) {
+  try {
+    await api('/api/access-profiles/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: profile.id,
+        name: profile.name,
+        role_key: profile.role_key,
+        permissions: profile.permissions,
+        is_active: !profile.is_active
+      })
+    });
+    await loadAccessProfiles({ renderManager: true });
+    setPermissionsStatus(profile.is_active ? 'Perfil desativado.' : 'Perfil ativado.');
+  } catch (error) {
+    setPermissionsStatus(friendly(error));
+  }
+}
+
+async function deleteAccessProfile(profile) {
+  if (!window.confirm(`Excluir o perfil "${profile.name}"?`)) return;
+  try {
+    await api('/api/access-profiles', {
+      method: 'DELETE',
+      body: JSON.stringify({ id: profile.id })
+    });
+    await loadAccessProfiles({ renderManager: true });
+    setPermissionsStatus('Perfil excluído.');
+  } catch (error) {
+    setPermissionsStatus(friendly(error));
+  }
 }
 
 async function loadUsers({ silent = false, force = false } = {}) {
@@ -277,7 +518,7 @@ function openUserModal() {
   if (!modal) return;
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
-  document.body.classList.add('modal-open');
+  syncModalState();
   requestAnimationFrame(() => get('user-name')?.focus());
 }
 
@@ -286,8 +527,8 @@ function closeUserModal() {
   if (!modal) return;
   modal.classList.add('hidden');
   modal.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('modal-open');
   resetForm();
+  syncModalState();
 }
 
 function newUser() {
@@ -415,6 +656,15 @@ function bindEvents() {
   get('employee-form-panel')?.addEventListener('click', (event) => {
     if (event.target === get('employee-form-panel')) closeUserModal();
   });
+
+  get('manage-permissions-button')?.addEventListener('click', () => void openPermissionsModal());
+  get('close-permissions-modal')?.addEventListener('click', closePermissionsModal);
+  get('permissions-manager-modal')?.addEventListener('click', (event) => {
+    if (event.target === get('permissions-manager-modal')) closePermissionsModal();
+  });
+  get('new-access-profile-button')?.addEventListener('click', () => openPermissionsEditor());
+  get('cancel-access-profile-button')?.addEventListener('click', closePermissionsEditor);
+  get('access-profile-form')?.addEventListener('submit', saveAccessProfile);
 }
 
 async function init() {
