@@ -18,6 +18,7 @@ const { handleMemberWorkspaceRoutes } = require('./features/memberWorkspaceRoute
 const { handleStudentClassRoutes } = require('./features/studentClassRoutes');
 const { handleManagementRoutes } = require('./features/managementRoutes');
 const { handleEngagementRoutes } = require('./features/engagementRoutes');
+const { handleFinanceSalesRoutes } = require('./features/financeSalesRoutes');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -160,7 +161,7 @@ const server = http.createServer(async (req, res) => {
     if (!isOriginAllowed(req)) return send(req, res, 403, { error: 'origem_nao_permitida' });
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (req.method === 'OPTIONS') return send(req, res, 204, {});
-    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.7.0', uptime: process.uptime() });
+    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.8.0', uptime: process.uptime() });
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') {
       if (!enforceRateLimit(req, res, 'register')) return;
       return registerGym(req, res);
@@ -171,6 +172,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     const helpers = { send: (response, status, data) => send(req, response, status, data), body, query };
+    const publicFinanceHandled = await handleFinanceSalesRoutes(req, res, null, url, helpers);
+    if (publicFinanceHandled !== false) return publicFinanceHandled;
     if (url.pathname.startsWith('/api/public')) return handleMemberDetailRoutes(req, res, null, url, helpers);
     if (req.method === 'POST' && url.pathname === '/api/student/auth/login') {
       if (!enforceRateLimit(req, res, 'student-login')) return;
@@ -204,6 +207,8 @@ const server = http.createServer(async (req, res) => {
     if (managementHandled !== false) return managementHandled;
     const engagementHandled = await handleEngagementRoutes(req, res, user, url, helpers);
     if (engagementHandled !== false) return engagementHandled;
+    const financeSalesHandled = await handleFinanceSalesRoutes(req, res, user, url, helpers);
+    if (financeSalesHandled !== false) return financeSalesHandled;
     const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
     if (trainingHandled !== false) return trainingHandled;
     const trainingPlansHandled = await handleTrainingPlansRoutes(req, res, user, url, helpers);

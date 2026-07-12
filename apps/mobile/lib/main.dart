@@ -6,6 +6,7 @@ import 'package:academia_mobile/alerts_page.dart';
 import 'package:academia_mobile/assessments_page.dart';
 import 'package:academia_mobile/classes_admin_page.dart';
 import 'package:academia_mobile/commercial_plans_page.dart';
+import 'package:academia_mobile/finance_operations_page.dart';
 import 'package:academia_mobile/member_workspace_page.dart';
 import 'package:academia_mobile/reports_page.dart';
 import 'package:academia_mobile/revenue_page.dart';
@@ -306,6 +307,7 @@ class _DashboardPageState extends State<DashboardPage> {
               actionButton(Icons.monitor_heart, 'Avaliacoes', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
               actionButton(Icons.event, 'Aulas e agenda', ClassesAdminPage(baseUrl: widget.baseUrl, token: widget.token, isManager: isManager)),
               if (isManager) actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager) actionButton(Icons.point_of_sale, 'Financeiro e vendas', FinanceOperationsPage(baseUrl: widget.baseUrl, token: widget.token)),
               if (isManager) actionButton(Icons.door_front_door, 'Controle de acesso', AccessControlPage(baseUrl: widget.baseUrl, token: widget.token)),
               if (isManager) actionButton(Icons.analytics, 'Relatorios', ReportsPage(baseUrl: widget.baseUrl, token: widget.token)),
               if (isManager) actionButton(Icons.sell, 'Planos comerciais', CommercialPlansPage(baseUrl: widget.baseUrl, token: widget.token)),
