@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:academia_mobile/access_control_page.dart';
 import 'package:academia_mobile/alerts_page.dart';
 import 'package:academia_mobile/assessments_page.dart';
+import 'package:academia_mobile/member_workspace_page.dart';
 import 'package:academia_mobile/revenue_page.dart';
 import 'package:academia_mobile/student_home_page.dart';
 import 'package:academia_mobile/training_page.dart';
@@ -234,6 +235,20 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  void _openMember(Map<String, dynamic> member) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MemberWorkspacePage(
+          baseUrl: widget.baseUrl,
+          token: widget.token,
+          memberId: member['id']?.toString() ?? '',
+          role: widget.role,
+        ),
+      ),
+    ).then((_) => _refresh());
+  }
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
@@ -292,12 +307,22 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 12),
             Text('$message Sincronizacao automatica a cada 30s.'),
             const Divider(),
-            const Text('Check-in rapido', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ...members.map((member) => ListTile(
+            const Text('Alunos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...members.map((raw) {
+              final member = raw as Map<String, dynamic>;
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(child: Text('${member['name'] ?? '?'}'.substring(0, 1))),
                   title: Text(member['name'] ?? ''),
                   subtitle: Text(member['status'] ?? ''),
-                  trailing: FilledButton(onPressed: member['status'] == 'active' ? () => _quickCheckin(member['id']) : null, child: const Text('Check-in')),
-                )),
+                  onTap: () => _openMember(member),
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(onPressed: () => _openMember(member), icon: const Icon(Icons.folder_shared)),
+                    IconButton(onPressed: member['status'] == 'active' ? () => _quickCheckin(member['id']) : null, icon: const Icon(Icons.login)),
+                  ]),
+                ),
+              );
+            }),
             const Divider(),
             const Text('Ultimos check-ins', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ...checkins.map((item) => ListTile(title: Text(item['member_name'] ?? ''), subtitle: Text(item['checked_at'] ?? ''))),

@@ -43,10 +43,24 @@ jobs:
         run: npm ci
 
       - name: Validar sintaxe e regras
+        shell: bash
         env:
           NODE_ENV: test
           AUTH_SECRET: test-secret-with-more-than-thirty-two-characters
-        run: npm run check
+        run: |
+          set +e
+          npm run check 2>&1 | tee api-check.log
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Publicar diagnostico da API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-check-${{ github.run_id }}
+          path: apps/api/api-check.log
+          if-no-files-found: ignore
+          retention-days: 7
 
   mobile:
     name: Analisar aplicativo Flutter
