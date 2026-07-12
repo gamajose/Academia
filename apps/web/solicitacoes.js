@@ -34,8 +34,9 @@ function render() {
   const filtered = rows.filter((item) => `${item.name} ${item.plan_name || ''} ${item.status} ${item.enrollment_code || ''}`.toLowerCase().includes(term));
   for (const item of filtered) {
     const li = document.createElement('li');
-    li.append(`${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)} | ${item.status} | código ${item.enrollment_code || '-'} `);
-    li.appendChild(button('Confirmar recebimento', () => approve(item), item.status === 'confirmed'));
+    const emailStatus = item.email ? (item.email_confirmed_at ? 'e-mail confirmado' : 'aguardando e-mail') : 'sem e-mail';
+    li.append(`${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)} | ${item.status} | ${emailStatus} | código ${item.enrollment_code || '-'} `);
+    li.appendChild(button('Confirmar pagamento', () => approve(item), item.status === 'confirmed' || (item.email && !item.email_confirmed_at)));
     li.appendChild(button('Ver código/QR', () => showQr(item), item.status !== 'confirmed'));
     list.appendChild(li);
   }
@@ -64,7 +65,8 @@ async function approve(item) {
     s('signup-status').textContent = `Liberado. Código: ${result.enrollment_code}`;
     await load();
   } catch (error) {
-    s('signup-status').textContent = `Erro ao liberar: ${error.message}`;
+    const labels = { email_nao_confirmado: 'O aluno ainda não confirmou o e-mail.', solicitacao_ja_confirmada: 'Esta solicitação já foi confirmada.', email_ja_cadastrado: 'Este e-mail já possui uma conta.' };
+    s('signup-status').textContent = `Erro ao liberar: ${labels[error.message] || error.message}`;
   }
 }
 

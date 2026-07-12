@@ -1,8 +1,19 @@
 const { recordAudit } = require('../lib/audit');
 const { digits, nullable, validEmail } = require('../lib/memberValidation');
+const { hashPassword, randomToken, hashToken, validatePassword } = require('../lib/security');
+const { sendTransactionalEmail } = require('../lib/mailer');
 
 function code() {
   return `ACAD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+}
+
+function appUrl(path) {
+  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  return `${base}${path}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
 async function handleMemberDetailRoutes(req, res, user, url, helpers) {
@@ -125,18 +136,53 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/public/enrollments') {
     const input = await body(req);
-    if (!input.name || !input.plan_id) return send(res, 400, { error: 'dados_invalidos' });
-    const plan = await query('SELECT gym_id FROM plans WHERE id = $1 AND is_active = true LIMIT 1', [input.plan_id]);
+    const email = String(input.email || '').trim().toLowerCase();
+    if (!input.name || !input.plan_id || !email || !input.password) return send(res, 400, { error: 'dados_invalidos' });
+    if (!validEmail(email)) return send(res, 400, { error: 'email_invalido' });
+    const passwordCheck = validatePassword(input.password);
+    if (!passwordCheck.valid) return send(res, 400, { error: passwordCheck.error });
+    if (String(input.password) !== String(input.password_confirmation || '')) return send(res, 400, { error: 'senhas_nao_conferem' });
+    const plan = await query('SELECT gym_id, name, price_cents FROM plans WHERE id = $1 AND is_active = true LIMIT 1', [input.plan_id]);
     if (!plan.rowCount) return send(res, 404, { error: 'plano_nao_encontrado' });
+    const existing = await query('SELECT id FROM member_accounts WHERE lower(email) = lower($1) LIMIT 1', [email]);
+    if (existing.rowCount) return send(res, 409, { error: 'email_ja_cadastrado' });
     const enrollmentCode = code();
     const qrPayload = `ACADEMIA:${enrollmentCode}`;
+    const confirmationToken = randomToken();
+    const confirmationUrl = appUrl(`/student-confirm.html?token=${encodeURIComponent(confirmationToken)}`);
     const result = await query(
-      `INSERT INTO public_enrollments (gym_id, plan_id, name, email, phone, payment_method, enrollment_code, qr_payload)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-       RETURNING id, status, enrollment_code, qr_payload`,
-      [plan.rows[0].gym_id, input.plan_id, input.name, input.email || null, input.phone || null, input.payment_method || null, enrollmentCode, qrPayload]
+      `INSERT INTO public_enrollments (
+        gym_id, plan_id, name, email, phone, payment_method, enrollment_code, qr_payload,
+        password_hash, confirmation_token_hash, confirmation_expires_at
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now()+interval '48 hours')
+      RETURNING id, status, enrollment_code, qr_payload`,
+      [plan.rows[0].gym_id, input.plan_id, String(input.name).trim(), email, input.phone || null,
+        input.payment_method || 'pix', enrollmentCode, qrPayload, hashPassword(input.password), hashToken(confirmationToken)]
     );
-    return send(res, 201, result.rows[0]);
+    const emailResult = await sendTransactionalEmail({
+      to: email,
+      subject: 'Confirme seu pré-cadastro na Academia Lobo',
+      text: `Olá, ${String(input.name).trim()}! Confirme seu e-mail para acompanhar sua matrícula: ${confirmationUrl}`,
+      html: `<p>Olá, ${escapeHtml(input.name).trim()}!</p><p>Confirme seu e-mail para acompanhar a matrícula do plano <strong>${escapeHtml(plan.rows[0].name)}</strong>.</p><p><a href="${confirmationUrl}">Confirmar meu e-mail</a></p><p>A conta só será liberada após a confirmação do pagamento.</p>`
+    });
+    if (emailResult.sent) await query('UPDATE public_enrollments SET email_confirmation_sent_at = now() WHERE id = $1', [result.rows[0].id]);
+    return send(res, 201, { ...result.rows[0], email_delivery: emailResult.sent ? 'sent' : 'pending' });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/public/enrollments/confirm-email') {
+    const token = url.searchParams.get('token') || '';
+    if (!token) return send(res, 400, { error: 'token_invalido' });
+    const result = await query(
+      `UPDATE public_enrollments
+       SET email_confirmed_at = now()
+       WHERE confirmation_token_hash = $1
+         AND confirmation_expires_at > now()
+         AND email_confirmed_at IS NULL
+       RETURNING id, status, name`,
+      [hashToken(token)]
+    );
+    if (!result.rowCount) return send(res, 400, { error: 'token_invalido_ou_expirado' });
+    return send(res, 200, { status: 'email_confirmado', enrollment: result.rows[0] });
   }
 
   return false;

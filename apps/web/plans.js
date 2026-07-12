@@ -99,7 +99,7 @@
         <div class="plan-price">${money(plan.price_cents)}</div>
         <div class="plan-rich plan-benefits">${serviceContent}</div>
         ${plan.rules ? `<details class="plan-rules"><summary>Regras do plano</summary><div class="plan-rich">${sanitizeRichHtml(plan.rules)}</div></details>` : ''}
-        <a class="cta ${featured ? '' : 'ghost'}" href="#matricula" data-plan="${realId ? escapeHtml(plan.id) : ''}">Escolher este plano</a>
+        <a class="cta ${featured ? '' : 'ghost'}" href="./matricula-publica.html${realId ? `?plan=${encodeURIComponent(plan.id)}` : ''}">Escolher este plano</a>
       </article>`;
   }
 
@@ -119,7 +119,6 @@
     classesNode.innerHTML = classes.map(classCard).join('');
     select.querySelectorAll('option:not(:first-child)').forEach((option) => option.remove());
     if (plans.length) select.insertAdjacentHTML('beforeend', plans.map((plan) => `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)} — ${money(plan.price_cents)}</option>`).join(''));
-    document.querySelectorAll('[data-plan]').forEach((button) => button.addEventListener('click', () => { if (button.dataset.plan) select.value = button.dataset.plan; }));
   }
 
   async function loadCatalog() {

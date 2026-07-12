@@ -11,9 +11,6 @@ on:
       - 'database/**'
       - '.github/workflows/ci-api.yml'
 
-concurrency:
-  group: validar-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
   push:
     branches:
       - 'agent/**'
@@ -24,6 +21,10 @@ concurrency:
       - 'apps/web/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
+
+concurrency:
+  group: validar-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   api:
@@ -84,6 +85,9 @@ jobs:
           node --check apps/web/alunos.js
           node --check apps/web/planos.js
           node --check apps/web/student-login.js
+          node --check apps/web/matricula-publica.js
+          node --check apps/web/student-reset.js
+          node --check apps/web/student-confirm.js
           node --check apps/web/student-portal.js
           node --check apps/web/dashboard-auto-refresh.js
           python -m py_compile apps/web/site_server.py

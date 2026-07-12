@@ -1,93 +1,163 @@
 const host = window.location.hostname || 'localhost';
-const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+function resolveApiBase() {
+  const fallback = `${window.location.protocol}//${host}:3004`;
+  try {
+    const stored = localStorage.getItem('apiBaseUrl') || '';
+    return stored && new URL(stored).hostname === host ? stored.replace(/\/$/, '') : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+const API = resolveApiBase();
 const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(window.location.search);
+let selectedPlanId = params.get('plan') || '';
 let plans = [];
-let selectedPlanId = new URLSearchParams(window.location.search).get('plan') || '';
+
+const samples = [
+  { id: 'sample-essential', name: 'Essencial', price_cents: 8990, duration_days: 30, description: 'Rotina simples e consistente.', benefits: ['Musculação', 'Treino organizado', 'Acompanhamento da equipe'] },
+  { id: 'sample-performance', name: 'Performance', price_cents: 12990, duration_days: 30, description: 'Mais acompanhamento para evoluir.', benefits: ['Musculação', 'Avaliação periódica', 'Revisão de treino'], featured: true },
+  { id: 'sample-premium', name: 'Premium', price_cents: 17990, duration_days: 30, description: 'Experiência completa.', benefits: ['Todos os benefícios', 'Aulas incluídas', 'Atendimento prioritário'] }
+];
 
 function money(cents) {
   return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function benefits(plan) {
-  const text = plan.benefits || 'Acesso à academia\nAcompanhamento de treino\nÁrea do aluno';
-  return text.split('\n').map((x) => x.trim()).filter(Boolean);
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
+}
+
+function listBenefits(plan) {
+  if (Array.isArray(plan.benefits)) return plan.benefits;
+  const text = String(plan.benefits || '').replace(/<[^>]+>/g, '\n');
+  return text.split(/[\n;]/).map((item) => item.trim()).filter(Boolean).slice(0, 5);
 }
 
 async function getJson(path, options = {}) {
-  const response = await fetch(`${API}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
-  });
+  const response = await fetch(`${API}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'erro_requisicao');
   return data;
 }
 
-function choosePlan(id) {
-  selectedPlanId = id;
-  $('public-plan').value = id;
-  document.querySelectorAll('.plan-card').forEach((card) => card.style.outline = 'none');
-  const card = document.querySelector(`[data-plan-id="${id}"]`);
-  if (card) card.style.outline = '3px solid #38bdf8';
-  const plan = plans.find((p) => p.id === id);
-  $('public-status').textContent = plan ? `Plano selecionado: ${plan.name} - ${money(plan.price_cents)}` : 'Plano selecionado.';
-  document.getElementById('public-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+function selectedPlan() {
+  return plans.find((plan) => String(plan.id) === String(selectedPlanId)) || samples.find((plan) => plan.id === selectedPlanId) || plans[0] || samples[0];
 }
 
-function renderPlanCards() {
+function renderSelectedPlan() {
+  const plan = selectedPlan();
+  $('enrollment-plan-id').value = plan?.id || '';
+  $('selected-plan-summary').innerHTML = `<strong>${escapeHtml(plan?.name || 'Plano selecionado')}</strong><span>${money(plan?.price_cents)} / ${Number(plan?.duration_days || 30)} dias</span>`;
+}
+
+function renderPlans() {
   const box = $('public-plan-cards');
-  box.innerHTML = '';
-  for (const plan of plans) {
-    const card = document.createElement('article');
-    card.className = 'plan-card';
-    card.dataset.planId = plan.id;
-    card.innerHTML = `<strong>${plan.name}</strong><p>${plan.public_highlight || 'Plano disponível'}</p><div class="plan-price">${money(plan.price_cents)}</div><p>${plan.duration_days} dias</p><ul class="benefit-list">${benefits(plan).slice(0, 4).map((x) => `<li>${x}</li>`).join('')}</ul>`;
-    const btn = document.createElement('button');
-    btn.className = 'cta secondary';
-    btn.textContent = 'Escolher este plano';
-    btn.onclick = () => choosePlan(plan.id);
-    card.appendChild(btn);
-    box.appendChild(card);
-  }
-  if (!plans.length) box.innerHTML = '<article class="plan-card"><strong>Nenhum plano disponível</strong><p>Entre em contato com a academia.</p></article>';
+  box.innerHTML = plans.map((plan, index) => `
+    <article class="plan-card ${plan.featured || index === 1 ? 'recommended' : ''}">
+      <span class="plan-label">${plan.featured || index === 1 ? 'Mais escolhido' : 'Plano mensal'}</span>
+      <h3>${escapeHtml(plan.name)}</h3>
+      <p>${escapeHtml(plan.description || 'Plano para sua rotina de treinos.')}</p>
+      <div class="plan-price">${money(plan.price_cents)}</div>
+      <ul>${listBenefits(plan).map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+      <button class="cta ${plan.featured || index === 1 ? '' : 'ghost'}" type="button" data-plan-id="${escapeHtml(plan.id)}">Escolher este plano</button>
+    </article>`).join('');
+  box.querySelectorAll('[data-plan-id]').forEach((button) => button.addEventListener('click', () => openEnrollment(button.dataset.planId)));
 }
 
-async function loadPublicPlans() {
+function openEnrollment(planId) {
+  selectedPlanId = planId || selectedPlanId || plans[0]?.id || samples[0].id;
+  renderSelectedPlan();
+  $('enrollment-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => $('enrollment-name').focus(), 60);
+}
+
+function closeEnrollment() {
+  $('enrollment-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  $('enrollment-message').textContent = '';
+}
+
+function showMessage(text) {
+  $('enrollment-message').textContent = text;
+}
+
+function updatePaymentHelp() {
+  const help = {
+    pix: 'A equipe enviará as instruções do Pix após receber sua pré-matrícula.',
+    card: 'A equipe enviará um link seguro para pagamento com cartão.',
+    boleto: 'A equipe enviará o boleto e o prazo para pagamento.',
+    presencial: 'A equipe reservará seu plano para pagamento na recepção.'
+  };
+  $('payment-method-help').textContent = help[$('enrollment-payment-method').value] || help.pix;
+}
+
+async function submitEnrollment(event) {
+  event.preventDefault();
+  const password = $('enrollment-password').value;
+  if (password !== $('enrollment-password-confirmation').value) return showMessage('As senhas precisam ser iguais.');
+  if (!$('enrollment-terms').checked) return showMessage('Aceite o contato da academia para continuar.');
+  if (!$('enrollment-plan-id').value) return showMessage('Escolha um plano antes de continuar.');
+
+  const button = $('submit-enrollment');
+  button.disabled = true;
+  button.textContent = 'Enviando...';
+  showMessage('Registrando sua pré-matrícula...');
+  try {
+    const result = await getJson('/api/public/enrollments', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: $('enrollment-name').value.trim(),
+        email: $('enrollment-email').value.trim(),
+        phone: $('enrollment-phone').value.trim(),
+        plan_id: $('enrollment-plan-id').value,
+        payment_method: $('enrollment-payment-method').value,
+        password,
+        password_confirmation: $('enrollment-password-confirmation').value
+      })
+    });
+    $('enrollment-form').classList.add('hidden');
+    $('enrollment-success').classList.remove('hidden');
+    $('enrollment-success-text').textContent = result.email_delivery === 'sent'
+      ? 'Enviamos um link para confirmar seu e-mail. Depois, aguarde a confirmação do pagamento para sua conta ser liberada.'
+      : 'Seu pedido foi recebido. A confirmação de e-mail será encaminhada pela academia e a conta só será liberada após o pagamento.';
+  } catch (error) {
+    const labels = {
+      email_ja_cadastrado: 'Este e-mail já possui uma conta ou uma matrícula em andamento.',
+      email_invalido: 'Informe um e-mail válido.',
+      senha_muito_curta: 'A senha precisa ter pelo menos 10 caracteres.',
+      senha_fraca: 'Use letras maiúsculas, minúsculas e números na senha.',
+      senhas_nao_conferem: 'As senhas precisam ser iguais.'
+    };
+    showMessage(labels[error.message] || 'Não foi possível enviar agora. Revise os dados e tente novamente.');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Enviar pré-matrícula';
+  }
+}
+
+async function loadPlans() {
   try {
     const result = await getJson('/api/public/plans');
-    plans = result.data || [];
-    const select = $('public-plan');
-    select.innerHTML = '<option value="">Selecione o plano</option>';
-    for (const plan of plans) {
-      const option = document.createElement('option');
-      option.value = plan.id;
-      option.textContent = `${plan.name} - ${money(plan.price_cents)} / ${plan.duration_days} dias`;
-      select.appendChild(option);
-    }
-    renderPlanCards();
-    if (selectedPlanId) choosePlan(selectedPlanId);
-    else $('public-status').textContent = plans.length ? 'Escolha um plano e preencha seus dados.' : 'Nenhum plano público disponível no momento.';
-  } catch (error) {
-    $('public-status').textContent = `API indisponível: ${error.message}`;
+    plans = (result.data || []).filter((plan) => Number(plan.price_cents || 0) > 0);
+  } catch (_) {
+    plans = [];
   }
+  if (!plans.length) plans = samples;
+  renderPlans();
+  if (selectedPlanId) openEnrollment(selectedPlanId);
 }
 
-async function submitPublicEnrollment() {
-  try {
-    const payload = {
-      name: $('public-name').value.trim(),
-      email: $('public-email').value.trim(),
-      phone: $('public-phone').value.trim(),
-      plan_id: $('public-plan').value,
-      payment_method: 'pendente'
-    };
-    const result = await getJson('/api/public/enrollments', { method: 'POST', body: JSON.stringify(payload) });
-    $('public-status').textContent = `Pré-matrícula enviada. Código: ${result.enrollment_code}. Aguarde a confirmação financeira para liberação.`;
-  } catch (error) {
-    $('public-status').textContent = `Erro na pré-matrícula: ${error.message}`;
-  }
-}
+$('enrollment-form').addEventListener('submit', submitEnrollment);
+$('enrollment-payment-method').addEventListener('change', updatePaymentHelp);
+$('close-enrollment').addEventListener('click', closeEnrollment);
+$('cancel-enrollment').addEventListener('click', closeEnrollment);
+$('enrollment-modal').addEventListener('click', (event) => { if (event.target === $('enrollment-modal')) closeEnrollment(); });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$('enrollment-modal').classList.contains('hidden')) closeEnrollment(); });
+$('enrollment-phone').addEventListener('input', (event) => {
+  const digits = event.target.value.replace(/\D/g, '').slice(0, 11);
+  event.target.value = digits.length > 10 ? digits.replace(/^(\d{2})(\d)(\d{0,5})(\d{0,4})/, '($1) $2 $3-$4').replace(/-$/, '') : digits.replace(/^(\d{2})(\d{0,4})(\d{0,4})/, '($1) $2 $3').replace(/\s+$/, '');
+});
 
-$('public-plan').addEventListener('change', (event) => choosePlan(event.target.value));
-$('public-submit').addEventListener('click', submitPublicEnrollment);
-loadPublicPlans();
+loadPlans();

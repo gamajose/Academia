@@ -1,9 +1,20 @@
+const { sendTransactionalEmail } = require('../lib/mailer');
+
+function appUrl(path) {
+  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  return `${base}${path}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
 async function handleOnlineSignupRoutes(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
 
   if (req.method === 'GET' && url.pathname === '/api/signups') {
     const result = await query(
-      `SELECT e.id, e.name, e.email, e.phone, e.status, e.payment_method, e.enrollment_code, e.qr_payload, e.created_at, e.confirmed_at,
+      `SELECT e.id, e.name, e.email, e.phone, e.status, e.payment_method, e.enrollment_code, e.qr_payload, e.email_confirmed_at, e.created_at, e.confirmed_at,
               p.name AS plan_name, p.price_cents, p.duration_days
        FROM public_enrollments e
        LEFT JOIN plans p ON p.id = e.plan_id
@@ -27,6 +38,12 @@ async function handleOnlineSignupRoutes(req, res, user, url, helpers) {
     );
     if (!found.rowCount) return send(res, 404, { error: 'solicitacao_nao_encontrada' });
     const item = found.rows[0];
+    if (item.status === 'confirmed') return send(res, 409, { error: 'solicitacao_ja_confirmada' });
+    if (item.email && !item.email_confirmed_at) return send(res, 409, { error: 'email_nao_confirmado' });
+    if (item.email && item.password_hash) {
+      const duplicateAccount = await query('SELECT id FROM member_accounts WHERE lower(email) = lower($1) LIMIT 1', [item.email]);
+      if (duplicateAccount.rowCount) return send(res, 409, { error: 'email_ja_cadastrado' });
+    }
     const member = await query('INSERT INTO members (gym_id, name, email, phone) VALUES ($1,$2,$3,$4) RETURNING id', [user.gym_id, item.name, item.email || null, item.phone || null]);
     const membership = await query(
       `INSERT INTO memberships (gym_id, member_id, plan_id, starts_at, ends_at, status)
@@ -38,12 +55,29 @@ async function handleOnlineSignupRoutes(req, res, user, url, helpers) {
        VALUES ($1,$2,$3,$4,current_date,now(),'paid')`,
       [user.gym_id, member.rows[0].id, membership.rows[0].id, Number(item.price_cents || 0)]
     );
+    let accountCreated = false;
+    if (item.email && item.password_hash) {
+      await query(
+        `INSERT INTO member_accounts (gym_id, member_id, email, secret_hash, is_active)
+         VALUES ($1,$2,lower($3),$4,true)`,
+        [user.gym_id, member.rows[0].id, item.email, item.password_hash]
+      );
+      accountCreated = true;
+    }
     const updated = await query(
       `UPDATE public_enrollments SET status='confirmed', confirmed_at=now(), created_member_id=$3
        WHERE id=$1 AND gym_id=$2 RETURNING id, status, enrollment_code, qr_payload, created_member_id`,
       [input.id, user.gym_id, member.rows[0].id]
     );
-    return send(res, 200, updated.rows[0]);
+    if (accountCreated) {
+      await sendTransactionalEmail({
+        to: item.email,
+        subject: 'Pagamento confirmado - Academia Lobo',
+        text: `Olá, ${item.name}! Seu pagamento foi confirmado. Acesse sua conta em ${appUrl('/student-login.html')}.`,
+        html: `<p>Olá, ${escapeHtml(item.name)}!</p><p>Seu pagamento foi confirmado e sua conta da Academia Lobo já está liberada.</p><p><a href="${appUrl('/student-login.html')}">Acessar minha conta</a></p>`
+      });
+    }
+    return send(res, 200, { ...updated.rows[0], account_created: accountCreated });
   }
 
   if (req.method === 'GET' && url.pathname === '/api/signups/check') {

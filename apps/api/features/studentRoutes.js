@@ -1,5 +1,11 @@
-const { hashPassword, verifyPassword, signToken } = require('../lib/security');
+const { hashPassword, verifyPassword, signToken, randomToken, hashToken, validatePassword } = require('../lib/security');
 const { recordAudit } = require('../lib/audit');
+const { sendTransactionalEmail } = require('../lib/mailer');
+
+function appUrl(path) {
+  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  return `${base}${path}`;
+}
 
 function isStudent(user) {
   return user && user.role === 'student' && user.member_id;
@@ -26,6 +32,48 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     await query('UPDATE member_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1', [account.id]);
     const token = signToken({ sub: account.id, gym_id: account.gym_id, role: 'student', member_id: account.member_id });
     return send(res, 200, { token, student: { id: account.member_id, name: account.member_name, email: account.email, role: 'student', gym_id: account.gym_id } });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/student/auth/forgot-password') {
+    const input = await body(req);
+    const email = String(input.email || '').trim().toLowerCase();
+    const generic = { status: 'recovery_requested', message: 'Se o e-mail estiver cadastrado, enviaremos as instruções de recuperação.' };
+    if (!email) return send(res, 202, generic);
+    const account = await query(
+      'SELECT id, email, member_id FROM member_accounts WHERE lower(email) = lower($1) AND is_active = true LIMIT 1',
+      [email]
+    );
+    if (!account.rowCount) return send(res, 202, generic);
+    const token = randomToken();
+    await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE member_account_id = $1 AND used_at IS NULL', [account.rows[0].id]);
+    await query(
+      `INSERT INTO member_password_reset_tokens (member_account_id, token_hash, expires_at)
+       VALUES ($1, $2, now() + interval '30 minutes')`,
+      [account.rows[0].id, hashToken(token)]
+    );
+    const resetUrl = appUrl(`/student-reset.html?token=${encodeURIComponent(token)}`);
+    await sendTransactionalEmail({
+      to: account.rows[0].email,
+      subject: 'Recuperação de acesso - Academia Lobo',
+      text: `Use este link para criar uma nova senha: ${resetUrl}`,
+      html: `<p>Recebemos um pedido para redefinir sua senha.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>`
+    });
+    return send(res, 202, generic);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/student/auth/reset-password') {
+    const input = await body(req);
+    const passwordCheck = validatePassword(input.new_password);
+    if (!input.token || !passwordCheck.valid) return send(res, 400, { error: passwordCheck.error || 'token_invalido' });
+    const token = await query(
+      `SELECT id, member_account_id FROM member_password_reset_tokens
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now() LIMIT 1`,
+      [hashToken(input.token)]
+    );
+    if (!token.rowCount) return send(res, 400, { error: 'token_invalido_ou_expirado' });
+    await query('UPDATE member_accounts SET secret_hash = $2, updated_at = now() WHERE id = $1', [token.rows[0].member_account_id, hashPassword(input.new_password)]);
+    await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE id = $1', [token.rows[0].id]);
+    return send(res, 200, { status: 'senha_redefinida' });
   }
 
   if (!url.pathname.startsWith('/api/student')) return false;

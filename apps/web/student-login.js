@@ -1,5 +1,14 @@
 const defaultHost = window.location.hostname || 'localhost';
-const API = localStorage.getItem('apiBaseUrl') || `http://${defaultHost}:3004`;
+function resolveApiBase() {
+  const fallback = `${window.location.protocol}//${defaultHost}:3004`;
+  try {
+    const stored = localStorage.getItem('apiBaseUrl') || '';
+    return stored && new URL(stored).hostname === defaultHost ? stored.replace(/\/$/, '') : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+const API = resolveApiBase();
 const emailField = document.getElementById('student-email');
 const passwordField = document.getElementById('student-password');
 const loginButton = document.getElementById('student-login-button');
@@ -72,7 +81,37 @@ async function accountLogin() {
 }
 
 function forgotPassword() {
-  msg('Procure a recepção para redefinir sua senha com segurança.');
+  document.getElementById('forgot-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('forgot-email').value = emailField.value.trim();
+  document.getElementById('forgot-email').focus();
+}
+
+function closeForgot() {
+  document.getElementById('forgot-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  document.getElementById('forgot-message').textContent = '';
+}
+
+async function submitForgot(event) {
+  event.preventDefault();
+  const email = document.getElementById('forgot-email').value.trim();
+  const button = document.getElementById('submit-forgot');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('forgot-message').textContent = 'Informe um e-mail válido.';
+    return;
+  }
+  button.disabled = true;
+  button.textContent = 'Enviando...';
+  try {
+    const result = await post('/api/student/auth/forgot-password', { email });
+    document.getElementById('forgot-message').textContent = result.message || 'Confira seu e-mail para continuar.';
+  } catch (_) {
+    document.getElementById('forgot-message').textContent = 'Não foi possível solicitar agora. Tente novamente em instantes.';
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Enviar instruções';
+  }
 }
 
 document.getElementById('password-toggle').addEventListener('click', () => {
@@ -83,8 +122,13 @@ document.getElementById('password-toggle').addEventListener('click', () => {
   toggle.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha');
 });
 
-loginButton.addEventListener('click', accountLogin);
+document.getElementById('login-form').addEventListener('submit', (event) => { event.preventDefault(); accountLogin(); });
 document.getElementById('forgot-password-button').addEventListener('click', forgotPassword);
+document.getElementById('forgot-form').addEventListener('submit', submitForgot);
+document.getElementById('close-forgot').addEventListener('click', closeForgot);
+document.getElementById('cancel-forgot').addEventListener('click', closeForgot);
+document.getElementById('forgot-modal').addEventListener('click', (event) => { if (event.target.id === 'forgot-modal') closeForgot(); });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !document.getElementById('forgot-modal').classList.contains('hidden')) closeForgot(); });
 [emailField, passwordField].forEach((field) => field.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') accountLogin();
 }));

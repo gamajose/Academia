@@ -175,8 +175,8 @@ const server = http.createServer(async (req, res) => {
     const publicFinanceHandled = await handleFinanceSalesRoutes(req, res, null, url, helpers);
     if (publicFinanceHandled !== false) return publicFinanceHandled;
     if (url.pathname.startsWith('/api/public')) return handleMemberDetailRoutes(req, res, null, url, helpers);
-    if (req.method === 'POST' && url.pathname === '/api/student/auth/login') {
-      if (!enforceRateLimit(req, res, 'student-login')) return;
+    if (req.method === 'POST' && url.pathname.startsWith('/api/student/auth/')) {
+      if (!enforceRateLimit(req, res, url.pathname === '/api/student/auth/login' ? 'student-login' : 'student-recovery')) return;
       return handleStudentRoutes(req, res, null, url, helpers);
     }
 

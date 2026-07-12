@@ -3,60 +3,82 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Matricule-se - Academia Lobo</title>
+  <meta name="description" content="Escolha seu plano e envie uma pré-matrícula para a Academia Lobo." />
+  <title>Começar na Academia Lobo</title>
   <link rel="stylesheet" href="./landing.css" />
 </head>
 <body>
   <main class="site-shell">
     <header class="site-header">
-      <div class="brand"><span>Academia</span> Lobo</div>
-      <nav class="site-nav">
+      <a class="brand" href="./index.html" aria-label="Academia Lobo"><span>Academia</span> Lobo</a>
+      <nav class="site-nav" aria-label="Navegação principal">
         <a href="./index.html">Início</a>
-        <a href="./student-login.html">Acessar conta</a>
+        <a href="./plans.html">Planos</a>
+        <a class="nav-access" href="./student-login.html">Acessar conta</a>
       </nav>
     </header>
 
-    <section class="site-hero">
-      <div>
-        <p class="eyebrow-public">Matrícula online</p>
-        <h1>Escolha o plano e deixe seu acesso encaminhado.</h1>
-        <p>A equipe confirma o pagamento e libera seu código ou QR Code para validação na recepção.</p>
+    <section class="enrollment-hero">
+      <div class="hero-copy">
+        <p class="eyebrow-public">Comece com clareza</p>
+        <h1>Escolha seu plano. A gente cuida do próximo passo.</h1>
+        <p class="hero-lead">Você envia seus dados e escolhe como prefere pagar. A equipe confirma o pagamento, envia a confirmação por e-mail e libera seu acesso.</p>
+        <div class="hero-actions"><a class="cta" href="#planos">Escolher meu plano</a><a class="cta ghost" href="./student-login.html">Já sou aluno</a></div>
       </div>
-      <div class="hero-card">
-        <strong>Fluxo da matrícula</strong>
-        <p>1. Escolha o plano.</p>
-        <p>2. Preencha o cadastro.</p>
-        <p>3. Aguarde a confirmação financeira.</p>
-        <p>4. Apresente o código/QR na recepção.</p>
-      </div>
+      <aside class="flow-card" aria-label="Etapas da matrícula">
+        <p class="eyebrow-public">Como funciona</p>
+        <div class="flow-step"><strong>01</strong><span>Escolha o plano que combina com sua rotina.</span></div>
+        <div class="flow-step"><strong>02</strong><span>Envie seus dados e a forma de pagamento.</span></div>
+        <div class="flow-step"><strong>03</strong><span>Confirme seu e-mail e aguarde a equipe.</span></div>
+        <div class="flow-step"><strong>04</strong><span>Após o pagamento, sua conta é liberada.</span></div>
+      </aside>
     </section>
 
-    <section class="site-section">
-      <div class="section-title"><h2>Selecione o plano</h2></div>
+    <section class="site-section enrollment-plans" id="planos">
+      <div class="section-heading">
+        <p class="eyebrow-public">Planos da Academia Lobo</p>
+        <h2>Escolha como você quer treinar</h2>
+        <p>Os valores e benefícios ficam claros antes de você enviar qualquer dado.</p>
+      </div>
       <div class="plan-grid" id="public-plan-cards">
-        <article class="plan-card"><strong>Essencial</strong><div class="plan-price">R$ 89,90</div><p>Rotina simples e consistente.</p></article>
-        <article class="plan-card"><strong>Performance</strong><div class="plan-price">R$ 129,90</div><p>Mais acompanhamento para evoluir.</p></article>
-        <article class="plan-card"><strong>Premium</strong><div class="plan-price">R$ 179,90</div><p>Experiência completa.</p></article>
+        <article class="plan-card"><span class="plan-label">Plano mensal</span><h3>Essencial</h3><p>Rotina simples e consistente.</p><div class="plan-price">R$ 89,90</div><button class="cta ghost" type="button" data-plan-id="sample-essential">Escolher este plano</button></article>
+        <article class="plan-card recommended"><span class="plan-label">Mais escolhido</span><h3>Performance</h3><p>Mais acompanhamento para evoluir.</p><div class="plan-price">R$ 129,90</div><button class="cta" type="button" data-plan-id="sample-performance">Escolher este plano</button></article>
+        <article class="plan-card"><span class="plan-label">Plano mensal</span><h3>Premium</h3><p>Experiência completa.</p><div class="plan-price">R$ 179,90</div><button class="cta ghost" type="button" data-plan-id="sample-premium">Escolher este plano</button></article>
       </div>
     </section>
 
-    <section class="site-section">
-      <div class="section-title"><h2>Dados para cadastro</h2></div>
-      <div class="feature-grid">
-        <article class="feature">
-          <strong>Dados do aluno</strong>
-          <input id="public-name" placeholder="Nome completo" />
-          <input id="public-email" placeholder="E-mail" />
-          <input id="public-phone" placeholder="Telefone" />
-          <select id="public-plan"><option value="">Selecione o plano</option></select>
-          <button class="cta" id="public-submit">Enviar pré-matrícula</button>
-          <p class="status-line" id="public-status">Escolha um plano para continuar.</p>
-        </article>
-        <article class="feature"><strong>Depois do envio</strong><p>O financeiro confirma Pix, cartão, boleto ou pagamento presencial e libera seu código de acesso.</p></article>
-        <article class="feature"><strong>Validação</strong><p>Com o código liberado, a recepção valida sua entrada no software da academia.</p></article>
-      </div>
+    <section class="site-band enrollment-band">
+      <div><p class="eyebrow-light">Sem compromisso antes da confirmação</p><h2>Seu cadastro só nasce quando o pagamento for confirmado.</h2><p>Até lá, seus dados ficam em uma pré-matrícula segura para a equipe acompanhar.</p></div>
+      <a class="cta light" href="https://www.instagram.com/academialoboo/" target="_blank" rel="noreferrer">Falar com a equipe</a>
     </section>
+
+    <footer class="site-footer"><div class="brand"><span>Academia</span> Lobo</div><p>Treino, acompanhamento e evolução.</p><a href="./student-login.html">Acessar conta</a></footer>
   </main>
+
+  <div class="enrollment-modal hidden" id="enrollment-modal" role="dialog" aria-modal="true" aria-labelledby="enrollment-modal-title">
+    <form class="enrollment-card" id="enrollment-form" novalidate>
+      <div class="modal-header">
+        <div><p class="eyebrow-public">Pré-matrícula</p><h2 id="enrollment-modal-title">Complete seus dados</h2><p>Você não será criado como aluno antes da confirmação do pagamento.</p></div>
+        <button class="modal-close" id="close-enrollment" type="button" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="selected-plan" id="selected-plan-summary"></div>
+      <input id="enrollment-plan-id" type="hidden" />
+      <div class="enrollment-form-grid">
+        <div class="form-field"><label for="enrollment-name">Nome completo *</label><input id="enrollment-name" required autocomplete="name" /></div>
+        <div class="form-field"><label for="enrollment-phone">WhatsApp ou telefone *</label><input id="enrollment-phone" required autocomplete="tel" inputmode="tel" placeholder="(32) 9 9919-2233" /></div>
+        <div class="form-field full"><label for="enrollment-email">E-mail *</label><input id="enrollment-email" type="email" required autocomplete="email" placeholder="voce@email.com" /><small>Você receberá aqui o link para confirmar seu cadastro.</small></div>
+        <div class="form-field"><label for="enrollment-password">Crie uma senha *</label><input id="enrollment-password" type="password" required autocomplete="new-password" placeholder="Mínimo de 10 caracteres" /></div>
+        <div class="form-field"><label for="enrollment-password-confirmation">Confirme a senha *</label><input id="enrollment-password-confirmation" type="password" required autocomplete="new-password" /></div>
+        <div class="form-field full"><label for="enrollment-payment-method">Como prefere pagar? *</label><select id="enrollment-payment-method" required><option value="pix">Pix</option><option value="card">Cartão</option><option value="boleto">Boleto</option><option value="presencial">Pagamento na recepção</option></select><small id="payment-method-help">A equipe enviará as instruções do Pix após receber sua pré-matrícula.</small></div>
+        <label class="terms-row full"><input id="enrollment-terms" type="checkbox" required /><span>Autorizo o contato da Academia Lobo para concluir minha matrícula.</span></label>
+      </div>
+      <p class="enrollment-message" id="enrollment-message" aria-live="polite"></p>
+      <div class="form-actions"><button class="cta ghost" id="cancel-enrollment" type="button">Cancelar</button><button class="cta" id="submit-enrollment" type="submit">Enviar pré-matrícula</button></div>
+    </form>
+    <section class="enrollment-success hidden" id="enrollment-success" aria-live="polite">
+      <span class="success-mark">✓</span><p class="eyebrow-public">Pedido recebido</p><h2>Falta pouco para começar.</h2><p id="enrollment-success-text">Confirme seu e-mail e aguarde a confirmação do pagamento. Sua conta será liberada depois disso.</p><a class="cta" href="./index.html">Voltar para a página inicial</a>
+    </section>
+  </div>
   <script src="./matricula-publica.js"></script>
 </body>
 </html>

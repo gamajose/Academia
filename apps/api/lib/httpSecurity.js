@@ -14,7 +14,7 @@ function clientIp(req) {
 
 function applySecurityHeaders(req, res) {
   const origin = req.headers.origin;
-  if (origin && allowedOrigins.has(origin)) {
+  if (origin && isOriginAllowed(req)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   }
@@ -29,7 +29,14 @@ function applySecurityHeaders(req, res) {
 
 function isOriginAllowed(req) {
   const origin = req.headers.origin;
-  return !origin || allowedOrigins.size === 0 || allowedOrigins.has(origin);
+  if (!origin || allowedOrigins.size === 0 || allowedOrigins.has(origin)) return true;
+  try {
+    const parsed = new URL(origin);
+    const requestHost = String(req.headers.host || '').split(':')[0];
+    return parsed.protocol === 'http:' && parsed.hostname === requestHost && ['80', '8084', ''].includes(parsed.port);
+  } catch (_) {
+    return false;
+  }
 }
 
 function consumeRateLimit(req, key, options = {}) {
