@@ -57,7 +57,8 @@ jobs:
           source .env
           set +a
 
-          npm ci
+          # O projeto fica em uma pasta compartilhada do VMware, que não suporta symlinks.
+          npm ci --no-bin-links
           npm test
           npm run check
           npm run migrate

@@ -10,6 +10,7 @@ on:
       - 'apps/web/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
+      - '.github/workflows/deploy-main.yml'
 
   push:
     branches:
@@ -21,6 +22,7 @@ on:
       - 'apps/web/**'
       - 'database/**'
       - '.github/workflows/ci-api.yml'
+      - '.github/workflows/deploy-main.yml'
 
 concurrency:
   group: validar-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
