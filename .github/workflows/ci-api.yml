@@ -90,6 +90,8 @@ jobs:
           node --check apps/web/student-reset.js
           node --check apps/web/student-confirm.js
           node --check apps/web/student-portal.js
+          node --check apps/web/student-access.js
+          node --check apps/web/assessments.js
           node --check apps/web/training.js
           node --check apps/web/training-media.js
           node --check apps/web/account.js
@@ -108,6 +110,9 @@ jobs:
           ! grep -q 'id="logout-button"' apps/web/painel.html
           ! grep -q 'student-refresh-button' apps/web/student-portal.html
           ! grep -q 'student-logout-button' apps/web/student-portal.html
+          ! grep -q 'refresh-student-accounts-button' apps/web/student-accounts.html
+          grep -q 'open-student-account-modal' apps/web/student-accounts.html
+          grep -q 'open-assessment-modal' apps/web/assessments.html
           grep -q '.modal-close' apps/web/premium-ui.css
           grep -q 'student-cpf' apps/web/alunos.html
           grep -q 'plan-price-page' apps/web/planos.html

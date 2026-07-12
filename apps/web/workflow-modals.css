@@ -1,0 +1,54 @@
+body.modal-open { overflow: hidden; }
+
+.workspace-panel { gap: 18px; }
+.workspace-toolbar { align-items: flex-start; }
+.workspace-toolbar-copy { display: grid; gap: 5px; }
+.workspace-toolbar-copy h3 { margin: 0; }
+.workspace-toolbar-copy p { margin: 0; color: var(--muted); font-size: 14px; }
+.workspace-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.workspace-actions > * { width: auto !important; }
+
+.rules-note { display: grid; gap: 5px; padding: 15px 17px; border: 1px solid #e7dfd4; border-radius: 14px; background: #fcfaf7; }
+.rules-note strong { font-size: 14px; }
+.rules-note p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+.workflow-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.workflow-list > li { margin: 0; padding: 14px 16px; border: 1px solid #e7dfd4; border-radius: 14px; background: #fff; color: var(--text); }
+.workflow-list > li.empty-state { color: var(--muted); border-style: dashed; }
+.workflow-record { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.workflow-record-main { display: grid; gap: 4px; }
+.workflow-record-main strong { font-size: 15px; }
+.workflow-record-main span, .workflow-record-main small { color: var(--muted); }
+.workflow-record-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+.access-modal-card { width: min(680px, 96vw); }
+.assessment-modal-card { width: min(900px, 96vw); }
+.summary-modal-card { width: min(720px, 96vw); }
+.workflow-modal-form { display: grid; gap: 18px; }
+.workflow-modal-form .modal-header { margin-bottom: 0; }
+.workflow-modal-form .form-actions { margin-top: 0; }
+.workflow-modal-status { margin: 0; }
+
+.assessment-dashboard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 18px; align-items: start; }
+.assessment-dashboard .panel { min-height: 100%; }
+.assessment-dashboard h3 { margin: 0; }
+.assessment-dashboard .panel-header-copy { display: grid; gap: 5px; }
+.assessment-dashboard .panel-header-copy p { margin: 0; font-size: 13px; color: var(--muted); }
+
+.metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.summary-results { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
+.summary-results li { margin: 0; padding: 12px 14px; border: 1px solid #e7dfd4; border-radius: 12px; background: #fcfaf7; color: var(--text); }
+
+@media (max-width: 900px) {
+  .assessment-dashboard { grid-template-columns: 1fr; }
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .workspace-toolbar { align-items: stretch; }
+  .workspace-actions { width: 100%; justify-content: stretch; }
+  .workspace-actions > * { width: 100% !important; }
+  .workflow-record { grid-template-columns: 1fr; }
+  .workflow-record-actions { justify-content: flex-start; }
+  .metric-grid { grid-template-columns: 1fr; }
+}

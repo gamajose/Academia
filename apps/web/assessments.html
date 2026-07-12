@@ -3,67 +3,134 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Avaliacoes - Academia Lobo</title>
+  <title>Avaliações - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./workflow-modals.css?v=20260712-2126" />
 </head>
 <body>
   <main class="app-shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">Evolucao do aluno</p>
-        <h1>Avaliacoes fisicas e metas</h1>
-        <p>Registre medidas, acompanhe evolucao e defina metas individuais para o aluno.</p>
+      <p class="eyebrow">Evolução do aluno</p>
+      <h1>Avaliações físicas e metas</h1>
+      <p>Registre medidas, acompanhe a evolução e organize metas individuais.</p>
+    </section>
+
+    <section class="panel workspace-panel">
+      <div class="toolbar workspace-toolbar">
+        <div class="workspace-toolbar-copy">
+          <h3>Ações de acompanhamento</h3>
+          <p>Escolha uma ação para abrir o formulário correspondente.</p>
+        </div>
+        <div class="workspace-actions">
+          <button id="open-assessment-modal" type="button">Nova avaliação</button>
+          <button id="open-goal-modal" class="secondary" type="button">Nova meta</button>
+          <button id="open-summary-modal" class="secondary" type="button">Resumo comparativo</button>
+        </div>
       </div>
+      <p class="status-line" id="assessment-status" aria-live="polite">Carregando avaliações.</p>
     </section>
 
-    <section class="grid">
+    <section class="assessment-dashboard">
       <article class="panel">
-        <h3>Nova avaliacao</h3>
-        <select id="assessment-member"></select>
-        <input id="assessment-date" type="date" />
-        <input id="weight-kg" type="number" step="0.01" placeholder="Peso kg" />
-        <input id="height-cm" type="number" step="0.01" placeholder="Altura cm" />
-        <input id="body-fat" type="number" step="0.01" placeholder="Gordura corporal %" />
-        <input id="muscle-mass" type="number" step="0.01" placeholder="Massa muscular kg" />
-        <input id="waist-cm" type="number" step="0.01" placeholder="Cintura cm" />
-        <input id="chest-cm" type="number" step="0.01" placeholder="Peito cm" />
-        <input id="hip-cm" type="number" step="0.01" placeholder="Quadril cm" />
-        <input id="photo-url" placeholder="URL da foto de evolucao" />
-        <textarea id="assessment-notes" placeholder="Observacoes"></textarea>
-        <button id="create-assessment-button">Salvar avaliacao</button>
+        <div class="panel-header-copy">
+          <h3>Metas</h3>
+          <p>Metas atuais e histórico de objetivos definidos para os alunos.</p>
+        </div>
+        <ul class="workflow-list" id="goal-list"></ul>
       </article>
 
       <article class="panel">
-        <h3>Nova meta</h3>
-        <select id="goal-member"></select>
-        <input id="goal-type" placeholder="Tipo da meta. Ex: perder peso" />
-        <input id="goal-value" type="number" step="0.01" placeholder="Valor alvo" />
-        <input id="goal-date" type="date" />
-        <textarea id="goal-notes" placeholder="Observacoes da meta"></textarea>
-        <button id="create-goal-button">Salvar meta</button>
-        <p class="status-line" id="assessment-status">Aguardando.</p>
+        <div class="panel-header-copy">
+          <h3>Histórico de avaliações</h3>
+          <p>Últimas medições registradas pela equipe.</p>
+        </div>
+        <ul class="workflow-list" id="assessment-list"></ul>
       </article>
-    </section>
-
-    <section class="grid lists-grid">
-      <article class="panel">
-        <h3>Resumo comparativo</h3>
-        <select id="summary-member"></select>
-        <button id="load-summary-button">Carregar resumo</button>
-        <ul id="summary-list"></ul>
-      </article>
-      <article class="panel">
-        <h3>Metas</h3>
-        <ul id="goal-list"></ul>
-      </article>
-    </section>
-
-    <section class="panel">
-      <h3>Historico de avaliacoes</h3>
-      <ul id="assessment-list"></ul>
     </section>
   </main>
+
+  <div class="modal hidden" id="assessment-modal" role="dialog" aria-modal="true" aria-labelledby="assessment-modal-title" aria-hidden="true">
+    <form class="modal-card assessment-modal-card workflow-modal-form" id="assessment-form">
+      <div class="modal-header">
+        <div>
+          <h3 id="assessment-modal-title">Nova avaliação</h3>
+          <p>Registre as medidas e observações da avaliação física.</p>
+        </div>
+        <button type="button" id="close-assessment-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+
+      <div class="field">
+        <label for="assessment-member">Aluno *</label>
+        <select id="assessment-member" required></select>
+      </div>
+      <div class="field">
+        <label for="assessment-date">Data da avaliação</label>
+        <input id="assessment-date" type="date" />
+      </div>
+      <div class="metric-grid">
+        <div class="field"><label for="weight-kg">Peso (kg)</label><input id="weight-kg" type="number" step="0.01" /></div>
+        <div class="field"><label for="height-cm">Altura (cm)</label><input id="height-cm" type="number" step="0.01" /></div>
+        <div class="field"><label for="body-fat">Gordura corporal (%)</label><input id="body-fat" type="number" step="0.01" /></div>
+        <div class="field"><label for="muscle-mass">Massa muscular (kg)</label><input id="muscle-mass" type="number" step="0.01" /></div>
+        <div class="field"><label for="waist-cm">Cintura (cm)</label><input id="waist-cm" type="number" step="0.01" /></div>
+        <div class="field"><label for="chest-cm">Peito (cm)</label><input id="chest-cm" type="number" step="0.01" /></div>
+        <div class="field"><label for="hip-cm">Quadril (cm)</label><input id="hip-cm" type="number" step="0.01" /></div>
+      </div>
+      <div class="field"><label for="photo-url">URL da foto de evolução</label><input id="photo-url" type="url" placeholder="https://" /></div>
+      <div class="field"><label for="assessment-notes">Observações</label><textarea id="assessment-notes"></textarea></div>
+      <p class="status-line workflow-modal-status" id="assessment-form-status" aria-live="polite"></p>
+      <div class="form-actions">
+        <button class="secondary" id="cancel-assessment-modal" type="button">Cancelar</button>
+        <button id="create-assessment-button" type="submit">Salvar avaliação</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal hidden" id="goal-modal" role="dialog" aria-modal="true" aria-labelledby="goal-modal-title" aria-hidden="true">
+    <form class="modal-card access-modal-card workflow-modal-form" id="goal-form">
+      <div class="modal-header">
+        <div>
+          <h3 id="goal-modal-title">Nova meta</h3>
+          <p>Defina o objetivo, o valor alvo e a data prevista.</p>
+        </div>
+        <button type="button" id="close-goal-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="field"><label for="goal-member">Aluno *</label><select id="goal-member" required></select></div>
+      <div class="field"><label for="goal-type">Tipo da meta *</label><input id="goal-type" placeholder="Ex.: perder peso" required /></div>
+      <div class="form-grid">
+        <div class="field"><label for="goal-value">Valor alvo</label><input id="goal-value" type="number" step="0.01" /></div>
+        <div class="field"><label for="goal-date">Data prevista</label><input id="goal-date" type="date" /></div>
+      </div>
+      <div class="field"><label for="goal-notes">Observações da meta</label><textarea id="goal-notes"></textarea></div>
+      <p class="status-line workflow-modal-status" id="goal-form-status" aria-live="polite"></p>
+      <div class="form-actions">
+        <button class="secondary" id="cancel-goal-modal" type="button">Cancelar</button>
+        <button id="create-goal-button" type="submit">Salvar meta</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal hidden" id="summary-modal" role="dialog" aria-modal="true" aria-labelledby="summary-modal-title" aria-hidden="true">
+    <div class="modal-card summary-modal-card workflow-modal-form">
+      <div class="modal-header">
+        <div>
+          <h3 id="summary-modal-title">Resumo comparativo</h3>
+          <p>Compare a avaliação mais recente com o histórico do aluno.</p>
+        </div>
+        <button type="button" id="close-summary-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div class="field"><label for="summary-member">Aluno *</label><select id="summary-member"></select></div>
+      <div class="form-actions">
+        <button class="secondary" id="cancel-summary-modal" type="button">Fechar</button>
+        <button id="load-summary-button" type="button">Carregar resumo</button>
+      </div>
+      <p class="status-line workflow-modal-status" id="summary-status" aria-live="polite"></p>
+      <ul class="summary-results" id="summary-list"></ul>
+    </div>
+  </div>
+
   <script src="./nav.js"></script>
-  <script src="./assessments.js"></script>
+  <script src="./assessments.js?v=20260712-2126"></script>
 </body>
 </html>

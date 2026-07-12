@@ -40,7 +40,8 @@ async function handleUserRoutes(req, res, user, url, helpers) {
   if (req.method === 'GET' && url.pathname === '/api/users') {
     const result = await query(
       `SELECT u.id, u.name, u.email, u.phone, u.cpf, u.rg, u.birth_date, u.job_title,
-              u.access_profile, ap.name AS access_profile_name, u.role, u.is_active, u.address_details, u.created_at
+              u.access_profile, ap.name AS access_profile_name, u.role, u.is_active,
+              u.address_details, u.created_at, u.last_seen_at
        FROM users u LEFT JOIN access_profiles ap ON ap.gym_id = u.gym_id AND ap.slug = u.access_profile
        WHERE u.gym_id = $1 ORDER BY u.created_at DESC LIMIT 100`,
       [user.gym_id]
@@ -63,7 +64,7 @@ async function handleUserRoutes(req, res, user, url, helpers) {
     const result = await query(
       `INSERT INTO users (gym_id, name, email, password_hash, role, access_profile, phone, cpf, rg, birth_date, job_title, address_details)
        VALUES ($1, $2, lower($3), $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb)
-       RETURNING id, name, email, phone, cpf, rg, birth_date, job_title, access_profile, role, is_active, address_details, created_at`,
+       RETURNING id, name, email, phone, cpf, rg, birth_date, job_title, access_profile, role, is_active, address_details, created_at, last_seen_at`,
       [user.gym_id, String(input.name).trim(), input.email, hashPassword(input.password), role, access.slug, digits(input.phone, 24) || null, digits(input.cpf, 11) || null, nullable(input.rg), input.birth_date || null, nullable(input.job_title), JSON.stringify(input.address_details || {})]
     );
     await recordAudit(user, 'create', 'user', result.rows[0].id, { email: result.rows[0].email, role });
@@ -85,7 +86,7 @@ async function handleUserRoutes(req, res, user, url, helpers) {
               birth_date = $8, job_title = $9, role = $10, access_profile = $11,
               address_details = $12::jsonb
        WHERE id = $1 AND gym_id = $2
-       RETURNING id, name, email, phone, cpf, rg, birth_date, job_title, access_profile, role, is_active, address_details, created_at`,
+       RETURNING id, name, email, phone, cpf, rg, birth_date, job_title, access_profile, role, is_active, address_details, created_at, last_seen_at`,
       [input.user_id, user.gym_id, String(input.name).trim(), input.email, digits(input.phone, 24) || null, digits(input.cpf, 11) || null, nullable(input.rg), input.birth_date || null, nullable(input.job_title), role, access.slug, JSON.stringify(input.address_details || {})]
     );
     await recordAudit(user, 'update', 'user', result.rows[0].id, { role, access_profile: result.rows[0].access_profile });

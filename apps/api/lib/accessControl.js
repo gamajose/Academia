@@ -97,8 +97,25 @@ function canAccess(user, method, pathname, permissions = null) {
   return false;
 }
 
+async function touchUserActivity(query, user) {
+  if (!user?.sub || !user?.gym_id) return;
+  try {
+    await query(
+      `UPDATE users
+       SET last_seen_at = now()
+       WHERE id = $1 AND gym_id = $2
+         AND (last_seen_at IS NULL OR last_seen_at < now() - interval '1 minute')`,
+      [user.sub, user.gym_id]
+    );
+  } catch (_) {
+    // Mantém a autorização funcionando durante deploys em que a migration ainda não terminou.
+  }
+}
+
 async function loadAccessPermissions(query, user) {
-  if (!user || user.role === 'owner') return ALL_MODULE_PERMISSIONS;
+  if (!user) return null;
+  await touchUserActivity(query, user);
+  if (user.role === 'owner') return ALL_MODULE_PERMISSIONS;
   try {
     const result = await query('SELECT permissions FROM access_profiles WHERE gym_id = $1 AND slug = $2 AND is_active = true LIMIT 1', [user.gym_id, accessProfile(user)]);
     return result.rows[0]?.permissions || null;

@@ -6,21 +6,21 @@
   <title>Funcionários - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./users-access.css?v=20260712-2048" />
+  <link rel="stylesheet" href="./users-access.css?v=20260712-2126" />
 </head>
 <body>
   <main class="app-shell employees-page">
     <section class="hero">
       <p class="eyebrow">Equipe</p>
       <h1>Funcionários</h1>
-      <p>Visualize a equipe cadastrada, edite os dados dos funcionários e organize os perfis de acesso da academia.</p>
+      <p>Visualize a equipe cadastrada, acompanhe os últimos acessos e organize os perfis da academia.</p>
     </section>
 
     <section class="panel employee-list-panel">
       <div class="toolbar employee-list-toolbar">
         <div>
           <h3>Equipe cadastrada</h3>
-          <small>Consulte os funcionários, edite os dados e altere o status de acesso.</small>
+          <small>Consulte os funcionários, edite os dados e acompanhe a presença no sistema.</small>
         </div>
         <div class="toolbar-actions">
           <button id="new-user-button" type="button">Cadastrar funcionário</button>
@@ -30,14 +30,29 @@
       <p class="status-line" id="users-status" aria-live="polite">Carregando equipe.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Nome</th><th>Contato</th><th>Cargo</th><th>Permissão</th><th>Status</th><th>Ações</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Contato</th>
+              <th>Cargo</th>
+              <th>Permissão</th>
+              <th>Último acesso</th>
+              <th class="status-column">Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
           <tbody id="users-table"></tbody>
         </table>
+      </div>
+      <div class="presence-legend" aria-label="Legenda de status">
+        <span><i class="presence-dot presence-active" aria-hidden="true"></i> Ativo agora</span>
+        <span><i class="presence-dot presence-inactive" aria-hidden="true"></i> Inativo</span>
+        <span><i class="presence-dot presence-disabled" aria-hidden="true"></i> Desativado</span>
       </div>
     </section>
   </main>
 
-  <div class="modal hidden" id="employee-form-panel" role="dialog" aria-modal="true" aria-labelledby="employee-form-title">
+  <div class="modal hidden" id="employee-form-panel" role="dialog" aria-modal="true" aria-labelledby="employee-form-title" aria-hidden="true">
     <form class="modal-card employee-modal-card employee-form" id="employee-form">
       <div class="modal-header">
         <div>
@@ -95,6 +110,6 @@
   </div>
 
   <script src="./nav.js"></script>
-  <script src="./users.js?v=20260712-2048"></script>
+  <script src="./users.js?v=20260712-2126"></script>
 </body>
 </html>
