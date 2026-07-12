@@ -97,6 +97,7 @@ jobs:
           node --check apps/web/account.js
           node --check apps/web/security.js
           node --check apps/web/users.js
+          node --check apps/web/dashboard-session-stability.js
           node --check apps/web/dashboard-auto-refresh.js
           python -m py_compile apps/web/site_server.py
       - name: Proteger decisões de experiência
@@ -113,6 +114,7 @@ jobs:
           ! grep -q 'refresh-student-accounts-button' apps/web/student-accounts.html
           grep -q 'open-student-account-modal' apps/web/student-accounts.html
           grep -q 'open-assessment-modal' apps/web/assessments.html
+          grep -q 'dashboard-session-stability.js' apps/web/painel.html
           grep -q '.modal-close' apps/web/premium-ui.css
           grep -q 'student-cpf' apps/web/alunos.html
           grep -q 'plan-price-page' apps/web/planos.html
