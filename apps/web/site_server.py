@@ -11,6 +11,7 @@ UPLOAD_ROOT = Path(os.environ.get('EDITOR_UPLOAD_DIR', str(ROOT / 'uploads'))).r
 PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
 STUDENT_HTML = {'student-portal.html'}
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
+NO_CACHE_SUFFIXES = ('.html', '.js', '.css')
 
 
 def cookie_value(cookie, name):
@@ -49,6 +50,14 @@ class SiteHandler(SimpleHTTPRequestHandler):
             return str(candidate)
         return str(ROOT / name)
 
+    def end_headers(self):
+        name = self.path.split('?', 1)[0].split('#', 1)[0].lower()
+        if not name or name == '/' or name.endswith(NO_CACHE_SUFFIXES):
+            self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+        super().end_headers()
+
     def redirect(self, location):
         self.send_response(302)
         self.send_header('Location', location)
@@ -78,6 +87,7 @@ class SiteHandler(SimpleHTTPRequestHandler):
                 self.redirect('/student-login.html')
             return
         return super().do_GET()
+
 
 if __name__ == '__main__':
     os.chdir(ROOT)
