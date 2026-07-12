@@ -15,6 +15,7 @@ const { handleOnlineSignupRoutes } = require('./features/onlineSignupRoutes');
 const { handleAccessRoutes } = require('./features/accessRoutes');
 const { handleProductToolsRoutes } = require('./features/productToolsRoutes');
 const { handleMemberWorkspaceRoutes } = require('./features/memberWorkspaceRoutes');
+const { handleManagementRoutes } = require('./features/managementRoutes');
 const { handleEngagementRoutes } = require('./features/engagementRoutes');
 
 const port = Number(process.env.PORT || 3004);
@@ -75,7 +76,6 @@ async function registerGym(req, res) {
   if (!input.gymName || !input.ownerName || !input.email || !input.password) return send(req, res, 400, { error: 'dados_invalidos' });
   const passwordCheck = validatePassword(input.password);
   if (!passwordCheck.valid) return send(req, res, 400, { error: passwordCheck.error });
-
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -197,6 +197,8 @@ const server = http.createServer(async (req, res) => {
     if (productToolsHandled !== false) return productToolsHandled;
     const memberWorkspaceHandled = await handleMemberWorkspaceRoutes(req, res, user, url, helpers);
     if (memberWorkspaceHandled !== false) return memberWorkspaceHandled;
+    const managementHandled = await handleManagementRoutes(req, res, user, url, helpers);
+    if (managementHandled !== false) return managementHandled;
     const engagementHandled = await handleEngagementRoutes(req, res, user, url, helpers);
     if (engagementHandled !== false) return engagementHandled;
     const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
