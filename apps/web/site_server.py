@@ -2,6 +2,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import os
 import json
+import re
 from urllib import request, error
 
 PORT = int(os.environ.get('PORT', '8084'))
@@ -12,6 +13,9 @@ PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'p
 STUDENT_HTML = {'student-portal.html'}
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
 NO_CACHE_SUFFIXES = ('.html', '.js', '.css')
+BUILD_VERSION = '20260712-2355'
+LEGACY_REDIRECTS = {'permissions.html': f'/users.html?v={BUILD_VERSION}'}
+NAV_SCRIPT_PATTERN = re.compile(r'<script\s+src=["\']\./nav\.js(?:\?[^"\']*)?["\']></script>', re.IGNORECASE)
 
 
 def cookie_value(cookie, name):
@@ -78,14 +82,37 @@ class SiteHandler(SimpleHTTPRequestHandler):
         profile = api_get('/api/me', admin_token)
         return bool(profile and profile.get('role') in ADMIN_ROLES)
 
+    def serve_html(self, name):
+        target = (ROOT / name).resolve()
+        if ROOT not in target.parents or not target.is_file():
+            self.send_error(404, 'Página não encontrada')
+            return
+
+        html = target.read_text(encoding='utf-8')
+        versioned_nav = f'<script src="./nav.js?v={BUILD_VERSION}"></script>'
+        html = NAV_SCRIPT_PATTERN.sub(versioned_nav, html)
+        body = html.encode('utf-8')
+
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         name = self.path.split('?', 1)[0].split('#', 1)[0].lstrip('/') or 'index.html'
-        if not self.authorized_for_html(name):
-            if name in STUDENT_HTML:
-                self.redirect('/student-login.html')
-            else:
-                self.redirect('/student-login.html')
+
+        if name in LEGACY_REDIRECTS:
+            self.redirect(LEGACY_REDIRECTS[name])
             return
+
+        if not self.authorized_for_html(name):
+            self.redirect('/student-login.html')
+            return
+
+        if name.endswith('.html'):
+            return self.serve_html(name)
+
         return super().do_GET()
 
 
