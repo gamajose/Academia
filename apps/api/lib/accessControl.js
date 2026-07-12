@@ -16,6 +16,7 @@ function canAccess(user, method, pathname) {
   if (user.role === 'staff') {
     const allowedExact = [
       '/api/members',
+      '/api/members/workspace',
       '/api/checkins/recent',
       '/api/dashboard/summary',
       '/api/me',
@@ -23,6 +24,7 @@ function canAccess(user, method, pathname) {
       '/api/alerts'
     ];
     if (isReadOnly(method) && allowedExact.includes(pathname)) return true;
+    if (pathname === '/api/members/training-profile' && method === 'POST') return true;
     if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
     if (pathname.startsWith('/api/training') && (method === 'GET' || method === 'POST')) return true;
     if (pathname.startsWith('/api/assessments') && (method === 'GET' || method === 'POST')) return true;
