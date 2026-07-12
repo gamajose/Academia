@@ -79,6 +79,7 @@ jobs:
           node --check apps/web/alunos.js
           node --check apps/web/planos.js
           node --check apps/web/student-login.js
+          node --check apps/web/student-portal.js
           node --check apps/web/dashboard-auto-refresh.js
       - name: Proteger decisões de experiência
         shell: bash
@@ -89,7 +90,9 @@ jobs:
           ! grep -q "\['index.html', 'Site'\]" apps/web/nav.js
           ! grep -q 'id="refresh-button"' apps/web/painel.html
           ! grep -q 'id="logout-button"' apps/web/painel.html
-          grep -q 'class="modal-close"' apps/web/premium-ui.css || grep -q '.modal-close' apps/web/premium-ui.css
+          ! grep -q 'student-refresh-button' apps/web/student-portal.html
+          ! grep -q 'student-logout-button' apps/web/student-portal.html
+          grep -q '.modal-close' apps/web/premium-ui.css
           grep -q 'student-cpf' apps/web/alunos.html
           grep -q 'plan-price-page' apps/web/planos.html
 
