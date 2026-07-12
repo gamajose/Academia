@@ -201,28 +201,43 @@ const server = http.createServer(async (req, res) => {
     const accessHandled = await handleAccessRoutes(req, res, user, url, helpers);
     if (accessHandled !== false) return accessHandled;
     const productToolsHandled = await handleProductToolsRoutes(req, res, user, url, helpers);
-÷-¢G§²ÚîÆ­yÓonst { createPixPayment, createPaypalOrder } = require('../lib/paymentProviders');
+    if (productToolsHandled !== false) return productToolsHandled;
+    const memberWorkspaceHandled = await handleMemberWorkspaceRoutes(req, res, user, url, helpers);
+    if (memberWorkspaceHandled !== false) return memberWorkspaceHandled;
+    const studentClassHandled = await handleStudentClassRoutes(req, res, user, url, helpers);
+    if (studentClassHandled !== false) return studentClassHandled;
+    const managementHandled = await handleManagementRoutes(req, res, user, url, helpers);
+    if (managementHandled !== false) return managementHandled;
+    const engagementHandled = await handleEngagementRoutes(req, res, user, url, helpers);
+    if (engagementHandled !== false) return engagementHandled;
+    const financeSalesHandled = await handleFinanceSalesRoutes(req, res, user, url, helpers);
+    if (financeSalesHandled !== false) return financeSalesHandled;
+    const trainingHandled = await handleTrainingRoutes(req, res, user, url, helpers);
+    if (trainingHandled !== false) return trainingHandled;
+    const trainingPlansHandled = await handleTrainingPlansRoutes(req, res, user, url, helpers);
+    if (trainingPlansHandled !== false) return trainingPlansHandled;
+    const adminHandled = await handleAdminRoutes(req, res, user, url, helpers);
+    if (adminHandled !== false) return adminHandled;
 
-test('Pix exige credencial do Mercado Pago', async () => {
-  const previous = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  delete process.env.MERCADOPAGO_ACCESS_TOKEN;
-  delete process.env.MP_ACCESS_TOKEN;
-  await assert.rejects(
-    createPixPayment({ enrollmentId: 'test', email: 'aluno@example.com', planName: 'Essencial', amountCents: 8990 }),
-    (error) => error.code === 'pagamento_nao_configurado' && error.provider === 'mercadopago'
-  );
-  if (previous) process.env.MERCADOPAGO_ACCESS_TOKEN = previous;
+    if (req.method === 'GET' && url.pathname === '/api/members') return listMembers(req, res, user);
+    if (req.method === 'POST' && url.pathname === '/api/members') return createMember(req, res, user);
+    if (req.method === 'GET' && url.pathname === '/api/plans') return listPlans(req, res, user);
+    if (req.method === 'POST' && url.pathname === '/api/plans') return createPlan(req, res, user);
+
+    const membershipsHandled = await handleMemberships(req, res, user, url, helpers);
+    if (membershipsHandled !== false) return membershipsHandled;
+    if (req.method === 'POST' && url.pathname === '/api/checkins') return createCheckin(req, res, user);
+    if (req.method === 'GET' && url.pathname === '/api/checkins/recent') return recentCheckins(req, res, user);
+    const paymentsHandled = await handlePayments(req, res, user, url, helpers);
+    if (paymentsHandled !== false) return paymentsHandled;
+    if (req.method === 'GET' && url.pathname === '/api/dashboard/summary') return dashboard(req, res, user);
+    return send(req, res, 404, { error: 'not_found' });
+  } catch (error) {
+    if (error && error.statusCode) return send(req, res, error.statusCode, { error: error.message || 'erro_requisicao' });
+    console.error(error);
+    return send(req, res, 500, { error: 'internal_error' });
+  }
 });
 
-test('PayPal exige client id e segredo', async () => {
-  const previousId = process.env.PAYPAL_CLIENT_ID;
-  const previousSecret = process.env.PAYPAL_CLIENT_SECRET;
-  delete process.env.PAYPAL_CLIENT_ID;
-  delete process.env.PAYPAL_CLIENT_SECRET;
-  await assert.rejects(
-    createPaypalOrder({ enrollmentId: 'test', planName: 'Essencial', amountCents: 8990 }),
-    (error) => error.code === 'pagamento_nao_configurado' && error.provider === 'paypal'
-  );
-  if (previousId) process.env.PAYPAL_CLIENT_ID = previousId;
-  if (previousSecret) process.env.PAYPAL_CLIENT_SECRET = previousSecret;
-});
+server.listen(port, '0.0.0.0', () => console.log(`academia-api listening on ${port}`));
+
