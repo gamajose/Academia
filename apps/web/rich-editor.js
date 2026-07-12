@@ -3,6 +3,8 @@
   const editorIds = new Map();
   const scopes = new Map();
   const dirtyIds = new Set();
+  const readyIds = new Set();
+  const baselines = new Map();
   const draftTimers = new Map();
   const ALLOWED_TAGS = [
     'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'span', 'div',
@@ -93,8 +95,18 @@
   }
 
   function markDirty(id) {
-    dirtyIds.add(id);
+    if (!readyIds.has(id)) return;
     const html = getValue(id);
+    const baseline = baselines.get(id);
+    if (baseline !== undefined && html === baseline) {
+      dirtyIds.delete(id);
+      clearTimeout(draftTimers.get(id));
+      localStorage.removeItem(draftKey(id));
+      updateMeta(id, html);
+      setStatus(id, 'Conteúdo salvo.');
+      return;
+    }
+    dirtyIds.add(id);
     const error = contentError(html);
     updateMeta(id, html);
     setStatus(id, error || 'Alterações não salvas.', error ? 'error' : 'dirty');
@@ -157,11 +169,13 @@
       setup: (editor) => {
         editor.on('init', () => {
           editorIds.set(id, editor);
+          readyIds.add(id);
+          baselines.set(id, sanitizeContent(editor.getContent({ format: 'html' })));
           editor.richMeta = registerMeta(id, editor.getContainer());
           updateMeta(id, editor.getContent({ format: 'html' }));
           setStatus(id, 'Editor pronto.');
         });
-        editor.on('change input undo redo keyup NodeChange SetContent', () => markDirty(id));
+        editor.on('change input undo redo', () => markDirty(id));
       }
     };
   }
@@ -220,6 +234,7 @@
   }
 
   function markClean(id) {
+    baselines.set(id, getValue(id));
     dirtyIds.delete(id);
     clearTimeout(draftTimers.get(id));
     localStorage.removeItem(draftKey(id));
@@ -227,6 +242,7 @@
   }
 
   function markBaseline(id) {
+    baselines.set(id, getValue(id));
     dirtyIds.delete(id);
     clearTimeout(draftTimers.get(id));
     setStatus(id, 'Conteúdo salvo.');
