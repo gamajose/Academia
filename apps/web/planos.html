@@ -11,39 +11,68 @@
 <body>
   <main class="app-shell">
     <section class="hero">
-      <div>
-        <p class="eyebrow">Administração</p>
-        <h1>Planos</h1>
-        <p>Planos comerciais com preço, duração, benefícios, regras e destaque público.</p>
-      </div>
-      <div class="health-card"><span>Módulo</span><strong>Planos</strong><small>preço, benefícios e status</small></div>
+      <p class="eyebrow">Administração</p>
+      <h1>Planos</h1>
+      <p>Configure valores, duração, benefícios e regras de forma clara para a equipe e para os alunos.</p>
     </section>
 
     <section class="panel">
       <div class="toolbar">
-        <h2>Lista de planos</h2>
-        <button id="new-plan-button">Cadastrar plano</button>
+        <div><h2>Planos cadastrados</h2><small>Os planos ativos podem ser exibidos na página pública.</small></div>
+        <button id="new-plan-button" type="button">Cadastrar plano</button>
       </div>
       <p class="status-line" id="plans-status">Carregando...</p>
       <ul id="plans-page-list"></ul>
     </section>
   </main>
 
-  <div class="modal hidden" id="plan-modal">
-    <div class="modal-card">
-      <div class="toolbar"><h3>Plano</h3><button class="secondary" id="close-plan-modal">Fechar</button></div>
-      <input id="plan-id" type="hidden" />
-      <div class="grid">
-        <input id="plan-name-page" placeholder="Nome do plano" />
-        <input id="plan-price-page" type="number" placeholder="Valor em centavos. Ex: 12990" />
-        <input id="plan-days-page" type="number" placeholder="Duração em dias" />
-        <input id="plan-highlight-page" placeholder="Destaque público. Ex: Mais vendido" />
+  <div class="modal hidden" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-modal-title">
+    <form class="modal-card" id="plan-form">
+      <div class="modal-header">
+        <div>
+          <h3 id="plan-modal-title">Plano</h3>
+          <p>Defina os dados comerciais e a apresentação do plano.</p>
+        </div>
+        <button class="secondary" type="button" id="close-plan-modal">Fechar</button>
       </div>
-      <textarea id="plan-description-page" placeholder="Descrição do plano"></textarea>
-      <textarea id="plan-benefits-page" placeholder="Benefícios inclusos, um por linha"></textarea>
-      <textarea id="plan-rules-page" placeholder="Regras e observações do plano"></textarea>
-      <button id="save-plan-page-button">Salvar plano</button>
-    </div>
+      <input id="plan-id" type="hidden" />
+
+      <section class="form-section">
+        <h4>Informações principais</h4>
+        <div class="form-grid">
+          <div class="field"><label for="plan-name-page">Nome do plano *</label><input id="plan-name-page" required placeholder="Ex.: Performance" /></div>
+          <div class="field"><label for="plan-price-page">Preço mensal *</label><input id="plan-price-page" inputmode="decimal" placeholder="R$ 129,90" required /></div>
+          <div class="field"><label for="plan-duration-value">Duração do plano *</label><input id="plan-duration-value" type="number" min="1" value="1" required /></div>
+          <div class="field"><label for="plan-duration-unit">Unidade da duração</label><select id="plan-duration-unit"><option value="months">Mês(es)</option><option value="days">Dia(s)</option></select></div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h4>Apresentação do plano</h4>
+        <p class="section-help">Use a barra para aplicar negrito, itálico, listas, links, cor e imagens.</p>
+
+        <div class="rich-field">
+          <label>Descrição</label>
+          <div class="editor-toolbar" data-editor="plan-description-page"></div>
+          <div id="plan-description-page" class="rich-editor" contenteditable="true" data-placeholder="Apresente o plano de forma clara e objetiva."></div>
+        </div>
+        <div class="rich-field">
+          <label>Benefícios incluídos</label>
+          <div class="editor-toolbar" data-editor="plan-benefits-page"></div>
+          <div id="plan-benefits-page" class="rich-editor" contenteditable="true" data-placeholder="Crie uma lista com os benefícios do plano."></div>
+        </div>
+        <div class="rich-field">
+          <label>Regras e observações</label>
+          <div class="editor-toolbar" data-editor="plan-rules-page"></div>
+          <div id="plan-rules-page" class="rich-editor" contenteditable="true" data-placeholder="Informe horários, limites ou condições importantes."></div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button class="secondary" type="button" id="cancel-plan-button">Cancelar</button>
+        <button type="submit" id="save-plan-page-button">Salvar plano</button>
+      </div>
+    </form>
   </div>
 
   <script src="./guard.js"></script>
