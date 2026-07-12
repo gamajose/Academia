@@ -15,6 +15,7 @@ const { handleOnlineSignupRoutes } = require('./features/onlineSignupRoutes');
 const { handleAccessRoutes } = require('./features/accessRoutes');
 const { handleProductToolsRoutes } = require('./features/productToolsRoutes');
 const { handleMemberWorkspaceRoutes } = require('./features/memberWorkspaceRoutes');
+const { handleStudentClassRoutes } = require('./features/studentClassRoutes');
 const { handleManagementRoutes } = require('./features/managementRoutes');
 const { handleEngagementRoutes } = require('./features/engagementRoutes');
 
@@ -197,6 +198,8 @@ const server = http.createServer(async (req, res) => {
     if (productToolsHandled !== false) return productToolsHandled;
     const memberWorkspaceHandled = await handleMemberWorkspaceRoutes(req, res, user, url, helpers);
     if (memberWorkspaceHandled !== false) return memberWorkspaceHandled;
+    const studentClassHandled = await handleStudentClassRoutes(req, res, user, url, helpers);
+    if (studentClassHandled !== false) return studentClassHandled;
     const managementHandled = await handleManagementRoutes(req, res, user, url, helpers);
     if (managementHandled !== false) return managementHandled;
     const engagementHandled = await handleEngagementRoutes(req, res, user, url, helpers);
