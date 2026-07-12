@@ -1,0 +1,29 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+process.env.DATABASE_URL ||= 'postgres://localhost/academia_test';
+const { validVideoSource } = require('../features/trainingRoutes');
+const { videoSignatureMatches, MAX_VIDEO_BYTES } = require('../features/editorRoutes');
+
+test('aceita fontes de video http, https e uploads locais', () => {
+  assert.equal(validVideoSource('https://cdn.example.com/treino.mp4'), true);
+  assert.equal(validVideoSource('http://videos.example.com/a.webm'), true);
+  assert.equal(validVideoSource('/uploads/exercicio-123.mp4'), true);
+  assert.equal(validVideoSource(''), true);
+});
+
+test('rejeita fontes de video inseguras ou malformadas', () => {
+  assert.equal(validVideoSource('javascript:alert(1)'), false);
+  assert.equal(validVideoSource('ftp://example.com/treino.mp4'), false);
+  assert.equal(validVideoSource('/uploads/../segredo.mp4'), false);
+  assert.equal(validVideoSource('x'.repeat(1001)), false);
+});
+
+test('valida assinaturas dos formatos de video aceitos', () => {
+  const mp4 = Buffer.alloc(16);
+  mp4.write('ftyp', 4, 'ascii');
+  assert.equal(videoSignatureMatches(mp4, 'video/mp4'), true);
+  assert.equal(videoSignatureMatches(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]), 'video/webm'), true);
+  assert.equal(videoSignatureMatches(Buffer.from('OggS'), 'video/ogg'), true);
+  assert.equal(videoSignatureMatches(Buffer.from('not-a-video'), 'video/mp4'), false);
+  assert.equal(MAX_VIDEO_BYTES, 50 * 1024 * 1024);
+});

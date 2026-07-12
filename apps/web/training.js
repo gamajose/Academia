@@ -13,13 +13,14 @@ function setTrainingStatus(text) {
 }
 
 async function api(path, options = {}) {
+  const headers = {
+    Authorization: `Bearer ${trainingToken}`,
+    ...(options.headers || {})
+  };
+  if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
   const response = await fetch(`${TRAINING_API_BASE_URL}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${trainingToken}`,
-      ...(options.headers || {})
-    }
+    headers
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'erro_requisicao');
@@ -67,8 +68,21 @@ function renderAll() {
   exerciseList.innerHTML = '';
   for (const item of exercises) {
     const row = document.createElement('li');
-    const video = item.video_url ? ` - video: ${item.video_url}` : '';
-    row.textContent = `${item.name} - ${item.muscle_group} - ${item.level}${video}`;
+    row.className = 'entity-card';
+    const main = document.createElement('div');
+    main.className = 'entity-main';
+    const name = document.createElement('strong');
+    name.textContent = item.name;
+    const detail = document.createElement('span');
+    detail.textContent = `${item.muscle_group} · ${item.level}`;
+    main.append(name, detail);
+    row.appendChild(main);
+    if (item.video_url && window.AcademiaTrainingMedia) {
+      const media = document.createElement('div');
+      media.className = 'video-preview-slot';
+      window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+      row.appendChild(media);
+    }
     exerciseList.appendChild(row);
   }
 
@@ -85,20 +99,133 @@ function renderAll() {
   }
 }
 
+const MAX_TRAINING_VIDEO_BYTES = 50 * 1024 * 1024;
+
+function setVideoStatus(text) {
+  t('exercise-video-status').textContent = text;
+}
+
+function clearVideoPreview() {
+  const preview = t('exercise-video-preview');
+  if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
+  preview.removeAttribute('src');
+  preview.hidden = true;
+  preview.load();
+}
+
+function isAllowedVideoFile(file) {
+  return file && ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'].includes(file.type);
+}
+
+function previewSelectedFile(file) {
+  if (!file) {
+    clearVideoPreview();
+    setVideoStatus('Nenhum video selecionado.');
+    return false;
+  }
+  if (!isAllowedVideoFile(file)) {
+    clearVideoPreview();
+    setVideoStatus('Formato invalido. Escolha MP4, WebM, OGG ou MOV.');
+    return false;
+  }
+  if (file.size > MAX_TRAINING_VIDEO_BYTES) {
+    clearVideoPreview();
+    setVideoStatus('O video ultrapassa o limite de 50 MB.');
+    return false;
+  }
+  const preview = t('exercise-video-preview');
+  if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
+  preview.src = URL.createObjectURL(file);
+  preview.hidden = false;
+  preview.play().catch(() => {});
+  setVideoStatus(`Video selecionado: ${file.name}`);
+  return true;
+}
+
+function previewVideoLink(value) {
+  const url = value.trim();
+  if (!url) {
+    clearVideoPreview();
+    setVideoStatus('Cole um link de video para visualizar.');
+    return;
+  }
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('protocolo');
+  } catch (_) {
+    clearVideoPreview();
+    setVideoStatus('Use um link iniciado por http:// ou https://.');
+    return;
+  }
+  if (window.AcademiaTrainingMedia?.isDirectVideoUrl(url)) {
+    const preview = t('exercise-video-preview');
+    if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
+    preview.src = url;
+    preview.hidden = false;
+    preview.play().catch(() => {});
+    setVideoStatus('Link direto detectado. O video sera reproduzido em loop.');
+  } else {
+    clearVideoPreview();
+    setVideoStatus('Link salvo. Paginas de video serao abertas em outra guia.');
+  }
+}
+
+async function uploadTrainingVideo(file) {
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  const result = await api('/api/training/videos', { method: 'POST', body: formData });
+  return result.location;
+}
+
+function setVideoSourceMode() {
+  const isUpload = t('exercise-video-source').value === 'upload';
+  t('exercise-video-upload-field').classList.toggle('hidden', !isUpload);
+  t('exercise-video-link-field').classList.toggle('hidden', isUpload);
+  clearVideoPreview();
+  setVideoStatus(isUpload ? 'Nenhum video selecionado.' : 'Cole um link de video para visualizar.');
+}
+
 async function createExercise() {
-  await api('/api/training/exercises', {
-    method: 'POST',
-    body: JSON.stringify({
-      name: t('exercise-name').value.trim(),
-      muscle_group: t('exercise-group').value.trim(),
-      equipment: t('exercise-equipment').value.trim(),
-      level: t('exercise-level').value,
-      instructions: t('exercise-instructions').value.trim(),
-      video_url: t('exercise-video').value.trim()
-    })
-  });
-  setTrainingStatus('Exercicio criado.');
-  await loadBase();
+  const button = t('create-exercise-button');
+  button.disabled = true;
+  try {
+    const source = t('exercise-video-source').value;
+    let videoUrl = '';
+    if (source === 'upload') {
+      const file = t('exercise-video-file').files[0];
+      if (file && !previewSelectedFile(file)) return;
+      if (file) {
+        setTrainingStatus('Enviando video...');
+        videoUrl = await uploadTrainingVideo(file);
+      }
+    } else {
+      videoUrl = t('exercise-video-url').value.trim();
+      if (videoUrl) {
+        const parsed = new URL(videoUrl);
+        if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('link_video_invalido');
+      }
+    }
+    await api('/api/training/exercises', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: t('exercise-name').value.trim(),
+        muscle_group: t('exercise-group').value.trim(),
+        equipment: t('exercise-equipment').value.trim(),
+        level: t('exercise-level').value,
+        instructions: t('exercise-instructions').value.trim(),
+        video_url: videoUrl || null
+      })
+    });
+    setTrainingStatus('Exercicio criado.');
+    t('exercise-video-file').value = '';
+    t('exercise-video-url').value = '';
+    setVideoSourceMode();
+    await loadBase();
+  } catch (error) {
+    setTrainingStatus(`Erro: ${error.message}`);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function saveProfile() {
@@ -192,6 +319,9 @@ async function reviewPlan() {
 }
 
 t('create-exercise-button').addEventListener('click', createExercise);
+t('exercise-video-source').addEventListener('change', setVideoSourceMode);
+t('exercise-video-file').addEventListener('change', (event) => previewSelectedFile(event.target.files[0]));
+t('exercise-video-url').addEventListener('input', (event) => previewVideoLink(event.target.value));
 t('save-profile-button').addEventListener('click', saveProfile);
 t('create-plan-button').addEventListener('click', createPlan);
 t('create-day-button').addEventListener('click', createDay);

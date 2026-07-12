@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Treinos - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./training-media.css" />
 </head>
 <body>
   <main class="app-shell">
@@ -24,7 +25,27 @@
         <input id="exercise-equipment" placeholder="Equipamento" />
         <select id="exercise-level"><option value="frango">Frango</option><option value="intermediario">Intermediario</option><option value="avancado">Avancado</option></select>
         <textarea id="exercise-instructions" placeholder="Instrucoes de execucao"></textarea>
-        <input id="exercise-video" placeholder="URL do video" />
+        <div class="video-source-fields">
+          <div class="field">
+            <label for="exercise-video-source">Como adicionar o video</label>
+            <select id="exercise-video-source">
+              <option value="upload">Escolher arquivo da maquina</option>
+              <option value="link">Usar link da internet</option>
+            </select>
+          </div>
+          <div class="field" id="exercise-video-upload-field">
+            <label for="exercise-video-file">Arquivo de video</label>
+            <input id="exercise-video-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" />
+            <small>MP4, WebM, OGG ou MOV. Limite de 50 MB.</small>
+          </div>
+          <div class="field hidden" id="exercise-video-link-field">
+            <label for="exercise-video-url">Link direto do video</label>
+            <input id="exercise-video-url" type="url" inputmode="url" placeholder="https://.../exercicio.mp4" />
+            <small>Links diretos de MP4, WebM, OGG ou MOV tocam aqui. Links de paginas abrem em outra guia.</small>
+          </div>
+          <video id="exercise-video-preview" class="exercise-video-preview" hidden autoplay muted loop playsinline preload="metadata" controls></video>
+          <p class="status-line" id="exercise-video-status">Nenhum video selecionado.</p>
+        </div>
         <button id="create-exercise-button">Cadastrar exercicio</button>
       </article>
 
@@ -88,6 +109,7 @@
     </section>
   </main>
   <script src="./nav.js"></script>
+  <script src="./training-media.js"></script>
   <script src="./training.js"></script>
 </body>
 </html>

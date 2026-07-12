@@ -1,6 +1,21 @@
 const { recordAudit } = require('../lib/audit');
 const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
 
+function validVideoSource(value) {
+  const text = String(value || '').trim();
+  if (!text) return true;
+  if (text.startsWith('/uploads/')) {
+    const relative = text.slice('/uploads/'.length);
+    return /^[A-Za-z0-9._/-]+$/.test(relative) && !relative.split('/').includes('..');
+  }
+  try {
+    const parsed = new URL(text);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch (_) {
+    return false;
+  }
+}
+
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null;
   const parsed = Number(value);
@@ -76,7 +91,9 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && url.pathname === '/api/training/exercises') {
     const input = await body(req);
     if (!input.name || !input.muscle_group) return send(res, 400, { error: 'dados_invalidos' });
-    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, muscle_group, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, input.muscle_group, input.equipment || null, normalizeLevel(input.level), input.instructions || null, input.video_url || null]);
+    const videoUrl = String(input.video_url || '').trim();
+    if (videoUrl.length > 1000 || !validVideoSource(videoUrl)) return send(res, 400, { error: 'video_invalido' });
+    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, muscle_group, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, input.muscle_group, input.equipment || null, normalizeLevel(input.level), input.instructions || null, videoUrl || null]);
     await recordAudit(user, 'create', 'exercise', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 201, result.rows[0]);
   }
@@ -107,4 +124,4 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
   return false;
 }
 
-module.exports = { handleTrainingRoutes };
+module.exports = { handleTrainingRoutes, validVideoSource };

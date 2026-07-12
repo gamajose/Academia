@@ -44,17 +44,11 @@ function renderExercises() {
     const subtitle = `${item.sets || '-'} séries · ${item.reps || '-'} repetições · ${item.rest_seconds || '-'}s de descanso`;
     const detail = [item.day_title, item.instructions].filter(Boolean).join(' · ');
     const row = makeEntity(title, subtitle, detail);
-    if (item.video_url) {
-      const actions = document.createElement('div');
-      actions.className = 'entity-actions';
-      const link = document.createElement('a');
-      link.className = 'mini-button secondary';
-      link.href = item.video_url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = 'Ver vídeo';
-      actions.appendChild(link);
-      row.appendChild(actions);
+    if (item.video_url && window.AcademiaTrainingMedia) {
+      const media = document.createElement('div');
+      media.className = 'video-preview-slot';
+      window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+      row.appendChild(media);
     }
     list.appendChild(row);
   }

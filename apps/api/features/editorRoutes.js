@@ -4,11 +4,18 @@ const fs = require('fs');
 const path = require('path');
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 const allowedTypes = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/gif': 'gif',
   'image/webp': 'webp'
+};
+const videoTypes = {
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/ogg': 'ogv',
+  'video/quicktime': 'mov'
 };
 const uploadRoot = path.resolve(process.env.EDITOR_UPLOAD_DIR || path.resolve(__dirname, '../../web/uploads'));
 
@@ -20,15 +27,25 @@ function signatureMatches(buffer, mime) {
   return false;
 }
 
+function videoSignatureMatches(buffer, mime) {
+  if (mime === 'video/mp4' || mime === 'video/quicktime') return buffer.length > 12 && buffer.subarray(4, 8).toString('ascii') === 'ftyp';
+  if (mime === 'video/webm') return buffer.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]));
+  if (mime === 'video/ogg') return buffer.subarray(0, 4).toString('ascii') === 'OggS';
+  return false;
+}
+
 async function removeFile(filePath) {
   if (!filePath) return;
   await fs.promises.unlink(filePath).catch(() => {});
 }
 
-function handleImageUpload(req, res, helpers) {
+function handleMediaUpload(req, res, helpers, mediaType) {
   const { send } = helpers;
+  const isVideo = mediaType === 'video';
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+  const types = isVideo ? videoTypes : allowedTypes;
   const contentLength = Number(req.headers['content-length'] || 0);
-  if (contentLength && contentLength > MAX_IMAGE_BYTES + 1024 * 1024) return send(res, 413, { error: 'imagem_muito_grande' });
+  if (contentLength && contentLength > maxBytes + 1024 * 1024) return send(res, 413, { error: isVideo ? 'video_muito_grande' : 'imagem_muito_grande' });
 
   return new Promise((resolve) => {
     let settled = false;
@@ -50,7 +67,7 @@ function handleImageUpload(req, res, helpers) {
     try {
       parser = Busboy({
         headers: req.headers,
-        limits: { fileSize: MAX_IMAGE_BYTES, files: 1, fields: 2 }
+        limits: { fileSize: maxBytes, files: 1, fields: 2 }
       });
     } catch (_) {
       return finish(400, { error: 'upload_invalido' });
@@ -61,9 +78,9 @@ function handleImageUpload(req, res, helpers) {
         file.resume();
         return;
       }
-      const extension = allowedTypes[info.mimeType];
+      const extension = types[info.mimeType];
       if (!extension) {
-        fileError = 'formato_de_imagem_invalido';
+        fileError = isVideo ? 'formato_de_video_invalido' : 'formato_de_imagem_invalido';
         file.resume();
         return;
       }
@@ -78,7 +95,7 @@ function handleImageUpload(req, res, helpers) {
         file.once('error', rejectWrite);
       });
       file.on('data', (chunk) => { fileSize += chunk.length; });
-      file.once('limit', () => { fileError = 'imagem_muito_grande'; });
+      file.once('limit', () => { fileError = isVideo ? 'video_muito_grande' : 'imagem_muito_grande'; });
       file.pipe(output);
     });
     parser.once('filesLimit', () => { fileError = 'apenas_uma_imagem_por_vez'; });
@@ -88,9 +105,10 @@ function handleImageUpload(req, res, helpers) {
         await writeDone;
         if (fileError) return finish(400, { error: fileError });
         if (!fileName || !filePath) return finish(400, { error: 'imagem_obrigatoria' });
-        if (fileSize < 1 || fileSize > MAX_IMAGE_BYTES) return finish(400, { error: 'imagem_muito_grande' });
+        if (fileSize < 1 || fileSize > maxBytes) return finish(400, { error: isVideo ? 'video_muito_grande' : 'imagem_muito_grande' });
         const content = await fs.promises.readFile(filePath);
-        if (!signatureMatches(content, fileMime)) return finish(400, { error: 'arquivo_nao_e_imagem' });
+        const validSignature = isVideo ? videoSignatureMatches(content, fileMime) : signatureMatches(content, fileMime);
+        if (!validSignature) return finish(400, { error: isVideo ? 'arquivo_nao_e_video' : 'arquivo_nao_e_imagem' });
         return finish(201, { location: `/uploads/${fileName}` });
       } catch (_) {
         return finish(500, { error: 'falha_no_upload' });
@@ -102,10 +120,11 @@ function handleImageUpload(req, res, helpers) {
 }
 
 async function handleEditorRoutes(req, res, user, url, helpers) {
-  if (req.method !== 'POST' || url.pathname !== '/api/editor/images') return false;
-  if (!user || !['owner', 'admin'].includes(user.role)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  if (req.method !== 'POST' || !['/api/editor/images', '/api/training/videos'].includes(url.pathname)) return false;
+  const allowedRoles = url.pathname === '/api/training/videos' ? ['owner', 'admin', 'staff'] : ['owner', 'admin'];
+  if (!user || !allowedRoles.includes(user.role)) return helpers.send(res, 403, { error: 'sem_permissao' });
   if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('multipart/form-data')) return helpers.send(res, 415, { error: 'multipart_obrigatorio' });
-  return handleImageUpload(req, res, helpers);
+  return handleMediaUpload(req, res, helpers, url.pathname === '/api/training/videos' ? 'video' : 'image');
 }
 
-module.exports = { handleEditorRoutes, MAX_IMAGE_BYTES, signatureMatches };
+module.exports = { handleEditorRoutes, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, signatureMatches, videoSignatureMatches };
