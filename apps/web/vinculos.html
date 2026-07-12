@@ -29,14 +29,44 @@
     </section>
   </main>
 
-  <div class="modal hidden" id="link-modal">
-    <div class="modal-card">
-      <div class="toolbar"><h3>Nova matrícula</h3><button class="secondary modal-close" id="close-link-modal" aria-label="Fechar" title="Fechar">×</button></div>
-      <select id="link-member"></select>
-      <select id="link-plan"></select>
-      <input id="link-start" type="date" />
-      <button id="save-link-button">Salvar matrícula</button>
-    </div>
+  <div class="modal hidden" id="link-modal" role="dialog" aria-modal="true" aria-labelledby="link-modal-title">
+    <form class="modal-card membership-modal-card" id="link-form">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Vínculo de acesso</p>
+          <h3 id="link-modal-title">Nova matrícula</h3>
+          <p>Associe um aluno ativo a um plano vigente.</p>
+        </div>
+        <button class="secondary modal-close" type="button" id="close-link-modal" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+
+      <section class="form-section membership-form-section">
+        <h4>Dados da matrícula</h4>
+        <p class="section-help">A matrícula cria o vínculo oficial entre o aluno e o plano.</p>
+        <div class="membership-form-fields">
+          <div class="field">
+            <label for="link-member">Aluno *</label>
+            <select id="link-member" required></select>
+            <small>Somente alunos ativos aparecem nesta lista.</small>
+          </div>
+          <div class="field">
+            <label for="link-plan">Plano *</label>
+            <select id="link-plan" required></select>
+            <small>O prazo final será calculado pela duração do plano.</small>
+          </div>
+          <div class="field">
+            <label for="link-start">Data de início</label>
+            <input id="link-start" type="date" />
+            <small>Se ficar em branco, a matrícula começa hoje.</small>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions membership-form-actions">
+        <button class="secondary" type="button" id="cancel-link-button">Cancelar</button>
+        <button id="save-link-button" type="submit">Salvar matrícula</button>
+      </div>
+    </form>
   </div>
 
   <script src="./guard.js"></script>

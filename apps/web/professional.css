@@ -54,6 +54,15 @@
 .modal-card .rich-editor { min-height: 155px; padding: 14px 16px; line-height: 1.65; }
 .modal-card .rich-editor:focus { border-color: rgba(185,28,28,.65); box-shadow: 0 0 0 4px rgba(185,28,28,.08); }
 .modal-card .rich-editor p { margin: 0 0 10px; }
+.membership-modal-card { width: min(620px, 96vw); padding: 32px; }
+.membership-modal-card .modal-header { margin-bottom: 24px; }
+.membership-modal-card .modal-header .eyebrow { margin: 0 0 6px; }
+.membership-modal-card .modal-header h3 { margin: 0 0 8px; }
+.membership-modal-card .membership-form-section { margin: 0; padding: 22px; }
+.membership-form-fields { display: grid; gap: 20px; }
+.membership-form-fields .field { gap: 8px; }
+.membership-form-fields .field small { line-height: 1.45; }
+.membership-form-actions { margin-top: 0; padding-top: 20px; border-top: 1px solid var(--line); }
 .modal-card .tox-tinymce { width: 100%; min-height: 300px; border: 1px solid #d8d0c4; border-radius: 12px; overflow: hidden; }
 .modal-card .tox .tox-editor-header { box-shadow: none; border-bottom: 1px solid #e7dfd4; }
 .modal-card .tox .tox-edit-area__iframe { background: #fff; }

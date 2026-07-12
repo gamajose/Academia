@@ -72,11 +72,22 @@ async function load() {
   }
 }
 
-function openModal() { v('link-modal').classList.remove('hidden'); }
-function closeModal() { v('link-modal').classList.add('hidden'); }
+function openModal() {
+  v('link-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => v('link-member').focus(), 50);
+}
+
+function closeModal() {
+  v('link-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  v('link-form').reset();
+}
 
 async function save() {
+  if (!v('link-form').reportValidity()) return;
   try {
+    v('save-link-button').disabled = true;
     await call('/api/memberships', {
       method: 'POST',
       body: JSON.stringify({ member_id: v('link-member').value, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined })
@@ -86,6 +97,8 @@ async function save() {
     await load();
   } catch (error) {
     v('link-status').textContent = `Erro ao salvar: ${error.message}`;
+  } finally {
+    v('save-link-button').disabled = false;
   }
 }
 
@@ -97,6 +110,7 @@ async function cancelLink(item) {
 
 v('new-link-button').onclick = openModal;
 v('close-link-modal').onclick = closeModal;
-v('save-link-button').onclick = save;
+v('cancel-link-button').onclick = closeModal;
+v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });
 v('link-search').oninput = render;
 load();
