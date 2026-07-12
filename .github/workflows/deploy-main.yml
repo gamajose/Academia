@@ -1,7 +1,9 @@
 name: Deploy Academia
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - main
   workflow_dispatch:
@@ -12,6 +14,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     name: Atualizar servidor local
     runs-on:
       - self-hosted
