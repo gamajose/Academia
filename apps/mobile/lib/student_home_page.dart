@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:academia_mobile/evolution_page.dart';
+import 'package:academia_mobile/scan_gym_qr_page.dart';
+import 'package:academia_mobile/student_classes_page.dart';
 import 'package:academia_mobile/student_tools_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -224,6 +227,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
     ).then((_) => _refresh());
   }
 
+  void _openPage(Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page)).then((_) => _refresh());
+  }
+
   int get remainingSeconds {
     if (qrExpiresAt == null) return 0;
     final value = qrExpiresAt!.difference(DateTime.now()).inSeconds;
@@ -280,6 +287,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
+  Widget _pageShortcut(IconData icon, String label, Widget page) {
+    return SizedBox(
+      width: 165,
+      child: OutlinedButton.icon(
+        onPressed: () => _openPage(page),
+        icon: Icon(icon),
+        label: Text(label),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final allowed = access['allowed'] == true;
@@ -313,6 +331,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 _shortcut(Icons.payments, 'Pagamentos', 1),
                 _shortcut(Icons.history, 'Minhas entradas', 2),
                 _shortcut(Icons.notifications, 'Notificacoes', 3, badge: unread),
+                _pageShortcut(Icons.event, 'Aulas', StudentClassesPage(baseUrl: widget.baseUrl, token: widget.token)),
+                _pageShortcut(Icons.show_chart, 'Minha evolucao', EvolutionPage(baseUrl: widget.baseUrl, token: widget.token)),
+                _pageShortcut(Icons.qr_code_scanner, 'Ler QR da academia', ScanGymQrPage(baseUrl: widget.baseUrl, token: widget.token)),
               ],
             ),
             const SizedBox(height: 12),
@@ -348,9 +369,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const Text('Meu QR Code de entrada', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    const Text('Acesso a academia', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    const Text('O codigo e temporario, pessoal e funciona somente uma vez.'),
+                    const Text('Mostre seu QR ao leitor ou use a camera para ler o QR exibido pela academia.'),
                     const SizedBox(height: 16),
                     if (qrPayload != null) ...[
                       Semantics(
@@ -365,13 +386,20 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       const SizedBox(height: 8),
                       Text('Expira em $remainingSeconds segundos', style: const TextStyle(fontWeight: FontWeight.bold)),
                     ] else
-                      const SizedBox(height: 180, child: Center(child: Icon(Icons.qr_code_2, size: 120))),
+                      const SizedBox(height: 160, child: Center(child: Icon(Icons.qr_code_2, size: 110))),
                     const SizedBox(height: 12),
-                    FilledButton.icon(
-                      onPressed: allowed && !generating ? _generateQr : null,
-                      icon: const Icon(Icons.qr_code),
-                      label: Text(generating ? 'Gerando...' : qrPayload == null ? 'Gerar QR Code' : 'Gerar novo QR Code'),
-                    ),
+                    Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
+                      FilledButton.icon(
+                        onPressed: allowed && !generating ? _generateQr : null,
+                        icon: const Icon(Icons.qr_code),
+                        label: Text(generating ? 'Gerando...' : qrPayload == null ? 'Mostrar meu QR' : 'Gerar novo QR'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: allowed ? () => _openPage(ScanGymQrPage(baseUrl: widget.baseUrl, token: widget.token)) : null,
+                        icon: const Icon(Icons.qr_code_scanner),
+                        label: const Text('Ler QR da academia'),
+                      ),
+                    ]),
                   ],
                 ),
               ),
