@@ -3,60 +3,123 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Academia Lobo: estrutura completa, acompanhamento profissional e planos para diferentes objetivos." />
   <title>Academia Lobo</title>
   <link rel="stylesheet" href="./landing.css" />
 </head>
 <body>
   <main class="site-shell">
     <header class="site-header">
-      <div class="brand"><span>Academia</span> Lobo</div>
-      <nav class="site-nav">
-        <a href="#planos">Planos</a>
-        <a href="#beneficios">Estrutura</a>
+      <a class="brand" href="./index.html" aria-label="Academia Lobo"><span>Academia</span> Lobo</a>
+      <nav class="site-nav" aria-label="Navegação principal">
+        <a href="./plans.html">Planos</a>
+        <a href="#estrutura">Estrutura</a>
+        <a href="#acompanhamento">Acompanhamento</a>
         <a href="https://www.instagram.com/academialoboo/" target="_blank" rel="noreferrer">Instagram</a>
         <a class="nav-access" href="./student-login.html">Acessar conta</a>
       </nav>
     </header>
+
     <section class="site-hero">
-      <div>
+      <div class="hero-copy">
         <p class="eyebrow-public">Academia Lobo</p>
-        <h1>Treino forte, acompanhamento claro e matrícula sem enrolação.</h1>
-        <p>Escolha seu plano, envie a pré-matrícula e acompanhe sua evolução pelo portal. A equipe confirma o pagamento e libera seu acesso por código ou QR.</p>
+        <h1>Treino bem orientado. Evolução que você consegue acompanhar.</h1>
+        <p class="hero-lead">Estrutura completa, professores próximos e uma experiência simples desde a matrícula até o treino do dia.</p>
         <div class="hero-actions">
-          <a class="cta" href="./matricula-publica.html">Matricule-se agora</a>
-          <a class="cta secondary" href="./student-login.html">Acessar conta</a>
+          <a class="cta" href="./plans.html">Conheça os planos</a>
+          <a class="cta ghost" href="./student-login.html">Acessar minha conta</a>
+        </div>
+        <div class="hero-trust" aria-label="Diferenciais">
+          <span>✓ Acompanhamento profissional</span>
+          <span>✓ Treinos organizados</span>
+          <span>✓ Evolução acompanhada</span>
         </div>
       </div>
-      <div class="hero-card hero-media">
-        <div class="hero-photo" aria-label="Aluno treinando na academia"></div>
-        <div class="metric-row">
-          <div class="metric"><strong>QR</strong><span>acesso liberado</span></div>
-          <div class="metric"><strong>Portal</strong><span>treino e metas</span></div>
-          <div class="metric"><strong>Equipe</strong><span>gestão completa</span></div>
+      <div class="hero-visual" role="img" aria-label="Ambiente moderno de musculação">
+        <div class="visual-note">
+          <strong>Seu treino, no seu ritmo.</strong>
+          <span>Atendimento próximo e estrutura para evoluir.</span>
         </div>
       </div>
-    </section>
-    <section class="site-section" id="beneficios">
-      <div class="section-title"><h2>Uma academia conectada à sua rotina</h2></div>
-      <div class="feature-grid">
-        <article class="feature"><strong>Matrícula online</strong><p>Você escolhe o plano, envia os dados e recebe a liberação depois da confirmação financeira.</p></article>
-        <article class="feature"><strong>Portal do aluno</strong><p>Treinos, avaliações, metas, histórico e avisos em um único acesso.</p></article>
-        <article class="feature"><strong>Recepção rápida</strong><p>Código ou QR validado pela equipe, com registro de check-in e alertas importantes.</p></article>
-      </div>
-    </section>
-    <section class="site-section" id="planos">
-      <div class="section-title"><h2>Planos disponíveis</h2><a class="cta secondary" href="./matricula-publica.html">Ver matrícula</a></div>
-      <div class="plan-grid" id="landing-plans"><article class="plan-card"><strong>Carregando planos...</strong><p>Aguarde enquanto buscamos os planos disponíveis.</p></article></div>
-    </section>
-    <section class="site-band">
-      <div><h2>Pronto para começar?</h2><p>Faça sua pré-matrícula e aguarde a confirmação para liberar seu código de acesso.</p></div>
-      <a class="cta secondary" href="./matricula-publica.html">Quero me matricular</a>
     </section>
 
-    <footer class="site-footer">Academia Lobo - treino, portal do aluno e atendimento integrado.</footer>
+    <section class="site-section intro-section" id="estrutura">
+      <div class="section-heading">
+        <p class="eyebrow-public">Experiência completa</p>
+        <h2>Uma academia preparada para fazer parte da sua rotina</h2>
+        <p>Ambiente organizado, acompanhamento de verdade e ferramentas que ajudam você a manter constância.</p>
+      </div>
+      <div class="experience-grid">
+        <article class="experience-card">
+          <div class="experience-image image-strength"></div>
+          <div class="experience-content">
+            <span class="feature-number">01</span>
+            <h3>Estrutura para treinar bem</h3>
+            <p>Equipamentos, espaços e organização para você executar o treino com conforto e segurança.</p>
+          </div>
+        </article>
+        <article class="experience-card">
+          <div class="experience-image image-coach"></div>
+          <div class="experience-content">
+            <span class="feature-number">02</span>
+            <h3>Acompanhamento próximo</h3>
+            <p>Professores acompanham sua rotina, ajustam o treino e ajudam a manter a evolução.</p>
+          </div>
+        </article>
+        <article class="experience-card">
+          <div class="experience-image image-progress"></div>
+          <div class="experience-content">
+            <span class="feature-number">03</span>
+            <h3>Progresso visível</h3>
+            <p>Treinos, avaliações e metas ficam organizados para você entender o próprio avanço.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="site-section split-section" id="acompanhamento">
+      <div class="split-photo" role="img" aria-label="Professor orientando treino"></div>
+      <div class="split-copy">
+        <p class="eyebrow-public">Acompanhamento</p>
+        <h2>Você não precisa descobrir tudo sozinho.</h2>
+        <p>O treino é mais eficiente quando existe orientação, revisão e constância. Nossa equipe acompanha sua rotina e organiza os próximos passos de acordo com seu objetivo.</p>
+        <ul class="premium-list">
+          <li>Treino organizado por objetivo e nível</li>
+          <li>Avaliações e metas acompanhadas</li>
+          <li>Histórico para visualizar sua frequência</li>
+        </ul>
+        <a class="text-link" href="./plans.html">Ver planos e começar →</a>
+      </div>
+    </section>
+
+    <section class="site-section plans-preview" id="planos">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow-public">Planos</p>
+          <h2>Escolha a opção que combina com sua rotina</h2>
+        </div>
+        <a class="text-link" href="./plans.html">Comparar todos os planos →</a>
+      </div>
+      <div class="plan-grid" id="landing-plans">
+        <article class="plan-card skeleton-card"><span>Preparando os planos...</span></article>
+      </div>
+    </section>
+
+    <section class="site-band">
+      <div>
+        <p class="eyebrow-light">Comece agora</p>
+        <h2>Seu próximo treino pode ser o início de uma rotina melhor.</h2>
+        <p>Conheça os planos, escolha a melhor opção e envie seus dados para a equipe.</p>
+      </div>
+      <a class="cta light" href="./plans.html">Conheça os planos</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="brand"><span>Academia</span> Lobo</div>
+      <p>Treino, acompanhamento e evolução em uma experiência simples.</p>
+      <a href="./student-login.html">Acessar conta</a>
+    </footer>
   </main>
   <script src="./landing.js"></script>
-
-<a href="plans.html" aria-label="Conheça nossos planos" style="position:fixed;right:20px;bottom:20px;z-index:999;background:#dc2626;color:white;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.2)">Conheça os planos</a>
 </body>
 </html>
