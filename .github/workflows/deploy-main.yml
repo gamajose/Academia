@@ -27,6 +27,7 @@ jobs:
 
           PROJECT_DIR="/mnt/Projetos/Academia"
           API_DIR="$PROJECT_DIR/apps/api"
+          WEB_DIR="$PROJECT_DIR/apps/web"
           HEALTH_URL="http://localhost:3004/health"
 
           exec 9>/tmp/academia-deploy.lock
@@ -38,15 +39,23 @@ jobs:
           git config --global --add safe.directory "$PROJECT_DIR"
           cd "$PROJECT_DIR"
 
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "A cópia de produção possui alterações locais. O deploy foi interrompido para evitar perda de dados."
-            git status --short
+          # Arquivos temporários gerados por validações antigas não podem bloquear a atualização.
+          find "$WEB_DIR" -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
+          find "$WEB_DIR" -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete 2>/dev/null || true
+
+          # Protege somente alterações em arquivos rastreados; .env, uploads e dependências são locais.
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo "A cópia de produção possui alterações locais em arquivos rastreados. O deploy foi interrompido para evitar perda de dados."
+            git status --short --untracked-files=no
             exit 1
           fi
 
           git fetch --prune origin main
           git checkout main
           git reset --hard origin/main
+
+          # A antiga página de permissões não pode permanecer como arquivo residual no servidor.
+          rm -f "$WEB_DIR/permissions.html" "$WEB_DIR/permissions.js"
 
           cd "$API_DIR"
 
@@ -60,18 +69,18 @@ jobs:
           npm run check
           npm run migrate
 
-          node --check "$PROJECT_DIR/apps/web/nav.js"
-          node --check "$PROJECT_DIR/apps/web/landing.js"
-          node --check "$PROJECT_DIR/apps/web/plans.js"
-          node --check "$PROJECT_DIR/apps/web/alunos.js"
-          node --check "$PROJECT_DIR/apps/web/planos.js"
-          node --check "$PROJECT_DIR/apps/web/rich-editor.js"
-          node --check "$PROJECT_DIR/apps/web/matricula-publica.js"
-          node --check "$PROJECT_DIR/apps/web/payment-return.js"
-          node --check "$PROJECT_DIR/apps/web/student-login.js"
-          node --check "$PROJECT_DIR/apps/web/student-reset.js"
-          node --check "$PROJECT_DIR/apps/web/student-confirm.js"
-          python3 -m py_compile "$PROJECT_DIR/apps/web/site_server.py"
+          node --check "$WEB_DIR/nav.js"
+          node --check "$WEB_DIR/landing.js"
+          node --check "$WEB_DIR/plans.js"
+          node --check "$WEB_DIR/alunos.js"
+          node --check "$WEB_DIR/planos.js"
+          node --check "$WEB_DIR/rich-editor.js"
+          node --check "$WEB_DIR/matricula-publica.js"
+          node --check "$WEB_DIR/payment-return.js"
+          node --check "$WEB_DIR/student-login.js"
+          node --check "$WEB_DIR/student-reset.js"
+          node --check "$WEB_DIR/student-confirm.js"
+          python3 -m py_compile "$WEB_DIR/site_server.py"
 
           sudo -n systemctl restart academia-api
           sudo -n systemctl restart academia-web
