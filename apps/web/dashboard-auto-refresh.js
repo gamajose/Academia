@@ -9,7 +9,7 @@
       await refreshDashboard();
       if (status) status.textContent = `Atualizado automaticamente às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`;
     } catch (_) {
-      if (status) status.textContent = 'Não foi possível atualizar agora. Nova tentativa em instantes.';
+      // Mantém a interface limpa e tenta novamente no próximo ciclo automático.
     } finally {
       busy = false;
     }
