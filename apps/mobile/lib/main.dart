@@ -316,7 +316,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   title: Text(member['name'] ?? ''),
                   subtitle: Text(member['status'] ?? ''),
                   onTap: () => _openMember(member),
-                  trailing: Wrap(mainAxisSize: MainAxisSize.min, children: [
+                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     IconButton(onPressed: () => _openMember(member), icon: const Icon(Icons.folder_shared)),
                     IconButton(onPressed: member['status'] == 'active' ? () => _quickCheckin(member['id']) : null, icon: const Icon(Icons.login)),
                   ]),
