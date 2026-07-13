@@ -1,0 +1,43 @@
+name: Diagnosticar login da VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/diagnostico-login-vm.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostico:
+    name: Verificar API e login na VM
+    runs-on:
+      - self-hosted
+      - linux
+      - academia
+    timeout-minutes: 5
+    steps:
+      - name: Coletar diagnóstico sem alterar a VM
+        shell: bash
+        run: |
+          set +e
+          PROJECT_DIR="/mnt/Projetos/Academia"
+          echo '=== COMMIT DA VM ==='
+          git -C "$PROJECT_DIR" rev-parse --short HEAD 2>&1
+          git -C "$PROJECT_DIR" status --short 2>&1
+          echo '=== SERVIÇOS ==='
+          systemctl is-active academia-api.service 2>&1
+          systemctl is-active academia-web.service 2>&1
+          systemctl status academia-api.service --no-pager -l 2>&1 | tail -n 40
+          echo '=== PORTAS ==='
+          ss -ltnp 2>&1 | grep -E ':3004|:8084' || true
+          echo '=== HEALTH ==='
+          curl -sS -i --max-time 5 http://127.0.0.1:3004/health 2>&1
+          echo
+          echo '=== LOGIN ADMIN COM SENHA INVÁLIDA ==='
+          curl -sS -i --max-time 5 -H 'Content-Type: application/json' --data '{"identifier":"admin@academia.com","password":"__diagnostico_senha_invalida__"}' http://127.0.0.1:3004/api/auth/login 2>&1
+          echo
+          echo '=== LOGS API ==='
+          journalctl -u academia-api.service -n 120 --no-pager 2>&1 || sudo -n journalctl -u academia-api.service -n 120 --no-pager 2>&1 || true
