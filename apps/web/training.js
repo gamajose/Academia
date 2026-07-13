@@ -167,7 +167,7 @@ function renderAll() {
   fillLevelSelect('plan-level');
   fillSelect('profile-member', members, (m) => m.name, 'Selecione o aluno');
   fillSelect('plan-member', members, (m) => m.name, 'Selecione o aluno');
-  fillSelect('exercise-select', exercises, (e) => `${e.name} - ${e.muscle_group}`, 'Selecione o exercicio');
+  fillSelect('exercise-select', exercises, (e) => `${e.name} - ${e.muscle_group_primary || e.muscle_group}`, 'Selecione o exercicio');
   fillSelect('day-plan', plans, (p) => `${p.member_name} - ${p.name}`, 'Selecione a ficha');
   fillSelect('review-plan', plans, (p) => `${p.member_name} - ${p.name} (${p.age_days || 0} dias)`, 'Selecione a ficha');
   renderTrainingLevels();
@@ -188,7 +188,9 @@ function renderAll() {
     name.textContent = item.name;
     const detail = document.createElement('span');
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
-    detail.textContent = `${item.muscle_group} · ${level?.name || item.level}`;
+    const primaryMuscle = item.muscle_group_primary || item.muscle_group || 'Músculo não informado';
+    const secondaryMuscles = item.muscle_group_secondary ? ` · ${item.muscle_group_secondary}` : '';
+    detail.textContent = `${primaryMuscle}${secondaryMuscles} · ${level?.name || item.level}`;
     main.append(name, detail);
     row.appendChild(main);
     if (item.video_url && window.AcademiaTrainingMedia) {
@@ -263,7 +265,10 @@ async function openPlanDetails(item) {
 
 function openExerciseDetails(item) {
   t('exercise-view-name').textContent = item.name || 'Exercício';
-  t('exercise-view-muscle').textContent = item.muscle_group || 'Grupo muscular não informado';
+  const primaryMuscle = item.muscle_group_primary || item.muscle_group || 'Não informado';
+  t('exercise-view-muscle').textContent = `Músculo principal: ${primaryMuscle}`;
+  t('exercise-view-primary').textContent = primaryMuscle;
+  t('exercise-view-secondary').textContent = item.muscle_group_secondary || 'Não informado';
   t('exercise-view-equipment').textContent = item.equipment || 'Peso livre ou equipamento não informado';
   t('exercise-view-level').textContent = trainingLevels.find((level) => level.slug === item.level)?.name || item.level || 'Não informado';
   t('exercise-view-instructions').textContent = item.instructions || 'Nenhuma orientação cadastrada para este exercício.';
@@ -309,34 +314,47 @@ function clearVideoPreview() {
   preview.removeAttribute('src');
   preview.hidden = true;
   preview.load();
+  const image = t('exercise-media-preview');
+  if (image?.src.startsWith('blob:')) URL.revokeObjectURL(image.src);
+  if (image) {
+    image.removeAttribute('src');
+    image.hidden = true;
+  }
 }
 
-function isAllowedVideoFile(file) {
-  return file && ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'].includes(file.type);
+function isAllowedTrainingMediaFile(file) {
+  return file && ['image/gif', 'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'].includes(file.type);
 }
 
 function previewSelectedFile(file) {
   if (!file) {
     clearVideoPreview();
-    setVideoStatus('Nenhum video selecionado.');
+    setVideoStatus('Nenhuma demonstração selecionada.');
     return false;
   }
-  if (!isAllowedVideoFile(file)) {
+  if (!isAllowedTrainingMediaFile(file)) {
     clearVideoPreview();
-    setVideoStatus('Formato invalido. Escolha MP4, WebM, OGG ou MOV.');
+    setVideoStatus('Formato inválido. Escolha GIF, MP4, WebM, OGG ou MOV.');
     return false;
   }
   if (file.size > MAX_TRAINING_VIDEO_BYTES) {
     clearVideoPreview();
-    setVideoStatus('O video ultrapassa o limite de 50 MB.');
+    setVideoStatus('A demonstração ultrapassa o limite de 50 MB.');
     return false;
   }
-  const preview = t('exercise-video-preview');
-  if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
-  preview.src = URL.createObjectURL(file);
-  preview.hidden = false;
-  preview.play().catch(() => {});
-  setVideoStatus(`Video selecionado: ${file.name}`);
+  clearVideoPreview();
+  const source = URL.createObjectURL(file);
+  if (file.type === 'image/gif') {
+    const image = t('exercise-media-preview');
+    image.src = source;
+    image.hidden = false;
+  } else {
+    const preview = t('exercise-video-preview');
+    preview.src = source;
+    preview.hidden = false;
+    preview.play().catch(() => {});
+  }
+  setVideoStatus(`Demonstração selecionada: ${file.name}`);
   return true;
 }
 
@@ -344,7 +362,7 @@ function previewVideoLink(value) {
   const url = value.trim();
   if (!url) {
     clearVideoPreview();
-    setVideoStatus('Cole um link de video para visualizar.');
+    setVideoStatus('Cole um link de GIF ou vídeo para visualizar.');
     return;
   }
   try {
@@ -355,16 +373,22 @@ function previewVideoLink(value) {
     setVideoStatus('Use um link iniciado por http:// ou https://.');
     return;
   }
-  if (window.AcademiaTrainingMedia?.isDirectVideoUrl(url)) {
+  if (window.AcademiaTrainingMedia?.isDirectGifUrl(url)) {
+    clearVideoPreview();
+    const image = t('exercise-media-preview');
+    image.src = url;
+    image.hidden = false;
+    setVideoStatus('GIF direto detectado. A demonstração será repetida em loop.');
+  } else if (window.AcademiaTrainingMedia?.isDirectVideoUrl(url)) {
+    clearVideoPreview();
     const preview = t('exercise-video-preview');
-    if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
     preview.src = url;
     preview.hidden = false;
     preview.play().catch(() => {});
-    setVideoStatus('Link direto detectado. O video sera reproduzido em loop.');
+    setVideoStatus('Vídeo direto detectado. A demonstração será reproduzida em loop.');
   } else {
     clearVideoPreview();
-    setVideoStatus('Link salvo. Paginas de video serao abertas em outra guia.');
+    setVideoStatus('Link salvo. Páginas de vídeo serão abertas em outra guia.');
   }
 }
 
@@ -380,7 +404,7 @@ function setVideoSourceMode() {
   t('exercise-video-upload-field').classList.toggle('hidden', !isUpload);
   t('exercise-video-link-field').classList.toggle('hidden', isUpload);
   clearVideoPreview();
-  setVideoStatus(isUpload ? 'Nenhum video selecionado.' : 'Cole um link de video para visualizar.');
+  setVideoStatus(isUpload ? 'Nenhuma demonstração selecionada.' : 'Cole um link de GIF ou vídeo para visualizar.');
 }
 
 async function createExercise() {
@@ -393,7 +417,7 @@ async function createExercise() {
       const file = t('exercise-video-file').files[0];
       if (file && !previewSelectedFile(file)) return;
       if (file) {
-        setTrainingStatus('Enviando video...');
+        setTrainingStatus('Enviando demonstração...');
         videoUrl = await uploadTrainingVideo(file);
       }
     } else {
@@ -408,13 +432,15 @@ async function createExercise() {
       body: JSON.stringify({
         name: t('exercise-name').value.trim(),
         muscle_group: t('exercise-group').value.trim(),
+        muscle_group_primary: t('exercise-group').value.trim(),
+        muscle_group_secondary: t('exercise-secondary-muscles').value.trim(),
         equipment: t('exercise-equipment').value.trim(),
         level: t('exercise-level').value,
         instructions: t('exercise-instructions').value.trim(),
         video_url: videoUrl || null
       })
     });
-    setTrainingStatus('Exercicio criado.');
+    setTrainingStatus('Exercício criado.');
     t('exercise-video-file').value = '';
     t('exercise-video-url').value = '';
     setVideoSourceMode();

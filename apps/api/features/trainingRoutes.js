@@ -130,7 +130,7 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
     const days = await query('SELECT id, weekday, title, notes FROM workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday, created_at', [user.gym_id, planId]);
     const exercises = await query(
-      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.id AS exercise_id, e.name AS exercise_name, e.muscle_group, e.video_url, e.instructions
+      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.id AS exercise_id, e.name AS exercise_name, e.muscle_group, e.muscle_group_primary, e.muscle_group_secondary, e.video_url, e.instructions
        FROM workout_exercises we INNER JOIN workout_days wd ON wd.id = we.workout_day_id INNER JOIN exercise_library e ON e.id = we.exercise_id
        WHERE we.gym_id = $1 AND wd.plan_id = $2 ORDER BY wd.weekday, we.order_index`,
       [user.gym_id, planId]
@@ -181,17 +181,19 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
   }
 
   if (req.method === 'GET' && url.pathname === '/api/training/exercises') {
-    const result = await query('SELECT id, name, muscle_group, equipment, level, instructions, video_url, is_active, created_at FROM exercise_library WHERE gym_id = $1 ORDER BY muscle_group, name', [user.gym_id]);
+    const result = await query('SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active, created_at FROM exercise_library WHERE gym_id = $1 ORDER BY muscle_group_primary NULLS LAST, muscle_group, name', [user.gym_id]);
     return send(res, 200, { data: result.rows });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/training/exercises') {
     const input = await body(req);
-    if (!input.name || !input.muscle_group) return send(res, 400, { error: 'dados_invalidos' });
+    const primaryMuscle = String(input.muscle_group_primary || input.muscle_group || '').trim();
+    const secondaryMuscle = String(input.muscle_group_secondary || '').trim();
+    if (!input.name || !primaryMuscle) return send(res, 400, { error: 'dados_invalidos' });
     const videoUrl = String(input.video_url || '').trim();
     if (videoUrl.length > 1000 || !validVideoSource(videoUrl)) return send(res, 400, { error: 'video_invalido' });
     const level = await resolveTrainingLevel(query, user.gym_id, input.level);
-    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, muscle_group, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, input.muscle_group, input.equipment || null, level, input.instructions || null, videoUrl || null]);
+    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $3, $4, $5, $6, $7, $8) RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, primaryMuscle, secondaryMuscle || null, input.equipment || null, level, input.instructions || null, videoUrl || null]);
     await recordAudit(user, 'create', 'exercise', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 201, result.rows[0]);
   }

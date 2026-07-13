@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 process.env.DATABASE_URL ||= 'postgres://localhost/academia_test';
 const { validVideoSource, slugifyLevel } = require('../features/trainingRoutes');
 const { normalizePermissions, slugifyProfile } = require('../features/accessProfileRoutes');
-const { videoSignatureMatches, MAX_VIDEO_BYTES } = require('../features/editorRoutes');
+const { videoSignatureMatches, trainingMediaSignatureMatches, MAX_VIDEO_BYTES } = require('../features/editorRoutes');
 
 test('aceita fontes de video http, https e uploads locais', () => {
   assert.equal(validVideoSource('https://cdn.example.com/treino.mp4'), true);
@@ -27,6 +27,12 @@ test('valida assinaturas dos formatos de video aceitos', () => {
   assert.equal(videoSignatureMatches(Buffer.from('OggS'), 'video/ogg'), true);
   assert.equal(videoSignatureMatches(Buffer.from('not-a-video'), 'video/mp4'), false);
   assert.equal(MAX_VIDEO_BYTES, 50 * 1024 * 1024);
+});
+
+test('valida GIF como demonstracao animada de exercicio', () => {
+  assert.equal(trainingMediaSignatureMatches(Buffer.from('GIF89a'), 'image/gif'), true);
+  assert.equal(trainingMediaSignatureMatches(Buffer.from('not-a-gif'), 'image/gif'), false);
+  assert.equal(trainingMediaSignatureMatches(Buffer.from('OggS'), 'video/ogg'), true);
 });
 
 test('cria slug seguro para niveis personalizados', () => {

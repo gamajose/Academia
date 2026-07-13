@@ -17,6 +17,10 @@ const videoTypes = {
   'video/ogg': 'ogv',
   'video/quicktime': 'mov'
 };
+const trainingMediaTypes = {
+  ...videoTypes,
+  'image/gif': 'gif'
+};
 const uploadRoot = path.resolve(process.env.EDITOR_UPLOAD_DIR || path.resolve(__dirname, '../../web/uploads'));
 
 function signatureMatches(buffer, mime) {
@@ -34,6 +38,10 @@ function videoSignatureMatches(buffer, mime) {
   return false;
 }
 
+function trainingMediaSignatureMatches(buffer, mime) {
+  return mime === 'image/gif' ? signatureMatches(buffer, mime) : videoSignatureMatches(buffer, mime);
+}
+
 async function removeFile(filePath) {
   if (!filePath) return;
   await fs.promises.unlink(filePath).catch(() => {});
@@ -42,8 +50,9 @@ async function removeFile(filePath) {
 function handleMediaUpload(req, res, helpers, mediaType) {
   const { send } = helpers;
   const isVideo = mediaType === 'video';
-  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
-  const types = isVideo ? videoTypes : allowedTypes;
+  const isTrainingMedia = mediaType === 'training';
+  const maxBytes = isVideo || isTrainingMedia ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+  const types = isVideo ? videoTypes : (isTrainingMedia ? trainingMediaTypes : allowedTypes);
   const contentLength = Number(req.headers['content-length'] || 0);
   if (contentLength && contentLength > maxBytes + 1024 * 1024) return send(res, 413, { error: isVideo ? 'video_muito_grande' : 'imagem_muito_grande' });
 
@@ -107,7 +116,7 @@ function handleMediaUpload(req, res, helpers, mediaType) {
         if (!fileName || !filePath) return finish(400, { error: 'imagem_obrigatoria' });
         if (fileSize < 1 || fileSize > maxBytes) return finish(400, { error: isVideo ? 'video_muito_grande' : 'imagem_muito_grande' });
         const content = await fs.promises.readFile(filePath);
-        const validSignature = isVideo ? videoSignatureMatches(content, fileMime) : signatureMatches(content, fileMime);
+        const validSignature = isTrainingMedia ? trainingMediaSignatureMatches(content, fileMime) : (isVideo ? videoSignatureMatches(content, fileMime) : signatureMatches(content, fileMime));
         if (!validSignature) return finish(400, { error: isVideo ? 'arquivo_nao_e_video' : 'arquivo_nao_e_imagem' });
         return finish(201, { location: `/uploads/${fileName}` });
       } catch (_) {
@@ -124,7 +133,7 @@ async function handleEditorRoutes(req, res, user, url, helpers) {
   const allowedRoles = url.pathname === '/api/training/videos' ? ['owner', 'admin', 'staff'] : ['owner', 'admin', 'student'];
   if (!user || !allowedRoles.includes(user.role)) return helpers.send(res, 403, { error: 'sem_permissao' });
   if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('multipart/form-data')) return helpers.send(res, 415, { error: 'multipart_obrigatorio' });
-  return handleMediaUpload(req, res, helpers, url.pathname === '/api/training/videos' ? 'video' : 'image');
+  return handleMediaUpload(req, res, helpers, url.pathname === '/api/training/videos' ? 'training' : 'image');
 }
 
-module.exports = { handleEditorRoutes, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, signatureMatches, videoSignatureMatches };
+module.exports = { handleEditorRoutes, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, signatureMatches, videoSignatureMatches, trainingMediaSignatureMatches };

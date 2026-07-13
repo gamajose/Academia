@@ -12,7 +12,7 @@ const PEOPLE = [
 async function first(client, sql, params = []) { const result = await client.query(sql, params); return result.rows[0] || null; }
 async function member(client, gymId, [name, email, phone]) { const found = await first(client, 'SELECT id FROM members WHERE gym_id=$1 AND lower(email)=lower($2) LIMIT 1', [gymId, email]); if (found) return found.id; return (await first(client, 'INSERT INTO members(gym_id,name,email,phone,status) VALUES($1,$2,$3,$4,\'active\') RETURNING id', [gymId, name, email, phone])).id; }
 async function plan(client, gymId, name, cents) { const found = await first(client, 'SELECT id,price_cents,duration_days FROM plans WHERE gym_id=$1 AND lower(name)=lower($2) LIMIT 1', [gymId, name]); if (found) return found; return first(client, 'INSERT INTO plans(gym_id,name,price_cents,duration_days,is_active) VALUES($1,$2,$3,30,true) RETURNING id,price_cents,duration_days', [gymId, name, cents]); }
-async function exercise(client, gymId, name, group, equipment, level, instructions) { const found = await first(client, 'SELECT id FROM exercise_library WHERE gym_id=$1 AND lower(name)=lower($2) LIMIT 1', [gymId, name]); if (found) return found.id; return (await first(client, 'INSERT INTO exercise_library(gym_id,name,muscle_group,equipment,level,instructions,is_active) VALUES($1,$2,$3,$4,$5,$6,true) RETURNING id', [gymId,name,group,equipment,level,instructions])).id; }
+async function exercise(client, gymId, name, group, equipment, level, instructions, secondary = null) { const found = await first(client, 'SELECT id FROM exercise_library WHERE gym_id=$1 AND lower(name)=lower($2) LIMIT 1', [gymId, name]); if (found) return found.id; return (await first(client, 'INSERT INTO exercise_library(gym_id,name,muscle_group,muscle_group_primary,muscle_group_secondary,equipment,level,instructions,is_active) VALUES($1,$2,$3,$3,$4,$5,$6,$7,true) RETURNING id', [gymId,name,group,secondary,equipment,level,instructions])).id; }
 
 async function main() {
   const client = await pool.connect();
@@ -41,7 +41,7 @@ async function main() {
       }
     }
     const exerciseIds = [];
-    for (const item of [['Agachamento livre','Pernas','Barra','Frango','Desça com controle e mantenha a técnica.'],['Supino reto','Peito','Barra','Intermediario','Mantenha os ombros apoiados.'],['Puxada alta','Costas','Polia','Frango','Puxe em direção ao peito sem balançar.']]) exerciseIds.push(await exercise(client,gym.id,...item));
+    for (const item of [['Agachamento livre','Pernas','Barra','Frango','Desça com controle e mantenha a técnica.','Glúteos, Lombar'],['Supino reto','Peito','Barra','Intermediario','Mantenha os ombros apoiados.','Tríceps, Ombros'],['Puxada alta','Costas','Polia','Frango','Puxe em direção ao peito sem balançar.','Bíceps']]) exerciseIds.push(await exercise(client,gym.id,...item));
     const primary = members[0];
     await client.query("INSERT INTO member_training_profiles(gym_id,member_id,level,goal,restrictions,training_days_per_week) VALUES($1,$2,'Intermediario','Ganhar força','Sem restrições informadas',4) ON CONFLICT(gym_id,member_id) DO UPDATE SET level=EXCLUDED.level,goal=EXCLUDED.goal,restrictions=EXCLUDED.restrictions,training_days_per_week=EXCLUDED.training_days_per_week,updated_at=now()", [gym.id,primary.id]);
     let workout = await first(client, "SELECT id FROM workout_plans WHERE gym_id=$1 AND member_id=$2 AND name='Ficha Demo - Força' LIMIT 1", [gym.id,primary.id]);

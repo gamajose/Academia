@@ -20,6 +20,16 @@
   background: #101814;
 }
 .exercise-video-preview[hidden] { display: none; }
+.exercise-gif-preview {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #101814;
+}
+.exercise-gif-preview[hidden] { display: none; }
 .video-preview-slot { display: grid; gap: 8px; margin-top: 10px; }
 .video-preview-slot .mini-button { justify-self: start; margin: 0; }
 .entity-card[role="button"] { cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
@@ -43,13 +53,17 @@
 @media (max-width: 760px) { .student-progress-upload-grid { grid-template-columns: 1fr; } }
 .exercise-view-layout { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1fr); gap: 22px; }
 .exercise-view-media { min-height: 250px; display: grid; place-items: center; padding: 12px; border: 1px solid var(--line, #e0d8cc); border-radius: 14px; background: #101814; }
-.exercise-view-media .exercise-video-preview { width: 100%; max-height: 360px; }
+.exercise-view-media .exercise-video-preview, .exercise-view-media .exercise-gif-preview { width: 100%; max-height: 360px; }
 .exercise-view-media .mini-button { margin: 0; background: #fff; color: #171717; }
 .exercise-view-media-empty { color: #d7e4df; font-size: 13px; text-align: center; }
 .exercise-view-copy { display: grid; gap: 18px; align-content: start; }
 .exercise-view-copy h4 { margin: 0 0 7px; }
 .exercise-view-copy p { margin: 0; line-height: 1.6; white-space: pre-wrap; }
 .exercise-view-tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.exercise-view-muscles { display: grid; gap: 10px; }
+.exercise-view-muscle-chip { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid #dbe8f4; border-radius: 10px; background: #f5faff; }
+.exercise-view-muscle-chip strong { color: var(--muted, #68716b); font-size: 12px; }
+.exercise-view-muscle-chip span { color: var(--text, #171717); font-weight: 800; }
 .exercise-view-tags span { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid var(--line, #e0d8cc); border-radius: 10px; background: #fbfdff; }
 .exercise-view-tags strong { color: var(--muted, #68716b); font-size: 12px; }
 .exercise-view-tags em { color: var(--text, #171717); font-style: normal; font-weight: 800; }

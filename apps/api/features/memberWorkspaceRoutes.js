@@ -373,7 +373,7 @@ async function workoutDetail(res, user, url, helpers) {
   const [days, exercises, library] = await Promise.all([
     helpers.query('SELECT * FROM workout_days WHERE plan_id = $1 AND gym_id = $2 ORDER BY weekday, created_at', [planId, user.gym_id]),
     helpers.query(
-      `SELECT we.*, e.name AS exercise_name, e.muscle_group, e.video_url, e.instructions,
+      `SELECT we.*, e.name AS exercise_name, e.muscle_group, e.muscle_group_primary, e.muscle_group_secondary, e.video_url, e.instructions,
               sub.name AS substitute_exercise_name
        FROM workout_exercises we
        INNER JOIN workout_days wd ON wd.id = we.workout_day_id
@@ -384,7 +384,7 @@ async function workoutDetail(res, user, url, helpers) {
       [planId, user.gym_id]
     ),
     helpers.query(
-      `SELECT id, name, muscle_group, equipment, level, instructions, video_url
+      `SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url
        FROM exercise_library WHERE gym_id = $1 AND is_active = true
        ORDER BY muscle_group, name`,
       [user.gym_id]

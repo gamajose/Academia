@@ -44,7 +44,7 @@
   <div class="modal hidden" id="exercise-view-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-view-title" aria-hidden="true">
     <section class="modal-card exercise-view-modal-card">
       <div class="modal-header"><div><p class="eyebrow">Biblioteca de exercícios</p><h3 id="exercise-view-title"><span id="exercise-view-name">Exercício</span></h3><p id="exercise-view-muscle">Grupo muscular</p></div><button type="button" id="close-exercise-view-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
-      <div class="exercise-view-layout"><div id="exercise-view-media" class="exercise-view-media"></div><div class="exercise-view-copy"><div class="exercise-view-tags"><span><strong>Equipamento</strong><em id="exercise-view-equipment">-</em></span><span><strong>Nível</strong><em id="exercise-view-level">-</em></span></div><div><h4>Técnica de execução</h4><p id="exercise-view-instructions">-</p></div></div></div>
+      <div class="exercise-view-layout"><div id="exercise-view-media" class="exercise-view-media"></div><div class="exercise-view-copy"><div class="exercise-view-tags"><span><strong>Equipamento</strong><em id="exercise-view-equipment">-</em></span><span><strong>Nível</strong><em id="exercise-view-level">-</em></span></div><div class="exercise-view-muscles"><div class="exercise-view-muscle-chip"><strong>Músculo principal</strong><span id="exercise-view-primary">-</span></div><div class="exercise-view-muscle-chip"><strong>Músculos secundários</strong><span id="exercise-view-secondary">-</span></div></div><div><h4>Técnica de execução</h4><p id="exercise-view-instructions">-</p></div></div></div>
     </section>
   </div>
 
@@ -67,18 +67,20 @@
 
   <div class="modal hidden" id="exercise-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-title" aria-hidden="true">
     <section class="modal-card training-modal-card">
-      <div class="modal-header"><div><p class="eyebrow">Cadastro</p><h3 id="exercise-title">Novo exercício</h3><p>Cadastre instruções e uma demonstração em vídeo.</p></div><button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="modal-header"><div><p class="eyebrow">Cadastro</p><h3 id="exercise-title">Novo exercício</h3><p>Cadastre instruções e uma demonstração animada em GIF ou vídeo.</p></div><button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
       <input id="exercise-name" placeholder="Nome do exercício" />
-      <input id="exercise-group" placeholder="Grupo muscular" />
+      <input id="exercise-group" placeholder="Músculo principal. Ex.: Peito" />
+      <input id="exercise-secondary-muscles" placeholder="Músculos secundários. Ex.: Tríceps, Ombros" />
       <input id="exercise-equipment" placeholder="Equipamento" />
       <select id="exercise-level"><option value="">Carregando níveis...</option></select>
       <textarea id="exercise-instructions" placeholder="Instruções de execução"></textarea>
       <div class="video-source-fields">
-        <div class="field"><label for="exercise-video-source">Como adicionar o vídeo</label><select id="exercise-video-source"><option value="upload">Escolher arquivo da máquina</option><option value="link">Usar link da internet</option></select></div>
-        <div class="field" id="exercise-video-upload-field"><label for="exercise-video-file">Arquivo de vídeo</label><input id="exercise-video-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" /><small>MP4, WebM, OGG ou MOV. Limite de 50 MB.</small></div>
-        <div class="field hidden" id="exercise-video-link-field"><label for="exercise-video-url">Link direto do vídeo</label><input id="exercise-video-url" type="url" inputmode="url" placeholder="https://.../exercicio.mp4" /><small>Links diretos tocam em loop. Links de páginas são salvos para abertura em outra guia.</small></div>
+        <div class="field"><label for="exercise-video-source">Como adicionar a demonstração</label><select id="exercise-video-source"><option value="upload">Escolher GIF ou vídeo da máquina</option><option value="link">Usar link da internet</option></select></div>
+        <div class="field" id="exercise-video-upload-field"><label for="exercise-video-file">Arquivo de demonstração</label><input id="exercise-video-file" type="file" accept="image/gif,video/mp4,video/webm,video/ogg,video/quicktime" /><small>GIF, MP4, WebM, OGG ou MOV. Limite de 50 MB.</small></div>
+        <div class="field hidden" id="exercise-video-link-field"><label for="exercise-video-url">Link da demonstração</label><input id="exercise-video-url" type="url" inputmode="url" placeholder="https://.../supino.gif ou supino.mp4" /><small>GIFs e links diretos de vídeo são exibidos em loop. Links de páginas ficam disponíveis para abertura em outra guia.</small></div>
         <video id="exercise-video-preview" class="exercise-video-preview" hidden autoplay muted loop playsinline preload="metadata" controls></video>
-        <p class="status-line" id="exercise-video-status">Nenhum vídeo selecionado.</p>
+        <img id="exercise-media-preview" class="exercise-gif-preview" alt="Prévia da demonstração" hidden />
+        <p class="status-line" id="exercise-video-status">Nenhuma demonstração selecionada.</p>
       </div>
       <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="exercise-modal">Cancelar</button><button id="create-exercise-button" type="button">Cadastrar exercício</button></div>
     </section>
