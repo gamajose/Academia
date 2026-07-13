@@ -59,11 +59,6 @@ jobs:
           source .env
           set +a
 
-          # Corrige automaticamente dependências que tenham ficado pertencendo ao root.
-          if [ -d node_modules ]; then
-            sudo -n chown -R "$(id -u):$(id -g)" node_modules
-          fi
-
           # A pasta compartilhada do VMware não suporta links simbólicos.
           npm ci --no-bin-links
           npm test
