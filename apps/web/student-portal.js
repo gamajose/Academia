@@ -1,271 +1,80 @@
-const STUDENT_PORTAL_API = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
-const STUDENT_PORTAL_TOKEN = localStorage.getItem('studentToken') || '';
-let currentPlan = null;
-let currentDayId = '';
-let currentExercises = [];
-let portalBusy = false;
-const MAX_PROGRESS_PHOTO_BYTES = 5 * 1024 * 1024;
+(function () {
+  const p = (id) => document.getElementById(id);
+  const weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+  let detail = null;
+  let selectedWeekday = new Date().getDay() || 7;
 
-const p = (id) => document.getElementById(id);
-
-function setPortalStatus(text) {
-  if (p('student-portal-status')) p('student-portal-status').textContent = text;
-}
-
-async function portalApi(path, options = {}) {
-  const response = await fetch(`${STUDENT_PORTAL_API}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${STUDENT_PORTAL_TOKEN}`, ...(options.headers || {}) }
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'erro_requisicao');
-  return data;
-}
-
-function setProgressPhotoStatus(text) {
-  if (p('portal-progress-photo-status')) p('portal-progress-photo-status').textContent = text;
-}
-
-function previewProgressPhoto(source) {
-  const image = p('portal-progress-photo-preview');
-  const empty = p('portal-progress-photo-empty');
-  if (!image || !empty) return;
-  image.hidden = !source;
-  empty.hidden = Boolean(source);
-  image.src = source || '';
-}
-
-async function uploadProgressPhoto(file) {
-  if (!file) return '';
-  if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) throw new Error('Escolha JPG, PNG, GIF ou WebP.');
-  if (file.size > MAX_PROGRESS_PHOTO_BYTES) throw new Error('A imagem não pode ultrapassar 5 MB.');
-  const form = new FormData();
-  form.append('file', file, file.name);
-  const response = await fetch(`${STUDENT_PORTAL_API}/api/editor/images`, { method: 'POST', headers: { Authorization: `Bearer ${STUDENT_PORTAL_TOKEN}` }, body: form });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a foto.');
-  return data.location || '';
-}
-
-function todayWeekday() {
-  const jsDay = new Date().getDay();
-  return jsDay === 0 ? 7 : jsDay;
-}
-
-function makeEntity(title, subtitle, detail = '') {
-  const row = document.createElement('li');
-  row.className = 'entity-card';
-  const main = document.createElement('div');
-  main.className = 'entity-main';
-  main.innerHTML = `<strong>${title}</strong><span>${subtitle}</span>${detail ? `<span>${detail}</span>` : ''}`;
-  row.appendChild(main);
-  return row;
-}
-
-function renderExercises() {
-  const list = p('portal-exercise-list');
-  list.innerHTML = '';
-  for (const item of currentExercises) {
-    const title = item.exercise_name || 'Exercício';
-    const subtitle = `${item.sets || '-'} séries · ${item.reps || '-'} repetições · ${item.rest_seconds || '-'}s de descanso`;
-    const detail = [item.day_title, item.instructions].filter(Boolean).join(' · ');
-    const row = makeEntity(title, subtitle, detail);
-    if (item.video_url && window.AcademiaTrainingMedia) {
-      const media = document.createElement('div');
-      media.className = 'video-preview-slot';
-      window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
-      row.appendChild(media);
-    }
-    list.appendChild(row);
-  }
-  if (!currentExercises.length) {
+  function makeEntity(title, subtitle, extra) {
     const row = document.createElement('li');
-    row.className = 'empty-state';
-    row.textContent = 'Nenhum exercício cadastrado para hoje.';
-    list.appendChild(row);
+    row.className = 'entity-card';
+    const main = document.createElement('div');
+    main.className = 'entity-main';
+    main.innerHTML = `<strong>${StudentPortal.escapeHtml(title)}</strong><span>${StudentPortal.escapeHtml(subtitle)}</span>${extra ? `<span>${StudentPortal.escapeHtml(extra)}</span>` : ''}`;
+    row.appendChild(main);
+    return row;
   }
-}
 
-function renderProgress(progress) {
-  const assessmentList = p('portal-progress-list');
-  const goalList = p('portal-goal-list');
-  assessmentList.innerHTML = '';
-  goalList.innerHTML = '';
+  function renderDayPicker(exercises) {
+    const picker = p('student-day-picker');
+    picker.innerHTML = '';
+    const days = [...new Set(exercises.map((item) => Number(item.weekday)).filter((day) => day >= 1 && day <= 7))];
+    (days.length ? days : [selectedWeekday]).sort((a, b) => a - b).forEach((day) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = day === selectedWeekday ? 'active' : '';
+      button.textContent = weekdays[day - 1] || `Dia ${day}`;
+      button.addEventListener('click', () => { selectedWeekday = day; renderDayPicker(exercises); renderExercises(exercises); });
+      picker.appendChild(button);
+    });
+  }
 
-  for (const item of progress.assessments || []) {
-    const row = makeEntity(
-      item.assessment_date || 'Avaliação',
-      `Peso: ${item.weight_kg || '-'} kg · Gordura: ${item.body_fat_percent || '-'}%`,
-      `Cintura: ${item.waist_cm || '-'} cm`
-    );
-    if (item.photo_url) {
-      const image = document.createElement('img');
-      image.className = 'student-progress-history-photo';
-      image.src = item.photo_url;
-      image.alt = 'Foto de evolução';
-      image.loading = 'lazy';
-      row.appendChild(image);
+  function renderExercises(exercises) {
+    const list = p('portal-exercise-list');
+    const current = exercises.filter((item) => Number(item.weekday) === selectedWeekday);
+    const fallback = current.length ? current : exercises;
+    list.innerHTML = '';
+    p('student-day-title').textContent = `${weekdays[selectedWeekday - 1] || 'Treino'} · exercícios`;
+    fallback.forEach((item) => {
+      const row = makeEntity(
+        item.exercise_name || 'Exercício',
+        `${item.sets || '-'} séries · ${item.reps || '-'} repetições · ${item.rest_seconds || '-'}s de descanso`,
+        [item.muscle_group_primary || item.muscle_group, item.instructions].filter(Boolean).join(' · ')
+      );
+      if (item.video_url && window.AcademiaTrainingMedia) {
+        const media = document.createElement('div');
+        media.className = 'video-preview-slot';
+        window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+        row.appendChild(media);
+      }
+      list.appendChild(row);
+    });
+    if (!fallback.length) {
+      const empty = document.createElement('li');
+      empty.className = 'empty-state';
+      empty.textContent = 'Nenhum exercício cadastrado para este dia.';
+      list.appendChild(empty);
     }
-    assessmentList.appendChild(row);
-  }
-  if (!(progress.assessments || []).length) {
-    const item = document.createElement('li');
-    item.className = 'empty-state';
-    item.textContent = 'Nenhuma avaliação registrada ainda.';
-    assessmentList.appendChild(item);
   }
 
-  for (const item of progress.goals || []) {
-    goalList.appendChild(makeEntity(
-      item.goal_type || 'Meta',
-      `Alvo: ${item.target_value || '-'} · Prazo: ${item.target_date || '-'}`,
-      item.status || 'Em andamento'
-    ));
+  async function load() {
+    try {
+      await StudentPortal.init();
+      const me = await StudentPortal.api('/api/student/me');
+      const firstName = (me.name || 'Aluno').split(' ')[0];
+      p('student-portal-title').textContent = `Meu treino, ${firstName}`;
+      detail = await StudentPortal.api('/api/student/training/current');
+      const exercises = detail.exercises || [];
+      if (!exercises.some((item) => Number(item.weekday) === selectedWeekday)) selectedWeekday = Number(exercises[0]?.weekday) || selectedWeekday;
+      p('student-portal-meta').textContent = `Ficha: ${detail.plan?.name || '-'} · Nível: ${detail.plan?.level || '-'} · Objetivo: ${detail.plan?.goal || '-'} · ${detail.plan?.age_days || 0} dias`;
+      renderDayPicker(exercises);
+      renderExercises(exercises);
+      p('student-auto-sync').textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`;
+      p('student-portal-status').textContent = 'Treino pronto para hoje.';
+    } catch (error) {
+      p('student-portal-status').textContent = `Erro: ${error.message}`;
+    }
   }
-  if (!(progress.goals || []).length) {
-    const item = document.createElement('li');
-    item.className = 'empty-state';
-    item.textContent = 'Nenhuma meta cadastrada ainda.';
-    goalList.appendChild(item);
-  }
-}
 
-async function shareProgressPhoto() {
-  const button = p('portal-progress-photo-button');
-  const file = p('portal-progress-photo')?.files?.[0];
-  try {
-    button.disabled = true;
-    setProgressPhotoStatus('Enviando foto...');
-    const photoUrl = file ? await uploadProgressPhoto(file) : p('portal-progress-photo-url').value.trim();
-    if (!photoUrl) throw new Error('Escolha uma foto ou informe um link.');
-    await portalApi('/api/student/progress/photos', {
-      method: 'POST',
-      body: JSON.stringify({ photo_url: photoUrl, notes: p('portal-progress-photo-notes').value.trim() })
-    });
-    p('portal-progress-photo').value = '';
-    p('portal-progress-photo-url').value = '';
-    p('portal-progress-photo-notes').value = '';
-    previewProgressPhoto('');
-    setProgressPhotoStatus('Foto compartilhada com a equipe.');
-    const progress = await portalApi('/api/student/progress');
-    renderProgress(progress);
-  } catch (error) {
-    setProgressPhotoStatus(`Erro: ${error.message}`);
-  } finally {
-    button.disabled = false;
-  }
-}
-
-async function loadStudentPortal(silent = false) {
-  if (!STUDENT_PORTAL_TOKEN) {
-    window.location.href = './student-login.html';
-    return;
-  }
-  if (portalBusy) return;
-  portalBusy = true;
-
-  try {
-    const me = await portalApi('/api/student/me');
-    const studentName = me.name || localStorage.getItem('studentName') || 'Aluno';
-    localStorage.setItem('studentName', studentName);
-    p('student-portal-title').textContent = `Meu treino, ${studentName.split(' ')[0]}`;
-    p('student-profile-name').textContent = studentName;
-    p('student-profile-avatar').textContent = studentName.charAt(0).toUpperCase();
-
-    const detail = await portalApi('/api/student/training/current');
-    currentPlan = detail.plan;
-    const weekday = todayWeekday();
-    const allExercises = detail.exercises || [];
-    currentExercises = allExercises.filter((item) => Number(item.weekday) === weekday);
-    if (!currentExercises.length) currentExercises = allExercises;
-    currentDayId = currentExercises[0]?.workout_day_id || '';
-
-    p('student-portal-meta').textContent = currentPlan
-      ? `Ficha: ${currentPlan.name} · Nível: ${currentPlan.level || '-'} · Objetivo: ${currentPlan.goal || '-'} · ${currentPlan.age_days || 0} dias`
-      : 'Nenhuma ficha ativa no momento.';
-    renderExercises();
-    await loadPortalLogs();
-    const progress = await portalApi('/api/student/progress');
-    renderProgress(progress);
-    if (!silent) setPortalStatus('Treino carregado.');
-    p('student-auto-sync').textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`;
-  } catch (error) {
-    setPortalStatus(`Erro: ${error.message}`);
-  } finally {
-    portalBusy = false;
-  }
-}
-
-async function loadPortalLogs() {
-  const result = await portalApi('/api/student/training/logs');
-  const list = p('portal-log-list');
-  list.innerHTML = '';
-  for (const item of result.data || []) {
-    list.appendChild(makeEntity(
-      item.day_title || item.plan_name || 'Treino concluído',
-      new Date(item.completed_at).toLocaleString('pt-BR'),
-      `Esforço percebido: ${item.perceived_effort || '-'}`
-    ));
-  }
-  if (!(result.data || []).length) {
-    const item = document.createElement('li');
-    item.className = 'empty-state';
-    item.textContent = 'Nenhum treino concluído ainda.';
-    list.appendChild(item);
-  }
-}
-
-async function completePortalWorkout() {
-  if (!currentPlan || !currentDayId) {
-    setPortalStatus('Treino ainda não carregado.');
-    return;
-  }
-  try {
-    p('portal-complete-button').disabled = true;
-    await portalApi('/api/student/training/complete', {
-      method: 'POST',
-      body: JSON.stringify({
-        plan_id: currentPlan.id,
-        workout_day_id: currentDayId,
-        perceived_effort: Number(p('portal-effort').value || 0) || null,
-        feedback: p('portal-feedback').value.trim()
-      })
-    });
-    p('portal-effort').value = '';
-    p('portal-feedback').value = '';
-    await loadPortalLogs();
-    setPortalStatus('Treino marcado como concluído. Ótimo trabalho!');
-  } catch (error) {
-    setPortalStatus(`Erro: ${error.message}`);
-  } finally {
-    p('portal-complete-button').disabled = false;
-  }
-}
-
-function logoutPortal() {
-  localStorage.removeItem('studentToken');
-  localStorage.removeItem('studentName');
-  localStorage.removeItem('studentAccountType');
-  document.cookie = 'academiaStudentAuth=; Path=/; Max-Age=0; SameSite=Lax';
-  window.location.href = './student-login.html';
-}
-
-const profileTrigger = p('student-profile-trigger');
-const profileDropdown = p('student-profile-dropdown');
-profileTrigger.addEventListener('click', (event) => {
-  event.stopPropagation();
-  profileDropdown.classList.toggle('hidden');
-  profileTrigger.setAttribute('aria-expanded', String(!profileDropdown.classList.contains('hidden')));
-});
-document.addEventListener('click', () => profileDropdown.classList.add('hidden'));
-p('student-profile-logout').addEventListener('click', logoutPortal);
-p('portal-complete-button').addEventListener('click', completePortalWorkout);
-p('portal-progress-photo')?.addEventListener('change', (event) => {
-  const file = event.target.files?.[0];
-  if (file && file.size <= MAX_PROGRESS_PHOTO_BYTES) previewProgressPhoto(URL.createObjectURL(file));
-});
-p('portal-progress-photo-url')?.addEventListener('input', (event) => { if (!p('portal-progress-photo')?.files?.length) previewProgressPhoto(event.target.value.trim()); });
-p('portal-progress-photo-button')?.addEventListener('click', shareProgressPhoto);
-window.setInterval(() => loadStudentPortal(true), 60000);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadStudentPortal(true); });
-loadStudentPortal();
+  window.StudentWorkout = { getDetail: () => detail };
+  load();
+}());

@@ -10,7 +10,12 @@ API_BASE_URL = os.environ.get('API_BASE_URL', 'http://127.0.0.1:3004').rstrip('/
 ROOT = Path(__file__).resolve().parent
 UPLOAD_ROOT = Path(os.environ.get('EDITOR_UPLOAD_DIR', str(ROOT / 'uploads'))).resolve()
 PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-register.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
-STUDENT_HTML = {'student-portal.html', 'visitor-portal.html'}
+STUDENT_HTML = {
+    'student-portal.html', 'student-complete.html', 'student-progress.html',
+    'student-goals.html', 'student-share.html', 'student-history.html',
+    'student-profile.html', 'student-security.html', 'student-change-password.html',
+    'visitor-portal.html'
+}
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
 NO_CACHE_SUFFIXES = ('.html', '.js', '.css')
 BUILD_VERSION = '20260713-0320'

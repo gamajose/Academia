@@ -1,0 +1,114 @@
+.student-page {
+  background: linear-gradient(180deg, #f7fbff 0%, #eef5fb 48%, #e5eef7 100%);
+}
+
+.student-top-nav {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.student-top-nav .top-nav-links {
+  justify-content: center;
+}
+
+.student-module-nav {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.student-module-nav::-webkit-scrollbar { display: none; }
+
+.student-page .app-shell { padding-top: 36px; }
+
+.student-page .hero { max-width: 920px; }
+
+.student-page .hero h1 { color: #101923; }
+
+.student-page .panel { gap: 16px; }
+
+.student-page .panel h3 { margin: 0; }
+
+.student-day-picker {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+}
+
+.student-day-picker button {
+  flex: 0 0 auto;
+  min-width: 84px;
+  background: #fff;
+  color: #24405a;
+  border: 1px solid #d7e3ef;
+}
+
+.student-day-picker button.active {
+  background: #1478d4;
+  border-color: #1478d4;
+  color: #fff;
+}
+
+.student-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.student-stat {
+  padding: 15px;
+  border: 1px solid #d7e3ef;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.student-stat span { display: block; color: #5e7081; font-size: 12px; }
+.student-stat strong { display: block; margin-top: 5px; color: #101923; font-size: 24px; }
+
+.student-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.student-photo-card {
+  overflow: hidden;
+  border: 1px solid #d7e3ef;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.student-photo-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.student-photo-card figcaption { padding: 10px; color: #5e7081; font-size: 12px; }
+
+.student-profile-form { max-width: 900px; margin: 0 auto; }
+
+.student-profile-form .form-section + .form-section { margin-top: 16px; }
+
+.student-profile-form .form-actions { justify-content: flex-start; }
+
+.student-security-layout {
+  width: min(620px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.student-security-layout .hero { max-width: none; text-align: center; }
+
+.student-security-card { margin-top: 22px; }
+
+.student-page .profile-trigger > span[aria-hidden] { display: none; }
+
+@media (max-width: 760px) {
+  .student-top-nav { grid-template-columns: minmax(0, 1fr) auto; }
+  .student-top-nav .top-nav-links { grid-column: 1 / -1; justify-content: flex-start; }
+  .student-stat-grid { grid-template-columns: 1fr; }
+  .student-page .app-shell { padding-top: 26px; }
+}

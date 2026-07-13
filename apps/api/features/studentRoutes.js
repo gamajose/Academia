@@ -163,7 +163,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (!user) return send(res, 401, { error: 'nao_autorizado' });
 
   const isPasswordChangeRequest = isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/change-password';
-  const isStudentProfileRequest = isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/me';
+  const isStudentProfileRequest = isStudent(user) && ((req.method === 'GET' && ['/api/student/me', '/api/student/profile'].includes(url.pathname)) || (req.method === 'POST' && url.pathname === '/api/student/profile'));
   if (isStudent(user) && !isPasswordChangeRequest && !isStudentProfileRequest) {
     const accountState = await query('SELECT must_change_password FROM member_accounts WHERE id = $1 AND member_id = $2 AND gym_id = $3 LIMIT 1', [user.sub, user.member_id, user.gym_id]);
     if (accountState.rows[0]?.must_change_password) return send(res, 403, { error: 'troca_senha_obrigatoria' });
@@ -206,6 +206,53 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       [user.member_id, user.gym_id]
     );
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/profile') {
+    const result = await query(
+      `SELECT m.id, m.name, m.email, m.phone, m.phone_country_code, m.cpf, m.rg, m.birth_date,
+              m.address, m.postal_code, m.street, m.address_number, m.address_complement,
+              m.neighborhood, m.city, m.state, m.country, m.objective, m.allergies, m.notes,
+              ma.email AS account_email
+       FROM members m INNER JOIN member_accounts ma ON ma.member_id = m.id
+       WHERE m.id = $1 AND m.gym_id = $2 AND ma.id = $3 LIMIT 1`,
+      [user.member_id, user.gym_id, user.sub]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/profile') {
+    const input = await body(req);
+    const name = String(input.name || '').trim();
+    const email = String(input.email || '').trim().toLowerCase();
+    if (!name || name.length > 160) return send(res, 400, { error: 'nome_invalido' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 180) return send(res, 400, { error: 'email_invalido' });
+    const duplicate = await query('SELECT id FROM member_accounts WHERE lower(email) = lower($1) AND id <> $2 LIMIT 1', [email, user.sub]);
+    if (duplicate.rowCount) return send(res, 409, { error: 'email_ja_cadastrado' });
+    const result = await query(
+      `UPDATE members SET name = $3, email = $4, phone = $5, phone_country_code = $6,
+       cpf = $7, rg = $8, birth_date = $9, address = $10, postal_code = $11,
+       street = $12, address_number = $13, address_complement = $14, neighborhood = $15,
+       city = $16, state = $17, country = $18, objective = $19, allergies = $20, notes = $21,
+       updated_at = now()
+       WHERE id = $1 AND gym_id = $2
+       RETURNING id, name, email, phone, phone_country_code, cpf, rg, birth_date,
+                 address, postal_code, street, address_number, address_complement,
+                 neighborhood, city, state, country, objective, allergies, notes`,
+      [user.member_id, user.gym_id, name, email, String(input.phone || '').trim() || null,
+        String(input.phone_country_code || '+55').trim(), String(input.cpf || '').trim() || null,
+        String(input.rg || '').trim() || null, input.birth_date || null, String(input.address || '').trim() || null,
+        String(input.postal_code || '').trim() || null, String(input.street || '').trim() || null,
+        String(input.address_number || '').trim() || null, String(input.address_complement || '').trim() || null,
+        String(input.neighborhood || '').trim() || null, String(input.city || '').trim() || null,
+        String(input.state || '').trim() || null, String(input.country || 'Brasil').trim() || 'Brasil',
+        String(input.objective || '').slice(0, 5000) || null, String(input.allergies || '').slice(0, 5000) || null,
+        String(input.notes || '').slice(0, 5000) || null]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    await query('UPDATE member_accounts SET email = $2, updated_at = now() WHERE id = $1 AND member_id = $3 AND gym_id = $4', [user.sub, email, user.member_id, user.gym_id]);
     return send(res, 200, result.rows[0]);
   }
 

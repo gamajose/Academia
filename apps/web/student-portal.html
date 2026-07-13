@@ -8,18 +8,30 @@
   <link rel="stylesheet" href="./premium-ui.css" />
   <link rel="stylesheet" href="./blue-theme.css" />
   <link rel="stylesheet" href="./training-media.css" />
+  <link rel="stylesheet" href="./student-shell.css" />
 </head>
-<body>
+<body class="student-page" data-student-page="training">
   <nav class="top-nav student-top-nav">
-    <a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></a>
-    <div class="top-nav-links"><a class="active" href="./student-portal.html">Meu treino</a></div>
+    <a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno">
+      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
+      <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></span>
+    </a>
+    <div class="top-nav-links student-module-nav" aria-label="Navegação do aluno">
+      <a data-student-link="training" href="./student-portal.html">Meu treino</a>
+      <a data-student-link="complete" href="./student-complete.html">Concluir treino</a>
+      <a data-student-link="progress" href="./student-progress.html">Minha evolução</a>
+      <a data-student-link="goals" href="./student-goals.html">Minhas metas</a>
+      <a data-student-link="share" href="./student-share.html">Compartilhar foto</a>
+      <a data-student-link="history" href="./student-history.html">Histórico</a>
+    </div>
     <div class="profile-menu">
-      <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false">
-        <span class="profile-avatar" id="student-profile-avatar">A</span>
-        <span class="profile-copy"><strong id="student-profile-name">Aluno</strong><span>Minha conta</span></span>
-        <span aria-hidden="true">⌄</span>
+      <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false" aria-haspopup="menu">
+        <span class="profile-avatar" data-student-avatar> A </span>
+        <span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span>
       </button>
-      <div class="profile-dropdown hidden" id="student-profile-dropdown">
+      <div class="profile-dropdown hidden" id="student-profile-dropdown" role="menu">
+        <a href="./student-profile.html">Meu perfil</a>
+        <a href="./student-security.html">Segurança</a>
         <button class="logout-item" id="student-profile-logout" type="button">Sair</button>
       </div>
     </div>
@@ -29,59 +41,25 @@
     <section class="hero">
       <p class="eyebrow">Área do aluno</p>
       <h1 id="student-portal-title">Meu treino</h1>
-      <p>Consulte o treino do dia, registre a execução e acompanhe sua evolução com clareza.</p>
-    </section>
-
-    <section class="grid">
-      <article class="panel">
-        <div class="toolbar">
-          <div><h3>Ficha atual</h3><small id="student-auto-sync">Atualização automática ativa.</small></div>
-        </div>
-        <p id="student-portal-meta">Carregando ficha...</p>
-      </article>
-
-      <article class="panel">
-        <h3>Concluir treino</h3>
-        <div class="field"><label for="portal-effort">Esforço percebido</label><input id="portal-effort" type="number" min="1" max="10" placeholder="De 1 a 10" /></div>
-        <div class="field"><label for="portal-feedback">Como foi o treino?</label><textarea id="portal-feedback" placeholder="Registre uma observação para seu histórico"></textarea></div>
-        <div class="form-actions"><button id="portal-complete-button">Marcar como concluído</button></div>
-        <p class="status-line" id="student-portal-status">Carregando...</p>
-      </article>
+      <p>Veja a ficha do dia, os exercícios e as orientações preparadas para você.</p>
     </section>
 
     <section class="panel">
-      <div class="toolbar"><h3>Exercícios do treino</h3></div>
-      <ul id="portal-exercise-list"></ul>
-    </section>
-
-    <section class="grid">
-      <article class="panel">
-        <h3>Minha evolução</h3>
-        <ul id="portal-progress-list"></ul>
-      </article>
-      <article class="panel">
-        <h3>Minhas metas</h3>
-        <ul id="portal-goal-list"></ul>
-      </article>
-    </section>
-
-    <section class="panel student-progress-upload-panel">
-      <div class="toolbar"><div><h3>Compartilhar foto de evolução</h3><small>Registre seu progresso para acompanhar junto com a equipe.</small></div></div>
-      <div class="student-progress-upload-grid">
-        <div class="field"><label for="portal-progress-photo">Foto do celular ou computador</label><input id="portal-progress-photo" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><small>JPG, PNG, GIF ou WebP. Limite de 5 MB.</small></div>
-        <div class="field"><label for="portal-progress-photo-url">Ou cole um link</label><input id="portal-progress-photo-url" type="url" placeholder="https://.../foto.jpg" /></div>
-        <div class="field"><label for="portal-progress-photo-notes">Observação</label><input id="portal-progress-photo-notes" maxlength="500" placeholder="Ex.: foto frontal, mês 2" /></div>
+      <div class="toolbar">
+        <div><h3>Ficha atual</h3><small id="student-auto-sync">Carregando...</small></div>
+        <span class="badge ok" id="student-plan-status">Ativa</span>
       </div>
-      <div class="student-progress-upload-preview"><img id="portal-progress-photo-preview" alt="Prévia da foto de evolução" hidden /><span id="portal-progress-photo-empty">A prévia aparecerá aqui.</span></div>
-      <div class="form-actions"><button id="portal-progress-photo-button" type="button">Compartilhar foto</button></div>
-      <p class="status-line" id="portal-progress-photo-status" aria-live="polite"></p>
+      <p id="student-portal-meta">Carregando ficha...</p>
+      <div class="student-day-picker" id="student-day-picker" aria-label="Dias da ficha"></div>
     </section>
 
     <section class="panel">
-      <h3>Histórico recente</h3>
-      <ul id="portal-log-list"></ul>
+      <div class="toolbar"><h3 id="student-day-title">Exercícios do dia</h3><a class="button secondary" href="./student-complete.html">Concluir treino</a></div>
+      <ul id="portal-exercise-list"></ul>
+      <p class="status-line" id="student-portal-status" aria-live="polite"></p>
     </section>
   </main>
+  <script src="./student-shell.js"></script>
   <script src="./training-media.js"></script>
   <script src="./student-portal.js"></script>
 </body>
