@@ -46,6 +46,17 @@ function money(cents) {
   return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function memberNameTone(item) {
+  const declared = String(item.gender || item.sex || '').toLowerCase();
+  if (['f', 'female', 'feminino', 'mulher'].includes(declared)) return 'female';
+  if (['m', 'male', 'masculino', 'homem'].includes(declared)) return 'male';
+  const firstName = String(item.member_name || '').trim().split(/\s+/)[0]
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const femaleNames = new Set(['ana', 'amanda', 'aline', 'beatriz', 'camila', 'carolina', 'fernanda', 'gabriela', 'isabela', 'juliana', 'laura', 'mariana', 'marina', 'patricia', 'rafaela', 'sabrina', 'sofia', 'valentina']);
+  const maleNames = new Set(['bruno', 'carlos', 'daniel', 'davi', 'eduardo', 'felipe', 'gabriel', 'joao', 'jose', 'lucas', 'marcos', 'matheus', 'miguel', 'pedro', 'rafael', 'rodrigo', 'thiago', 'vinicius']);
+  return femaleNames.has(firstName) ? 'female' : maleNames.has(firstName) ? 'male' : 'neutral';
+}
+
 function membershipStatus(item) {
   if (item.status === 'cancelled') return 'cancelled';
   return item.ends_at && String(item.ends_at).slice(0, 10) < new Date().toISOString().slice(0, 10) ? 'expired' : 'active';
@@ -76,7 +87,7 @@ function render() {
   for (const item of data) {
     const status = membershipStatus(item);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${item.member_name || '-'}</td><td>${item.plan_name || '-'}</td><td>${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
+    tr.innerHTML = `<td><span class="membership-member-name ${memberNameTone(item)}">${item.member_name || '-'}</span></td><td>${item.plan_name || '-'}</td><td>${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
     const actions = tr.lastElementChild;
     actions.appendChild(mini('✎', () => openModal(item)));
     actions.lastElementChild.className = 'icon-button';
