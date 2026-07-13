@@ -654,6 +654,20 @@ async function recentDecisions(res, user, helpers) {
   return send(res, 200, { data: result.rows });
 }
 
+async function listAccessMembers(res, user, helpers) {
+  const { send, query } = helpers;
+  if (!canManageDevices(user)) return send(res, 403, { error: 'sem_permissao' });
+  const result = await query(
+    `SELECT id, name, email, phone, status, created_at
+     FROM members
+     WHERE gym_id = $1
+     ORDER BY name ASC
+     LIMIT 500`,
+    [user.gym_id]
+  );
+  return send(res, 200, { data: result.rows });
+}
+
 async function handleAccessRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && (url.pathname === '/api/access/redeem-student-qr' || url.pathname === '/api/access/redeem-student-credential')) {
     return redeemStudentCredential(req, res, helpers);
@@ -684,6 +698,9 @@ async function handleAccessRoutes(req, res, user, url, helpers) {
   }
   if (req.method === 'GET' && url.pathname === '/api/access/decisions/recent') {
     return recentDecisions(res, user, helpers);
+  }
+  if (req.method === 'GET' && url.pathname === '/api/access/members') {
+    return listAccessMembers(res, user, helpers);
   }
 
   return false;

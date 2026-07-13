@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acesso e catraca - Academia Lobo</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./access-credential.css" />
+  <link rel="stylesheet" href="./access-page.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Controle de entrada</p>
+        <h1>Acesso e catraca</h1>
+        <p>Consulte o status financeiro do aluno e gere a credencial que será lida na catraca.</p>
+      </div>
+    </section>
+
+    <section class="panel access-overview-panel">
+      <div class="access-overview-copy"><h2>Credenciais dos alunos</h2><p>O QR Code é temporário e se renova automaticamente. A matrícula e o PIN continuam disponíveis para uso offline.</p></div>
+      <div class="access-metrics"><article><span>Alunos cadastrados</span><strong id="access-member-count">0</strong></article><article><span>Entradas recentes</span><strong id="access-decision-count">0</strong></article><article><span>Última atualização</span><strong id="access-last-update">--:--</strong></article></div>
+    </section>
+
+    <section class="panel access-members-panel">
+      <div class="toolbar"><div><h2>Alunos</h2><p>Selecione um aluno para ver o QR Code, o código temporário e a matrícula offline.</p></div></div>
+      <input id="access-member-search" type="search" placeholder="Buscar aluno por nome, e-mail ou telefone" />
+      <p class="status-line" id="access-status" aria-live="polite">Carregando acesso...</p>
+      <ul class="access-member-list" id="access-member-list"></ul>
+    </section>
+
+    <section class="panel access-decisions-panel">
+      <div><h2>Últimas decisões da catraca</h2><p>Histórico recente de entradas liberadas e bloqueadas.</p></div>
+      <ul class="access-decision-list" id="access-decision-list"></ul>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="access-credential-modal" role="dialog" aria-modal="true" aria-labelledby="access-credential-title" aria-hidden="true">
+    <section class="modal-card access-credential-modal">
+      <div class="modal-header"><div><p class="eyebrow">Credencial do aluno</p><h3 id="access-credential-title">Acesso para a catraca</h3><p id="access-credential-subtitle">Carregando dados do aluno...</p></div><button type="button" id="close-access-credential" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <p class="status-line" id="access-credential-status" aria-live="polite">Gerando credencial...</p>
+      <div class="credential-preview-layout">
+        <article class="credential-phone-card" aria-label="QR Code temporário do aluno">
+          <div class="credential-state-row"><span class="credential-state-dot" id="access-state-dot"></span><strong id="access-state-label">Verificando acesso</strong></div>
+          <h4 id="access-student-name">Aluno</h4><p>Apresente este QR Code ao leitor da catraca.</p>
+          <div class="credential-qr-frame"><canvas id="access-qr" width="220" height="220" aria-label="QR Code temporário"></canvas><div class="credential-qr-empty hidden" id="access-qr-empty">QR indisponível</div></div>
+          <span class="credential-label">Código temporário</span><strong class="credential-dynamic-code" id="access-dynamic-code">--- ---</strong><small id="access-countdown">Aguardando...</small><div class="credential-progress"><span id="access-progress-bar"></span></div>
+        </article>
+        <article class="offline-access-card"><p class="eyebrow">Sem internet no celular</p><h4>Entrada por matrícula e PIN</h4><p>Use estes dados quando o aluno estiver sem conexão no telefone.</p><div class="offline-credential-values"><div><span>Matrícula</span><strong id="access-registration-number">------</strong></div><div><span>PIN</span><strong id="access-offline-pin">----</strong></div></div><p class="credential-security-note">A catraca ainda verifica matrícula ativa, mensalidade e bloqueios antes de liberar.</p><button class="secondary" type="button" id="access-reset-pin">Gerar novo PIN</button></article>
+      </div>
+    </section>
+  </div>
+
+  <script src="./nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="./access.js"></script>
+</body>
+</html>

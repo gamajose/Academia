@@ -23,6 +23,16 @@
 .video-preview-slot { display: grid; gap: 8px; margin-top: 10px; }
 .video-preview-slot .mini-button { justify-self: start; margin: 0; }
 .training-levels-panel { margin-bottom: 18px; }
+.training-actions-panel { gap: 18px; margin-bottom: 24px; }
+.training-actions-panel h2 { margin: 0 0 6px; }
+.training-actions-panel p { margin: 0; }
+.training-actions-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.training-actions-grid button { min-height: 46px; padding: 10px 14px; }
+.training-modal-card { width: min(720px, 94vw); display: grid; gap: 14px; }
+.training-modal-card .modal-header { margin-bottom: 2px; }
+.training-modal-card .modal-header p { margin: 4px 0 0; }
+.training-modal-card .form-actions { margin-top: 4px; }
+.training-modal-card .training-level-form { margin-top: 4px; }
 .training-levels-panel .section-help { margin: 5px 0 0; color: var(--muted, #68716b); }
 .training-level-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
 .training-level-list { display: grid; gap: 8px; list-style: none; padding: 0; margin: 0; }
@@ -37,4 +47,12 @@
   .exercise-video-preview { width: 100%; }
   .training-level-form, .training-level-row { grid-template-columns: 1fr; align-items: stretch; }
   .training-level-row button { justify-self: start; }
+}
+
+@media (max-width: 900px) {
+  .training-actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .training-actions-grid { grid-template-columns: 1fr; }
 }

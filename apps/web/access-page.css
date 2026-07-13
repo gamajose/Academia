@@ -1,0 +1,18 @@
+.access-overview-panel { gap: 18px; margin-bottom: 24px; }
+.access-overview-copy h2, .access-members-panel h2, .access-decisions-panel h2 { margin: 0 0 6px; }
+.access-overview-copy p, .access-members-panel .toolbar p, .access-decisions-panel > div p { margin: 0; }
+.access-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.access-metrics article { border: 1px solid var(--line); border-radius: 12px; padding: 15px; background: #fcfaf7; }
+.access-metrics span { display: block; color: var(--muted); font-size: 13px; }
+.access-metrics strong { display: block; margin-top: 7px; font-size: 26px; }
+.access-members-panel, .access-decisions-panel { gap: 16px; margin-bottom: 24px; }
+.access-member-list, .access-decision-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 0; }
+.access-member-row, .access-decision-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.access-member-main, .access-decision-row > div { display: grid; gap: 4px; min-width: 0; }
+.access-member-main strong, .access-decision-row strong { color: var(--text); }
+.access-member-main span, .access-decision-row span { color: var(--muted); font-size: 13px; }
+.access-member-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.access-member-meta .mini-button { margin: 0; }
+.access-decision-row .badge { flex: 0 0 auto; }
+.access-credential-modal { width: min(960px, calc(100vw - 32px)); }
+@media (max-width: 760px) { .access-metrics { grid-template-columns: 1fr; } .access-member-row, .access-decision-row { align-items: flex-start; flex-direction: column; } .access-member-meta { justify-content: flex-start; } }

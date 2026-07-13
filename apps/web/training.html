@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Treinos - Academia Lobo</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./training-media.css" />
 </head>
 <body>
@@ -12,117 +13,82 @@
     <section class="hero">
       <div>
         <p class="eyebrow">Treinos inteligentes</p>
-        <h1>Ficha semanal e exercicios</h1>
-        <p>Cadastre exercicios com instrucoes e video, monte fichas semanais e use a analise inteligente para revisar treinos antigos.</p>
+        <h1>Ficha semanal e exercícios</h1>
+        <p>Organize exercícios, níveis, fichas e revisões em um fluxo simples para a equipe.</p>
       </div>
     </section>
 
-    <section class="panel training-levels-panel" id="training-levels-panel">
-      <div class="toolbar">
-        <div>
-          <h3>Niveis de treino</h3>
-          <p class="section-help">Cadastre os niveis que aparecem nas fichas, perfis e exercicios.</p>
-        </div>
+    <section class="panel training-actions-panel">
+      <div>
+        <h2>Gestão de treinos</h2>
+        <p>Escolha uma ação para abrir o formulário correspondente. Os cadastros ficam separados das listas para facilitar a consulta.</p>
       </div>
-      <form class="training-level-form" id="training-level-form">
-        <input id="training-level-name" maxlength="60" placeholder="Novo nivel. Ex.: Hipertrofia" required />
-        <button type="submit">Adicionar nivel</button>
-      </form>
-      <ul class="training-level-list" id="training-level-list"></ul>
-      <p class="status-line" id="training-level-status">Niveis carregados.</p>
-    </section>
-
-    <section class="grid">
-      <article class="panel">
-        <h3>Novo exercicio</h3>
-        <input id="exercise-name" placeholder="Nome do exercicio" />
-        <input id="exercise-group" placeholder="Grupo muscular" />
-        <input id="exercise-equipment" placeholder="Equipamento" />
-        <select id="exercise-level"><option value="">Carregando níveis...</option></select>
-        <textarea id="exercise-instructions" placeholder="Instrucoes de execucao"></textarea>
-        <div class="video-source-fields">
-          <div class="field">
-            <label for="exercise-video-source">Como adicionar o video</label>
-            <select id="exercise-video-source">
-              <option value="upload">Escolher arquivo da maquina</option>
-              <option value="link">Usar link da internet</option>
-            </select>
-          </div>
-          <div class="field" id="exercise-video-upload-field">
-            <label for="exercise-video-file">Arquivo de video</label>
-            <input id="exercise-video-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" />
-            <small>MP4, WebM, OGG ou MOV. Limite de 50 MB.</small>
-          </div>
-          <div class="field hidden" id="exercise-video-link-field">
-            <label for="exercise-video-url">Link direto do video</label>
-            <input id="exercise-video-url" type="url" inputmode="url" placeholder="https://.../exercicio.mp4" />
-            <small>Links diretos de MP4, WebM, OGG ou MOV tocam aqui. Links de paginas abrem em outra guia.</small>
-          </div>
-          <video id="exercise-video-preview" class="exercise-video-preview" hidden autoplay muted loop playsinline preload="metadata" controls></video>
-          <p class="status-line" id="exercise-video-status">Nenhum video selecionado.</p>
-        </div>
-        <button id="create-exercise-button">Cadastrar exercicio</button>
-      </article>
-
-      <article class="panel">
-        <h3>Perfil de treino do aluno</h3>
-        <select id="profile-member"></select>
-        <select id="profile-level"><option value="">Carregando níveis...</option></select>
-        <input id="profile-goal" placeholder="Objetivo" />
-        <input id="profile-days" type="number" placeholder="Dias por semana" />
-        <textarea id="profile-restrictions" placeholder="Restricoes, dores ou observacoes"></textarea>
-        <button id="save-profile-button">Salvar perfil</button>
-      </article>
-    </section>
-
-    <section class="grid">
-      <article class="panel">
-        <h3>Nova ficha</h3>
-        <select id="plan-member"></select>
-        <input id="plan-name" placeholder="Nome da ficha" />
-        <select id="plan-level"><option value="">Carregando níveis...</option></select>
-        <input id="plan-goal" placeholder="Objetivo da ficha" />
-        <input id="plan-start" type="date" />
-        <button id="create-plan-button">Criar ficha</button>
-      </article>
-
-      <article class="panel">
-        <h3>Montar dia da ficha</h3>
-        <select id="day-plan"></select>
-        <input id="day-weekday" type="number" placeholder="Dia da semana 1 a 7" />
-        <input id="day-title" placeholder="Titulo do dia. Ex: Peito e triceps" />
-        <input id="day-notes" placeholder="Observacoes" />
-        <button id="create-day-button">Adicionar dia</button>
-      </article>
-    </section>
-
-    <section class="grid">
-      <article class="panel">
-        <h3>Adicionar exercicio na ficha</h3>
-        <select id="exercise-day"></select>
-        <select id="exercise-select"></select>
-        <input id="workout-order" type="number" placeholder="Ordem" />
-        <input id="workout-sets" type="number" placeholder="Series" />
-        <input id="workout-reps" placeholder="Repeticoes" />
-        <input id="workout-rest" type="number" placeholder="Descanso em segundos" />
-        <input id="workout-load" placeholder="Carga ou orientacao" />
-        <button id="add-workout-exercise-button">Adicionar exercicio</button>
-      </article>
-
-      <article class="panel">
-        <h3>Analise inteligente</h3>
-        <select id="review-plan"></select>
-        <button id="review-plan-button">Analisar ficha</button>
-        <p class="status-line" id="training-status">Aguardando acao.</p>
-        <ul id="review-list"></ul>
-      </article>
+      <div class="training-actions-grid">
+        <button id="open-training-levels-button" type="button">Níveis de treino</button>
+        <button id="open-exercise-button" type="button">Novo exercício</button>
+        <button id="open-profile-button" type="button">Perfil de treino do aluno</button>
+        <button id="open-plan-button" type="button">Nova ficha</button>
+        <button id="open-day-button" type="button">Montar dia da ficha</button>
+        <button id="open-workout-exercise-button" type="button">Adicionar exercício da ficha</button>
+        <button id="open-review-button" type="button">Análise inteligente</button>
+      </div>
+      <p class="status-line" id="training-status">Aguardando ação.</p>
     </section>
 
     <section class="grid lists-grid">
-      <article class="panel"><h3>Exercicios cadastrados</h3><ul id="exercise-list"></ul></article>
+      <article class="panel"><h3>Exercícios cadastrados</h3><ul id="exercise-list"></ul></article>
       <article class="panel"><h3>Fichas</h3><ul id="plan-list"></ul></article>
     </section>
   </main>
+
+  <div class="modal hidden" id="training-levels-modal" role="dialog" aria-modal="true" aria-labelledby="training-levels-title" aria-hidden="true">
+    <section class="modal-card training-modal-card training-levels-panel" id="training-levels-panel">
+      <div class="modal-header"><div><p class="eyebrow">Configuração</p><h3 id="training-levels-title">Níveis de treino</h3><p class="section-help">Edite, desative ou crie os níveis que aparecem nas fichas e perfis.</p></div><button type="button" id="close-training-levels-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <form class="training-level-form" id="training-level-form"><input id="training-level-name" maxlength="60" placeholder="Novo nível. Ex.: Hipertrofia" required /><button type="submit">Adicionar nível</button></form>
+      <ul class="training-level-list" id="training-level-list"></ul>
+      <p class="status-line" id="training-level-status">Níveis carregados.</p>
+    </section>
+  </div>
+
+  <div class="modal hidden" id="exercise-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-title" aria-hidden="true">
+    <section class="modal-card training-modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Cadastro</p><h3 id="exercise-title">Novo exercício</h3><p>Cadastre instruções e uma demonstração em vídeo.</p></div><button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <input id="exercise-name" placeholder="Nome do exercício" />
+      <input id="exercise-group" placeholder="Grupo muscular" />
+      <input id="exercise-equipment" placeholder="Equipamento" />
+      <select id="exercise-level"><option value="">Carregando níveis...</option></select>
+      <textarea id="exercise-instructions" placeholder="Instruções de execução"></textarea>
+      <div class="video-source-fields">
+        <div class="field"><label for="exercise-video-source">Como adicionar o vídeo</label><select id="exercise-video-source"><option value="upload">Escolher arquivo da máquina</option><option value="link">Usar link da internet</option></select></div>
+        <div class="field" id="exercise-video-upload-field"><label for="exercise-video-file">Arquivo de vídeo</label><input id="exercise-video-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" /><small>MP4, WebM, OGG ou MOV. Limite de 50 MB.</small></div>
+        <div class="field hidden" id="exercise-video-link-field"><label for="exercise-video-url">Link direto do vídeo</label><input id="exercise-video-url" type="url" inputmode="url" placeholder="https://.../exercicio.mp4" /><small>Links diretos tocam em loop. Links de páginas são salvos para abertura em outra guia.</small></div>
+        <video id="exercise-video-preview" class="exercise-video-preview" hidden autoplay muted loop playsinline preload="metadata" controls></video>
+        <p class="status-line" id="exercise-video-status">Nenhum vídeo selecionado.</p>
+      </div>
+      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="exercise-modal">Cancelar</button><button id="create-exercise-button" type="button">Cadastrar exercício</button></div>
+    </section>
+  </div>
+
+  <div class="modal hidden" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" aria-hidden="true">
+    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Acompanhamento</p><h3 id="profile-title">Perfil de treino do aluno</h3><p>Defina o nível, objetivo, frequência e restrições.</p></div><button type="button" id="close-profile-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="profile-member"></select><select id="profile-level"><option value="">Carregando níveis...</option></select><input id="profile-goal" placeholder="Objetivo" /><input id="profile-days" type="number" placeholder="Dias por semana" /><textarea id="profile-restrictions" placeholder="Restrições, dores ou observações"></textarea><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="profile-modal">Cancelar</button><button id="save-profile-button" type="button">Salvar perfil</button></div></section>
+  </div>
+
+  <div class="modal hidden" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-title" aria-hidden="true">
+    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Planejamento</p><h3 id="plan-title">Nova ficha</h3><p>Crie uma ficha vinculada a um aluno e a um nível.</p></div><button type="button" id="close-plan-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="plan-member"></select><input id="plan-name" placeholder="Nome da ficha" /><select id="plan-level"><option value="">Carregando níveis...</option></select><input id="plan-goal" placeholder="Objetivo da ficha" /><input id="plan-start" type="date" /><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="plan-modal">Cancelar</button><button id="create-plan-button" type="button">Criar ficha</button></div></section>
+  </div>
+
+  <div class="modal hidden" id="day-modal" role="dialog" aria-modal="true" aria-labelledby="day-title-heading" aria-hidden="true">
+    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Planejamento</p><h3 id="day-title-heading">Montar dia da ficha</h3><p>Adicione um dia de treino à ficha selecionada.</p></div><button type="button" id="close-day-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="day-plan"></select><input id="day-weekday" type="number" min="1" max="7" placeholder="Dia da semana 1 a 7" /><input id="day-title" placeholder="Título do dia. Ex.: Peito e tríceps" /><input id="day-notes" placeholder="Observações" /><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="day-modal">Cancelar</button><button id="create-day-button" type="button">Adicionar dia</button></div></section>
+  </div>
+
+  <div class="modal hidden" id="workout-exercise-modal" role="dialog" aria-modal="true" aria-labelledby="workout-exercise-title" aria-hidden="true">
+    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Montagem</p><h3 id="workout-exercise-title">Adicionar exercício da ficha</h3><p>Defina a ordem, séries, repetições e descanso.</p></div><button type="button" id="close-workout-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="exercise-day"></select><select id="exercise-select"></select><input id="workout-order" type="number" placeholder="Ordem" /><input id="workout-sets" type="number" placeholder="Séries" /><input id="workout-reps" placeholder="Repetições" /><input id="workout-rest" type="number" placeholder="Descanso em segundos" /><input id="workout-load" placeholder="Carga ou orientação" /><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="workout-exercise-modal">Cancelar</button><button id="add-workout-exercise-button" type="button">Adicionar exercício</button></div></section>
+  </div>
+
+  <div class="modal hidden" id="review-modal" role="dialog" aria-modal="true" aria-labelledby="review-title" aria-hidden="true">
+    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Revisão</p><h3 id="review-title">Análise inteligente</h3><p>Revise uma ficha antiga e receba sugestões para a equipe.</p></div><button type="button" id="close-review-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="review-plan"></select><button id="review-plan-button" type="button">Analisar ficha</button><ul id="review-list"></ul><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="review-modal">Fechar</button></div></section>
+  </div>
+
   <script src="./nav.js"></script>
   <script src="./training-media.js"></script>
   <script src="./training.js"></script>

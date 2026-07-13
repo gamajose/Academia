@@ -1,4 +1,4 @@
-const NAV_BUILD_VERSION = '20260713-0035';
+const NAV_BUILD_VERSION = '20260713-0140';
 const pageName = (value) => String(value || '').split('/').pop().split('?')[0].split('#')[0];
 const pageUrl = (href) => `./${href}?v=${NAV_BUILD_VERSION}`;
 
@@ -45,7 +45,7 @@ function canSeePage(href, role, accessProfile, permissions = null) {
     'painel.html': 'dashboard', 'alunos.html': 'members', 'planos.html': 'plans',
     'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments',
     'financeiro.html': 'finance', 'alerts.html': 'alerts', 'training.html': 'training',
-    'assessments.html': 'assessments', 'users.html': 'users'
+    'assessments.html': 'assessments', 'access.html': 'access', 'users.html': 'users'
   };
   if (permissions && pageModules[href]) return permissions[pageModules[href]] === true;
   if (role === 'staff' && accessProfile === 'trainer') return ['painel.html', 'alunos.html', 'training.html', 'assessments.html'].includes(href);
@@ -71,7 +71,7 @@ function renderNavigation() {
     ['painel.html', 'Painel'], ['alunos.html', 'Alunos'], ['planos.html', 'Planos'],
     ['vinculos.html', 'Matrículas'], ['solicitacoes.html', 'Pré-matrículas'],
     ['financeiro.html', 'Financeiro'], ['alerts.html', 'Alertas'], ['training.html', 'Treinos'],
-    ['assessments.html', 'Avaliações'], ['users.html', 'Funcionários']
+    ['assessments.html', 'Avaliações'], ['access.html', 'Acesso'], ['users.html', 'Funcionários']
   ];
 
   const nav = document.createElement('nav');

@@ -78,9 +78,11 @@ function renderTrainingLevels() {
   const list = t('training-level-list');
   if (!canManageTrainingLevels()) {
     panel.hidden = true;
+    t('open-training-levels-button')?.setAttribute('hidden', 'hidden');
     return;
   }
   panel.hidden = false;
+  t('open-training-levels-button')?.removeAttribute('hidden');
   list.innerHTML = '';
   for (const level of trainingLevels) {
     const item = document.createElement('li');
@@ -453,4 +455,58 @@ t('create-plan-button').addEventListener('click', createPlan);
 t('create-day-button').addEventListener('click', createDay);
 t('add-workout-exercise-button').addEventListener('click', addWorkoutExercise);
 t('review-plan-button').addEventListener('click', reviewPlan);
+
+function syncTrainingModalState() {
+  document.body.classList.toggle('modal-open', Boolean(document.querySelector('.modal:not(.hidden)')));
+}
+
+function openTrainingModal(id) {
+  const modal = t(id);
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  syncTrainingModalState();
+}
+
+function closeTrainingModal(id) {
+  const modal = t(id);
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+  syncTrainingModalState();
+}
+
+[
+  ['open-training-levels-button', 'training-levels-modal'],
+  ['open-exercise-button', 'exercise-modal'],
+  ['open-profile-button', 'profile-modal'],
+  ['open-plan-button', 'plan-modal'],
+  ['open-day-button', 'day-modal'],
+  ['open-workout-exercise-button', 'workout-exercise-modal'],
+  ['open-review-button', 'review-modal']
+].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => openTrainingModal(modalId)));
+
+[
+  ['close-training-levels-modal', 'training-levels-modal'],
+  ['close-exercise-modal', 'exercise-modal'],
+  ['close-profile-modal', 'profile-modal'],
+  ['close-plan-modal', 'plan-modal'],
+  ['close-day-modal', 'day-modal'],
+  ['close-workout-exercise-modal', 'workout-exercise-modal'],
+  ['close-review-modal', 'review-modal']
+].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => closeTrainingModal(modalId)));
+
+document.querySelectorAll('[data-close-training-modal]').forEach((button) => {
+  button.addEventListener('click', () => closeTrainingModal(button.dataset.closeTrainingModal));
+});
+document.querySelectorAll('.modal').forEach((modal) => {
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) closeTrainingModal(modal.id);
+  });
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const open = document.querySelector('.modal:not(.hidden)');
+  if (open) closeTrainingModal(open.id);
+});
 loadBase().catch((error) => setTrainingStatus(`Erro: ${error.message}`));
