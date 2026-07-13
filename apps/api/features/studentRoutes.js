@@ -3,12 +3,16 @@ const { recordAudit } = require('../lib/audit');
 const { sendTransactionalEmail } = require('../lib/mailer');
 
 function appUrl(path) {
-  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.28.10:8084').replace(/\/$/, '');
   return `${base}${path}`;
 }
 
 function isStudent(user) {
   return user && user.role === 'student' && user.member_id;
+}
+
+function isVisitor(user) {
+  return user && user.role === 'visitor' && user.visitor_id;
 }
 
 function canManageStudentAccount(user) {
@@ -33,10 +37,53 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       [identifier, phoneDigits]
     );
     const account = result.rows[0];
-    if (!account || !account.is_active || !verifyPassword(input.password, account.secret_hash)) return send(res, 401, { error: 'credenciais_invalidas' });
-    await query('UPDATE member_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1', [account.id]);
-    const token = signToken({ sub: account.id, gym_id: account.gym_id, role: 'student', member_id: account.member_id });
-    return send(res, 200, { token, student: { id: account.member_id, name: account.member_name, email: account.email, role: 'student', gym_id: account.gym_id } });
+    if (account && account.is_active && verifyPassword(input.password, account.secret_hash)) {
+      await query('UPDATE member_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1', [account.id]);
+      const token = signToken({ sub: account.id, gym_id: account.gym_id, role: 'student', member_id: account.member_id });
+      return send(res, 200, { token, account_type: 'student', student: { id: account.member_id, name: account.member_name, email: account.email, role: 'student', gym_id: account.gym_id } });
+    }
+
+    const visitor = await query(
+      `SELECT id, gym_id, name, email, phone, secret_hash, is_active
+       FROM visitor_accounts
+       WHERE lower(email) = lower($1)
+          OR ($2 <> '' AND regexp_replace(COALESCE(phone, ''), '[^0-9]', '', 'g') = $2)
+       LIMIT 1`,
+      [identifier, phoneDigits]
+    );
+    const visitorAccount = visitor.rows[0];
+    if (!visitorAccount || !visitorAccount.is_active || !verifyPassword(input.password, visitorAccount.secret_hash)) return send(res, 401, { error: 'credenciais_invalidas' });
+    await query('UPDATE visitor_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1', [visitorAccount.id]);
+    const token = signToken({ sub: visitorAccount.id, gym_id: visitorAccount.gym_id, role: 'visitor', visitor_id: visitorAccount.id });
+    return send(res, 200, { token, account_type: 'visitor', student: { id: visitorAccount.id, name: visitorAccount.name, email: visitorAccount.email, phone: visitorAccount.phone, role: 'visitor', gym_id: visitorAccount.gym_id } });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/student/auth/register-visitor') {
+    const input = await body(req);
+    const name = String(input.name || '').trim();
+    const email = String(input.email || '').trim().toLowerCase();
+    const phone = String(input.phone || '').trim();
+    const passwordCheck = validatePassword(input.password);
+    if (name.length < 3 || !/^\S+@\S+\.\S+$/.test(email) || !passwordCheck.valid || input.password !== input.password_confirmation) return send(res, 400, { error: 'dados_invalidos' });
+    const duplicate = await query(
+      `SELECT 1 FROM users WHERE lower(email) = $1
+       UNION ALL SELECT 1 FROM member_accounts WHERE lower(email) = $1
+       UNION ALL SELECT 1 FROM visitor_accounts WHERE lower(email) = $1
+       LIMIT 1`,
+      [email]
+    );
+    if (duplicate.rowCount) return send(res, 409, { error: 'email_ja_cadastrado' });
+    const gym = await query("SELECT id FROM gyms WHERE status = 'active' ORDER BY created_at ASC LIMIT 1");
+    if (!gym.rowCount) return send(res, 503, { error: 'academia_indisponivel' });
+    const result = await query(
+      `INSERT INTO visitor_accounts (gym_id, name, email, phone, secret_hash)
+       VALUES ($1, $2, $3, NULLIF($4, ''), $5)
+       RETURNING id, gym_id, name, email, phone`,
+      [gym.rows[0].id, name, email, phone, hashPassword(input.password)]
+    );
+    const visitorAccount = result.rows[0];
+    const token = signToken({ sub: visitorAccount.id, gym_id: visitorAccount.gym_id, role: 'visitor', visitor_id: visitorAccount.id });
+    return send(res, 201, { token, account_type: 'visitor', student: { ...visitorAccount, role: 'visitor' } });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/student/auth/forgot-password') {
@@ -125,6 +172,12 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     );
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
     return send(res, 200, result.rows[0]);
+  }
+
+  if (isVisitor(user) && req.method === 'GET' && url.pathname === '/api/student/visitor/me') {
+    const result = await query('SELECT id, name, email, phone, created_at FROM visitor_accounts WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1', [user.visitor_id, user.gym_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'conta_nao_encontrada' });
+    return send(res, 200, { ...result.rows[0], role: 'visitor', account_type: 'visitor' });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/progress') {

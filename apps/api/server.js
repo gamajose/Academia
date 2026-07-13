@@ -134,7 +134,7 @@ async function login(req, res) {
 }
 
 function publicAppUrl(path) {
-  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.28.10:8084').replace(/\/$/, '');
   return `${base}${path}`;
 }
 

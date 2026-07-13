@@ -12,4 +12,10 @@ function validEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
 }
 
-module.exports = { digits, nullable, validEmail };
+function validPhone(value, countryCode = '+55') {
+  const number = digits(value, 24);
+  if (!number) return true;
+  return countryCode === '+55' ? number.length === 11 : number.length >= 6 && number.length <= 15;
+}
+
+module.exports = { digits, nullable, validEmail, validPhone };

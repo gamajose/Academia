@@ -50,7 +50,7 @@
           <div class="field"><label for="student-birth">Data de nascimento</label><input id="student-birth" type="date" /></div>
           <div class="field"><label for="student-email">E-mail</label><input id="student-email" type="email" inputmode="email" autocomplete="email" placeholder="nome@email.com" /></div>
           <div class="field"><label for="student-phone">Telefone</label>
-            <div class="international-phone"><input id="student-phone" inputmode="tel" autocomplete="tel" /></div>
+            <div class="international-phone"><input id="student-phone" inputmode="tel" autocomplete="tel" maxlength="20" /></div>
           </div>
         </div>
       </section>
@@ -150,7 +150,8 @@
   <script src="./guard.js"></script>
   <script src="./nav.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
-  <script src="https://cdn.tiny.cloud/1/dknmnruvf26yo5hdc9vc19t1k1b9umeu1yj9mpkic82sjzzm/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script src="./rich-editor.js"></script>

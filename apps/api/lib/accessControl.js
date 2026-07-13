@@ -71,6 +71,10 @@ function canAccess(user, method, pathname, permissions = null) {
     return false;
   }
 
+  if (user.role === 'visitor') {
+    return method === 'GET' && pathname === '/api/student/visitor/me';
+  }
+
   if (user.role === 'admin') {
     return !permissions || permissions[moduleForPath(pathname)] === true;
   }

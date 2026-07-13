@@ -151,6 +151,14 @@ function phoneCountryCode() {
   return dialCode ? `+${dialCode}` : '+55';
 }
 
+function validatePhoneField(value, countryCode) {
+  const number = digits(value);
+  if (!number) return '';
+  if (countryCode === '+55' && number.length !== 11) return 'O telefone do Brasil deve ter exatamente 11 dígitos.';
+  if (countryCode !== '+55' && (number.length < 6 || number.length > 15)) return 'Informe um telefone válido para o país selecionado.';
+  return '';
+}
+
 function selectPhoneCountry(countryCode) {
   if (!phoneWidget) return;
   const normalized = String(countryCode || '+55').replace(/\D/g, '');
@@ -223,8 +231,11 @@ async function save(event) {
   if (cpf && cpf.length !== 11) { $('students-status').textContent = 'O CPF deve possuir 11 dígitos.'; $('student-cpf').focus(); return; }
 
   const countryCode = phoneCountryCode();
+  const phoneError = validatePhoneField(val('student-phone'), countryCode);
+  if (phoneError) { $('students-status').textContent = phoneError; $('student-phone').focus(); return; }
   const emergencyName = val('student-emergency-name');
   const emergencyPhone = digits(val('student-emergency-phone'));
+  if (emergencyPhone && emergencyPhone.length !== 11) { $('students-status').textContent = 'O telefone de emergência deve ter 11 dígitos no Brasil.'; $('student-emergency-phone').focus(); return; }
   const richIds = ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'];
   let richValues;
   try {
@@ -260,7 +271,7 @@ async function save(event) {
     await load();
     $('students-status').textContent = 'Cadastro salvo com sucesso.';
   } catch (error) {
-    const labels = { cpf_ja_cadastrado: 'Este CPF já pertence a outro aluno.', email_invalido: 'Informe um e-mail válido.', cpf_invalido: 'O CPF deve possuir 11 dígitos.' };
+    const labels = { cpf_ja_cadastrado: 'Este CPF já pertence a outro aluno.', email_invalido: 'Informe um e-mail válido.', cpf_invalido: 'O CPF deve possuir 11 dígitos.', telefone_invalido: 'O telefone precisa ter a quantidade correta de dígitos.' };
     $('students-status').textContent = labels[error.message] || `Erro ao salvar: ${error.message}`;
   } finally {
     $('save-student-button').disabled = false;

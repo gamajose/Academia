@@ -76,9 +76,10 @@ async function accountLogin() {
     const student = await post('/api/student/auth/login', payload);
     localStorage.setItem('studentToken', student.token);
     localStorage.setItem('studentName', student.student?.name || 'Aluno');
+    localStorage.setItem('studentAccountType', student.account_type || 'student');
     localStorage.setItem('studentApiBaseUrl', API);
     studentPortalOn();
-    window.location.href = './student-portal.html';
+    window.location.href = student.account_type === 'visitor' ? './visitor-portal.html' : './student-portal.html';
   } catch (error) {
     const map = {
       credenciais_invalidas: 'E-mail ou senha inválidos.',

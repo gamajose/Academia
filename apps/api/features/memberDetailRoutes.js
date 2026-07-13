@@ -1,5 +1,5 @@
 const { recordAudit } = require('../lib/audit');
-const { digits, nullable, validEmail } = require('../lib/memberValidation');
+const { digits, nullable, validEmail, validPhone } = require('../lib/memberValidation');
 const { hashPassword, validatePassword } = require('../lib/security');
 const { createPixPayment, getMercadoPagoPayment, createPaypalOrder, capturePaypalOrder } = require('../lib/paymentProviders');
 const { confirmEnrollmentPayment, confirmEnrollmentEmail } = require('../lib/enrollmentPayment');
@@ -43,6 +43,9 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
     const cpf = digits(input.cpf, 11) || null;
     if (input.cpf && (!cpf || cpf.length !== 11)) return send(res, 400, { error: 'cpf_invalido' });
 
+    const phoneCountryCode = nullable(input.phone_country_code) || '+55';
+    if (!validPhone(input.phone, phoneCountryCode)) return send(res, 400, { error: 'telefone_invalido' });
+
     if (cpf) {
       const duplicate = await query(
         'SELECT id FROM members WHERE gym_id = $1 AND cpf = $2 AND ($3::uuid IS NULL OR id <> $3::uuid) LIMIT 1',
@@ -55,7 +58,7 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
       name: String(input.name).trim(),
       email: nullable(input.email)?.toLowerCase() || null,
       phone: digits(input.phone, 24) || null,
-      phone_country_code: nullable(input.phone_country_code) || '+55',
+      phone_country_code: phoneCountryCode,
       birth_date: input.birth_date || null,
       document: nullable(input.document),
       cpf,
