@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+
+process.env.DATABASE_URL ||= 'postgres://test:test@127.0.0.1:5432/test';
 const { normalizeAccessCode } = require('../features/accessRoutes');
 
 test('normaliza codigo dinamico com espaco ou hifen', () => {
