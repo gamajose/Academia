@@ -2,6 +2,8 @@ const { hashPassword, verifyPassword, signToken, randomToken, hashToken, validat
 const { recordAudit } = require('../lib/audit');
 const { sendTransactionalEmail } = require('../lib/mailer');
 
+const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo123';
+
 function appUrl(path) {
   const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.28.10:8084').replace(/\/$/, '');
   return `${base}${path}`;
@@ -28,7 +30,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const phoneDigits = identifier.replace(/\D/g, '');
     if (!identifier || !input.password) return send(res, 400, { error: 'dados_invalidos' });
     const result = await query(
-      `SELECT ma.id, ma.gym_id, ma.member_id, ma.email, ma.secret_hash, ma.is_active,
+      `SELECT ma.id, ma.gym_id, ma.member_id, ma.email, ma.secret_hash, ma.is_active, ma.must_change_password,
               m.name AS member_name, m.phone
        FROM member_accounts ma INNER JOIN members m ON m.id = ma.member_id
        WHERE lower(ma.email) = lower($1)
@@ -40,7 +42,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     if (account && account.is_active && verifyPassword(input.password, account.secret_hash)) {
       await query('UPDATE member_accounts SET last_login_at = now(), updated_at = now() WHERE id = $1', [account.id]);
       const token = signToken({ sub: account.id, gym_id: account.gym_id, role: 'student', member_id: account.member_id });
-      return send(res, 200, { token, account_type: 'student', student: { id: account.member_id, name: account.member_name, email: account.email, role: 'student', gym_id: account.gym_id } });
+      return send(res, 200, { token, account_type: 'student', must_change_password: Boolean(account.must_change_password), student: { id: account.member_id, name: account.member_name, email: account.email, role: 'student', gym_id: account.gym_id } });
     }
 
     const visitor = await query(
@@ -129,7 +131,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       [hashToken(input.token)]
     );
     if (token.rowCount) {
-      await query('UPDATE member_accounts SET secret_hash = $2, updated_at = now() WHERE id = $1', [token.rows[0].member_account_id, hashPassword(input.new_password)]);
+      await query('UPDATE member_accounts SET secret_hash = $2, must_change_password = false, updated_at = now() WHERE id = $1', [token.rows[0].member_account_id, hashPassword(input.new_password)]);
       await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE id = $1', [token.rows[0].id]);
       return send(res, 200, { status: 'senha_redefinida' });
     }
@@ -147,27 +149,47 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (!url.pathname.startsWith('/api/student')) return false;
   if (!user) return send(res, 401, { error: 'nao_autorizado' });
 
+  const isPasswordChangeRequest = isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/change-password';
+  const isStudentProfileRequest = isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/me';
+  if (isStudent(user) && !isPasswordChangeRequest && !isStudentProfileRequest) {
+    const accountState = await query('SELECT must_change_password FROM member_accounts WHERE id = $1 AND member_id = $2 AND gym_id = $3 LIMIT 1', [user.sub, user.member_id, user.gym_id]);
+    if (accountState.rows[0]?.must_change_password) return send(res, 403, { error: 'troca_senha_obrigatoria' });
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/student/accounts') {
     if (!canManageStudentAccount(user)) return send(res, 403, { error: 'sem_permissao' });
     const input = await body(req);
-    const accessKey = input.password || input.secret || input.access_key;
-    if (!input.member_id || !input.email || !accessKey) return send(res, 400, { error: 'dados_invalidos' });
+    if (!input.member_id || !input.email) return send(res, 400, { error: 'dados_invalidos' });
     const member = await query('SELECT id, name FROM members WHERE id = $1 AND gym_id = $2', [input.member_id, user.gym_id]);
     if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
     const result = await query(
-      `INSERT INTO member_accounts (gym_id, member_id, email, secret_hash, is_active)
-       VALUES ($1, $2, lower($3), $4, true)
-       ON CONFLICT (gym_id, member_id) DO UPDATE SET email = EXCLUDED.email, secret_hash = EXCLUDED.secret_hash, is_active = true, updated_at = now()
-       RETURNING id, member_id, email, is_active, created_at, updated_at`,
-      [user.gym_id, input.member_id, input.email, hashPassword(accessKey)]
+      `INSERT INTO member_accounts (gym_id, member_id, email, secret_hash, is_active, must_change_password)
+       VALUES ($1, $2, lower($3), $4, true, true)
+       ON CONFLICT (gym_id, member_id) DO UPDATE SET email = EXCLUDED.email, secret_hash = EXCLUDED.secret_hash, is_active = true, must_change_password = true, updated_at = now()
+       RETURNING id, member_id, email, is_active, must_change_password, created_at, updated_at`,
+      [user.gym_id, input.member_id, input.email, hashPassword(ADMIN_DEFAULT_STUDENT_PASSWORD)]
     );
     await recordAudit(user, 'upsert', 'member_account', result.rows[0].id, { member_id: input.member_id });
-    return send(res, 200, result.rows[0]);
+    return send(res, 200, { ...result.rows[0], initial_password: ADMIN_DEFAULT_STUDENT_PASSWORD });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/change-password') {
+    const input = await body(req);
+    const currentPassword = String(input.current_password || '');
+    const newPassword = String(input.new_password || '');
+    const passwordCheck = validatePassword(newPassword);
+    if (!currentPassword || !passwordCheck.valid || newPassword !== String(input.password_confirmation || '')) {
+      return send(res, 400, { error: passwordCheck.error || 'senhas_nao_conferem' });
+    }
+    const account = await query('SELECT id, secret_hash FROM member_accounts WHERE id = $1 AND member_id = $2 AND gym_id = $3 AND is_active = true LIMIT 1', [user.sub, user.member_id, user.gym_id]);
+    if (!account.rowCount || !verifyPassword(currentPassword, account.rows[0].secret_hash)) return send(res, 401, { error: 'senha_atual_invalida' });
+    await query('UPDATE member_accounts SET secret_hash = $2, must_change_password = false, updated_at = now() WHERE id = $1', [user.sub, hashPassword(newPassword)]);
+    return send(res, 200, { status: 'senha_atualizada' });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/me') {
     const result = await query(
-      'SELECT m.id, m.name, m.email, m.phone, m.status, ma.email AS account_email FROM members m INNER JOIN member_accounts ma ON ma.member_id = m.id WHERE m.id = $1 AND m.gym_id = $2 LIMIT 1',
+      'SELECT m.id, m.name, m.email, m.phone, m.status, ma.email AS account_email, ma.must_change_password FROM members m INNER JOIN member_accounts ma ON ma.member_id = m.id WHERE m.id = $1 AND m.gym_id = $2 LIMIT 1',
       [user.member_id, user.gym_id]
     );
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });

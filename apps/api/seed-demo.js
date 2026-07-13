@@ -1,7 +1,7 @@
 const { pool } = require('./lib/db');
 const { hashPassword } = require('./lib/security');
 
-const DEMO_PASSWORD = 'Demo@12345';
+const DEMO_PASSWORD = 'Lobo123';
 const PEOPLE = [
   ['José Luiz Demo', 'demo.jose@academialobo.local', '32999192233'],
   ['Ana Carvalho Demo', 'demo.ana@academialobo.local', '32998887766'],
@@ -30,7 +30,15 @@ async function main() {
       let membership = await first(client, "SELECT id FROM memberships WHERE gym_id=$1 AND member_id=$2 AND status='active' LIMIT 1", [gym.id, person.id]);
       if (!membership) membership = await first(client, "INSERT INTO memberships(gym_id,member_id,plan_id,starts_at,ends_at,status) VALUES($1,$2,$3,current_date,current_date+30,'active') RETURNING id", [gym.id,person.id,selected.id]);
       await client.query("INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,status,due_date,paid_at,method) SELECT $1,$2,$3,$4,'paid',current_date,now(),'demo' WHERE NOT EXISTS (SELECT 1 FROM payments WHERE membership_id=$3 AND status='paid')", [gym.id,person.id,membership.id,selected.price_cents]);
-      if (person.email) await client.query('INSERT INTO member_accounts(gym_id,member_id,email,secret_hash,is_active) VALUES($1,$2,$3,$4,true) ON CONFLICT(gym_id,member_id) DO NOTHING', [gym.id,person.id,person.email,hashPassword(DEMO_PASSWORD)]);
+      if (person.email) {
+        const isDemoAccount = person.email.toLowerCase().startsWith('demo.');
+        await client.query(
+          `INSERT INTO member_accounts(gym_id,member_id,email,secret_hash,is_active,must_change_password)
+           VALUES($1,$2,$3,$4,true,$5)
+           ON CONFLICT(gym_id,member_id) DO ${isDemoAccount ? 'UPDATE SET email=EXCLUDED.email,secret_hash=EXCLUDED.secret_hash,is_active=true,must_change_password=true,updated_at=now()' : 'NOTHING'}`,
+          [gym.id,person.id,person.email,hashPassword(DEMO_PASSWORD),isDemoAccount]
+        );
+      }
     }
     const exerciseIds = [];
     for (const item of [['Agachamento livre','Pernas','Barra','Frango','Desça com controle e mantenha a técnica.'],['Supino reto','Peito','Barra','Intermediario','Mantenha os ombros apoiados.'],['Puxada alta','Costas','Polia','Frango','Puxe em direção ao peito sem balançar.']]) exerciseIds.push(await exercise(client,gym.id,...item));

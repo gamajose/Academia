@@ -1,10 +1,13 @@
 const { recordAudit } = require('../lib/audit');
 const { digits, nullable, validEmail, validPhone } = require('../lib/memberValidation');
 const { hashPassword, validatePassword } = require('../lib/security');
+const { sendTransactionalEmail } = require('../lib/mailer');
 const { createPixPayment, getMercadoPagoPayment, createPaypalOrder, capturePaypalOrder } = require('../lib/paymentProviders');
 const { confirmEnrollmentPayment, confirmEnrollmentEmail } = require('../lib/enrollmentPayment');
 const { sanitizeRichFields } = require('../lib/richContent');
 const { ensureOfflineCredential } = require('./accessRoutes');
+
+const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo123';
 
 function code() {
   return `ACAD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -124,18 +127,26 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
     let account = await query('SELECT id, email, is_active FROM member_accounts WHERE gym_id = $1 AND member_id = $2 LIMIT 1', [user.gym_id, result.rows[0].id]);
     let accountCreated = false;
     let accountError = null;
+    let emailDelivery = null;
     if (!account.rowCount && values.email) {
       const emailConflict = await query('SELECT id FROM member_accounts WHERE lower(email) = lower($1) AND member_id <> $2 LIMIT 1', [values.email, result.rows[0].id]);
       if (emailConflict.rowCount) {
         accountError = 'email_ja_vinculado_a_outro_aluno';
       } else {
         account = await query(
-          `INSERT INTO member_accounts (gym_id, member_id, email, secret_hash, is_active)
-           VALUES ($1, $2, lower($3), $4, true)
+          `INSERT INTO member_accounts (gym_id, member_id, email, secret_hash, is_active, must_change_password)
+           VALUES ($1, $2, lower($3), $4, true, true)
            RETURNING id, email, is_active`,
-          [user.gym_id, result.rows[0].id, values.email, require('../lib/security').hashPassword(offline.offline_pin)]
+          [user.gym_id, result.rows[0].id, values.email, hashPassword(ADMIN_DEFAULT_STUDENT_PASSWORD)]
         );
         accountCreated = true;
+        const emailResult = await sendTransactionalEmail({
+          to: values.email,
+          subject: 'Seu acesso à Academia Lobo',
+          text: `Olá, ${result.rows[0].name}!\n\nSeu acesso ao portal da Academia Lobo foi criado.\nE-mail: ${values.email}\nSenha inicial: ${ADMIN_DEFAULT_STUDENT_PASSWORD}\n\nNo primeiro acesso, você deverá criar uma nova senha pessoal.`,
+          html: `<p>Olá, ${result.rows[0].name}!</p><p>Seu acesso ao portal da Academia Lobo foi criado.</p><p><strong>E-mail:</strong> ${values.email}<br><strong>Senha inicial:</strong> ${ADMIN_DEFAULT_STUDENT_PASSWORD}</p><p>No primeiro acesso, você deverá criar uma nova senha pessoal.</p>`
+        });
+        emailDelivery = emailResult.sent ? 'sent' : emailResult.reason || 'pending';
       }
     }
     await recordAudit(user, input.member_id ? 'update' : 'create', 'member', result.rows[0].id, { name: result.rows[0].name });
@@ -144,6 +155,8 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
       student_access: {
         account_created: accountCreated,
         account_email: account.rows[0]?.email || null,
+        initial_password: accountCreated ? ADMIN_DEFAULT_STUDENT_PASSWORD : null,
+        email_delivery: emailDelivery,
         pin: accountCreated ? offline.offline_pin : null,
         registration_number: offline.registration_number,
         error: accountError

@@ -270,12 +270,15 @@ async function save(event) {
     closeModal();
     await load();
     const access = saved.student_access;
-    if (access?.account_created && access.pin) {
-      $('students-status').textContent = `Cadastro salvo. Acesso criado: ${access.account_email} · senha PIN ${access.pin} · matrícula ${access.registration_number}.`;
+    if (access?.account_created) {
+      const emailState = access.email_delivery === 'sent'
+        ? 'As credenciais foram enviadas por e-mail.'
+        : 'O envio automático de e-mail está pendente; confirme a configuração de e-mail.';
+      $('students-status').textContent = `Cadastro salvo. Acesso criado: ${access.account_email} · senha inicial ${access.initial_password}. No primeiro login, o aluno deverá trocar a senha. ${emailState}`;
     } else if (access?.error === 'email_ja_vinculado_a_outro_aluno') {
       $('students-status').textContent = 'Cadastro salvo, mas o e-mail já está vinculado a outro aluno. Use outro e-mail para criar o acesso web.';
     } else if (!access?.account_email) {
-      $('students-status').textContent = 'Cadastro salvo. Informe um e-mail para criar o acesso web com o PIN.';
+      $('students-status').textContent = 'Cadastro salvo. Informe um e-mail para criar o acesso web com a senha inicial.';
     } else {
       $('students-status').textContent = 'Cadastro salvo com sucesso.';
     }

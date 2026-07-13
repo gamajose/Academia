@@ -23,19 +23,19 @@
     <section class="panel">
       <div class="toolbar"><h2>Lançamentos financeiros</h2></div>
       <p class="status-line" id="reports-status">Carregando...</p>
-      <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Valor</th><th>Status</th><th>Vencimento</th><th>Método</th><th>Ações</th></tr></thead><tbody id="financial-list"></tbody></table></div>
+      <div class="table-wrap"><table class="finance-table"><thead><tr><th>Aluno</th><th>Valor</th><th>Status</th><th>Vencimento / recebimento</th><th>Forma de pagamento</th><th>Ações</th></tr></thead><tbody id="financial-list"></tbody></table></div>
     </section>
   </main>
   <div class="modal hidden" id="finance-modal">
     <div class="modal-card">
       <div class="toolbar"><h3 id="finance-title">Ajuste financeiro</h3><button class="secondary modal-close" id="close-finance-modal" aria-label="Fechar" title="Fechar">×</button></div>
       <input id="finance-payment-id" type="hidden" />
-      <div class="grid">
-        <input id="finance-discount" type="number" placeholder="Desconto em centavos" />
-        <input id="finance-fee" type="number" placeholder="Taxa ou juros em centavos" />
-        <input id="finance-method" placeholder="Forma de pagamento" />
+      <div class="grid finance-form-grid">
+        <div class="field"><label for="finance-discount">Desconto</label><input id="finance-discount" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor abatido do lançamento.</small></div>
+        <div class="field"><label for="finance-fee">Taxa ou juros</label><input id="finance-fee" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor acrescentado ao lançamento.</small></div>
+        <div class="field"><label for="finance-method">Forma de pagamento</label><select id="finance-method"><option value="manual">Manual</option><option value="pix">Pix</option><option value="paypal">PayPal</option><option value="card">Cartão</option><option value="cash">Dinheiro</option><option value="transfer">Transferência</option><option value="demo">Demonstração</option><option value="other">Outro</option></select></div>
       </div>
-      <textarea id="finance-notes" placeholder="Observações"></textarea>
+      <div class="field"><label for="finance-notes">Observações</label><textarea id="finance-notes" placeholder="Ex.: pagamento confirmado na recepção."></textarea></div>
       <button id="finance-adjust-button">Aplicar ajuste</button>
     </div>
   </div>
