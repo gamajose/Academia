@@ -77,6 +77,14 @@ function enforceRateLimit(req, res, key) {
   return false;
 }
 
+function isDatabaseUnavailable(error) {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '').toLowerCase();
+  return ['57P03', 'ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'].includes(code)
+    || message.includes('database system is in recovery mode')
+    || message.includes('database system is not yet accepting connections');
+}
+
 async function registerGym(req, res) {
   const input = await body(req);
   if (!input.gymName || !input.ownerName || !input.email || !input.password) return send(req, res, 400, { error: 'dados_invalidos' });
@@ -218,7 +226,15 @@ const server = http.createServer(async (req, res) => {
     if (!isOriginAllowed(req)) return send(req, res, 403, { error: 'origem_nao_permitida' });
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (req.method === 'OPTIONS') return send(req, res, 204, {});
-    if (req.method === 'GET' && url.pathname === '/health') return send(req, res, 200, { status: 'ok', service: 'academia-api', version: '0.8.0', uptime: process.uptime() });
+    if (req.method === 'GET' && url.pathname === '/health') {
+      try {
+        await query('SELECT 1');
+        return send(req, res, 200, { status: 'ok', service: 'academia-api', database: 'ready', version: '0.8.0', uptime: process.uptime() });
+      } catch (error) {
+        if (isDatabaseUnavailable(error)) return send(req, res, 503, { status: 'degraded', service: 'academia-api', database: 'unavailable', error: 'banco_indisponivel' });
+        throw error;
+      }
+    }
     if (req.method === 'POST' && url.pathname === '/api/auth/register-gym') {
       if (!enforceRateLimit(req, res, 'register')) return;
       return registerGym(req, res);
@@ -302,6 +318,7 @@ const server = http.createServer(async (req, res) => {
     return send(req, res, 404, { error: 'not_found' });
   } catch (error) {
     if (error && error.statusCode) return send(req, res, error.statusCode, { error: error.message || 'erro_requisicao' });
+    if (isDatabaseUnavailable(error)) return send(req, res, 503, { error: 'banco_indisponivel' });
     console.error(error);
     return send(req, res, 500, { error: 'internal_error' });
   }

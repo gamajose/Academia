@@ -84,6 +84,7 @@ async function accountLogin() {
       credenciais_invalidas: 'E-mail ou senha inválidos.',
       dados_invalidos: 'Informe e-mail e senha.',
       muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
+      banco_indisponivel: 'O sistema está iniciando. Tente novamente em alguns instantes.',
       api_indisponivel: 'Não foi possível conectar ao servidor. Tente novamente em instantes.'
     };
     const networkFailure = [adminError, error].some((item) => item?.message === 'Failed to fetch' || item?.message === 'api_indisponivel');
