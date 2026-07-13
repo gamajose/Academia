@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
+  <link rel="stylesheet" href="./access-credential.css?v=20260713-0110" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
 </head>
 <body>
@@ -19,7 +20,7 @@
 
     <section class="panel">
       <div class="toolbar">
-        <div><h2>Lista de alunos</h2><small>Pesquise, edite ou altere o status de cada cadastro.</small></div>
+        <div><h2>Lista de alunos</h2><small>Pesquise, edite, altere o status ou visualize a credencial de entrada.</small></div>
         <button id="new-student-button" type="button">Cadastrar aluno</button>
       </div>
       <input id="student-search" type="search" placeholder="Buscar por nome, e-mail, telefone, CPF ou RG" />
@@ -94,12 +95,65 @@
     </form>
   </div>
 
+  <div class="modal hidden" id="credential-preview-modal" role="dialog" aria-modal="true" aria-labelledby="credential-preview-title" aria-hidden="true">
+    <section class="modal-card access-credential-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Prévia do aluno</p>
+          <h3 id="credential-preview-title">Credencial de entrada</h3>
+          <p id="credential-preview-subtitle">Carregando dados do aluno...</p>
+        </div>
+        <button type="button" id="close-credential-preview" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+
+      <p class="status-line" id="credential-preview-status" aria-live="polite">Gerando credencial...</p>
+
+      <div class="credential-preview-layout">
+        <article class="credential-phone-card" aria-label="Prévia da credencial dinâmica">
+          <div class="credential-state-row">
+            <span class="credential-state-dot" id="credential-state-dot"></span>
+            <strong id="credential-state-label">Verificando acesso</strong>
+          </div>
+          <h4 id="credential-student-name">Aluno</h4>
+          <p>Apresente o QR Code ao leitor ou digite o código temporário.</p>
+          <div class="credential-qr-frame">
+            <canvas id="credential-preview-qr" width="220" height="220" aria-label="QR Code temporário"></canvas>
+            <div class="credential-qr-empty hidden" id="credential-qr-empty">QR indisponível</div>
+          </div>
+          <span class="credential-label">Código temporário</span>
+          <strong class="credential-dynamic-code" id="credential-dynamic-code">--- ---</strong>
+          <small id="credential-countdown">Aguardando...</small>
+          <div class="credential-progress"><span id="credential-progress-bar"></span></div>
+        </article>
+
+        <article class="offline-access-card">
+          <p class="eyebrow">Sem internet no celular</p>
+          <h4>Acesso por matrícula e PIN</h4>
+          <p>Esses dados são fixos. O aluno pode memorizá-los e digitá-los na catraca quando o celular estiver sem conexão.</p>
+          <div class="offline-credential-values">
+            <div>
+              <span>Matrícula</span>
+              <strong id="offline-registration-number">------</strong>
+            </div>
+            <div>
+              <span>PIN</span>
+              <strong id="offline-pin">----</strong>
+            </div>
+          </div>
+          <p class="credential-security-note">A catraca continua verificando matrícula ativa, mensalidade e bloqueios antes de liberar.</p>
+          <button class="secondary" type="button" id="reset-offline-pin">Gerar novo PIN</button>
+        </article>
+      </div>
+    </section>
+  </div>
+
   <script src="./guard.js"></script>
   <script src="./nav.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
   <script src="https://cdn.tiny.cloud/1/dknmnruvf26yo5hdc9vc19t1k1b9umeu1yj9mpkic82sjzzm/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script src="./rich-editor.js"></script>
-  <script src="./alunos.js"></script>
+  <script src="./alunos.js?v=20260713-0110"></script>
 </body>
 </html>
