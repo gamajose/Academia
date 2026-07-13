@@ -45,5 +45,10 @@ button:hover { filter: brightness(1.05); }
 .cards strong { font-size: 38px; }
 .status-line { color: #1478d4; }
 .status-line:empty { display: none; }
-.security-page { grid-template-columns: minmax(0, 680px); justify-content: center; }
+.security-page { display: flex; justify-content: center; width: 100%; }
+.security-page > #security-form { width: min(680px, 100%); }
 .security-page #security-status { text-align: center; }
+
+.export-icon-button { width: 42px !important; min-width: 42px; height: 38px; padding: 0 !important; gap: 0; }
+.export-icon-button::before { content: attr(data-filetype); display: inline-grid; place-items: center; min-width: 25px; height: 20px; padding: 0 3px; border: 1px solid currentColor; border-radius: 4px; font-size: 9px; font-weight: 900; line-height: 1; }
+.export-icon-button::after { content: '↓'; margin-left: 2px; font-size: 15px; line-height: 1; }

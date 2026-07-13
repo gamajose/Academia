@@ -214,7 +214,7 @@ function openAssessmentEdit(item) {
   q('assessment-modal-title').textContent = 'Editar avaliação';
   q('create-assessment-button').textContent = 'Salvar alterações';
   setModalStatus('assessment-form-status', '');
-  for (const field of document.querySelectorAll('[data-assessment-photo-field]')) field.hidden = !canEditAssessmentPhoto;
+  for (const field of document.querySelectorAll('[data-assessment-photo-field]')) field.classList.toggle('hidden', !canEditAssessmentPhoto);
   openModal('assessment-modal', 'assessment-member');
 }
 
@@ -664,7 +664,7 @@ function bindAssessmentEvents() {
 
 async function initAssessmentsPage() {
   bindAssessmentEvents();
-  for (const field of document.querySelectorAll('[data-assessment-photo-field]')) field.hidden = !canEditAssessmentPhoto;
+  for (const field of document.querySelectorAll('[data-assessment-photo-field]')) field.classList.toggle('hidden', !canEditAssessmentPhoto);
   try {
     await loadBase();
     const params = new URLSearchParams(window.location.search);
