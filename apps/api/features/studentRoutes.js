@@ -290,7 +290,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     );
     if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
     const exercises = await query(
-      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.name AS exercise_name, e.muscle_group, e.muscle_group_primary, e.muscle_group_secondary, e.video_url, e.instructions
+      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.name AS exercise_name, e.muscle_group, e.muscle_group_primary, e.muscle_group_secondary, e.equipment, e.video_url, e.instructions
        FROM workout_exercises we
        INNER JOIN workout_days wd ON wd.id = we.workout_day_id
        INNER JOIN exercise_library e ON e.id = we.exercise_id

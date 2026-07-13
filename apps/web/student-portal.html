@@ -59,6 +59,12 @@
       <p class="status-line" id="student-portal-status" aria-live="polite"></p>
     </section>
   </main>
+  <div class="modal hidden" id="student-exercise-modal" role="dialog" aria-modal="true" aria-labelledby="student-exercise-title">
+    <article class="modal-card exercise-view-modal-card">
+      <div class="modal-header"><div><h3 id="student-exercise-title">Exercício</h3><p id="student-exercise-subtitle">Demonstração e orientações</p></div><button class="modal-close" id="student-exercise-close" type="button" aria-label="Fechar">×</button></div>
+      <div class="exercise-view-layout"><div class="exercise-view-media" id="student-exercise-media"><span class="exercise-view-media-empty">Nenhuma demonstração cadastrada.</span></div><div class="exercise-view-copy"><div class="exercise-view-tags"><span><strong>Séries</strong><em id="student-exercise-sets">-</em></span><span><strong>Repetições</strong><em id="student-exercise-reps">-</em></span><span><strong>Descanso</strong><em id="student-exercise-rest">-</em></span><span><strong>Equipamento</strong><em id="student-exercise-equipment">-</em></span></div><div class="exercise-view-muscles"><div class="exercise-view-muscle-chip"><strong>Músculo principal</strong><span id="student-exercise-primary">-</span></div><div class="exercise-view-muscle-chip"><strong>Músculos secundários</strong><span id="student-exercise-secondary">-</span></div></div><div><h4>Como executar</h4><p id="student-exercise-instructions">Nenhuma orientação cadastrada.</p></div></div></div>
+    </article>
+  </div>
   <script src="./student-shell.js"></script>
   <script src="./training-media.js"></script>
   <script src="./student-portal.js"></script>

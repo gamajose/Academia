@@ -14,6 +14,29 @@
     return row;
   }
 
+  function openExercise(item) {
+    p('student-exercise-title').textContent = item.exercise_name || 'Exercício';
+    p('student-exercise-subtitle').textContent = [item.day_title, item.muscle_group].filter(Boolean).join(' · ') || 'Demonstração e orientações';
+    p('student-exercise-sets').textContent = item.sets || '-';
+    p('student-exercise-reps').textContent = item.reps || '-';
+    p('student-exercise-rest').textContent = item.rest_seconds ? `${item.rest_seconds}s` : '-';
+    p('student-exercise-equipment').textContent = item.equipment || '-';
+    p('student-exercise-primary').textContent = item.muscle_group_primary || item.muscle_group || '-';
+    p('student-exercise-secondary').textContent = item.muscle_group_secondary || '-';
+    p('student-exercise-instructions').textContent = item.instructions || 'Nenhuma orientação cadastrada.';
+    const media = p('student-exercise-media');
+    media.replaceChildren();
+    if (item.video_url && window.AcademiaTrainingMedia) {
+      window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+    } else {
+      const empty = document.createElement('span');
+      empty.className = 'exercise-view-media-empty';
+      empty.textContent = 'Nenhuma demonstração cadastrada.';
+      media.appendChild(empty);
+    }
+    p('student-exercise-modal').classList.remove('hidden');
+  }
+
   function renderDayPicker(exercises) {
     const picker = p('student-day-picker');
     picker.innerHTML = '';
@@ -40,12 +63,11 @@
         `${item.sets || '-'} séries · ${item.reps || '-'} repetições · ${item.rest_seconds || '-'}s de descanso`,
         [item.muscle_group_primary || item.muscle_group, item.instructions].filter(Boolean).join(' · ')
       );
-      if (item.video_url && window.AcademiaTrainingMedia) {
-        const media = document.createElement('div');
-        media.className = 'video-preview-slot';
-        window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
-        row.appendChild(media);
-      }
+      row.setAttribute('role', 'button');
+      row.tabIndex = 0;
+      row.setAttribute('aria-label', `Ver detalhes de ${item.exercise_name || 'exercício'}`);
+      row.addEventListener('click', () => openExercise(item));
+      row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openExercise(item); } });
       list.appendChild(row);
     });
     if (!fallback.length) {
@@ -69,12 +91,14 @@
       renderDayPicker(exercises);
       renderExercises(exercises);
       p('student-auto-sync').textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`;
-      p('student-portal-status').textContent = 'Treino pronto para hoje.';
     } catch (error) {
       p('student-portal-status').textContent = `Erro: ${error.message}`;
     }
   }
 
   window.StudentWorkout = { getDetail: () => detail };
+  p('student-exercise-close').addEventListener('click', () => p('student-exercise-modal').classList.add('hidden'));
+  p('student-exercise-modal').addEventListener('click', (event) => { if (event.target === p('student-exercise-modal')) p('student-exercise-modal').classList.add('hidden'); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') p('student-exercise-modal').classList.add('hidden'); });
   load();
 }());

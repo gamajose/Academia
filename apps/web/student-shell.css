@@ -27,6 +27,24 @@
 
 .student-page .panel { gap: 16px; }
 
+.student-page .panel + .panel { margin-top: 24px; }
+.student-page .status-line:empty { display: none; }
+
+.student-page .nav-icon { color: #9bd1ff; }
+.student-page .top-nav-links a.active .nav-icon { color: #fff; }
+.student-page .top-nav-links a[data-student-link="complete"] { display: none; }
+
+.student-stat-grid .student-stat:nth-child(1) { border-color: #b9dcff; background: linear-gradient(135deg, #f2f8ff, #e2f1ff); }
+.student-stat-grid .student-stat:nth-child(2) { border-color: #f4c5da; background: linear-gradient(135deg, #fff7fb, #ffe8f2); }
+.student-stat-grid .student-stat:nth-child(3) { border-color: #f5d59b; background: linear-gradient(135deg, #fffaf0, #fff0cf); }
+.student-stat-grid .student-stat:nth-child(1) strong { color: #1478d4; }
+.student-stat-grid .student-stat:nth-child(2) strong { color: #c52c70; }
+.student-stat-grid .student-stat:nth-child(3) strong { color: #b66a00; }
+
+.student-goal-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; list-style: none; padding: 0; margin: 0; }
+.student-goal-card { min-height: 132px; padding: 18px; border: 1px solid #c5ddf3; border-radius: 16px; background: linear-gradient(135deg, #f8fcff, #eaf5ff); }
+.student-goal-card .entity-main strong { color: #1478d4; font-size: 18px; }
+
 .student-page .panel h3 { margin: 0; }
 
 .student-day-picker {
@@ -110,5 +128,6 @@
   .student-top-nav { grid-template-columns: minmax(0, 1fr) auto; }
   .student-top-nav .top-nav-links { grid-column: 1 / -1; justify-content: flex-start; }
   .student-stat-grid { grid-template-columns: 1fr; }
+  .student-goal-list { grid-template-columns: 1fr; }
   .student-page .app-shell { padding-top: 26px; }
 }

@@ -1,6 +1,7 @@
 (function () {
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
   const token = localStorage.getItem('studentToken') || '';
+  const navigationIcons = { training: '▣', progress: '◔', goals: '◎', share: '↗', history: '◷' };
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -25,6 +26,17 @@
     const current = document.body.dataset.studentPage || 'training';
     document.querySelectorAll('[data-student-link]').forEach((link) => {
       link.classList.toggle('active', link.dataset.studentLink === current);
+      const key = link.dataset.studentLink;
+      if (!link.querySelector('.nav-icon') && navigationIcons[key]) {
+        const icon = document.createElement('span');
+        icon.className = 'nav-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = navigationIcons[key];
+        const label = document.createElement('span');
+        label.className = 'nav-label';
+        label.textContent = link.textContent.trim();
+        link.replaceChildren(icon, label);
+      }
     });
   }
 

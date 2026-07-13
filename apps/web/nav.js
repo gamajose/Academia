@@ -18,6 +18,7 @@ function loadNavigationStyles() {
   loadStyle('./professional.css');
   loadStyle('./premium-ui.css');
   loadStyle('./blue-theme.css');
+  loadStyle('./admin-nav-icons.css');
 }
 
 function clearSession() {
@@ -74,6 +75,11 @@ function renderNavigation() {
     ['financeiro.html', 'Financeiro'], ['alerts.html', 'Alertas'], ['training.html', 'Treinos'],
     ['assessments.html', 'Avaliações'], ['access.html', 'Acesso'], ['users.html', 'Funcionários']
   ];
+  const icons = {
+    'painel.html': '⌂', 'alunos.html': '♙', 'planos.html': '▣', 'vinculos.html': '↔',
+    'solicitacoes.html': '✦', 'financeiro.html': 'R$', 'alerts.html': '!',
+    'training.html': '▤', 'assessments.html': '◔', 'access.html': '⌁', 'users.html': '♧'
+  };
 
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
@@ -82,7 +88,7 @@ function renderNavigation() {
       <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
       <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><small>academia e saúde</small></span>
     </a>
-    <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}">${label}</a>`).join('')}</div>
+    <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon" aria-hidden="true">${icons[href] || '•'}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
     <div class="profile-menu">
       <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>

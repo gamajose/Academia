@@ -19,7 +19,6 @@
       const photos = p('student-photo-grid'); photos.innerHTML = '';
       assessments.filter((item) => item.photo_url).forEach((item) => { const figure = document.createElement('figure'); figure.className = 'student-photo-card'; figure.innerHTML = `<img src="${StudentPortal.escapeHtml(item.photo_url)}" alt="Foto de evolução" loading="lazy"><figcaption>${StudentPortal.escapeHtml(new Date(`${item.assessment_date}T12:00:00`).toLocaleDateString('pt-BR'))}</figcaption>`; photos.appendChild(figure); });
       if (!photos.children.length) photos.innerHTML = '<div class="empty-state">Nenhuma foto compartilhada ainda.</div>';
-      p('student-progress-status').textContent = 'Evolução carregada.';
     } catch (error) { p('student-progress-status').textContent = `Erro: ${error.message}`; }
   }
   load();
