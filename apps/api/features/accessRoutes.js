@@ -3,7 +3,7 @@ const { pool } = require('../lib/db');
 const { DEFAULT_GRACE_DAYS, evaluateAccess } = require('../lib/accessPolicy');
 const { hasModulePermission } = require('../lib/accessControl');
 
-const qrTtlSeconds = Math.min(120, Math.max(15, Number(process.env.ACCESS_QR_TTL_SECONDS || 30)));
+const credentialTtlSeconds = Math.min(120, Math.max(15, Number(process.env.ACCESS_QR_TTL_SECONDS || 30)));
 const graceDays = Math.min(60, Math.max(0, Number(process.env.ACCESS_GRACE_DAYS || DEFAULT_GRACE_DAYS)));
 
 function sha256(value) {
@@ -16,6 +16,15 @@ function newApiKey() {
 
 function newQrToken() {
   return crypto.randomBytes(32).toString('base64url');
+}
+
+function newAccessCode() {
+  return crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+}
+
+function normalizeAccessCode(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.length === 6 ? digits : '';
 }
 
 function deviceCode(value) {
@@ -163,7 +172,21 @@ async function studentStatus(res, user, helpers) {
   return send(res, 200, { access });
 }
 
-async function createStudentQr(req, res, user, helpers) {
+async function uniqueAccessCode(query, gymId) {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const code = newAccessCode();
+    const existing = await query(
+      `SELECT id FROM student_access_tokens
+       WHERE gym_id = $1 AND code_hash = $2 AND used_at IS NULL AND expires_at > now()
+       LIMIT 1`,
+      [gymId, sha256(code)]
+    );
+    if (!existing.rowCount) return code;
+  }
+  throw new Error('nao_foi_possivel_gerar_codigo');
+}
+
+async function createStudentCredential(req, res, user, helpers) {
   const { send, query } = helpers;
   if (!isStudent(user)) return send(res, 403, { error: 'acesso_exclusivo_aluno' });
 
@@ -172,14 +195,15 @@ async function createStudentQr(req, res, user, helpers) {
     await insertDecision(query, {
       gymId: user.gym_id,
       memberId: user.member_id,
-      source: 'student_qr_request',
+      source: 'student_credential_request',
       access
     });
     return send(res, 200, { generated: false, access });
   }
 
   const token = newQrToken();
-  const expiresAt = new Date(Date.now() + qrTtlSeconds * 1000);
+  const accessCode = await uniqueAccessCode(query, user.gym_id);
+  const expiresAt = new Date(Date.now() + credentialTtlSeconds * 1000);
 
   await query(
     `UPDATE student_access_tokens
@@ -194,20 +218,23 @@ async function createStudentQr(req, res, user, helpers) {
 
   const result = await query(
     `INSERT INTO student_access_tokens
-       (gym_id, member_id, member_account_id, token_hash, expires_at)
-     VALUES ($1, $2, $3, $4, $5)
+       (gym_id, member_id, member_account_id, token_hash, code_hash, expires_at)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING id, created_at, expires_at`,
-    [user.gym_id, user.member_id, user.sub, sha256(token), expiresAt]
+    [user.gym_id, user.member_id, user.sub, sha256(token), sha256(accessCode), expiresAt]
   );
 
   return send(res, 201, {
     generated: true,
+    credential_type: 'dynamic_one_time',
     qr_payload: `academia://access/student?token=${encodeURIComponent(token)}`,
+    access_code: accessCode,
     token_id: result.rows[0].id,
     created_at: result.rows[0].created_at,
     expires_at: result.rows[0].expires_at,
-    ttl_seconds: qrTtlSeconds,
+    ttl_seconds: credentialTtlSeconds,
     one_time_use: true,
+    member_id: user.member_id,
     access
   });
 }
@@ -225,14 +252,19 @@ async function authenticateDevice(req, helpers) {
   return result.rows[0] || null;
 }
 
-async function redeemStudentQr(req, res, helpers) {
+async function redeemStudentCredential(req, res, helpers) {
   const { send, body } = helpers;
   const device = await authenticateDevice(req, helpers);
   if (!device) return send(res, 401, { error: 'dispositivo_nao_autorizado' });
 
   const input = await body(req);
-  const token = extractQrToken(input.qr_payload || input.token || input.code);
-  if (!token) return send(res, 400, { error: 'qr_invalido' });
+  const accessCode = normalizeAccessCode(input.code || input.access_code);
+  const token = accessCode ? '' : extractQrToken(input.qr_payload || input.token);
+  if (!token && !accessCode) return send(res, 400, { error: 'credencial_invalida' });
+
+  const credentialSource = accessCode ? 'student_code' : 'student_qr';
+  const lookupColumn = accessCode ? 'code_hash' : 'token_hash';
+  const lookupHash = sha256(accessCode || token);
 
   const client = await pool.connect();
   try {
@@ -240,12 +272,12 @@ async function redeemStudentQr(req, res, helpers) {
     const tokenResult = await client.query(
       `SELECT id, gym_id, member_id, expires_at
        FROM student_access_tokens
-       WHERE token_hash = $1
+       WHERE ${lookupColumn} = $1
          AND gym_id = $2
          AND used_at IS NULL
          AND expires_at > now()
        FOR UPDATE`,
-      [sha256(token), device.gym_id]
+      [lookupHash, device.gym_id]
     );
 
     const accessToken = tokenResult.rows[0];
@@ -255,8 +287,8 @@ async function redeemStudentQr(req, res, helpers) {
         allowed: false,
         action: 'deny',
         status: 'blocked',
-        reason: 'qr_invalid_or_expired',
-        message: 'QR Code invalido, expirado ou ja utilizado.'
+        reason: 'credential_invalid_or_expired',
+        message: 'QR Code ou codigo invalido, expirado ou ja utilizado.'
       });
     }
 
@@ -267,9 +299,9 @@ async function redeemStudentQr(req, res, helpers) {
     if (access.allowed) {
       const checkinResult = await client.query(
         `INSERT INTO checkins (gym_id, member_id, source, created_by)
-         VALUES ($1, $2, 'student_qr', NULL)
+         VALUES ($1, $2, $3, NULL)
          RETURNING id, member_id, checked_at, source`,
-        [device.gym_id, accessToken.member_id]
+        [device.gym_id, accessToken.member_id, credentialSource]
       );
       checkin = checkinResult.rows[0];
     }
@@ -280,8 +312,9 @@ async function redeemStudentQr(req, res, helpers) {
       deviceId: device.id,
       tokenId: accessToken.id,
       checkinId: checkin && checkin.id,
+      source: credentialSource,
       access,
-      metadata: { device_code: device.code }
+      metadata: { device_code: device.code, credential_type: accessCode ? 'numeric_code' : 'qr_code' }
     });
 
     await client.query('UPDATE access_devices SET last_seen_at = now(), updated_at = now() WHERE id = $1', [device.id]);
@@ -290,6 +323,7 @@ async function redeemStudentQr(req, res, helpers) {
     return send(res, 200, {
       allowed: access.allowed,
       action: access.allowed ? 'unlock' : 'deny',
+      credential_type: accessCode ? 'numeric_code' : 'qr_code',
       access,
       decision,
       checkin,
@@ -323,8 +357,8 @@ async function recentDecisions(res, user, helpers) {
 }
 
 async function handleAccessRoutes(req, res, user, url, helpers) {
-  if (req.method === 'POST' && url.pathname === '/api/access/redeem-student-qr') {
-    return redeemStudentQr(req, res, helpers);
+  if (req.method === 'POST' && (url.pathname === '/api/access/redeem-student-qr' || url.pathname === '/api/access/redeem-student-credential')) {
+    return redeemStudentCredential(req, res, helpers);
   }
 
   if (!user) return false;
@@ -332,8 +366,8 @@ async function handleAccessRoutes(req, res, user, url, helpers) {
   if (req.method === 'GET' && url.pathname === '/api/student/access/status') {
     return studentStatus(res, user, helpers);
   }
-  if (req.method === 'POST' && url.pathname === '/api/student/access/qr') {
-    return createStudentQr(req, res, user, helpers);
+  if (req.method === 'POST' && (url.pathname === '/api/student/access/qr' || url.pathname === '/api/student/access/credential')) {
+    return createStudentCredential(req, res, user, helpers);
   }
   if (req.method === 'GET' && url.pathname === '/api/access/devices') {
     return listDevices(res, user, helpers);
@@ -348,4 +382,8 @@ async function handleAccessRoutes(req, res, user, url, helpers) {
   return false;
 }
 
-module.exports = { handleAccessRoutes, loadAccessContext };
+module.exports = {
+  handleAccessRoutes,
+  loadAccessContext,
+  normalizeAccessCode
+};

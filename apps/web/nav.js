@@ -1,9 +1,9 @@
-const NAV_BUILD_VERSION = '20260712-2355';
+const NAV_BUILD_VERSION = '20260713-0035';
 const pageName = (value) => String(value || '').split('/').pop().split('?')[0].split('#')[0];
 const pageUrl = (href) => `./${href}?v=${NAV_BUILD_VERSION}`;
 
-if (pageName(window.location.pathname) === 'permissions.html') {
-  window.location.replace(pageUrl('users.html'));
+if (['permissions.html', 'student-accounts.html'].includes(pageName(window.location.pathname))) {
+  window.location.replace(pageUrl(pageName(window.location.pathname) === 'permissions.html' ? 'users.html' : 'alunos.html'));
 }
 
 function loadStyle(href) {
@@ -45,13 +45,12 @@ function canSeePage(href, role, accessProfile, permissions = null) {
     'painel.html': 'dashboard', 'alunos.html': 'members', 'planos.html': 'plans',
     'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments',
     'financeiro.html': 'finance', 'alerts.html': 'alerts', 'training.html': 'training',
-    'assessments.html': 'assessments', 'student-accounts.html': 'student_access',
-    'users.html': 'users'
+    'assessments.html': 'assessments', 'users.html': 'users'
   };
   if (permissions && pageModules[href]) return permissions[pageModules[href]] === true;
-  if (role === 'staff' && accessProfile === 'trainer') return ['painel.html', 'alunos.html', 'training.html', 'assessments.html', 'student-accounts.html'].includes(href);
-  if (role === 'staff') return ['painel.html', 'alunos.html', 'vinculos.html', 'solicitacoes.html', 'alerts.html', 'student-accounts.html'].includes(href);
-  if (role === 'operator') return ['painel.html', 'student-accounts.html'].includes(href);
+  if (role === 'staff' && accessProfile === 'trainer') return ['painel.html', 'alunos.html', 'training.html', 'assessments.html'].includes(href);
+  if (role === 'staff') return ['painel.html', 'alunos.html', 'vinculos.html', 'solicitacoes.html', 'alerts.html'].includes(href);
+  if (role === 'operator') return ['painel.html'].includes(href);
   return false;
 }
 
@@ -65,14 +64,14 @@ function applyNavPermissions(user) {
 
 function renderNavigation() {
   loadNavigationStyles();
-  document.querySelectorAll('a[href*="permissions.html"]').forEach((link) => link.remove());
+  document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
 
   const current = pageName(window.location.pathname) || 'painel.html';
   const pages = [
     ['painel.html', 'Painel'], ['alunos.html', 'Alunos'], ['planos.html', 'Planos'],
     ['vinculos.html', 'Matrículas'], ['solicitacoes.html', 'Pré-matrículas'],
     ['financeiro.html', 'Financeiro'], ['alerts.html', 'Alertas'], ['training.html', 'Treinos'],
-    ['assessments.html', 'Avaliações'], ['student-accounts.html', 'Acesso'], ['users.html', 'Funcionários']
+    ['assessments.html', 'Avaliações'], ['users.html', 'Funcionários']
   ];
 
   const nav = document.createElement('nav');

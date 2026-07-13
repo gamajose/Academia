@@ -1,28 +1,40 @@
-# Acesso por QR Code do aluno
+# Credencial dinâmica de acesso do aluno
 
-## Regra de negocio
+## Regra de negócio
 
-O aluno precisa estar autenticado no aplicativo. A API consulta o cadastro, a matricula e a mensalidade antes de emitir o QR e novamente quando a catraca tenta utiliza-lo.
+O aluno precisa estar autenticado no aplicativo. A credencial é vinculada ao cadastro e à conta do próprio aluno. Antes de emitir a credencial e novamente quando a catraca tenta utilizá-la, a API consulta cadastro, matrícula, vigência e situação financeira.
 
-- Situacao regular: acesso liberado.
-- Pendencia entre 1 e 10 dias: acesso liberado com alerta de carencia.
-- Pendencia a partir do 11o dia: acesso bloqueado.
-- Cadastro ou matricula inativa: acesso bloqueado.
+- Situação regular: acesso liberado.
+- Pendência dentro da carência configurada: acesso liberado com alerta.
+- Pendência acima da carência: acesso bloqueado.
+- Cadastro ou matrícula inativa: acesso bloqueado.
 
-A carencia padrao pode ser alterada com `ACCESS_GRACE_DAYS`. O QR expira em 30 segundos por padrao e pode ser ajustado com `ACCESS_QR_TTL_SECONDS` entre 15 e 120 segundos.
+A carência padrão pode ser alterada com `ACCESS_GRACE_DAYS`. A credencial expira em 30 segundos por padrão e pode ser ajustada com `ACCESS_QR_TTL_SECONDS` entre 15 e 120 segundos.
+
+## O que aparece no aplicativo
+
+A API gera simultaneamente:
+
+- um QR Code temporário;
+- um código numérico de 6 dígitos;
+- uma única validade para os dois formatos.
+
+QR e código representam a mesma credencial. Quando um deles é utilizado, o outro também deixa de funcionar. O aplicativo renova os dois automaticamente antes do vencimento.
 
 ## Fluxo
 
-1. O aluno entra no app usando `/api/student/auth/login`.
-2. O app consulta `/api/student/access/status`.
-3. O app solicita um codigo em `POST /api/student/access/qr`.
-4. A tela exibe um QR opaco, temporario e de uso unico.
-5. O leitor envia o conteudo para `POST /api/access/redeem-student-qr` com sua chave de dispositivo.
-6. A API revalida a situacao financeira, registra a decisao e cria o check-in apenas quando o acesso estiver liberado.
+1. O aluno entra no aplicativo usando `/api/student/auth/login`.
+2. O aplicativo consulta `/api/student/access/status`.
+3. O aplicativo solicita a credencial em `POST /api/student/access/credential`.
+4. A tela exibe o QR e o código numérico, renovados automaticamente.
+5. O leitor envia o QR ou o código para `POST /api/access/redeem-student-credential` com a chave do dispositivo.
+6. A API identifica o cadastro vinculado, revalida a situação e cria o check-in apenas quando o acesso estiver liberado.
+
+Os endpoints antigos com sufixo `qr` continuam aceitos para compatibilidade com leitores já configurados.
 
 ## Cadastrar uma catraca ou leitor
 
-Somente `owner` ou `admin` pode cadastrar dispositivos.
+Somente usuários com a permissão `access` podem cadastrar dispositivos.
 
 ```bash
 curl -X POST http://localhost:3004/api/access/devices \
@@ -31,66 +43,46 @@ curl -X POST http://localhost:3004/api/access/devices \
   -d '{"name":"Catraca principal"}'
 ```
 
-A resposta mostra `api_key` uma unica vez. Essa chave deve ser guardada no software do leitor e nunca colocada no aplicativo do aluno.
-
-Para listar os dispositivos:
-
-```bash
-curl http://localhost:3004/api/access/devices \
-  -H "Authorization: Bearer TOKEN_ADMIN"
-```
+A resposta mostra `api_key` uma única vez. Essa chave deve ser guardada no software do leitor e nunca colocada no aplicativo do aluno.
 
 ## Validar o QR no leitor
 
 ```bash
-curl -X POST http://localhost:3004/api/access/redeem-student-qr \
+curl -X POST http://localhost:3004/api/access/redeem-student-credential \
   -H "X-Access-Device-Key: CHAVE_DA_CATRACA" \
   -H "Content-Type: application/json" \
   -d '{"qr_payload":"CONTEUDO_LIDO_DO_QR"}'
 ```
 
-Quando liberado:
+## Validar o código numérico
 
-```json
-{
-  "allowed": true,
-  "action": "unlock",
-  "access": {
-    "status": "current",
-    "overdue_days": 0
-  }
-}
+```bash
+curl -X POST http://localhost:3004/api/access/redeem-student-credential \
+  -H "X-Access-Device-Key: CHAVE_DA_CATRACA" \
+  -H "Content-Type: application/json" \
+  -d '{"access_code":"483921"}'
 ```
 
-Durante a carencia, `action` continua como `unlock`, mas `access.status` sera `grace_period` e o aplicativo exibira o alerta.
+Quando liberado, a resposta contém `allowed: true` e `action: unlock`. Quando bloqueado, contém `allowed: false` e `action: deny`.
 
-Quando bloqueado:
+Credencial expirada, reutilizada ou inválida retorna HTTP 410 e nunca libera a catraca.
 
-```json
-{
-  "allowed": false,
-  "action": "deny",
-  "access": {
-    "status": "blocked",
-    "overdue_days": 11
-  }
-}
-```
+## Segurança
 
-QR expirado, reutilizado ou invalido retorna HTTP 410 e nunca libera a catraca.
+- O QR contém apenas um segredo aleatório temporário.
+- O código numérico dura poucos segundos e só vale na academia vinculada.
+- QR e código são de uso único.
+- O banco armazena somente hashes, nunca o token ou código em texto puro.
+- A utilização registra dispositivo, aluno, resultado, motivo e horário.
+- Um novo ciclo invalida a credencial anterior do mesmo aluno.
 
 ## Auditoria
 
-As tabelas abaixo sao criadas pela migration `022_student_access_qr.sql`:
+As estruturas principais são:
 
-- `access_devices`: leitores e catracas autorizados.
-- `student_access_tokens`: codigos temporarios emitidos para alunos.
-- `access_decisions`: tentativas liberadas e bloqueadas, com motivo e dias de atraso.
+- `access_devices`: leitores e catracas autorizados;
+- `student_access_tokens`: credenciais temporárias emitidas;
+- `access_decisions`: tentativas liberadas e bloqueadas;
+- `checkins`: entradas efetivamente autorizadas.
 
-Administradores podem consultar as ultimas decisoes em:
-
-```text
-GET /api/access/decisions/recent
-```
-
-O QR nao contem nome, e-mail, identificador direto do aluno ou dados financeiros. Ele carrega somente um segredo aleatorio temporario, armazenado no banco apenas como hash.
+Administradores podem consultar as últimas decisões em `GET /api/access/decisions/recent`.

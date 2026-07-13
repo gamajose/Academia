@@ -37,11 +37,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
   List<dynamic> goals = [];
   String? currentDayId;
   String? qrPayload;
-  DateTime? qrExpiresAt;
+  String? accessCode;
+  DateTime? credentialExpiresAt;
   Timer? countdownTimer;
   String message = 'Carregando seus dados...';
   bool loading = true;
-  bool generating = false;
+  bool generatingCredential = false;
   bool completingWorkout = false;
 
   Map<String, String> get headers => {
@@ -49,20 +50,38 @@ class _StudentHomePageState extends State<StudentHomePage> {
         'Authorization': 'Bearer ${widget.token}',
       };
 
+  bool get accessAllowed => access['allowed'] == true;
+
+  int get remainingSeconds {
+    if (credentialExpiresAt == null) return 0;
+    final value = credentialExpiresAt!.difference(DateTime.now()).inSeconds;
+    return value < 0 ? 0 : value;
+  }
+
+  String get formattedAccessCode {
+    final value = (accessCode ?? '').replaceAll(RegExp(r'\D'), '');
+    if (value.length != 6) return '--- ---';
+    return '${value.substring(0, 3)} ${value.substring(3)}';
+  }
+
   @override
   void initState() {
     super.initState();
     _refresh();
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      if (qrExpiresAt != null && DateTime.now().isAfter(qrExpiresAt!)) {
+      final remaining = remainingSeconds;
+      if (credentialExpiresAt != null && remaining <= 0) {
         setState(() {
           qrPayload = null;
-          qrExpiresAt = null;
-          message = 'O QR Code expirou. Gere um novo para entrar.';
+          accessCode = null;
+          credentialExpiresAt = null;
         });
-      } else if (qrExpiresAt != null) {
+      } else if (credentialExpiresAt != null) {
         setState(() {});
+      }
+      if (accessAllowed && remaining <= 3 && !generatingCredential) {
+        unawaited(_generateCredential(silent: true));
       }
     });
   }
@@ -73,7 +92,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
     super.dispose();
   }
 
-  Future<Map<String, dynamic>> _request(String method, String path, [Map<String, dynamic>? requestBody]) async {
+  Future<Map<String, dynamic>> _request(
+    String method,
+    String path, [
+    Map<String, dynamic>? requestBody,
+  ]) async {
     final uri = Uri.parse('${widget.baseUrl}$path');
     final response = method == 'POST'
         ? await http.post(uri, headers: headers, body: jsonEncode(requestBody ?? {}))
@@ -144,7 +167,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
         goals = progressGoals;
         currentDayId = workoutDayId;
         message = access['message']?.toString() ?? 'Dados atualizados.';
+        if (!accessAllowed) {
+          qrPayload = null;
+          accessCode = null;
+          credentialExpiresAt = null;
+        }
       });
+      await _ensureCredential();
     } catch (error) {
       if (mounted) setState(() => message = 'Erro ao carregar: $error');
     } finally {
@@ -152,35 +181,44 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
-  Future<void> _generateQr() async {
+  Future<void> _ensureCredential() async {
+    if (!accessAllowed || generatingCredential) return;
+    if (qrPayload != null && accessCode != null && remainingSeconds > 5) return;
+    await _generateCredential(silent: true);
+  }
+
+  Future<void> _generateCredential({bool silent = false}) async {
+    if (generatingCredential || !accessAllowed) return;
     setState(() {
-      generating = true;
-      qrPayload = null;
-      qrExpiresAt = null;
-      message = 'Gerando QR Code seguro...';
+      generatingCredential = true;
+      if (!silent) message = 'Gerando credencial segura...';
     });
 
     try {
-      final result = await _request('POST', '/api/student/access/qr', {});
+      final result = await _request('POST', '/api/student/access/credential', {});
       final newAccess = result['access'] as Map<String, dynamic>? ?? {};
       final generated = result['generated'] == true;
       if (!mounted) return;
       setState(() {
         access = newAccess;
         if (generated) {
-          qrPayload = result['qr_payload'] as String;
-          qrExpiresAt = DateTime.parse(result['expires_at'] as String).toLocal();
+          qrPayload = result['qr_payload'] as String?;
+          accessCode = result['access_code']?.toString();
+          credentialExpiresAt = DateTime.parse(result['expires_at'] as String).toLocal();
           message = newAccess['status'] == 'grace_period'
-              ? 'Acesso em carencia. Apresente o QR ao leitor e regularize a pendencia.'
-              : 'Apresente este QR Code ao leitor da catraca.';
+              ? 'Acesso em carência. Regularize a pendência para evitar bloqueio.'
+              : 'Credencial atualizada automaticamente.';
         } else {
-          message = newAccess['message']?.toString() ?? 'Acesso nao liberado.';
+          qrPayload = null;
+          accessCode = null;
+          credentialExpiresAt = null;
+          message = newAccess['message']?.toString() ?? 'Acesso não liberado.';
         }
       });
     } catch (error) {
-      if (mounted) setState(() => message = 'Nao foi possivel gerar o QR: $error');
+      if (mounted && !silent) setState(() => message = 'Não foi possível gerar a credencial: $error');
     } finally {
-      if (mounted) setState(() => generating = false);
+      if (mounted) setState(() => generatingCredential = false);
     }
   }
 
@@ -191,12 +229,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
       await _request('POST', '/api/student/training/complete', {
         'plan_id': trainingPlan!['id'],
         'workout_day_id': currentDayId,
-        'feedback': 'Concluido pelo aplicativo',
+        'feedback': 'Concluído pelo aplicativo',
       });
       await _refresh();
-      if (mounted) setState(() => message = 'Treino marcado como concluido. Parabens!');
+      if (mounted) setState(() => message = 'Treino marcado como concluído. Parabéns!');
     } catch (error) {
-      if (mounted) setState(() => message = 'Nao foi possivel concluir o treino: $error');
+      if (mounted) setState(() => message = 'Não foi possível concluir o treino: $error');
     } finally {
       if (mounted) setState(() => completingWorkout = false);
     }
@@ -231,12 +269,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => page)).then((_) => _refresh());
   }
 
-  int get remainingSeconds {
-    if (qrExpiresAt == null) return 0;
-    final value = qrExpiresAt!.difference(DateTime.now()).inSeconds;
-    return value < 0 ? 0 : value;
-  }
-
   Color get statusColor {
     switch (access['status']) {
       case 'current':
@@ -253,13 +285,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
       case 'current':
         return 'Acesso liberado';
       case 'grace_period':
-        return 'Acesso em carencia';
+        return 'Acesso em carência';
       default:
         return 'Acesso bloqueado';
     }
   }
 
-  Widget _section(String title, IconData icon, List<dynamic> items, String Function(dynamic) label, String empty) {
+  Widget _section(
+    String title,
+    IconData icon,
+    List<dynamic> items,
+    String Function(dynamic) label,
+    String empty,
+  ) {
     return Card(
       child: ExpansionTile(
         leading: Icon(icon),
@@ -298,20 +336,79 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
+  Widget _credentialCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text('Minha entrada', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            const Text(
+              'Apresente o QR Code ao leitor da catraca ou digite o código de 6 números. Os dois mudam automaticamente.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            if (qrPayload != null && accessCode != null) ...[
+              Semantics(
+                label: 'QR Code temporário para entrada na academia',
+                child: QrImageView(
+                  data: qrPayload!,
+                  version: QrVersions.auto,
+                  size: 240,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text('Código temporário', style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              SelectableText(
+                formattedAccessCode,
+                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: 5),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                generatingCredential ? 'Atualizando credencial...' : 'Muda em $remainingSeconds segundos',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: credentialExpiresAt == null ? null : (remainingSeconds / 30).clamp(0.0, 1.0),
+              ),
+            ] else if (generatingCredential)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 80),
+                child: CircularProgressIndicator(),
+              )
+            else
+              const SizedBox(
+                height: 180,
+                child: Center(child: Icon(Icons.qr_code_2, size: 110)),
+              ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: accessAllowed
+                  ? () => _openPage(ScanGymQrPage(baseUrl: widget.baseUrl, token: widget.token))
+                  : null,
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Ler QR da catraca'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final allowed = access['allowed'] == true;
     final overdueDays = access['overdue_days'] ?? 0;
     final frequency = accountOverview['frequency'] as Map<String, dynamic>? ?? {};
     final unread = accountOverview['unread_notifications']?.toString() ?? '0';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Area do aluno'),
-        actions: [
-          IconButton(onPressed: loading ? null : _refresh, icon: const Icon(Icons.refresh)),
-          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
-        ],
+        title: const Text('Área do aluno'),
+        actions: [IconButton(onPressed: _logout, icon: const Icon(Icons.logout))],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
@@ -319,7 +416,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           padding: const EdgeInsets.all(16),
           children: [
             Text(
-              profile['name'] == null ? 'Bem-vindo' : 'Ola, ${profile['name']}',
+              profile['name'] == null ? 'Bem-vindo' : 'Olá, ${profile['name']}',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -330,10 +427,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 _shortcut(Icons.card_membership, 'Meu plano', 0),
                 _shortcut(Icons.payments, 'Pagamentos', 1),
                 _shortcut(Icons.history, 'Minhas entradas', 2),
-                _shortcut(Icons.notifications, 'Notificacoes', 3, badge: unread),
+                _shortcut(Icons.notifications, 'Notificações', 3, badge: unread),
                 _pageShortcut(Icons.event, 'Aulas', StudentClassesPage(baseUrl: widget.baseUrl, token: widget.token)),
-                _pageShortcut(Icons.show_chart, 'Minha evolucao', EvolutionPage(baseUrl: widget.baseUrl, token: widget.token)),
-                _pageShortcut(Icons.qr_code_scanner, 'Ler QR da academia', ScanGymQrPage(baseUrl: widget.baseUrl, token: widget.token)),
+                _pageShortcut(Icons.show_chart, 'Minha evolução', EvolutionPage(baseUrl: widget.baseUrl, token: widget.token)),
               ],
             ),
             const SizedBox(height: 12),
@@ -345,7 +441,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   children: [
                     Row(
                       children: [
-                        Icon(allowed ? Icons.verified : Icons.block, color: statusColor),
+                        Icon(accessAllowed ? Icons.verified : Icons.block, color: statusColor),
                         const SizedBox(width: 8),
                         Text(statusTitle, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: statusColor)),
                       ],
@@ -354,56 +450,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Text(access['message']?.toString() ?? message),
                     if (overdueDays > 0) ...[
                       const SizedBox(height: 6),
-                      Text('Dias de atraso: $overdueDays de ${access['grace_days'] ?? 10} dias de carencia.'),
+                      Text('Dias de atraso: $overdueDays de ${access['grace_days'] ?? 10} dias de carência.'),
                     ],
-                    if (access['membership_ends_at'] != null) Text('Vigencia da matricula: ${access['membership_ends_at']}'),
+                    if (access['membership_ends_at'] != null) Text('Vigência da matrícula: ${access['membership_ends_at']}'),
                     const SizedBox(height: 8),
-                    Text('Frequencia: ${frequency['week_checkins'] ?? 0} entrada(s) nesta semana e ${frequency['month_checkins'] ?? 0} neste mes.'),
+                    Text('Frequência: ${frequency['week_checkins'] ?? 0} entrada(s) nesta semana e ${frequency['month_checkins'] ?? 0} neste mês.'),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text('Acesso a academia', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    const Text('Mostre seu QR ao leitor ou use a camera para ler o QR exibido pela academia.'),
-                    const SizedBox(height: 16),
-                    if (qrPayload != null) ...[
-                      Semantics(
-                        label: 'QR Code temporario para acesso a academia',
-                        child: QrImageView(
-                          data: qrPayload!,
-                          version: QrVersions.auto,
-                          size: 240,
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Expira em $remainingSeconds segundos', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ] else
-                      const SizedBox(height: 160, child: Center(child: Icon(Icons.qr_code_2, size: 110))),
-                    const SizedBox(height: 12),
-                    Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-                      FilledButton.icon(
-                        onPressed: allowed && !generating ? _generateQr : null,
-                        icon: const Icon(Icons.qr_code),
-                        label: Text(generating ? 'Gerando...' : qrPayload == null ? 'Mostrar meu QR' : 'Gerar novo QR'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: allowed ? () => _openPage(ScanGymQrPage(baseUrl: widget.baseUrl, token: widget.token)) : null,
-                        icon: const Icon(Icons.qr_code_scanner),
-                        label: const Text('Ler QR da academia'),
-                      ),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
+            _credentialCard(),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -411,33 +468,40 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(children: [Icon(Icons.fitness_center), SizedBox(width: 8), Text('Treino atual', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))]),
+                    const Row(
+                      children: [
+                        Icon(Icons.fitness_center),
+                        SizedBox(width: 8),
+                        Text('Treino atual', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     Text(trainingPlan?['name']?.toString() ?? 'Nenhum treino ativo'),
-                    if (trainingPlan != null) Text('Nivel: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
+                    if (trainingPlan != null)
+                      Text('Nível: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       onPressed: currentDayId == null || completingWorkout ? null : _completeWorkout,
                       icon: const Icon(Icons.check_circle),
-                      label: Text(completingWorkout ? 'Salvando...' : 'Marcar treino como concluido'),
+                      label: Text(completingWorkout ? 'Salvando...' : 'Marcar treino como concluído'),
                     ),
                   ],
                 ),
               ),
             ),
             _section(
-              'Exercicios de hoje',
+              'Exercícios de hoje',
               Icons.list_alt,
               exercises,
               (item) => '${item['exercise_name'] ?? '-'} | ${item['sets'] ?? '-'}x ${item['reps'] ?? '-'} | descanso ${item['rest_seconds'] ?? '-'}s',
-              'Nenhum exercicio para hoje.',
+              'Nenhum exercício para hoje.',
             ),
             _section(
-              'Evolucao fisica',
+              'Evolução física',
               Icons.monitor_heart,
               assessments,
               (item) => '${item['assessment_date'] ?? '-'} | Peso ${item['weight_kg'] ?? '-'} kg | Cintura ${item['waist_cm'] ?? '-'} cm',
-              'Nenhuma avaliacao registrada.',
+              'Nenhuma avaliação registrada.',
             ),
             _section(
               'Metas',
@@ -447,11 +511,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
               'Nenhuma meta registrada.',
             ),
             _section(
-              'Historico de treinos',
+              'Histórico de treinos',
               Icons.history,
               trainingLogs,
               (item) => '${item['completed_at'] ?? '-'} | ${item['day_title'] ?? item['plan_name'] ?? 'Treino'}',
-              'Nenhum treino concluido.',
+              'Nenhum treino concluído.',
             ),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),

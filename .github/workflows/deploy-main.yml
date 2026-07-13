@@ -54,8 +54,12 @@ jobs:
           git checkout main
           git reset --hard origin/main
 
-          # A antiga página de permissões não pode permanecer como arquivo residual no servidor.
-          rm -f "$WEB_DIR/permissions.html" "$WEB_DIR/permissions.js"
+          # Páginas antigas não podem permanecer como arquivos residuais no servidor.
+          rm -f \
+            "$WEB_DIR/permissions.html" \
+            "$WEB_DIR/permissions.js" \
+            "$WEB_DIR/student-accounts.html" \
+            "$WEB_DIR/student-access.js"
 
           cd "$API_DIR"
 
