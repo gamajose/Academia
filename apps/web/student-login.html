@@ -9,7 +9,7 @@
 <body>
   <main class="site-shell">
     <header class="site-header">
-      <a class="brand" href="./index.html"><span>Academia</span> Lobo</a>
+      <a class="brand" href="./index.html"><span>Blue</span>REC</a>
       <nav class="site-nav">
         <a href="./index.html">Início</a>
         <a href="./plans.html">Planos</a>
@@ -42,6 +42,8 @@
         <label class="remember-row"><input id="remember-account" type="checkbox" /> <span>Manter conectado neste dispositivo</span></label>
 
         <button class="cta login-primary" id="student-login-button" type="submit">Entrar</button>
+        <div class="auth-divider"><span>ou continue com</span></div>
+        <div id="google-login-button" class="google-login-button"></div>
         <div class="login-secondary-actions">
           <a class="cta ghost" href="./student-register.html">Criar conta gratuita</a>
           <button class="cta ghost" id="forgot-password-button" type="button">Esqueci a senha</button>
@@ -58,6 +60,7 @@
       <div class="form-actions"><button class="cta ghost" id="cancel-forgot" type="button">Cancelar</button><button class="cta" id="submit-forgot" type="submit">Enviar instruções</button></div>
     </form>
   </div>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="./student-login.js"></script>
 </body>
 </html>

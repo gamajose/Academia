@@ -31,3 +31,8 @@ __pycache__/
 # Runtime
 *.pid
 apps/web/uploads/
+
+# Flutter generated files
+apps/mobile/.dart_tool/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies

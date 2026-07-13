@@ -15,6 +15,7 @@ import 'package:academia_mobile/training_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 void main() {
   runApp(const AcademiaApp());
@@ -27,9 +28,9 @@ class AcademiaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Academia Lobo',
+      title: 'BlueREC Academia',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xffb91c1c)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff1478d4)),
         useMaterial3: true,
       ),
       home: const LoginPage(),
@@ -152,10 +153,35 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+    setState(() { loading = true; message = 'Abrindo o Google...'; });
+    try {
+      final account = await GoogleSignIn(scopes: const ['email', 'profile']).signIn();
+      if (account == null) return;
+      final authentication = await account.authentication;
+      final idToken = authentication.idToken;
+      if (idToken == null || idToken.isEmpty) throw Exception('token_google_invalido');
+      final baseUrl = apiController.text.trim().replaceAll(RegExp(r'/$'), '');
+      final result = await ApiClient(baseUrl, null).post('/api/auth/google', {'id_token': idToken});
+      final identity = (result['user'] ?? result['student'] ?? {}) as Map<String, dynamic>;
+      final role = identity['role']?.toString() ?? (result['account_type'] == 'admin' ? 'admin' : 'student');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('apiBaseUrl', baseUrl);
+      await prefs.setString('token', result['token'] as String);
+      await prefs.setString('sessionRole', role);
+      if (!mounted) return;
+      _openHome(baseUrl, result['token'] as String, role);
+    } catch (_) {
+      if (mounted) setState(() => message = 'Não foi possível entrar com o Google. Verifique a configuração OAuth.');
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Academia Lobo')),
+      appBar: AppBar(title: const Text('BlueREC Academia')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
@@ -168,6 +194,8 @@ class _LoginPageState extends State<LoginPage> {
           TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Senha'), obscureText: true),
           const SizedBox(height: 16),
           FilledButton(onPressed: loading ? null : _login, child: Text(loading ? 'Entrando...' : 'Entrar')),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(onPressed: loading ? null : _loginWithGoogle, icon: const Icon(Icons.account_circle_outlined), label: const Text('Continuar com Google')),
           const SizedBox(height: 12),
           Text(message),
         ],

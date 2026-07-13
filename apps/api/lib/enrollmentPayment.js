@@ -90,7 +90,7 @@ async function confirmEnrollmentPayment({ enrollmentId, provider, providerPaymen
   const confirmationUrl = appUrl(`/student-confirm.html?token=${encodeURIComponent(confirmationToken)}`);
   const emailResult = await sendTransactionalEmail({
     to: enrollment.email,
-    subject: 'Pagamento confirmado: confirme seu cadastro na Academia Lobo',
+    subject: 'Pagamento confirmado: confirme seu cadastro na BlueREC Academia',
     text: `Olá, ${enrollment.name}! Seu pagamento foi confirmado. Confirme seu cadastro neste link: ${confirmationUrl}`,
     html: `<p>Olá, ${escapeHtml(enrollment.name)}!</p><p>Seu pagamento do plano <strong>${escapeHtml(enrollment.plan_name)}</strong> foi confirmado.</p><p><a href="${confirmationUrl}">Confirmar meu cadastro</a></p><p>Depois da confirmação, sua conta estará pronta para acesso.</p>`
   });

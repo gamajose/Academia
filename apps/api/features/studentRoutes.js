@@ -127,7 +127,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const resetUrl = appUrl(`/student-reset.html?token=${encodeURIComponent(token)}`);
     await sendTransactionalEmail({
       to: account.rows[0].email,
-      subject: 'Recuperação de acesso - Academia Lobo',
+      subject: 'Recuperação de acesso - BlueREC Academia',
       text: `Use este link para criar uma nova senha: ${resetUrl}`,
       html: `<p>Recebemos um pedido para redefinir sua senha.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>`
     });

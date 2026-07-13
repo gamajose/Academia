@@ -42,6 +42,46 @@ async function post(path, payload) {
   return data;
 }
 
+function finishLogin(data) {
+  if (data.account_type === 'admin') {
+    localStorage.setItem('academiaToken', data.token);
+    localStorage.setItem('apiBaseUrl', API);
+    localStorage.setItem('academiaUserName', data.user?.name || 'Meu perfil');
+    localStorage.setItem('academiaRole', data.user?.role || 'admin');
+    localStorage.setItem('academiaAccessProfile', data.user?.access_profile || 'admin');
+    portalOn();
+    window.location.href = './painel.html';
+    return;
+  }
+  localStorage.setItem('studentToken', data.token);
+  localStorage.setItem('studentName', data.student?.name || 'Aluno');
+  localStorage.setItem('studentAccountType', data.account_type || 'student');
+  localStorage.setItem('studentApiBaseUrl', API);
+  studentPortalOn();
+  window.location.href = data.account_type === 'visitor' ? './visitor-portal.html' : './student-portal.html';
+}
+
+async function googleLogin(credential) {
+  loginButton.disabled = true;
+  msg('Validando sua conta Google...');
+  try { finishLogin(await post('/api/auth/google', { id_token: credential })); }
+  catch (error) { msg(error.message === 'google_nao_configurado' ? 'Login com Google ainda não foi configurado pela academia.' : 'Não foi possível entrar com o Google. Tente novamente.'); loginButton.disabled = false; }
+}
+
+async function initGoogleLogin() {
+  const container = document.getElementById('google-login-button');
+  if (!container) return;
+  try {
+    const response = await fetch(`${API}/api/auth/google/config`);
+    const config = await response.json();
+    if (!config.enabled || !config.client_id) { container.textContent = 'Login com Google indisponível no momento.'; return; }
+    for (let attempt = 0; attempt < 40 && !window.google?.accounts?.id; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 100));
+    if (!window.google?.accounts?.id) throw new Error('google_script_unavailable');
+    window.google.accounts.id.initialize({ client_id: config.client_id, callback: (response) => googleLogin(response.credential) });
+    window.google.accounts.id.renderButton(container, { type: 'standard', theme: 'outline', size: 'large', text: 'continue_with', shape: 'rectangular', width: 360 });
+  } catch (_) { container.textContent = 'Login com Google indisponível no momento.'; }
+}
+
 async function accountLogin() {
   const identifier = emailField.value.trim();
   const password = passwordField.value;
@@ -59,13 +99,7 @@ async function accountLogin() {
   let adminError;
   try {
     const admin = await post('/api/auth/login', payload);
-    localStorage.setItem('academiaToken', admin.token);
-    localStorage.setItem('apiBaseUrl', API);
-    localStorage.setItem('academiaUserName', admin.user?.name || 'Meu perfil');
-    localStorage.setItem('academiaRole', admin.user?.role || 'admin');
-    localStorage.setItem('academiaAccessProfile', admin.user?.access_profile || 'admin');
-    portalOn();
-    window.location.href = './painel.html';
+    finishLogin({ ...admin, account_type: 'admin' });
     return;
   } catch (error) {
     adminError = error;
@@ -74,12 +108,7 @@ async function accountLogin() {
 
   try {
     const student = await post('/api/student/auth/login', payload);
-    localStorage.setItem('studentToken', student.token);
-    localStorage.setItem('studentName', student.student?.name || 'Aluno');
-    localStorage.setItem('studentAccountType', student.account_type || 'student');
-    localStorage.setItem('studentApiBaseUrl', API);
-    studentPortalOn();
-    window.location.href = student.account_type === 'visitor' ? './visitor-portal.html' : './student-portal.html';
+    finishLogin(student);
   } catch (error) {
     const map = {
       credenciais_invalidas: 'E-mail ou senha inválidos.',
@@ -143,6 +172,7 @@ document.getElementById('forgot-form').addEventListener('submit', submitForgot);
 document.getElementById('close-forgot').addEventListener('click', closeForgot);
 document.getElementById('cancel-forgot').addEventListener('click', closeForgot);
 document.getElementById('forgot-modal').addEventListener('click', (event) => { if (event.target.id === 'forgot-modal') closeForgot(); });
+initGoogleLogin();
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !document.getElementById('forgot-modal').classList.contains('hidden')) closeForgot(); });
 [emailField, passwordField].forEach((field) => field.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') accountLogin();

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 
 class StudentLoginPage extends StatefulWidget {
   const StudentLoginPage({super.key, required this.initialBaseUrl});
@@ -14,6 +15,7 @@ class _StudentLoginPageState extends State<StudentLoginPage> {
   final email = TextEditingController();
   final key = TextEditingController();
   String message = '';
+  bool loading = false;
 
   Future<void> login() async {
     try {
@@ -29,9 +31,30 @@ class _StudentLoginPageState extends State<StudentLoginPage> {
     }
   }
 
+  Future<void> loginWithGoogle() async {
+    setState(() => loading = true);
+    try {
+      final account = await GoogleSignIn(scopes: const ['email', 'profile']).signIn();
+      if (account == null) return;
+      final authentication = await account.authentication;
+      final idToken = authentication.idToken;
+      if (idToken == null || idToken.isEmpty) throw Exception('token_google_invalido');
+      final base = api.text.trim().replaceAll(RegExp(r'/+$'), '');
+      final response = await http.post(Uri.parse('$base/api/auth/google'), headers: {'Content-Type': 'application/json'}, body: jsonEncode({'id_token': idToken}));
+      final data = jsonDecode(response.body.isEmpty ? '{}' : response.body) as Map<String, dynamic>;
+      if (response.statusCode >= 400) throw Exception(data['error'] ?? 'erro_google');
+      if (!mounted) return;
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => StudentPortalPage(baseUrl: base, token: data['token'] as String)));
+    } catch (_) {
+      if (mounted) setState(() => message = 'Não foi possível entrar com o Google. Verifique a configuração OAuth.');
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Academia Lobo')),
+        appBar: AppBar(title: const Text('BlueREC Academia')),
         body: ListView(padding: const EdgeInsets.all(18), children: [
           const Text('Acesso do aluno', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const Text('Treinos, evolucao, metas e historico em um unico portal.'),
@@ -39,7 +62,9 @@ class _StudentLoginPageState extends State<StudentLoginPage> {
           TextField(controller: email, decoration: const InputDecoration(labelText: 'E-mail')),
           TextField(controller: key, decoration: const InputDecoration(labelText: 'Senha'), obscureText: true),
           const SizedBox(height: 16),
-          FilledButton(onPressed: login, child: const Text('Entrar')),
+          FilledButton(onPressed: loading ? null : login, child: const Text('Entrar')),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(onPressed: loading ? null : loginWithGoogle, icon: const Icon(Icons.account_circle_outlined), label: const Text('Continuar com Google')),
           Text(message),
         ]),
       );

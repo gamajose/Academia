@@ -41,7 +41,7 @@ async function createPixPayment({ enrollmentId, email, planName, amountCents }) 
     },
     body: JSON.stringify({
       transaction_amount: Number(amountCents) / 100,
-      description: `Academia Lobo - ${planName}`,
+      description: `BlueREC Academia - ${planName}`,
       payment_method_id: 'pix',
       payer: { email },
       external_reference: String(enrollmentId),
@@ -107,11 +107,11 @@ async function createPaypalOrder({ enrollmentId, planName, amountCents }) {
       purchase_units: [{
         reference_id: String(enrollmentId),
         custom_id: String(enrollmentId),
-        description: `Academia Lobo - ${planName}`,
+      description: `BlueREC Academia - ${planName}`,
         amount: { currency_code: 'BRL', value: (Number(amountCents) / 100).toFixed(2) }
       }],
       application_context: {
-        brand_name: 'Academia Lobo',
+      brand_name: 'BlueREC Academia',
         user_action: 'PAY_NOW',
         return_url: publicUrl(`/payment-return.html?enrollment_id=${encodeURIComponent(enrollmentId)}`),
         cancel_url: publicUrl(`/matricula-publica.html?payment=cancelled&enrollment_id=${encodeURIComponent(enrollmentId)}`)

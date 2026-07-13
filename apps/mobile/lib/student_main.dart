@@ -12,9 +12,9 @@ class AcademiaStudentApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Academia Lobo',
+      title: 'BlueREC Academia',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xffb91c1c)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff1478d4)),
         useMaterial3: true,
         cardTheme: const CardThemeData(margin: EdgeInsets.symmetric(vertical: 8), elevation: 1),
       ),
