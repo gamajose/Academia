@@ -3,8 +3,8 @@ const { recordAudit } = require('../lib/audit');
 const PROFILE_ROLES = ['owner', 'admin', 'staff', 'operator'];
 const PERMISSION_KEYS = [
   'dashboard', 'members', 'plans', 'memberships', 'pre_enrollments', 'finance',
-  'alerts', 'training', 'assessments', 'student_access', 'users', 'account',
-  'reports', 'access', 'classes', 'settings', 'audit', 'exports'
+  'alerts', 'training', 'assessments', 'users', 'account', 'reports', 'access',
+  'classes', 'settings', 'audit', 'exports'
 ];
 
 function canManageAccessProfiles(user) {
@@ -25,8 +25,8 @@ function slugifyProfile(value) {
 function defaultPermissions(role) {
   const all = Object.fromEntries(PERMISSION_KEYS.map((key) => [key, true]));
   if (role === 'owner' || role === 'admin') return all;
-  if (role === 'operator') return { dashboard: true, access: true, student_access: true, account: true };
-  return { dashboard: true, members: true, memberships: true, pre_enrollments: true, alerts: true, student_access: true, account: true };
+  if (role === 'operator') return { dashboard: true, access: true, account: true };
+  return { dashboard: true, members: true, memberships: true, pre_enrollments: true, alerts: true, account: true };
 }
 
 function normalizePermissions(value, role) {
