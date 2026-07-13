@@ -24,11 +24,13 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
+          trap 'echo "Deploy interrompido na linha $LINENO."' ERR
 
           PROJECT_DIR="/mnt/Projetos/Academia"
           API_DIR="$PROJECT_DIR/apps/api"
           WEB_DIR="$PROJECT_DIR/apps/web"
-          HEALTH_URL="http://localhost:3004/health"
+          HEALTH_URL="http://127.0.0.1:3004/health"
+          LOGIN_URL="http://127.0.0.1:3004/api/auth/login"
 
           exec 9>/tmp/academia-deploy.lock
           flock -n 9 || {
@@ -39,22 +41,13 @@ jobs:
           git config --global --add safe.directory "$PROJECT_DIR"
           cd "$PROJECT_DIR"
 
-          # Arquivos temporários gerados por validações antigas não podem bloquear a atualização.
-          find "$WEB_DIR" -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
-          find "$WEB_DIR" -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete 2>/dev/null || true
-
-          # Protege somente alterações em arquivos rastreados; .env, uploads e dependências são locais.
-          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-            echo "A cópia de produção possui alterações locais em arquivos rastreados. O deploy foi interrompido para evitar perda de dados."
-            git status --short --untracked-files=no
-            exit 1
-          fi
-
+          # A cópia da VM é uma cópia de produção: todo push na main deve prevalecer
+          # sobre alterações locais em arquivos rastreados, sem apagar .env ou uploads.
           git fetch --prune origin main
           git checkout main
           git reset --hard origin/main
 
-          # Páginas antigas não podem permanecer como arquivos residuais no servidor.
+          # Remove apenas resíduos de páginas que já deixaram de existir no repositório.
           rm -f \
             "$WEB_DIR/permissions.html" \
             "$WEB_DIR/permissions.js" \
@@ -67,7 +60,12 @@ jobs:
           source .env
           set +a
 
-          # O projeto fica em uma pasta compartilhada do VMware, que não suporta symlinks.
+          # Corrige automaticamente dependências que tenham ficado pertencendo ao root.
+          if [ -d node_modules ]; then
+            sudo -n chown -R "$(id -u):$(id -g)" node_modules
+          fi
+
+          # A pasta compartilhada do VMware não suporta links simbólicos.
           npm ci --no-bin-links
           npm test
           npm run check
@@ -84,23 +82,39 @@ jobs:
           node --check "$WEB_DIR/student-login.js"
           node --check "$WEB_DIR/student-reset.js"
           node --check "$WEB_DIR/student-confirm.js"
-          python3 -m py_compile "$WEB_DIR/site_server.py"
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('/mnt/Projetos/Academia/apps/web/site_server.py')
+          compile(path.read_text(encoding='utf-8'), str(path), 'exec')
+          PY
 
-          sudo -n systemctl restart academia-api
-          sudo -n systemctl restart academia-web
+          sudo -n systemctl restart academia-api.service
+          sudo -n systemctl restart academia-web.service
 
           for attempt in 1 2 3 4 5; do
             if curl --fail --silent --show-error "$HEALTH_URL"; then
               echo
-              echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
-              echo "academia-api: $(sudo -n systemctl is-active academia-api)"
-              echo "academia-web: $(sudo -n systemctl is-active academia-web)"
-              exit 0
+              break
             fi
             echo "API ainda não respondeu; nova tentativa em 2 segundos ($attempt/5)."
             sleep 2
           done
 
-          echo "A API não respondeu ao health check após o reinício."
-          sudo -n systemctl status academia-api --no-pager -l || true
-          exit 1
+          curl --fail --silent --show-error "$HEALTH_URL" >/dev/null
+
+          # Confirma que o login está alcançando a API e o banco após o deploy.
+          LOGIN_STATUS="$(curl --silent --output /tmp/academia-login-probe.json --write-out '%{http_code}' \
+            --header 'Content-Type: application/json' \
+            --data '{"identifier":"deploy-probe@example.invalid","password":"invalid"}' \
+            "$LOGIN_URL")"
+
+          if [ "$LOGIN_STATUS" != "400" ] && [ "$LOGIN_STATUS" != "401" ]; then
+            echo "A rota de login respondeu HTTP $LOGIN_STATUS."
+            cat /tmp/academia-login-probe.json || true
+            exit 1
+          fi
+
+          echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
+          echo "academia-api: $(sudo -n systemctl is-active academia-api.service)"
+          echo "academia-web: $(sudo -n systemctl is-active academia-web.service)"
+          echo "login-api: HTTP $LOGIN_STATUS"
