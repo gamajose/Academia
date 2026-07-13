@@ -88,6 +88,10 @@ function render() {
     const status = membershipStatus(item);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><span class="membership-member-name ${memberNameTone(item)}">${item.member_name || '-'}</span></td><td>${item.plan_name || '-'}</td><td>${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
+    tr.querySelector('.membership-member-name').addEventListener('click', () => openModal(item));
+    tr.querySelector('.membership-member-name').addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
+    tr.querySelector('.membership-member-name').tabIndex = 0;
+    tr.querySelector('.membership-member-name').setAttribute('role', 'button');
     const actions = tr.lastElementChild;
     actions.appendChild(mini('✎', () => openModal(item)));
     actions.lastElementChild.className = 'icon-button';

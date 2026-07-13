@@ -191,7 +191,7 @@ function render() {
       <strong>${item.name}</strong>
       <span>${item.email || 'Sem e-mail'} · ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
       <span>${item.plan_name || 'Sem plano'} · <span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}</span>
-      <span>Ficha: ${item.training_plan_name || 'Sem ficha'} · ${item.training_exercise_count || 0} exercício(s) · Avaliação: ${item.latest_assessment_date ? `${dateOnly(item.latest_assessment_date)} (${assessmentAge(item.latest_assessment_date)})` : 'Nunca'}</span>`;
+      <span class="student-card-statuses"><span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
     const whatsapp = whatsappLink(item.phone);
     if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); main.appendChild(whatsapp); }
     const actions = document.createElement('div');

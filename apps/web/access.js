@@ -35,21 +35,25 @@ function accessDecisionLabel(item) {
 function renderMembers() {
   const list = accessEl('access-member-list');
   const term = accessEl('access-member-search').value.trim().toLowerCase();
+  const filter = accessEl('access-member-filter').value;
   list.innerHTML = '';
-  const rows = accessMembers.filter((member) => `${member.name} ${member.email || ''} ${member.phone || ''}`.toLowerCase().includes(term));
+  const rows = accessMembers.filter((member) => `${member.name} ${member.email || ''} ${member.phone || ''}`.toLowerCase().includes(term)
+    && (!filter || (filter === 'active' ? member.status === 'active' : member.status !== 'active')));
   accessEl('access-member-count').textContent = String(accessMembers.length);
   if (!rows.length) {
     const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = term ? 'Nenhum aluno encontrado.' : 'Nenhum aluno cadastrado.'; list.appendChild(empty); return;
   }
   for (const member of rows) {
-    const row = document.createElement('li'); row.className = 'access-member-row';
+    const row = document.createElement('li'); row.className = 'access-member-row'; row.setAttribute('role', 'button'); row.tabIndex = 0; row.title = 'Abrir credencial do aluno';
+    row.addEventListener('click', () => openCredential(member));
+    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCredential(member); } });
     const info = document.createElement('div'); info.className = 'access-member-main';
     const name = document.createElement('strong'); name.textContent = member.name;
     const contact = document.createElement('span'); contact.textContent = [member.email, member.phone].filter(Boolean).join(' · ') || 'Sem contato informado';
     info.append(name, contact);
     const meta = document.createElement('div'); meta.className = 'access-member-meta';
     const badge = document.createElement('span'); badge.className = `badge ${member.status === 'active' ? 'ok' : 'bad'}`; badge.textContent = statusLabel(member);
-    const button = document.createElement('button'); button.type = 'button'; button.className = 'icon-button'; button.textContent = '▦'; button.title = 'Abrir QR Code e credencial'; button.setAttribute('aria-label', 'Abrir QR Code e credencial'); button.addEventListener('click', () => openCredential(member));
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'icon-button'; button.textContent = '▦'; button.title = 'Abrir QR Code e credencial'; button.setAttribute('aria-label', 'Abrir QR Code e credencial'); button.addEventListener('click', (event) => { event.stopPropagation(); openCredential(member); });
     meta.append(badge, button); row.append(info, meta); list.appendChild(row);
   }
 }
@@ -112,6 +116,7 @@ async function resetPin() { if (!accessMemberId || !window.confirm('Gerar um nov
 async function loadPage() { try { const [members, decisions] = await Promise.all([accessApi('/api/access/members'), accessApi('/api/access/decisions/recent')]); accessMembers = members.data || []; renderMembers(); renderDecisions(decisions.data || []); accessEl('access-last-update').textContent = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date()); setStatus('Acesso carregado.'); } catch (error) { setStatus(`Erro ao carregar acesso: ${error.message}`); } }
 
 accessEl('access-member-search').addEventListener('input', renderMembers);
+accessEl('access-member-filter').addEventListener('change', renderMembers);
 accessEl('close-access-credential').addEventListener('click', closeCredential);
 accessEl('access-reset-pin').addEventListener('click', resetPin);
 accessEl('access-credential-modal').addEventListener('click', (event) => { if (event.target === accessEl('access-credential-modal')) closeCredential(); });

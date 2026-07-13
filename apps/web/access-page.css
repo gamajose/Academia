@@ -6,8 +6,11 @@
 .access-metrics span { display: block; color: var(--muted); font-size: 13px; }
 .access-metrics strong { display: block; margin-top: 7px; font-size: 26px; }
 .access-members-panel, .access-decisions-panel { gap: 16px; margin-bottom: 24px; }
+.access-member-filters { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 10px; }
 .access-member-list, .access-decision-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 0; }
 .access-member-row, .access-decision-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.access-member-row[role="button"] { cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.access-member-row[role="button"]:hover, .access-member-row[role="button"]:focus-visible { border-color: var(--accent); box-shadow: 0 8px 20px rgba(20, 120, 212, .12); transform: translateY(-1px); outline: none; }
 .access-member-main, .access-decision-row > div { display: grid; gap: 4px; min-width: 0; }
 .access-member-main strong, .access-decision-row strong { color: var(--text); }
 .access-member-main span, .access-decision-row span { color: var(--muted); font-size: 13px; }
@@ -20,4 +23,4 @@
 .access-decision-details summary::-webkit-details-marker { display: none; }
 .access-decision-details p { max-width: 320px; margin: 8px 0 0; padding: 9px 10px; border-radius: 8px; background: #f8f5f0; line-height: 1.45; }
 .access-credential-modal { width: min(960px, calc(100vw - 32px)); }
-@media (max-width: 760px) { .access-metrics { grid-template-columns: 1fr; } .access-member-row, .access-decision-row { align-items: flex-start; flex-direction: column; } .access-member-meta { justify-content: flex-start; } }
+@media (max-width: 760px) { .access-metrics { grid-template-columns: 1fr; } .access-member-filters { grid-template-columns: 1fr; } .access-member-row, .access-decision-row { align-items: flex-start; flex-direction: column; } .access-member-meta { justify-content: flex-start; } }

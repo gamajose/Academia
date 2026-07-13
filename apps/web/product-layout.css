@@ -114,6 +114,13 @@
 .student-view-assessment-row div { display: grid; gap: 3px; }
 .student-view-assessment-row span { color: var(--muted); font-size: 13px; }
 .student-view-assessment-row img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; }
+.student-card-statuses { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.student-info-chip { display: inline-flex; align-items: center; padding: 5px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+.student-info-chip.has-content { background: #dbeafe; color: #1d4ed8; }
+.student-info-chip.has-history { background: #fce7f3; color: #be185d; }
+.student-info-chip.empty-content { background: #f3f4f6; color: #6b7280; }
+.finance-member-name { color: #1f2937; font-weight: 700; cursor: pointer; }
+.finance-member-name:hover, .finance-member-name:focus-visible { color: var(--accent); text-decoration: underline; outline: none; }
 @media (max-width: 1100px) { .dashboard-summary-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1100px) { .finance-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .quick-grid, .finance-summary { grid-template-columns: 1fr; } .toolbar-actions a { width: 100%; } }
