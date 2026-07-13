@@ -45,8 +45,8 @@ button:hover { filter: brightness(1.05); }
 .cards strong { font-size: 38px; }
 .status-line { color: #1478d4; }
 .status-line:empty { display: none; }
-.security-page { display: flex; justify-content: center; width: 100%; }
-.security-page > #security-form { width: min(680px, 100%); }
+.security-page { display: flex; justify-content: center; width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); padding: 0 24px; }
+.security-page > #security-form { width: min(680px, 100%); flex: 0 1 680px; }
 .security-page #security-status { text-align: center; }
 
 .export-icon-button { width: 42px !important; min-width: 42px; height: 38px; padding: 0 !important; gap: 0; }
