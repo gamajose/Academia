@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const QRCode = require('qrcode');
 const { pool } = require('../lib/db');
 const { DEFAULT_GRACE_DAYS, evaluateAccess } = require('../lib/accessPolicy');
 const { hasModulePermission } = require('../lib/accessControl');
@@ -321,6 +322,24 @@ async function createCredentialRecord(query, input) {
   };
 }
 
+async function attachQrImage(credential) {
+  if (!credential?.qr_payload) return credential;
+  try {
+    return {
+      ...credential,
+      qr_data_url: await QRCode.toDataURL(credential.qr_payload, {
+        width: 220,
+        margin: 1,
+        errorCorrectionLevel: 'M',
+        color: { dark: '#111111', light: '#ffffff' }
+      })
+    };
+  } catch (error) {
+    console.warn(`[access] QR nao foi gerado: ${error.message}`);
+    return credential;
+  }
+}
+
 async function createStudentCredential(req, res, user, helpers) {
   const { send, query } = helpers;
   if (!isStudent(user)) return send(res, 403, { error: 'acesso_exclusivo_aluno' });
@@ -336,12 +355,12 @@ async function createStudentCredential(req, res, user, helpers) {
     return send(res, 200, { generated: false, access });
   }
 
-  const credential = await createCredentialRecord(query, {
+  const credential = await attachQrImage(await createCredentialRecord(query, {
     gymId: user.gym_id,
     memberId: user.member_id,
     memberAccountId: user.sub,
     invalidateExisting: true
-  });
+  }));
   return send(res, 201, { ...credential, access });
 }
 
@@ -373,12 +392,12 @@ async function adminCredentialPreview(req, res, user, helpers) {
 
   let dynamic = { generated: false };
   if (access.allowed) {
-    dynamic = await createCredentialRecord(query, {
+    dynamic = await attachQrImage(await createCredentialRecord(query, {
       gymId: user.gym_id,
       memberId: input.member_id,
       memberAccountId: null,
       invalidateExisting: false
-    });
+    }));
   }
 
   return send(res, 200, {

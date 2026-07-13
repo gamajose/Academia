@@ -320,15 +320,17 @@ function setCredentialAccessState(access = {}) {
   $('credential-state-label').textContent = allowed ? 'Acesso liberado' : 'Acesso bloqueado';
 }
 
-async function drawCredentialQr(payload) {
+async function drawCredentialQr(payload, dataUrl = '') {
   const canvas = $('credential-preview-qr');
   const empty = $('credential-qr-empty');
-  if (!payload || !window.QRCode?.toCanvas) {
-    const context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    empty.classList.remove('hidden');
+  const context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  if (dataUrl) {
+    await new Promise((resolve, reject) => { const image = new Image(); image.onload = () => { context.drawImage(image, 0, 0, canvas.width, canvas.height); resolve(); }; image.onerror = reject; image.src = dataUrl; });
+    empty.classList.add('hidden');
     return;
   }
+  if (!payload || !window.QRCode?.toCanvas) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
   await window.QRCode.toCanvas(canvas, payload, {
     width: 220,
@@ -360,7 +362,7 @@ async function loadCredentialPreview({ silent = false } = {}) {
     credentialExpiresAt = dynamic.expires_at ? new Date(dynamic.expires_at) : null;
     credentialTtlSeconds = Number(dynamic.ttl_seconds || 30);
     setCredentialAccessState(access);
-    await drawCredentialQr(dynamic.qr_payload || '');
+    await drawCredentialQr(dynamic.qr_payload || '', dynamic.qr_data_url || '');
     $('credential-preview-status').textContent = access.allowed
       ? 'QR e código temporário ativos. Matrícula e PIN funcionam mesmo sem internet no celular.'
       : (access.message || 'O acesso deste aluno está bloqueado.');

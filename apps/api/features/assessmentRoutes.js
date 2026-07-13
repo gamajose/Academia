@@ -71,6 +71,28 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     return send(res, 201, result.rows[0]);
   }
 
+  const assessmentIdMatch = url.pathname.match(/^\/api\/assessments\/([0-9a-f-]+)$/i);
+  if (assessmentIdMatch && ['PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const assessmentId = assessmentIdMatch[1];
+    const existing = await query('SELECT id, member_id FROM member_assessments WHERE id = $1 AND gym_id = $2 LIMIT 1', [assessmentId, user.gym_id]);
+    if (!existing.rowCount) return send(res, 404, { error: 'avaliacao_nao_encontrada' });
+    if (req.method === 'DELETE') {
+      await query('DELETE FROM member_assessments WHERE id = $1 AND gym_id = $2', [assessmentId, user.gym_id]);
+      await recordAudit(user, 'delete', 'member_assessment', assessmentId, { member_id: existing.rows[0].member_id });
+      return send(res, 200, { status: 'avaliacao_excluida' });
+    }
+    const input = await body(req);
+    const result = await query(
+      `UPDATE member_assessments SET assessment_date=COALESCE($3::date,assessment_date),weight_kg=$4,height_cm=$5,body_fat_percent=$6,muscle_mass_kg=$7,
+       waist_cm=$8,chest_cm=$9,hip_cm=$10,left_arm_cm=$11,right_arm_cm=$12,left_thigh_cm=$13,right_thigh_cm=$14,
+       resting_heart_rate=$15,photo_url=$16,notes=$17
+       WHERE id=$1 AND gym_id=$2 RETURNING *`,
+      [assessmentId, user.gym_id, input.assessment_date || null, numberOrNull(input.weight_kg), numberOrNull(input.height_cm), numberOrNull(input.body_fat_percent), numberOrNull(input.muscle_mass_kg), numberOrNull(input.waist_cm), numberOrNull(input.chest_cm), numberOrNull(input.hip_cm), numberOrNull(input.left_arm_cm), numberOrNull(input.right_arm_cm), numberOrNull(input.left_thigh_cm), numberOrNull(input.right_thigh_cm), intOrNull(input.resting_heart_rate), input.photo_url || null, input.notes || null]
+    );
+    await recordAudit(user, 'update', 'member_assessment', assessmentId, { member_id: existing.rows[0].member_id });
+    return send(res, 200, result.rows[0]);
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/assessments/summary') {
     const memberId = url.searchParams.get('member_id');
     if (!memberId) return send(res, 400, { error: 'member_id_obrigatorio' });
@@ -116,6 +138,27 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     );
     await recordAudit(user, 'create', 'member_goal', result.rows[0].id, { member_id: input.member_id, goal_type: input.goal_type });
     return send(res, 201, result.rows[0]);
+  }
+
+  const goalIdMatch = url.pathname.match(/^\/api\/goals\/([0-9a-f-]+)$/i);
+  if (goalIdMatch && ['PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const goalId = goalIdMatch[1];
+    const existing = await query('SELECT id, member_id FROM member_goals WHERE id = $1 AND gym_id = $2 LIMIT 1', [goalId, user.gym_id]);
+    if (!existing.rowCount) return send(res, 404, { error: 'meta_nao_encontrada' });
+    if (req.method === 'DELETE') {
+      await query('DELETE FROM member_goals WHERE id = $1 AND gym_id = $2', [goalId, user.gym_id]);
+      await recordAudit(user, 'delete', 'member_goal', goalId, { member_id: existing.rows[0].member_id });
+      return send(res, 200, { status: 'meta_excluida' });
+    }
+    const input = await body(req);
+    if (!input.goal_type) return send(res, 400, { error: 'dados_invalidos' });
+    const result = await query(
+      `UPDATE member_goals SET goal_type=$3,target_value=$4,target_date=$5::date,notes=$6,updated_at=now()
+       WHERE id=$1 AND gym_id=$2 RETURNING *`,
+      [goalId, user.gym_id, input.goal_type, numberOrNull(input.target_value), input.target_date || null, input.notes || null]
+    );
+    await recordAudit(user, 'update', 'member_goal', goalId, { member_id: existing.rows[0].member_id });
+    return send(res, 200, result.rows[0]);
   }
 
   return false;

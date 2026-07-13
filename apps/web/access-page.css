@@ -14,5 +14,10 @@
 .access-member-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .access-member-meta .mini-button { margin: 0; }
 .access-decision-row .badge { flex: 0 0 auto; }
+.access-decision-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.access-decision-details { color: var(--muted); font-size: 12px; }
+.access-decision-details summary { cursor: pointer; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-weight: 750; list-style: none; }
+.access-decision-details summary::-webkit-details-marker { display: none; }
+.access-decision-details p { max-width: 320px; margin: 8px 0 0; padding: 9px 10px; border-radius: 8px; background: #f8f5f0; line-height: 1.45; }
 .access-credential-modal { width: min(960px, calc(100vw - 32px)); }
 @media (max-width: 760px) { .access-metrics { grid-template-columns: 1fr; } .access-member-row, .access-decision-row { align-items: flex-start; flex-direction: column; } .access-member-meta { justify-content: flex-start; } }

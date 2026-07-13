@@ -60,4 +60,12 @@
 .finance-form-grid .field, .modal-card > .field { display: grid; gap: 7px; }
 .finance-form-grid label, .modal-card > .field label { color: #26332e; font-size: 13px; font-weight: 850; }
 .finance-form-grid small { color: #68716b; }
+.finance-filter-panel { display: grid; gap: 14px; padding: 16px; border: 1px solid #e7dfd4; border-radius: 14px; background: #fcfaf7; }
+.finance-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.finance-filter-grid .field { display: grid; gap: 6px; }
+.finance-filter-grid label { color: #26332e; font-size: 12px; font-weight: 850; }
+.finance-filter-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.finance-filter-actions span { margin-right: auto; color: #68716b; font-size: 13px; font-weight: 700; }
 @media (max-width: 900px) { .quick-grid, .finance-summary { grid-template-columns: 1fr; } .toolbar-actions a { width: 100%; } }
+@media (max-width: 900px) { .finance-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .finance-filter-grid { grid-template-columns: 1fr; } .finance-filter-actions > * { width: 100%; } .finance-filter-actions span { margin: 0; } }

@@ -45,6 +45,10 @@
           <h3>Histórico de avaliações</h3>
           <p>Últimas medições registradas pela equipe.</p>
         </div>
+        <div class="assessment-filter-panel">
+          <div class="assessment-filter-grid"><div class="field"><label for="assessment-filter-member">Aluno</label><select id="assessment-filter-member"><option value="">Todos os alunos</option></select></div><div class="field"><label for="assessment-filter-from">De</label><input id="assessment-filter-from" type="date" /></div><div class="field"><label for="assessment-filter-to">Até</label><input id="assessment-filter-to" type="date" /></div></div>
+          <div class="assessment-filter-actions"><button class="secondary" id="clear-assessment-filters" type="button">Limpar</button><button id="apply-assessment-filters" type="button">Filtrar histórico</button><button class="secondary" id="download-assessments-csv" type="button">Baixar CSV</button><button class="secondary" id="download-assessments-pdf" type="button">Baixar PDF</button></div>
+        </div>
         <ul class="workflow-list" id="assessment-list"></ul>
       </article>
     </section>

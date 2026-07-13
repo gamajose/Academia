@@ -85,8 +85,8 @@ function canAccess(user, method, pathname, permissions = null) {
     if (permissions) return false;
     if (profile === 'trainer') {
       if (pathname.startsWith('/api/training') && (method === 'GET' || method === 'POST')) return true;
-      if (pathname.startsWith('/api/assessments') && (method === 'GET' || method === 'POST')) return true;
-      if (pathname.startsWith('/api/goals') && (method === 'GET' || method === 'POST')) return true;
+      if (pathname.startsWith('/api/assessments') && ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return true;
+      if (pathname.startsWith('/api/goals') && ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return true;
     }
     return false;
   }

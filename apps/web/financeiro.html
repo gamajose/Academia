@@ -22,6 +22,18 @@
     </section>
     <section class="panel">
       <div class="toolbar"><h2>Lançamentos financeiros</h2></div>
+      <div class="finance-filter-panel">
+        <div class="finance-filter-grid">
+          <div class="field"><label for="finance-filter-member">Aluno</label><input id="finance-filter-member" type="search" placeholder="Nome, e-mail ou telefone" /></div>
+          <div class="field"><label for="finance-filter-status">Status</label><select id="finance-filter-status"><option value="">Todos</option><option value="paid">Recebido</option><option value="pending">Pendente</option><option value="overdue">Vencido</option><option value="cancelled">Cancelado</option></select></div>
+          <div class="field"><label for="finance-filter-method">Forma de pagamento</label><select id="finance-filter-method"><option value="">Todas</option><option value="pix">Pix</option><option value="paypal">PayPal</option><option value="card">Cartão</option><option value="cash">Dinheiro</option><option value="transfer">Transferência</option><option value="manual">Manual</option><option value="demo">Demonstração</option><option value="other">Outro</option></select></div>
+          <div class="field"><label for="finance-filter-min">Valor mínimo</label><input id="finance-filter-min" type="number" min="0" step="0.01" placeholder="R$ 0,00" /></div>
+          <div class="field"><label for="finance-filter-max">Valor máximo</label><input id="finance-filter-max" type="number" min="0" step="0.01" placeholder="R$ 0,00" /></div>
+          <div class="field"><label for="finance-filter-from">Vencimento a partir de</label><input id="finance-filter-from" type="date" /></div>
+          <div class="field"><label for="finance-filter-to">Vencimento até</label><input id="finance-filter-to" type="date" /></div>
+        </div>
+        <div class="finance-filter-actions"><button class="secondary" id="finance-clear-filters" type="button">Limpar filtros</button><button id="finance-apply-filters" type="button">Filtrar</button><span id="finance-filter-count" aria-live="polite"></span><button class="secondary" id="finance-download-csv" type="button">Baixar CSV</button><button class="secondary" id="finance-download-pdf" type="button">Baixar PDF</button></div>
+      </div>
       <p class="status-line" id="reports-status">Carregando...</p>
       <div class="table-wrap"><table class="finance-table"><thead><tr><th>Aluno</th><th>Valor</th><th>Status</th><th>Vencimento / recebimento</th><th>Forma de pagamento</th><th>Ações</th></tr></thead><tbody id="financial-list"></tbody></table></div>
     </section>

@@ -39,7 +39,7 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'GET' && url.pathname === '/api/reports/finance-advanced') {
     const result = await query(
-      `SELECT p.id, p.member_id, m.name AS member_name, p.membership_id, p.original_amount_cents, p.amount_cents, p.discount_cents, p.fee_cents, p.method, p.notes, p.status, p.due_date, p.paid_at, p.created_at, p.updated_at
+      `SELECT p.id, p.member_id, m.name AS member_name, m.email AS member_email, m.phone, p.membership_id, p.original_amount_cents, p.amount_cents, p.discount_cents, p.fee_cents, p.method, p.notes, p.status, p.due_date, p.paid_at, p.created_at, p.updated_at
        FROM payments p INNER JOIN members m ON m.id = p.member_id
        WHERE p.gym_id = $1 ORDER BY p.due_date DESC LIMIT 250`,
       [user.gym_id]

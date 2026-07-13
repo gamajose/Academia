@@ -32,6 +32,39 @@ function renderList(id, rows, formatter, emptyText) {
   }
 }
 
+function renderAssessmentAlerts(rows) {
+  const list = g('assessment-alert-list');
+  list.innerHTML = '';
+  if (!rows.length) {
+    const empty = document.createElement('li');
+    empty.className = 'alert-empty';
+    empty.textContent = 'Nenhuma avaliação pendente.';
+    list.appendChild(empty);
+    return;
+  }
+  for (const item of rows) {
+    const row = document.createElement('li');
+    row.className = 'alert-highlight';
+    const icon = document.createElement('span');
+    icon.className = 'alert-highlight-icon';
+    icon.textContent = '!';
+    const copy = document.createElement('div');
+    copy.className = 'alert-highlight-copy';
+    const name = document.createElement('strong');
+    name.textContent = item.member_name || 'Aluno';
+    const detail = document.createElement('span');
+    detail.textContent = item.last_assessment_date
+      ? `Última avaliação: ${item.last_assessment_date} · ${item.days_since_last_assessment} dias atrás`
+      : 'Este aluno ainda não possui avaliação registrada.';
+    copy.append(name, detail);
+    const badge = document.createElement('span');
+    badge.className = `alert-highlight-badge ${item.last_assessment_date ? 'warn' : 'critical'}`;
+    badge.textContent = item.last_assessment_date ? 'Atualizar avaliação' : 'Nunca avaliado';
+    row.append(icon, copy, badge);
+    list.appendChild(row);
+  }
+}
+
 async function loadAlerts() {
   if (!ALERTS_TOKEN) {
     if (g('alerts-total')) g('alerts-total').textContent = 'login';
@@ -47,7 +80,7 @@ async function loadAlerts() {
   renderList('overdue-list', data.overdue_payments || [], (item) => `${item.member_name} - ${cents(item.amount_cents)} - vencido ha ${item.days_overdue} dias`, 'Nenhum pagamento vencido.');
   renderList('membership-list', data.memberships_due_soon || [], (item) => `${item.member_name} - vence em ${item.days_remaining} dias`, 'Nenhuma matricula vencendo nos proximos 7 dias.');
   renderList('training-list', data.training_reviews_due || [], (item) => `${item.member_name} - ${item.plan_name} - ${item.age_days} dias de ficha`, 'Nenhuma ficha precisando de revisao.');
-  renderList('assessment-alert-list', data.assessments_due || [], (item) => `${item.member_name} - ultima avaliacao: ${item.last_assessment_date || 'nunca'}`, 'Nenhuma avaliacao pendente.');
+  renderAssessmentAlerts(data.assessments_due || []);
 }
 
 loadAlerts().catch((error) => {

@@ -48,7 +48,7 @@ function renderMembers() {
     const contact = document.createElement('span'); contact.textContent = [member.email, member.phone].filter(Boolean).join(' · ') || 'Sem contato informado';
     info.append(name, contact);
     const meta = document.createElement('div'); meta.className = 'access-member-meta';
-    const badge = document.createElement('span'); badge.className = `badge ${member.status !== 'active' ? 'bad' : ''}`; badge.textContent = statusLabel(member);
+    const badge = document.createElement('span'); badge.className = `badge ${member.status === 'active' ? 'ok' : 'bad'}`; badge.textContent = statusLabel(member);
     const button = document.createElement('button'); button.type = 'button'; button.className = 'mini-button'; button.textContent = 'Ver QR e credencial'; button.addEventListener('click', () => openCredential(member));
     meta.append(badge, button); row.append(info, meta); list.appendChild(row);
   }
@@ -61,7 +61,12 @@ function renderDecisions(rows) {
   for (const item of rows.slice(0, 50)) {
     const row = document.createElement('li'); row.className = 'access-decision-row';
     const main = document.createElement('div'); const name = document.createElement('strong'); name.textContent = item.member_name || 'Aluno'; const detail = document.createElement('span'); detail.textContent = `${accessDecisionLabel(item)} · ${formatDateTime(item.decided_at)}`; main.append(name, detail);
-    const badge = document.createElement('span'); badge.className = `badge ${item.allowed ? '' : 'bad'}`; badge.textContent = item.allowed ? 'Liberado' : 'Bloqueado'; row.append(main, badge); list.appendChild(row);
+    const actions = document.createElement('div'); actions.className = 'access-decision-actions';
+    const badge = document.createElement('span'); badge.className = `badge ${item.allowed ? 'ok' : 'bad'}`; badge.textContent = item.allowed ? 'Liberado' : 'Bloqueado';
+    const details = document.createElement('details'); details.className = 'access-decision-details';
+    const summary = document.createElement('summary'); summary.textContent = 'Ver decisão';
+    const explanation = document.createElement('p'); explanation.textContent = [item.reason, item.message, item.device_name ? `Dispositivo: ${item.device_name}` : ''].filter(Boolean).join(' · ') || 'Sem detalhes adicionais.';
+    details.append(summary, explanation); actions.append(badge, details); row.append(main, actions); list.appendChild(row);
   }
 }
 
@@ -69,9 +74,16 @@ function setCredentialState(access) {
   const allowed = access.allowed === true; accessEl('access-state-dot').classList.toggle('allowed', allowed); accessEl('access-state-dot').classList.toggle('blocked', !allowed); accessEl('access-state-label').textContent = allowed ? 'Acesso liberado' : 'Acesso bloqueado';
 }
 
-async function drawQr(payload) {
+async function drawQr(payload, dataUrl = '') {
   const canvas = accessEl('access-qr'); const empty = accessEl('access-qr-empty');
-  if (!payload || !window.QRCode?.toCanvas) { canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); empty.classList.remove('hidden'); return; }
+  const context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  if (dataUrl) {
+    await new Promise((resolve, reject) => { const image = new Image(); image.onload = () => { context.drawImage(image, 0, 0, canvas.width, canvas.height); resolve(); }; image.onerror = reject; image.src = dataUrl; });
+    empty.classList.add('hidden');
+    return;
+  }
+  if (!payload || !window.QRCode?.toCanvas) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden'); await window.QRCode.toCanvas(canvas, payload, { width: 220, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#111111', light: '#ffffff' } });
 }
 
@@ -87,7 +99,7 @@ async function loadCredential(silent = false) {
   try {
     const result = await accessApi('/api/access/member-credential/preview', { method: 'POST', body: JSON.stringify({ member_id: accessMemberId }) });
     const member = result.member || {}; const dynamic = result.dynamic || {}; const offline = result.offline || {}; const access = result.access || {};
-    accessEl('access-student-name').textContent = member.name || 'Aluno'; accessEl('access-credential-subtitle').textContent = `Credencial de ${member.name || 'aluno'}`; accessEl('access-registration-number').textContent = offline.registration_number || '------'; accessEl('access-offline-pin').textContent = offline.pin || '----'; accessEl('access-dynamic-code').textContent = formatCode(dynamic.access_code); accessExpiresAt = dynamic.expires_at ? new Date(dynamic.expires_at) : null; accessTtlSeconds = Number(dynamic.ttl_seconds || 30); setCredentialState(access); await drawQr(dynamic.qr_payload || ''); accessEl('access-credential-status').textContent = access.allowed ? 'Pagamento e matrícula conferidos. Credencial pronta para a catraca.' : (access.message || 'O acesso deste aluno está bloqueado.'); updateCountdown();
+    accessEl('access-student-name').textContent = member.name || 'Aluno'; accessEl('access-credential-subtitle').textContent = `Credencial de ${member.name || 'aluno'}`; accessEl('access-registration-number').textContent = offline.registration_number || '------'; accessEl('access-offline-pin').textContent = offline.pin || '----'; accessEl('access-dynamic-code').textContent = formatCode(dynamic.access_code); accessExpiresAt = dynamic.expires_at ? new Date(dynamic.expires_at) : null; accessTtlSeconds = Number(dynamic.ttl_seconds || 30); setCredentialState(access); await drawQr(dynamic.qr_payload || '', dynamic.qr_data_url || ''); accessEl('access-credential-status').textContent = access.allowed ? 'Pagamento e matrícula conferidos. Credencial pronta para a catraca.' : (access.message || 'O acesso deste aluno está bloqueado.'); updateCountdown();
   } catch (error) { accessExpiresAt = null; accessEl('access-credential-status').textContent = `Erro: ${error.message}`; accessEl('access-dynamic-code').textContent = '--- ---'; await drawQr(''); } finally { accessRequestInFlight = false; }
 }
 
