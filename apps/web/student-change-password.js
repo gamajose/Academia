@@ -29,7 +29,7 @@ form.addEventListener('submit', async (event) => {
     localStorage.setItem('studentMustChangePassword', 'false');
     window.location.href = './student-portal.html';
   } catch (error) {
-    const errors = { senha_atual_invalida: 'A senha atual não confere.', senha_muito_curta: 'A nova senha precisa ter pelo menos 10 caracteres.', senhas_nao_conferem: 'As novas senhas não conferem.' };
+    const errors = { senha_atual_invalida: 'A senha atual não confere.', senha_muito_curta: 'A nova senha precisa ter pelo menos 8 caracteres, 1 letra maiúscula e 1 número.', senhas_nao_conferem: 'As novas senhas não conferem.' };
     message.textContent = errors[error.message] || 'Não foi possível trocar a senha agora.';
     button.disabled = false;
     button.textContent = 'Salvar nova senha';

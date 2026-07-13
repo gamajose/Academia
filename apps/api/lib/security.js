@@ -50,8 +50,8 @@ function verifyPassword(password, stored) {
 
 function validatePassword(password) {
   const value = String(password || '');
-  if (value.length < 10) return { valid: false, error: 'senha_muito_curta' };
-  if (!/[a-z]/.test(value) || !/[A-Z]/.test(value) || !/[0-9]/.test(value)) {
+  if (value.length < 8) return { valid: false, error: 'senha_muito_curta' };
+  if (!/[A-Z]/.test(value) || !/[0-9]/.test(value)) {
     return { valid: false, error: 'senha_fraca' };
   }
   return { valid: true };

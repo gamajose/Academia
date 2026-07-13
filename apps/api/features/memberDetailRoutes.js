@@ -7,7 +7,7 @@ const { confirmEnrollmentPayment, confirmEnrollmentEmail } = require('../lib/enr
 const { sanitizeRichFields } = require('../lib/richContent');
 const { ensureOfflineCredential } = require('./accessRoutes');
 
-const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo123';
+const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo1234';
 
 function code() {
   return `ACAD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;

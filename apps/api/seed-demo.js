@@ -1,7 +1,7 @@
 const { pool } = require('./lib/db');
 const { hashPassword } = require('./lib/security');
 
-const DEMO_PASSWORD = 'Lobo123';
+const DEMO_PASSWORD = 'Lobo1234';
 const PEOPLE = [
   ['José Luiz Demo', 'demo.jose@academialobo.local', '32999192233'],
   ['Ana Carvalho Demo', 'demo.ana@academialobo.local', '32998887766'],

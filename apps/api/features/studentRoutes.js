@@ -2,7 +2,7 @@ const { hashPassword, verifyPassword, signToken, randomToken, hashToken, validat
 const { recordAudit } = require('../lib/audit');
 const { sendTransactionalEmail } = require('../lib/mailer');
 
-const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo123';
+const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo1234';
 
 function validPhotoSource(value) {
   const text = String(value || '').trim();

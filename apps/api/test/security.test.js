@@ -18,10 +18,11 @@ test('hash de senha valida somente a senha correta', () => {
   assert.equal(verifyPassword('SenhaErrada123', stored), false);
 });
 
-test('politica de senha exige tamanho maiuscula minuscula e numero', () => {
+test('politica de senha exige oito caracteres, maiuscula e numero', () => {
   assert.equal(validatePassword('curta').valid, false);
   assert.equal(validatePassword('senhasemnumero').valid, false);
-  assert.equal(validatePassword('SenhaForte123').valid, true);
+  assert.equal(validatePassword('ABCDEFG1').valid, true);
+  assert.equal(validatePassword('Senha123').valid, true);
 });
 
 test('token assinado pode ser verificado e adulteracao e rejeitada', () => {

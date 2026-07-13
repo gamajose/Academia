@@ -18,7 +18,7 @@ resetForm.addEventListener('submit', async (event) => {
   const confirmation = document.getElementById('reset-password-confirmation').value;
   if (!resetToken) { resetMessage.textContent = 'Este link de recuperação não é válido.'; return; }
   if (password !== confirmation) { resetMessage.textContent = 'As senhas precisam ser iguais.'; return; }
-  if (password.length < 10 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) { resetMessage.textContent = 'Use pelo menos 10 caracteres, com maiúscula, minúscula e número.'; return; }
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) { resetMessage.textContent = 'Use pelo menos 8 caracteres, com uma letra maiúscula e um número.'; return; }
   const button = resetForm.querySelector('button[type="submit"]');
   button.disabled = true;
   button.textContent = 'Salvando...';

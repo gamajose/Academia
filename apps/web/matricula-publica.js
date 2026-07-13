@@ -132,8 +132,8 @@ async function submitEnrollment(event) {
       pagamento_nao_configurado: 'Este método de pagamento ainda não está configurado pela academia.',
       email_invalido: 'Informe um e-mail válido.',
       metodo_pagamento_invalido: 'Escolha Pix ou PayPal.',
-      senha_muito_curta: 'A senha precisa ter pelo menos 10 caracteres.',
-      senha_fraca: 'Use letras maiúsculas, minúsculas e números na senha.',
+      senha_muito_curta: 'A senha precisa ter pelo menos 8 caracteres.',
+      senha_fraca: 'Use pelo menos uma letra maiúscula e um número na senha.',
       senhas_nao_conferem: 'As senhas precisam ser iguais.'
     };
     showMessage(labels[error.message] || 'Não foi possível abrir o pagamento. Tente novamente.');
