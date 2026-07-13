@@ -92,7 +92,6 @@ jobs:
           node --check apps/web/student-reset.js
           node --check apps/web/student-confirm.js
           node --check apps/web/student-portal.js
-          node --check apps/web/student-access.js
           node --check apps/web/assessments.js
           node --check apps/web/training.js
           node --check apps/web/training-media.js
@@ -113,8 +112,6 @@ jobs:
           ! grep -q 'id="logout-button"' apps/web/painel.html
           ! grep -q 'student-refresh-button' apps/web/student-portal.html
           ! grep -q 'student-logout-button' apps/web/student-portal.html
-          ! grep -q 'refresh-student-accounts-button' apps/web/student-accounts.html
-          grep -q 'open-student-account-modal' apps/web/student-accounts.html
           grep -q 'open-assessment-modal' apps/web/assessments.html
           grep -q 'dashboard-session-stability.js' apps/web/painel.html
           grep -q '.modal-close' apps/web/premium-ui.css
@@ -124,11 +121,19 @@ jobs:
           grep -q 'id="permissions-manager-modal"' apps/web/users.html
           grep -q 'NAV_BUILD_VERSION' apps/web/nav.js
           grep -q 'data-page=' apps/web/nav.js
-          grep -q "LEGACY_REDIRECTS = {'permissions.html':" apps/web/site_server.py
+          grep -q "'permissions.html':" apps/web/site_server.py
+          grep -q "'student-accounts.html':" apps/web/site_server.py
           grep -q 'NAV_SCRIPT_PATTERN' apps/web/site_server.py
           ! grep -q "\['permissions.html', 'Permissões'\]" apps/web/nav.js
+          ! grep -q "\['student-accounts.html', 'Acesso'\]" apps/web/nav.js
           test ! -e apps/web/permissions.html
           test ! -e apps/web/permissions.js
+          test ! -e apps/web/student-accounts.html
+          test ! -e apps/web/student-access.js
+          grep -q '/api/student/access/credential' apps/mobile/lib/student_home_page.dart
+          grep -q 'access_code' apps/mobile/lib/student_home_page.dart
+          grep -q 'access_code' apps/api/features/accessRoutes.js
+          grep -q 'code_hash' database/035_dynamic_student_access_code.sql
           ! grep -Rqi "Valor em centavos\|Destaque público\|CPF/RG" apps/web --include='*.html' --include='*.js'
 
   mobile:
