@@ -34,8 +34,21 @@ async function api(path, options = {}) {
     }
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'erro_requisicao');
+  if (!response.ok) throw new Error(data.error || `http_${response.status}`);
   return data;
+}
+
+function assessmentErrorMessage(error) {
+  const messages = {
+    acesso_negado: 'Seu perfil não tem permissão para alterar avaliações.',
+    internal_error: 'O servidor não conseguiu salvar. Verifique a conexão com o banco de dados.',
+    foto_invalida: 'A foto precisa ser um link http(s) válido ou uma imagem enviada pelo formulário.',
+    imagem_muito_grande: 'A imagem não pode ultrapassar 5 MB.',
+    formato_de_imagem_invalido: 'Escolha uma imagem JPG, PNG, GIF ou WebP.',
+    http_403: 'Seu perfil não tem permissão para alterar avaliações.',
+    http_500: 'O servidor não conseguiu salvar. Verifique a conexão com o banco de dados.'
+  };
+  return messages[error.message] || error.message || 'Não foi possível concluir a operação.';
 }
 
 function fillSelect(id, members) {
@@ -74,6 +87,50 @@ function formatNumber(valueToFormat, suffix = '') {
   return `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(Number(valueToFormat))}${suffix}`;
 }
 
+function decimalValue(id) {
+  const raw = value(id).trim().replace(',', '.');
+  if (!raw) return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatInputDecimal(valueToFormat) {
+  if (valueToFormat === null || valueToFormat === undefined || valueToFormat === '') return '';
+  const parsed = Number(valueToFormat);
+  return Number.isFinite(parsed)
+    ? parsed.toLocaleString('pt-BR', { useGrouping: false, maximumFractionDigits: 2 })
+    : String(valueToFormat);
+}
+
+const MAX_ASSESSMENT_PHOTO_BYTES = 5 * 1024 * 1024;
+
+function previewAssessmentPhoto(source) {
+  const image = q('assessment-photo-preview');
+  const empty = q('assessment-photo-empty');
+  if (!image || !empty) return;
+  image.hidden = !source;
+  empty.hidden = Boolean(source);
+  image.src = source || '';
+}
+
+async function uploadAssessmentPhoto(file) {
+  if (!file) return '';
+  if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) throw new Error('formato_de_imagem_invalido');
+  if (file.size > MAX_ASSESSMENT_PHOTO_BYTES) throw new Error('imagem_muito_grande');
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  const response = await fetch(`${ASSESSMENT_API}/api/editor/images`, { method: 'POST', body: formData, headers: { Authorization: `Bearer ${ASSESSMENT_TOKEN}` } });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'falha_no_upload');
+  return data.location || '';
+}
+
+async function resolveAssessmentPhoto() {
+  const file = q('assessment-photo-file')?.files?.[0];
+  if (file) return uploadAssessmentPhoto(file);
+  return value('photo-url').trim();
+}
+
 function openModal(id, focusId = '') {
   const modal = q(id);
   if (!modal) return;
@@ -98,6 +155,8 @@ function resetAssessmentForm() {
   editingAssessmentId = '';
   q('assessment-modal-title').textContent = 'Nova avaliação';
   q('create-assessment-button').textContent = 'Salvar avaliação';
+  if (q('assessment-photo-file')) q('assessment-photo-file').value = '';
+  previewAssessmentPhoto('');
 }
 
 function resetGoalForm() {
@@ -141,11 +200,59 @@ function openAssessmentEdit(item) {
   editingAssessmentId = item.id;
   setField('assessment-member', item.member_id);
   setField('assessment-date', String(item.assessment_date || '').slice(0, 10));
-  setField('weight-kg', item.weight_kg); setField('height-cm', item.height_cm); setField('body-fat', item.body_fat_percent); setField('muscle-mass', item.muscle_mass_kg); setField('waist-cm', item.waist_cm); setField('chest-cm', item.chest_cm); setField('hip-cm', item.hip_cm); setField('photo-url', item.photo_url); setField('assessment-notes', item.notes);
+  setField('weight-kg', formatInputDecimal(item.weight_kg)); setField('height-cm', formatInputDecimal(item.height_cm)); setField('body-fat', formatInputDecimal(item.body_fat_percent)); setField('muscle-mass', formatInputDecimal(item.muscle_mass_kg)); setField('waist-cm', formatInputDecimal(item.waist_cm)); setField('chest-cm', formatInputDecimal(item.chest_cm)); setField('hip-cm', formatInputDecimal(item.hip_cm)); setField('photo-url', item.photo_url); setField('assessment-notes', item.notes);
+  previewAssessmentPhoto(item.photo_url);
   q('assessment-modal-title').textContent = 'Editar avaliação';
   q('create-assessment-button').textContent = 'Salvar alterações';
   setModalStatus('assessment-form-status', '');
   openModal('assessment-modal', 'assessment-member');
+}
+
+function setAssessmentViewImage(source, alt = 'Foto da avaliação') {
+  const image = q('assessment-view-photo');
+  const empty = q('assessment-view-photo-empty');
+  if (!image || !empty) return;
+  image.hidden = !source;
+  empty.hidden = Boolean(source);
+  image.alt = alt;
+  image.src = source || '';
+}
+
+function renderAssessmentPhotoHistory(memberId) {
+  const strip = q('assessment-view-photo-history');
+  if (!strip) return;
+  strip.innerHTML = '';
+  const photos = currentAssessments.filter((item) => item.member_id === memberId && item.photo_url);
+  if (!photos.length) {
+    strip.innerHTML = '<span class="assessment-photo-history-empty">Nenhuma foto registrada.</span>';
+    return;
+  }
+  for (const item of photos) {
+    const image = document.createElement('img');
+    image.src = item.photo_url;
+    image.alt = `Foto de ${formatDate(item.assessment_date)}`;
+    image.title = `Avaliação de ${formatDate(item.assessment_date)}`;
+    image.loading = 'lazy';
+    strip.appendChild(image);
+  }
+}
+
+function openAssessmentView(item) {
+  q('assessment-view-name').textContent = item.member_name || 'Aluno';
+  q('assessment-view-date').textContent = formatDate(item.assessment_date);
+  q('assessment-view-weight').textContent = formatNumber(item.weight_kg, ' kg');
+  q('assessment-view-height').textContent = formatNumber(item.height_cm, ' cm');
+  q('assessment-view-fat').textContent = formatNumber(item.body_fat_percent, '%');
+  q('assessment-view-muscle').textContent = formatNumber(item.muscle_mass_kg, ' kg');
+  q('assessment-view-waist').textContent = formatNumber(item.waist_cm, ' cm');
+  q('assessment-view-chest').textContent = formatNumber(item.chest_cm, ' cm');
+  q('assessment-view-hip').textContent = formatNumber(item.hip_cm, ' cm');
+  q('assessment-view-notes').textContent = item.notes || 'Sem observações registradas.';
+  const goal = currentGoals.find((candidate) => candidate.member_id === item.member_id && candidate.status !== 'closed');
+  q('assessment-view-goal').textContent = goal ? `${goal.goal_type} · alvo ${formatNumber(goal.target_value)} · prazo ${formatDate(goal.target_date)}` : 'Nenhuma meta ativa vinculada.';
+  setAssessmentViewImage(item.photo_url);
+  renderAssessmentPhotoHistory(item.member_id);
+  openModal('assessment-view-modal');
 }
 
 function openGoalEdit(item) {
@@ -163,7 +270,7 @@ async function deleteAssessment(item) {
     await api(`/api/assessments/${item.id}`, { method: 'DELETE' });
     setAssessmentStatus('Avaliação excluída.');
     await loadAssessments({ force: true });
-  } catch (error) { setAssessmentStatus(`Erro ao excluir avaliação: ${error.message}`); }
+  } catch (error) { setAssessmentStatus(`Erro ao excluir avaliação: ${assessmentErrorMessage(error)}`); }
 }
 
 async function deleteGoal(item) {
@@ -172,7 +279,7 @@ async function deleteGoal(item) {
     await api(`/api/goals/${item.id}`, { method: 'DELETE' });
     setAssessmentStatus('Meta excluída.');
     await loadGoals({ force: true });
-  } catch (error) { setAssessmentStatus(`Erro ao excluir meta: ${error.message}`); }
+  } catch (error) { setAssessmentStatus(`Erro ao excluir meta: ${assessmentErrorMessage(error)}`); }
 }
 
 function openSummaryModal() {
@@ -197,6 +304,11 @@ function renderAssessments(rows) {
   for (const item of rows) {
     const row = document.createElement('li');
     row.className = 'workflow-record';
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', `Visualizar avaliação de ${item.member_name || 'aluno'}`);
+    row.addEventListener('click', () => openAssessmentView(item));
+    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openAssessmentView(item); } });
 
     const main = document.createElement('div');
     main.className = 'workflow-record-main';
@@ -216,9 +328,15 @@ function renderAssessments(rows) {
     }
     const actions = document.createElement('div');
     actions.className = 'workflow-record-actions';
-    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', () => openAssessmentEdit(item));
-    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Excluir'; remove.addEventListener('click', () => deleteAssessment(item));
-    actions.append(edit, remove);
+    if (item.photo_url) {
+      const thumb = document.createElement('img');
+      thumb.className = 'assessment-photo-thumb'; thumb.src = item.photo_url; thumb.alt = ''; thumb.loading = 'lazy';
+      actions.appendChild(thumb);
+    }
+    const view = document.createElement('button'); view.type = 'button'; view.className = 'secondary'; view.textContent = 'Visualizar'; view.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentView(item); });
+    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentEdit(item); });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Excluir'; remove.addEventListener('click', (event) => { event.stopPropagation(); deleteAssessment(item); });
+    actions.append(view, edit, remove);
     row.append(main, actions);
     list.appendChild(row);
   }
@@ -267,7 +385,9 @@ function assessmentsSignature(rows) {
     item.member_name,
     item.weight_kg,
     item.body_fat_percent,
-    item.waist_cm
+    item.waist_cm,
+    item.photo_url,
+    item.notes
   ]));
 }
 
@@ -344,14 +464,14 @@ async function createAssessment(event) {
       body: JSON.stringify({
         member_id: value('assessment-member'),
         assessment_date: value('assessment-date') || null,
-        weight_kg: value('weight-kg'),
-        height_cm: value('height-cm'),
-        body_fat_percent: value('body-fat'),
-        muscle_mass_kg: value('muscle-mass'),
-        waist_cm: value('waist-cm'),
-        chest_cm: value('chest-cm'),
-        hip_cm: value('hip-cm'),
-        photo_url: value('photo-url'),
+        weight_kg: decimalValue('weight-kg'),
+        height_cm: decimalValue('height-cm'),
+        body_fat_percent: decimalValue('body-fat'),
+        muscle_mass_kg: decimalValue('muscle-mass'),
+        waist_cm: decimalValue('waist-cm'),
+        chest_cm: decimalValue('chest-cm'),
+        hip_cm: decimalValue('hip-cm'),
+        photo_url: await resolveAssessmentPhoto(),
         notes: value('assessment-notes')
       })
     });
@@ -359,7 +479,7 @@ async function createAssessment(event) {
     setAssessmentStatus(editingAssessmentId ? 'Avaliação atualizada.' : 'Avaliação salva.');
     await loadAssessments({ force: true });
   } catch (error) {
-    setModalStatus('assessment-form-status', `Erro: ${error.message}`);
+    setModalStatus('assessment-form-status', `Erro: ${assessmentErrorMessage(error)}`);
   } finally {
     saveButton.disabled = false;
     saveButton.textContent = 'Salvar avaliação';
@@ -378,7 +498,7 @@ async function createGoal(event) {
       body: JSON.stringify({
         member_id: value('goal-member'),
         goal_type: value('goal-type'),
-        target_value: value('goal-value'),
+        target_value: decimalValue('goal-value'),
         target_date: value('goal-date') || null,
         notes: value('goal-notes')
       })
@@ -387,7 +507,7 @@ async function createGoal(event) {
     setAssessmentStatus(editingGoalId ? 'Meta atualizada.' : 'Meta salva.');
     await loadGoals({ force: true });
   } catch (error) {
-    setModalStatus('goal-form-status', `Erro: ${error.message}`);
+    setModalStatus('goal-form-status', `Erro: ${assessmentErrorMessage(error)}`);
   } finally {
     saveButton.disabled = false;
     saveButton.textContent = 'Salvar meta';
@@ -485,6 +605,17 @@ function bindAssessmentEvents() {
 
   q('assessment-form')?.addEventListener('submit', createAssessment);
   q('goal-form')?.addEventListener('submit', createGoal);
+  q('assessment-photo-file')?.addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return previewAssessmentPhoto(value('photo-url'));
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type) || file.size > MAX_ASSESSMENT_PHOTO_BYTES) {
+      setModalStatus('assessment-form-status', 'Escolha uma imagem JPG, PNG, GIF ou WebP de até 5 MB.');
+      event.target.value = '';
+      return previewAssessmentPhoto('');
+    }
+    previewAssessmentPhoto(URL.createObjectURL(file));
+  });
+  q('photo-url')?.addEventListener('input', (event) => { if (!q('assessment-photo-file')?.files?.length) previewAssessmentPhoto(event.target.value.trim()); });
   q('load-summary-button')?.addEventListener('click', loadSummary);
   q('apply-assessment-filters')?.addEventListener('click', () => { renderAssessments(filterAssessments(currentAssessments)); renderGoals(filterGoals(currentGoals)); });
   q('clear-assessment-filters')?.addEventListener('click', () => { ['assessment-filter-member', 'assessment-filter-from', 'assessment-filter-to'].forEach((id) => { if (q(id)) q(id).value = ''; }); renderAssessments(currentAssessments); renderGoals(currentGoals); });
@@ -493,12 +624,13 @@ function bindAssessmentEvents() {
 
   q('close-assessment-modal')?.addEventListener('click', () => closeModal('assessment-modal'));
   q('cancel-assessment-modal')?.addEventListener('click', () => closeModal('assessment-modal'));
+  q('close-assessment-view-modal')?.addEventListener('click', () => closeModal('assessment-view-modal'));
   q('close-goal-modal')?.addEventListener('click', () => closeModal('goal-modal'));
   q('cancel-goal-modal')?.addEventListener('click', () => closeModal('goal-modal'));
   q('close-summary-modal')?.addEventListener('click', () => closeModal('summary-modal'));
   q('cancel-summary-modal')?.addEventListener('click', () => closeModal('summary-modal'));
 
-  for (const modalId of ['assessment-modal', 'goal-modal', 'summary-modal']) {
+  for (const modalId of ['assessment-modal', 'goal-modal', 'summary-modal', 'assessment-view-modal']) {
     q(modalId)?.addEventListener('click', (event) => {
       if (event.target === q(modalId)) closeModal(modalId);
     });

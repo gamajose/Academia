@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Painel - Academia Lobo</title>
+  <title>Painel - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
@@ -30,28 +30,14 @@
           <small id="dashboard-sync-status">Atualização automática ativa.</small>
         </div>
       </div>
-      <div class="cards">
-        <article><span>Alunos ativos</span><strong id="active-members">0</strong></article>
-        <article><span>Planos ativos</span><strong id="active-plans">0</strong></article>
-        <article><span>Matrículas ativas</span><strong id="active-memberships">0</strong></article>
-        <article><span>Check-ins hoje</span><strong id="today-checkins">0</strong></article>
-        <article><span>Pendências</span><strong id="pending-payments">0</strong></article>
+      <div class="cards dashboard-summary-cards">
+        <a class="dashboard-summary-card" href="./alunos.html"><span>Alunos ativos</span><strong id="active-members">0</strong><small>Ver cadastro e histórico</small></a>
+        <a class="dashboard-summary-card" href="./planos.html"><span>Planos ativos</span><strong id="active-plans">0</strong><small>Ver planos comerciais</small></a>
+        <a class="dashboard-summary-card" href="./vinculos.html"><span>Matrículas ativas</span><strong id="active-memberships">0</strong><small>Ver vínculos</small></a>
+        <a class="dashboard-summary-card" href="./alerts.html"><span>Avaliações pendentes</span><strong id="pending-assessments">0</strong><small>Ver alertas</small></a>
+        <a class="dashboard-summary-card" href="./financeiro.html"><span>Financeiro em aberto</span><strong id="pending-payments">0</strong><small>Ver recebimentos</small></a>
       </div>
-      <section class="panel">
-        <div>
-          <h3 style="margin:0 0 6px">Acessos rápidos</h3>
-          <p style="margin:0">Abra diretamente a área que deseja administrar.</p>
-        </div>
-        <div class="quick-grid">
-          <a class="quick-card" href="./alunos.html"><strong>Alunos</strong><span>Cadastro, plano, status e histórico.</span></a>
-          <a class="quick-card" href="./planos.html"><strong>Planos</strong><span>Preços, benefícios e regras comerciais.</span></a>
-          <a class="quick-card" href="./financeiro.html"><strong>Financeiro</strong><span>Recebimentos, atrasos, caixa e ajustes.</span></a>
-          <a class="quick-card" href="./student-accounts.html"><strong>Acesso do aluno</strong><span>Contas, liberação e suporte de acesso.</span></a>
-          <a class="quick-card" href="./training.html"><strong>Treinos</strong><span>Fichas, exercícios e revisões.</span></a>
-          <a class="quick-card" href="./assessments.html"><strong>Avaliações</strong><span>Evolução física e metas.</span></a>
-        </div>
-        <p class="status-line" id="action-message">Atualização automática ativa.</p>
-      </section>
+      <p class="status-line" id="action-message">Atualização automática ativa.</p>
     </section>
   </main>
   <script src="./guard.js"></script>

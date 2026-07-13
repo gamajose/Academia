@@ -41,7 +41,7 @@
 }
 .module-cards article { display: grid; gap: 8px; align-content: start; }
 .module-cards strong { font-size: 25px; }
-.module-cards a { color: #b91c1c; text-decoration: none; font-weight: 800; }
+.module-cards a { color: #1478d4; text-decoration: none; font-weight: 800; }
 .panel > button,
 .form-actions > button,
 .toolbar > button,
@@ -70,7 +70,7 @@
 .rich-editor-quill .ql-toolbar { border: 0; border-bottom: 1px solid #e7dfd4; background: #fbf9f5; }
 .rich-editor-quill .ql-container { border: 0; min-height: 210px; font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
 .rich-editor-quill .ql-editor { min-height: 210px; line-height: 1.65; color: #171717; }
-.rich-editor-quill .ql-editor blockquote { border-left: 4px solid #b91c1c; color: #53605b; }
+.rich-editor-quill .ql-editor blockquote { border-left: 4px solid #1478d4; color: #53605b; }
 .rich-editor-quill .ql-editor img { max-width: 100%; }
 .rich-editor-quill .ql-toolbar button.ql-undo::before { content: '↶'; font-size: 18px; }
 .rich-editor-quill .ql-toolbar button.ql-redo::before { content: '↷'; font-size: 18px; }

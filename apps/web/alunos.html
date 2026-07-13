@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Alunos - Academia Lobo</title>
+  <title>Alunos - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
@@ -93,6 +93,15 @@
         <button type="submit" id="save-student-button">Salvar aluno</button>
       </div>
     </form>
+  </div>
+
+  <div class="modal hidden" id="student-view-modal" role="dialog" aria-modal="true" aria-labelledby="student-view-title" aria-hidden="true">
+    <section class="modal-card student-view-modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Visualização</p><h3 id="student-view-title">Cadastro do aluno</h3><p><strong id="student-view-name">Aluno</strong> · <span id="student-view-contact">Sem contato informado</span></p></div><button type="button" id="close-student-view-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="student-view-identity"><div class="student-view-avatar"><img id="student-view-photo" alt="Foto do aluno" hidden /><span id="student-view-photo-empty">Sem foto</span></div><div><span class="student-view-status" id="student-view-status">Ativo</span><p>Plano atual: <strong id="student-view-plan">Sem plano ativo</strong></p><p>Metas: <strong id="student-view-goals">Carregando...</strong></p></div></div>
+      <div class="student-view-grid"><div><span>Objetivo</span><p id="student-view-objective">-</p></div><div><span>Alergias e restrições</span><p id="student-view-allergies">-</p></div><div><span>Observações clínicas</span><p id="student-view-medical">-</p></div><div><span>Observações internas</span><p id="student-view-notes">-</p></div></div>
+      <section class="student-view-history"><h4>Histórico de avaliações</h4><ul id="student-view-assessments"></ul></section>
+    </section>
   </div>
 
   <div class="modal hidden" id="credential-preview-modal" role="dialog" aria-modal="true" aria-labelledby="credential-preview-title" aria-hidden="true">

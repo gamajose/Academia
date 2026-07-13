@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Treinos - Academia Lobo</title>
+  <title>Treinos - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./training-media.css" />
@@ -40,6 +40,13 @@
       <article class="panel"><h3>Fichas</h3><ul id="plan-list"></ul></article>
     </section>
   </main>
+
+  <div class="modal hidden" id="exercise-view-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-view-title" aria-hidden="true">
+    <section class="modal-card exercise-view-modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Biblioteca de exercícios</p><h3 id="exercise-view-title"><span id="exercise-view-name">Exercício</span></h3><p id="exercise-view-muscle">Grupo muscular</p></div><button type="button" id="close-exercise-view-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="exercise-view-layout"><div id="exercise-view-media" class="exercise-view-media"></div><div class="exercise-view-copy"><div class="exercise-view-tags"><span><strong>Equipamento</strong><em id="exercise-view-equipment">-</em></span><span><strong>Nível</strong><em id="exercise-view-level">-</em></span></div><div><h4>Técnica de execução</h4><p id="exercise-view-instructions">-</p></div></div></div>
+    </section>
+  </div>
 
   <div class="modal hidden" id="training-levels-modal" role="dialog" aria-modal="true" aria-labelledby="training-levels-title" aria-hidden="true">
     <section class="modal-card training-modal-card training-levels-panel" id="training-levels-panel">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Avaliações - Academia Lobo</title>
+  <title>Avaliações - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./workflow-modals.css?v=20260712-2126" />
@@ -73,15 +73,16 @@
         <input id="assessment-date" type="date" />
       </div>
       <div class="metric-grid">
-        <div class="field"><label for="weight-kg">Peso (kg)</label><input id="weight-kg" type="number" step="0.01" /></div>
-        <div class="field"><label for="height-cm">Altura (cm)</label><input id="height-cm" type="number" step="0.01" /></div>
-        <div class="field"><label for="body-fat">Gordura corporal (%)</label><input id="body-fat" type="number" step="0.01" /></div>
-        <div class="field"><label for="muscle-mass">Massa muscular (kg)</label><input id="muscle-mass" type="number" step="0.01" /></div>
-        <div class="field"><label for="waist-cm">Cintura (cm)</label><input id="waist-cm" type="number" step="0.01" /></div>
-        <div class="field"><label for="chest-cm">Peito (cm)</label><input id="chest-cm" type="number" step="0.01" /></div>
-        <div class="field"><label for="hip-cm">Quadril (cm)</label><input id="hip-cm" type="number" step="0.01" /></div>
+        <div class="field"><label for="weight-kg">Peso (kg)</label><input id="weight-kg" type="text" inputmode="decimal" placeholder="Ex.: 82,40" /></div>
+        <div class="field"><label for="height-cm">Altura (cm)</label><input id="height-cm" type="text" inputmode="decimal" placeholder="Ex.: 178,00" /></div>
+        <div class="field"><label for="body-fat">Gordura corporal (%)</label><input id="body-fat" type="text" inputmode="decimal" placeholder="Ex.: 18,50" /></div>
+        <div class="field"><label for="muscle-mass">Massa muscular (kg)</label><input id="muscle-mass" type="text" inputmode="decimal" placeholder="Ex.: 63,12" /></div>
+        <div class="field"><label for="waist-cm">Cintura (cm)</label><input id="waist-cm" type="text" inputmode="decimal" placeholder="Ex.: 84,00" /></div>
+        <div class="field"><label for="chest-cm">Peito (cm)</label><input id="chest-cm" type="text" inputmode="decimal" /></div>
+        <div class="field"><label for="hip-cm">Quadril (cm)</label><input id="hip-cm" type="text" inputmode="decimal" /></div>
       </div>
-      <div class="field"><label for="photo-url">URL da foto de evolução</label><input id="photo-url" type="url" placeholder="https://" /></div>
+      <div class="field"><label for="photo-url">Foto de evolução por link</label><input id="photo-url" type="url" placeholder="https://.../foto.jpg" /></div>
+      <div class="field"><label for="assessment-photo-file">Ou escolha uma foto do computador/celular</label><input id="assessment-photo-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><small>JPG, PNG, GIF ou WebP. Limite de 5 MB.</small><div class="assessment-photo-upload-preview"><img id="assessment-photo-preview" alt="Prévia da foto de evolução" hidden /><span id="assessment-photo-empty">A prévia da foto aparecerá aqui.</span></div></div>
       <div class="field"><label for="assessment-notes">Observações</label><textarea id="assessment-notes"></textarea></div>
       <p class="status-line workflow-modal-status" id="assessment-form-status" aria-live="polite"></p>
       <div class="form-actions">
@@ -89,6 +90,17 @@
         <button id="create-assessment-button" type="submit">Salvar avaliação</button>
       </div>
     </form>
+  </div>
+
+  <div class="modal hidden" id="assessment-view-modal" role="dialog" aria-modal="true" aria-labelledby="assessment-view-title" aria-hidden="true">
+    <section class="modal-card assessment-view-modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Acompanhamento</p><h3 id="assessment-view-title">Detalhes da avaliação</h3><p><strong id="assessment-view-name">Aluno</strong> · <span id="assessment-view-date">-</span></p></div><button type="button" id="close-assessment-view-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="assessment-view-layout">
+        <div class="assessment-view-photo-wrap"><img id="assessment-view-photo" alt="Foto da avaliação" hidden /><span id="assessment-view-photo-empty">Sem foto nesta avaliação.</span></div>
+        <div class="assessment-view-content"><div class="assessment-view-metrics"><div><span>Peso</span><strong id="assessment-view-weight">-</strong></div><div><span>Altura</span><strong id="assessment-view-height">-</strong></div><div><span>Gordura</span><strong id="assessment-view-fat">-</strong></div><div><span>Massa muscular</span><strong id="assessment-view-muscle">-</strong></div><div><span>Cintura</span><strong id="assessment-view-waist">-</strong></div><div><span>Peito</span><strong id="assessment-view-chest">-</strong></div><div><span>Quadril</span><strong id="assessment-view-hip">-</strong></div></div><div class="assessment-view-note"><span>Meta vinculada</span><strong id="assessment-view-goal">-</strong></div><div class="assessment-view-note"><span>Observações</span><p id="assessment-view-notes">-</p></div></div>
+      </div>
+      <div class="assessment-view-history"><h4>Histórico de fotos</h4><div id="assessment-view-photo-history" class="assessment-photo-history"></div></div>
+    </section>
   </div>
 
   <div class="modal hidden" id="goal-modal" role="dialog" aria-modal="true" aria-labelledby="goal-modal-title" aria-hidden="true">
@@ -103,7 +115,7 @@
       <div class="field"><label for="goal-member">Aluno *</label><select id="goal-member" required></select></div>
       <div class="field"><label for="goal-type">Tipo da meta *</label><input id="goal-type" placeholder="Ex.: perder peso" required /></div>
       <div class="form-grid">
-        <div class="field"><label for="goal-value">Valor alvo</label><input id="goal-value" type="number" step="0.01" /></div>
+        <div class="field"><label for="goal-value">Valor alvo</label><input id="goal-value" type="text" inputmode="decimal" placeholder="Ex.: 79,00" /></div>
         <div class="field"><label for="goal-date">Data prevista</label><input id="goal-date" type="date" /></div>
       </div>
       <div class="field"><label for="goal-notes">Observações da meta</label><textarea id="goal-notes"></textarea></div>

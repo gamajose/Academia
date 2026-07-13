@@ -1,6 +1,6 @@
 body {
   font-family: Inter, Segoe UI, Arial, sans-serif;
-  background: linear-gradient(180deg, #fffaf1 0%, #f3f0ea 42%, #ece7de 100%);
+  background: linear-gradient(180deg, #f7fbff 0%, #eef5fb 48%, #e5eef7 100%);
 }
 
 .app-shell { padding-top: 46px; }
@@ -28,14 +28,14 @@ input, select, textarea {
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: rgba(185,28,28,.55);
-  box-shadow: 0 0 0 4px rgba(185,28,28,.08);
+  border-color: rgba(20,120,212,.55);
+  box-shadow: 0 0 0 4px rgba(20,120,212,.10);
   outline: none;
 }
 
 button {
   border-radius: 8px;
-  background: #b91c1c;
+  background: #1478d4;
   font-weight: 800;
 }
 
@@ -43,4 +43,4 @@ button:hover { filter: brightness(1.05); }
 .cards article { position: relative; overflow: hidden; }
 .cards article::after { content: none; }
 .cards strong { font-size: 38px; }
-.status-line { color: #b91c1c; }
+.status-line { color: #1478d4; }

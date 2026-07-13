@@ -17,6 +17,7 @@ function loadStyle(href) {
 function loadNavigationStyles() {
   loadStyle('./professional.css');
   loadStyle('./premium-ui.css');
+  loadStyle('./blue-theme.css');
 }
 
 function clearSession() {
@@ -77,9 +78,9 @@ function renderNavigation() {
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
   nav.innerHTML = `
-    <a class="top-nav-brand" href="${pageUrl('painel.html')}" aria-label="Academia Lobo, voltar ao painel">
-      <img class="top-nav-logo" src="./logo.svg" alt="" width="36" height="36" />
-      <span class="brand-wordmark"><strong><span class="brand-academia">ACADEMIA</span> LOBO</strong><small>gestão da academia</small></span>
+    <a class="top-nav-brand" href="${pageUrl('painel.html')}" aria-label="BlueREC Academia, voltar ao painel">
+      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
+      <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><small>academia e saúde</small></span>
     </a>
     <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}">${label}</a>`).join('')}</div>
     <div class="profile-menu">

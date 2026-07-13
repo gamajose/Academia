@@ -215,9 +215,9 @@ async function recentCheckins(req, res, user) {
 }
 
 async function dashboard(req, res, user) {
-  const result = await query("SELECT (SELECT count(*) FROM members WHERE gym_id = $1 AND status = 'active') AS active_members, (SELECT count(*) FROM plans WHERE gym_id = $1 AND is_active = true) AS active_plans, (SELECT count(*) FROM memberships WHERE gym_id = $1 AND status = 'active') AS active_memberships, (SELECT count(*) FROM checkins WHERE gym_id = $1 AND checked_at >= current_date) AS today_checkins, (SELECT count(*) FROM payments WHERE gym_id = $1 AND status = 'pending') AS pending_payments", [user.gym_id]);
+  const result = await query("SELECT (SELECT count(*) FROM members WHERE gym_id = $1 AND status = 'active') AS active_members, (SELECT count(*) FROM plans WHERE gym_id = $1 AND is_active = true) AS active_plans, (SELECT count(*) FROM memberships WHERE gym_id = $1 AND status = 'active') AS active_memberships, (SELECT count(*) FROM members m WHERE m.gym_id = $1 AND m.status = 'active' AND (NOT EXISTS (SELECT 1 FROM member_assessments a WHERE a.gym_id = m.gym_id AND a.member_id = m.id) OR (SELECT max(a.assessment_date) FROM member_assessments a WHERE a.gym_id = m.gym_id AND a.member_id = m.id) <= current_date - 45)) AS pending_assessments, (SELECT count(*) FROM payments WHERE gym_id = $1 AND status = 'pending') AS pending_payments, (SELECT count(*) FROM member_training_profiles p WHERE p.gym_id = $1 AND p.updated_at <= now() - interval '45 days') AS training_reviews_due", [user.gym_id]);
   const row = result.rows[0];
-  return send(req, res, 200, { active_members: Number(row.active_members), active_plans: Number(row.active_plans), active_memberships: Number(row.active_memberships), today_checkins: Number(row.today_checkins), pending_payments: Number(row.pending_payments) });
+  return send(req, res, 200, { active_members: Number(row.active_members), active_plans: Number(row.active_plans), active_memberships: Number(row.active_memberships), pending_assessments: Number(row.pending_assessments), pending_payments: Number(row.pending_payments), training_reviews_due: Number(row.training_reviews_due) });
 }
 
 const server = http.createServer(async (req, res) => {

@@ -152,7 +152,7 @@ async function refreshDashboard() {
   if (byId('active-members')) byId('active-members').textContent = summary.active_members || 0;
   if (byId('active-plans')) byId('active-plans').textContent = summary.active_plans || 0;
   if (byId('active-memberships')) byId('active-memberships').textContent = summary.active_memberships || 0;
-  if (byId('today-checkins')) byId('today-checkins').textContent = summary.today_checkins || 0;
+  if (byId('pending-assessments')) byId('pending-assessments').textContent = summary.pending_assessments || 0;
   if (byId('pending-payments')) byId('pending-payments').textContent = summary.pending_payments || 0;
   await Promise.all([loadMembers(), loadPlans(), loadMemberships(), loadPayments(), loadCheckins()]);
 }

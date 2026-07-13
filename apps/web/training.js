@@ -177,6 +177,11 @@ function renderAll() {
   for (const item of exercises) {
     const row = document.createElement('li');
     row.className = 'entity-card';
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', `Ver como fazer ${item.name}`);
+    row.addEventListener('click', () => openExerciseDetails(item));
+    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openExerciseDetails(item); } });
     const main = document.createElement('div');
     main.className = 'entity-main';
     const name = document.createElement('strong');
@@ -207,6 +212,25 @@ function renderAll() {
     row.append(`${item.member_name} - ${item.name} - ${level?.name || item.level} - ${item.age_days || 0} dias `, button);
     planList.appendChild(row);
   }
+}
+
+function openExerciseDetails(item) {
+  t('exercise-view-name').textContent = item.name || 'Exercício';
+  t('exercise-view-muscle').textContent = item.muscle_group || 'Grupo muscular não informado';
+  t('exercise-view-equipment').textContent = item.equipment || 'Peso livre ou equipamento não informado';
+  t('exercise-view-level').textContent = trainingLevels.find((level) => level.slug === item.level)?.name || item.level || 'Não informado';
+  t('exercise-view-instructions').textContent = item.instructions || 'Nenhuma orientação cadastrada para este exercício.';
+  const media = t('exercise-view-media');
+  media.replaceChildren();
+  if (item.video_url && window.AcademiaTrainingMedia) {
+    window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+  } else {
+    const empty = document.createElement('span');
+    empty.className = 'exercise-view-media-empty';
+    empty.textContent = 'Nenhum vídeo cadastrado para este exercício.';
+    media.appendChild(empty);
+  }
+  openTrainingModal('exercise-view-modal');
 }
 
 async function createTrainingLevel(event) {
@@ -493,7 +517,8 @@ function closeTrainingModal(id) {
   ['close-plan-modal', 'plan-modal'],
   ['close-day-modal', 'day-modal'],
   ['close-workout-exercise-modal', 'workout-exercise-modal'],
-  ['close-review-modal', 'review-modal']
+  ['close-review-modal', 'review-modal'],
+  ['close-exercise-view-modal', 'exercise-view-modal']
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => closeTrainingModal(modalId)));
 
 document.querySelectorAll('[data-close-training-modal]').forEach((button) => {

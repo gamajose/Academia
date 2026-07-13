@@ -18,7 +18,7 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'GET' && url.pathname === '/api/members/detail') {
     const result = await query(
-      `SELECT m.id, m.name, m.email, m.phone, m.phone_country_code, m.status, m.birth_date,
+      `SELECT m.id, m.name, m.email, m.phone, m.phone_country_code, m.status, m.photo_url, m.birth_date,
         m.document, m.cpf, m.rg, m.address, m.postal_code, m.street, m.address_number,
         m.address_complement, m.neighborhood, m.city, m.state, m.country,
         m.emergency_contact, m.emergency_contact_name, m.emergency_contact_phone,

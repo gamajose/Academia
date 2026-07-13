@@ -4,6 +4,19 @@ const { sendTransactionalEmail } = require('../lib/mailer');
 
 const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo123';
 
+function validPhotoSource(value) {
+  const text = String(value || '').trim();
+  if (text.startsWith('/uploads/')) {
+    const relative = text.slice('/uploads/'.length);
+    return relative.length <= 240 && /^[A-Za-z0-9._/-]+$/.test(relative) && !relative.split('/').includes('..');
+  }
+  try {
+    return ['http:', 'https:'].includes(new URL(text).protocol);
+  } catch (_) {
+    return false;
+  }
+}
+
 function appUrl(path) {
   const base = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.28.10:8084').replace(/\/$/, '');
   return `${base}${path}`;
@@ -206,6 +219,19 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const assessments = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
     const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
     return send(res, 200, { assessments: assessments.rows, goals: goals.rows });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/progress/photos') {
+    const input = await body(req);
+    const photoUrl = String(input.photo_url || '').trim();
+    if (!photoUrl || photoUrl.length > 1000 || !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
+    const result = await query(
+      `INSERT INTO member_assessments (gym_id, member_id, assessment_date, photo_url, notes)
+       VALUES ($1, $2, COALESCE($3::date, current_date), $4, $5)
+       RETURNING id, assessment_date, photo_url, notes, created_at`,
+      [user.gym_id, user.member_id, input.assessment_date || null, photoUrl, String(input.notes || '').trim() || null]
+    );
+    return send(res, 201, result.rows[0]);
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/current') {

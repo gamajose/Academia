@@ -2,13 +2,29 @@ const { recordAudit } = require('../lib/audit');
 
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null;
-  const parsed = Number(value);
+  const normalized = String(value).trim().replace(',', '.');
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
 function intOrNull(value) {
   const parsed = numberOrNull(value);
   return parsed === null ? null : Math.round(parsed);
+}
+
+function validPhotoSource(value) {
+  const text = String(value || '').trim();
+  if (!text) return true;
+  if (text.startsWith('/uploads/')) {
+    const relative = text.slice('/uploads/'.length);
+    return /^[A-Za-z0-9._/-]+$/.test(relative) && !relative.split('/').includes('..');
+  }
+  try {
+    const parsed = new URL(text);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch (_) {
+    return false;
+  }
 }
 
 function delta(current, previous, field) {
@@ -36,6 +52,8 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && url.pathname === '/api/assessments') {
     const input = await body(req);
     if (!input.member_id) return send(res, 400, { error: 'member_id_obrigatorio' });
+    const photoUrl = String(input.photo_url || '').trim();
+    if (photoUrl.length > 1000 || !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
     const member = await query('SELECT id FROM members WHERE id = $1 AND gym_id = $2', [input.member_id, user.gym_id]);
     if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
 
@@ -62,7 +80,7 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
         numberOrNull(input.left_thigh_cm),
         numberOrNull(input.right_thigh_cm),
         intOrNull(input.resting_heart_rate),
-        input.photo_url || null,
+        photoUrl || null,
         input.notes || null,
         user.sub
       ]
@@ -82,12 +100,14 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
       return send(res, 200, { status: 'avaliacao_excluida' });
     }
     const input = await body(req);
+    const photoUrl = String(input.photo_url || '').trim();
+    if (photoUrl.length > 1000 || !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
     const result = await query(
       `UPDATE member_assessments SET assessment_date=COALESCE($3::date,assessment_date),weight_kg=$4,height_cm=$5,body_fat_percent=$6,muscle_mass_kg=$7,
        waist_cm=$8,chest_cm=$9,hip_cm=$10,left_arm_cm=$11,right_arm_cm=$12,left_thigh_cm=$13,right_thigh_cm=$14,
        resting_heart_rate=$15,photo_url=$16,notes=$17
        WHERE id=$1 AND gym_id=$2 RETURNING *`,
-      [assessmentId, user.gym_id, input.assessment_date || null, numberOrNull(input.weight_kg), numberOrNull(input.height_cm), numberOrNull(input.body_fat_percent), numberOrNull(input.muscle_mass_kg), numberOrNull(input.waist_cm), numberOrNull(input.chest_cm), numberOrNull(input.hip_cm), numberOrNull(input.left_arm_cm), numberOrNull(input.right_arm_cm), numberOrNull(input.left_thigh_cm), numberOrNull(input.right_thigh_cm), intOrNull(input.resting_heart_rate), input.photo_url || null, input.notes || null]
+      [assessmentId, user.gym_id, input.assessment_date || null, numberOrNull(input.weight_kg), numberOrNull(input.height_cm), numberOrNull(input.body_fat_percent), numberOrNull(input.muscle_mass_kg), numberOrNull(input.waist_cm), numberOrNull(input.chest_cm), numberOrNull(input.hip_cm), numberOrNull(input.left_arm_cm), numberOrNull(input.right_arm_cm), numberOrNull(input.left_thigh_cm), numberOrNull(input.right_thigh_cm), intOrNull(input.resting_heart_rate), photoUrl || null, input.notes || null]
     );
     await recordAudit(user, 'update', 'member_assessment', assessmentId, { member_id: existing.rows[0].member_id });
     return send(res, 200, result.rows[0]);

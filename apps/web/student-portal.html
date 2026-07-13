@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Meu treino - Academia Lobo</title>
+  <title>Meu treino - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
   <link rel="stylesheet" href="./training-media.css" />
 </head>
 <body>
   <nav class="top-nav student-top-nav">
-    <div class="top-nav-brand"><strong>Academia Lobo</strong><span>área do aluno</span></div>
+    <a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></a>
     <div class="top-nav-links"><a class="active" href="./student-portal.html">Meu treino</a></div>
     <div class="profile-menu">
       <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false">
@@ -62,6 +63,18 @@
         <h3>Minhas metas</h3>
         <ul id="portal-goal-list"></ul>
       </article>
+    </section>
+
+    <section class="panel student-progress-upload-panel">
+      <div class="toolbar"><div><h3>Compartilhar foto de evolução</h3><small>Registre seu progresso para acompanhar junto com a equipe.</small></div></div>
+      <div class="student-progress-upload-grid">
+        <div class="field"><label for="portal-progress-photo">Foto do celular ou computador</label><input id="portal-progress-photo" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><small>JPG, PNG, GIF ou WebP. Limite de 5 MB.</small></div>
+        <div class="field"><label for="portal-progress-photo-url">Ou cole um link</label><input id="portal-progress-photo-url" type="url" placeholder="https://.../foto.jpg" /></div>
+        <div class="field"><label for="portal-progress-photo-notes">Observação</label><input id="portal-progress-photo-notes" maxlength="500" placeholder="Ex.: foto frontal, mês 2" /></div>
+      </div>
+      <div class="student-progress-upload-preview"><img id="portal-progress-photo-preview" alt="Prévia da foto de evolução" hidden /><span id="portal-progress-photo-empty">A prévia aparecerá aqui.</span></div>
+      <div class="form-actions"><button id="portal-progress-photo-button" type="button">Compartilhar foto</button></div>
+      <p class="status-line" id="portal-progress-photo-status" aria-live="polite"></p>
     </section>
 
     <section class="panel">

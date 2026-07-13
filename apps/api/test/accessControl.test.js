@@ -38,3 +38,10 @@ test('perfil de administrador tambem pode ser restringido pelo cadastro', () => 
   assert.equal(canAccess({ role: 'admin' }, 'GET', '/api/users', permissions), false);
   assert.equal(canAccess({ role: 'owner' }, 'GET', '/api/users', permissions), true);
 });
+
+test('aluno pode enviar foto de evolucao sem acessar rotas administrativas', () => {
+  const user = { role: 'student', member_id: 'member-1' };
+  assert.equal(canAccess(user, 'POST', '/api/editor/images'), true);
+  assert.equal(canAccess(user, 'POST', '/api/student/progress/photos'), true);
+  assert.equal(canAccess(user, 'GET', '/api/finance/overview'), false);
+});

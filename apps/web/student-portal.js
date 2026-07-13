@@ -4,6 +4,7 @@ let currentPlan = null;
 let currentDayId = '';
 let currentExercises = [];
 let portalBusy = false;
+const MAX_PROGRESS_PHOTO_BYTES = 5 * 1024 * 1024;
 
 const p = (id) => document.getElementById(id);
 
@@ -19,6 +20,31 @@ async function portalApi(path, options = {}) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'erro_requisicao');
   return data;
+}
+
+function setProgressPhotoStatus(text) {
+  if (p('portal-progress-photo-status')) p('portal-progress-photo-status').textContent = text;
+}
+
+function previewProgressPhoto(source) {
+  const image = p('portal-progress-photo-preview');
+  const empty = p('portal-progress-photo-empty');
+  if (!image || !empty) return;
+  image.hidden = !source;
+  empty.hidden = Boolean(source);
+  image.src = source || '';
+}
+
+async function uploadProgressPhoto(file) {
+  if (!file) return '';
+  if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) throw new Error('Escolha JPG, PNG, GIF ou WebP.');
+  if (file.size > MAX_PROGRESS_PHOTO_BYTES) throw new Error('A imagem não pode ultrapassar 5 MB.');
+  const form = new FormData();
+  form.append('file', file, file.name);
+  const response = await fetch(`${STUDENT_PORTAL_API}/api/editor/images`, { method: 'POST', headers: { Authorization: `Bearer ${STUDENT_PORTAL_TOKEN}` }, body: form });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a foto.');
+  return data.location || '';
 }
 
 function todayWeekday() {
@@ -67,11 +93,20 @@ function renderProgress(progress) {
   goalList.innerHTML = '';
 
   for (const item of progress.assessments || []) {
-    assessmentList.appendChild(makeEntity(
+    const row = makeEntity(
       item.assessment_date || 'Avaliação',
       `Peso: ${item.weight_kg || '-'} kg · Gordura: ${item.body_fat_percent || '-'}%`,
       `Cintura: ${item.waist_cm || '-'} cm`
-    ));
+    );
+    if (item.photo_url) {
+      const image = document.createElement('img');
+      image.className = 'student-progress-history-photo';
+      image.src = item.photo_url;
+      image.alt = 'Foto de evolução';
+      image.loading = 'lazy';
+      row.appendChild(image);
+    }
+    assessmentList.appendChild(row);
   }
   if (!(progress.assessments || []).length) {
     const item = document.createElement('li');
@@ -92,6 +127,32 @@ function renderProgress(progress) {
     item.className = 'empty-state';
     item.textContent = 'Nenhuma meta cadastrada ainda.';
     goalList.appendChild(item);
+  }
+}
+
+async function shareProgressPhoto() {
+  const button = p('portal-progress-photo-button');
+  const file = p('portal-progress-photo')?.files?.[0];
+  try {
+    button.disabled = true;
+    setProgressPhotoStatus('Enviando foto...');
+    const photoUrl = file ? await uploadProgressPhoto(file) : p('portal-progress-photo-url').value.trim();
+    if (!photoUrl) throw new Error('Escolha uma foto ou informe um link.');
+    await portalApi('/api/student/progress/photos', {
+      method: 'POST',
+      body: JSON.stringify({ photo_url: photoUrl, notes: p('portal-progress-photo-notes').value.trim() })
+    });
+    p('portal-progress-photo').value = '';
+    p('portal-progress-photo-url').value = '';
+    p('portal-progress-photo-notes').value = '';
+    previewProgressPhoto('');
+    setProgressPhotoStatus('Foto compartilhada com a equipe.');
+    const progress = await portalApi('/api/student/progress');
+    renderProgress(progress);
+  } catch (error) {
+    setProgressPhotoStatus(`Erro: ${error.message}`);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -199,6 +260,12 @@ profileTrigger.addEventListener('click', (event) => {
 document.addEventListener('click', () => profileDropdown.classList.add('hidden'));
 p('student-profile-logout').addEventListener('click', logoutPortal);
 p('portal-complete-button').addEventListener('click', completePortalWorkout);
+p('portal-progress-photo')?.addEventListener('change', (event) => {
+  const file = event.target.files?.[0];
+  if (file && file.size <= MAX_PROGRESS_PHOTO_BYTES) previewProgressPhoto(URL.createObjectURL(file));
+});
+p('portal-progress-photo-url')?.addEventListener('input', (event) => { if (!p('portal-progress-photo')?.files?.length) previewProgressPhoto(event.target.value.trim()); });
+p('portal-progress-photo-button')?.addEventListener('click', shareProgressPhoto);
 window.setInterval(() => loadStudentPortal(true), 60000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadStudentPortal(true); });
 loadStudentPortal();

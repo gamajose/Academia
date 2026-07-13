@@ -67,6 +67,7 @@ function canAccess(user, method, pathname, permissions = null) {
   if (publicRoles.includes(user.role) && !permissions) return true;
 
   if (user.role === 'student') {
+    if (pathname === '/api/editor/images' && method === 'POST') return true;
     if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
     return false;
   }

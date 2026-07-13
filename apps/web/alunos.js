@@ -73,6 +73,68 @@ function whatsappLink(phone) {
   return link;
 }
 
+function plainText(value) {
+  const holder = document.createElement('div');
+  holder.innerHTML = value || '';
+  return holder.textContent?.trim() || 'Não informado';
+}
+
+function openStudentViewModal() {
+  $('student-view-modal').classList.remove('hidden');
+  $('student-view-modal').setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+}
+
+function closeStudentViewModal() {
+  $('student-view-modal').classList.add('hidden');
+  $('student-view-modal').setAttribute('aria-hidden', 'true');
+  if ($('student-form-panel').classList.contains('hidden') && $('credential-preview-modal').classList.contains('hidden')) document.body.classList.remove('modal-open');
+}
+
+async function openStudentView(item) {
+  $('student-view-name').textContent = item.name || 'Aluno';
+  $('student-view-contact').textContent = [item.email, item.phone ? formatPhone(item.phone) : ''].filter(Boolean).join(' · ') || 'Sem contato informado';
+  $('student-view-status').textContent = item.status === 'active' ? 'Ativo' : 'Inativo';
+  $('student-view-plan').textContent = item.plan_name || 'Sem plano ativo';
+  $('student-view-objective').textContent = plainText(item.objective);
+  $('student-view-allergies').textContent = plainText(item.allergies);
+  $('student-view-medical').textContent = plainText(item.medical_notes);
+  $('student-view-notes').textContent = plainText(item.notes);
+  const photo = $('student-view-photo');
+  photo.hidden = !item.photo_url;
+  photo.src = item.photo_url || '';
+  $('student-view-photo-empty').hidden = Boolean(item.photo_url);
+  $('student-view-assessments').innerHTML = '<li class="empty-state">Carregando avaliações...</li>';
+  openStudentViewModal();
+  try {
+    const [assessmentResult, goalResult] = await Promise.all([
+      req(`/api/assessments?member_id=${encodeURIComponent(item.id)}`),
+      req(`/api/goals?member_id=${encodeURIComponent(item.id)}`)
+    ]);
+    const list = $('student-view-assessments');
+    list.innerHTML = '';
+    const assessments = assessmentResult.data || [];
+    for (const assessment of assessments.slice(0, 8)) {
+      const row = document.createElement('li');
+      row.className = 'student-view-assessment-row';
+      const copy = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = `Avaliação em ${new Date(`${String(assessment.assessment_date).slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR')}`;
+      const summary = document.createElement('span');
+      summary.textContent = `Peso: ${assessment.weight_kg ?? '-'} kg · Gordura: ${assessment.body_fat_percent ?? '-'}% · Cintura: ${assessment.waist_cm ?? '-'} cm`;
+      copy.append(title, summary);
+      row.appendChild(copy);
+      if (assessment.photo_url) { const image = document.createElement('img'); image.src = assessment.photo_url; image.alt = ''; image.loading = 'lazy'; row.appendChild(image); }
+      list.appendChild(row);
+    }
+    if (!list.children.length) list.innerHTML = '<li class="empty-state">Nenhuma avaliação registrada.</li>';
+    const goals = goalResult.data || [];
+    $('student-view-goals').textContent = goals.length ? goals.map((goal) => `${goal.goal_type}: ${goal.target_value ?? '-'}${goal.target_date ? ` até ${new Date(`${String(goal.target_date).slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR')}` : ''}`).join(' · ') : 'Nenhuma meta cadastrada.';
+  } catch (error) {
+    $('student-view-assessments').innerHTML = `<li class="empty-state">Não foi possível carregar o histórico: ${error.message}</li>`;
+  }
+}
+
 function render() {
   const list = $('students-list');
   const term = val('student-search').toLowerCase();
@@ -83,6 +145,11 @@ function render() {
     const pending = Number(item.pending_amount_cents || 0);
     const li = document.createElement('li');
     li.className = 'entity-card';
+    li.tabIndex = 0;
+    li.setAttribute('role', 'button');
+    li.setAttribute('aria-label', `Visualizar cadastro de ${item.name}`);
+    li.addEventListener('click', () => openStudentView(item));
+    li.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openStudentView(item); } });
     const main = document.createElement('div');
     main.className = 'entity-main';
     const statusClass = item.status === 'active' ? 'ok' : 'bad';
@@ -91,12 +158,13 @@ function render() {
       <span>${item.email || 'Sem e-mail'} · ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
       <span>${item.plan_name || 'Sem plano'} · <span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}</span>`;
     const whatsapp = whatsappLink(item.phone);
-    if (whatsapp) main.appendChild(whatsapp);
+    if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); main.appendChild(whatsapp); }
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
-    actions.appendChild(button('Ver credencial', () => openCredentialPreview(item), 'mini-button'));
-    actions.appendChild(button('Editar cadastro', () => openModal(item), 'mini-button secondary'));
-    actions.appendChild(button(item.status === 'active' ? 'Desativar' : 'Ativar', () => toggle(item), 'mini-button'));
+    actions.appendChild(button('Visualizar', (event) => { event?.stopPropagation?.(); openStudentView(item); }, 'mini-button secondary'));
+    actions.appendChild(button('Ver credencial', (event) => { event?.stopPropagation?.(); openCredentialPreview(item); }, 'mini-button'));
+    actions.appendChild(button('Editar cadastro', (event) => { event?.stopPropagation?.(); openModal(item); }, 'mini-button secondary'));
+    actions.appendChild(button(item.status === 'active' ? 'Desativar' : 'Ativar', (event) => { event?.stopPropagation?.(); toggle(item); }, 'mini-button'));
     li.append(main, actions);
     list.appendChild(li);
   }
@@ -428,6 +496,7 @@ async function resetOfflinePin() {
 
 $('new-student-button').onclick = () => openModal();
 $('close-student-modal').onclick = closeModal;
+$('close-student-view-modal').onclick = closeStudentViewModal;
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
 $('student-search').oninput = render;
@@ -439,6 +508,9 @@ $('close-credential-preview').onclick = closeCredentialPreview;
 $('reset-offline-pin').onclick = resetOfflinePin;
 $('credential-preview-modal').addEventListener('click', (event) => {
   if (event.target === $('credential-preview-modal')) closeCredentialPreview();
+});
+$('student-view-modal').addEventListener('click', (event) => {
+  if (event.target === $('student-view-modal')) closeStudentViewModal();
 });
 AcademiaRichEditor.initAll().catch((error) => { $('students-status').textContent = error.message; });
 initPhoneWidget();
