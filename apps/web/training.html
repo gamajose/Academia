@@ -48,6 +48,14 @@
     </section>
   </div>
 
+  <div class="modal hidden" id="plan-view-modal" role="dialog" aria-modal="true" aria-labelledby="plan-view-title" aria-hidden="true">
+    <section class="modal-card plan-view-modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Ficha semanal</p><h3 id="plan-view-title">Detalhes da ficha</h3><p><strong id="plan-view-member">Aluno</strong> · <span id="plan-view-meta">-</span></p></div><button type="button" id="close-plan-view-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="plan-view-summary"><span id="plan-view-goal">Objetivo não informado</span><span id="plan-view-level">Nível não informado</span><span id="plan-view-age">0 dias</span></div>
+      <div id="plan-view-days" class="plan-view-days"></div>
+    </section>
+  </div>
+
   <div class="modal hidden" id="training-levels-modal" role="dialog" aria-modal="true" aria-labelledby="training-levels-title" aria-hidden="true">
     <section class="modal-card training-modal-card training-levels-panel" id="training-levels-panel">
       <div class="modal-header"><div><p class="eyebrow">Configuração</p><h3 id="training-levels-title">Níveis de treino</h3><p class="section-help">Edite, desative ou crie os níveis que aparecem nas fichas e perfis.</p></div><button type="button" id="close-training-levels-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>

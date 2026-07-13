@@ -24,6 +24,7 @@
         <button id="new-student-button" type="button">Cadastrar aluno</button>
       </div>
       <input id="student-search" type="search" placeholder="Buscar por nome, e-mail, telefone, CPF ou RG" />
+      <div class="student-filter-panel"><div class="student-filter-grid"><div class="field"><label for="student-filter-status">Situação do aluno</label><select id="student-filter-status"><option value="">Todos</option><option value="active">Ativos</option><option value="inactive">Desativados</option></select></div><div class="field"><label for="student-filter-finance">Financeiro</label><select id="student-filter-finance"><option value="">Todos</option><option value="ok">Em dia</option><option value="pending">Em atraso</option></select></div></div><div class="student-filter-actions"><button class="secondary" type="button" id="student-clear-filters">Limpar filtros</button><span id="student-filter-count"></span></div></div>
       <p class="status-line" id="students-status">Carregando...</p>
       <ul id="students-list"></ul>
     </section>
@@ -98,8 +99,9 @@
   <div class="modal hidden" id="student-view-modal" role="dialog" aria-modal="true" aria-labelledby="student-view-title" aria-hidden="true">
     <section class="modal-card student-view-modal-card">
       <div class="modal-header"><div><p class="eyebrow">Visualização</p><h3 id="student-view-title">Cadastro do aluno</h3><p><strong id="student-view-name">Aluno</strong> · <span id="student-view-contact">Sem contato informado</span></p></div><button type="button" id="close-student-view-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
-      <div class="student-view-identity"><div class="student-view-avatar"><img id="student-view-photo" alt="Foto do aluno" hidden /><span id="student-view-photo-empty">Sem foto</span></div><div><span class="student-view-status" id="student-view-status">Ativo</span><p>Plano atual: <strong id="student-view-plan">Sem plano ativo</strong></p><p>Metas: <strong id="student-view-goals">Carregando...</strong></p></div></div>
+      <div class="student-view-identity"><div class="student-view-avatar"><img id="student-view-photo" alt="Foto do aluno" hidden /><span id="student-view-photo-empty">Sem foto</span></div><div><span class="student-view-status" id="student-view-status">Ativo</span><p>Plano atual: <strong id="student-view-plan">Sem plano ativo</strong></p><p>Metas: <strong id="student-view-goals">Carregando...</strong></p><p>Ficha: <strong id="student-view-training">Sem ficha ativa</strong></p><p>Última avaliação: <strong id="student-view-assessment-age">Nunca avaliado</strong></p></div></div>
       <div class="student-view-grid"><div><span>Objetivo</span><p id="student-view-objective">-</p></div><div><span>Alergias e restrições</span><p id="student-view-allergies">-</p></div><div><span>Observações clínicas</span><p id="student-view-medical">-</p></div><div><span>Observações internas</span><p id="student-view-notes">-</p></div></div>
+      <section class="student-view-history"><h4>Exercícios da ficha atual</h4><ul id="student-view-exercises"><li class="empty-state">Carregando ficha...</li></ul></section>
       <section class="student-view-history"><h4>Histórico de avaliações</h4><ul id="student-view-assessments"></ul></section>
     </section>
   </div>

@@ -41,6 +41,8 @@ async function api(path, options = {}) {
 function assessmentErrorMessage(error) {
   const messages = {
     acesso_negado: 'Seu perfil não tem permissão para alterar avaliações.',
+    not_implemented: 'O servidor bloqueou o método de atualização. Tente novamente; a rota compatível já foi ativada.',
+    http_501: 'O servidor bloqueou o método de atualização. Tente novamente; a rota compatível já foi ativada.',
     internal_error: 'O servidor não conseguiu salvar. Verifique a conexão com o banco de dados.',
     foto_invalida: 'A foto precisa ser um link http(s) válido ou uma imagem enviada pelo formulário.',
     imagem_muito_grande: 'A imagem não pode ultrapassar 5 MB.',
@@ -257,11 +259,21 @@ function openAssessmentView(item) {
 
 function openGoalEdit(item) {
   editingGoalId = item.id;
-  setField('goal-member', item.member_id); setField('goal-type', item.goal_type); setField('goal-value', item.target_value); setField('goal-date', String(item.target_date || '').slice(0, 10)); setField('goal-notes', item.notes);
+  setField('goal-member', item.member_id); setField('goal-type', item.goal_type); setField('goal-value', formatInputDecimal(item.target_value)); setField('goal-date', String(item.target_date || '').slice(0, 10)); setField('goal-notes', item.notes);
   q('goal-modal-title').textContent = 'Editar meta';
   q('create-goal-button').textContent = 'Salvar alterações';
   setModalStatus('goal-form-status', '');
   openModal('goal-modal', 'goal-type');
+}
+
+function openGoalView(item) {
+  q('goal-view-member').textContent = item.member_name || 'Aluno';
+  q('goal-view-type').textContent = item.goal_type || 'Meta';
+  q('goal-view-value').textContent = formatNumber(item.target_value);
+  q('goal-view-date').textContent = formatDate(item.target_date);
+  q('goal-view-status').textContent = item.status === 'active' ? 'Ativa' : (item.status || 'Encerrada');
+  q('goal-view-notes').textContent = item.notes || 'Sem observações registradas.';
+  openModal('goal-view-modal');
 }
 
 async function deleteAssessment(item) {
@@ -358,6 +370,11 @@ function renderGoals(rows) {
   for (const item of rows) {
     const row = document.createElement('li');
     row.className = 'workflow-record';
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', `Visualizar meta de ${item.member_name || 'aluno'}`);
+    row.addEventListener('click', () => openGoalView(item));
+    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openGoalView(item); } });
 
     const main = document.createElement('div');
     main.className = 'workflow-record-main';
@@ -370,9 +387,10 @@ function renderGoals(rows) {
     main.append(title, target, status);
     const actions = document.createElement('div');
     actions.className = 'workflow-record-actions';
-    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', () => openGoalEdit(item));
-    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Excluir'; remove.addEventListener('click', () => deleteGoal(item));
-    actions.append(edit, remove);
+    const view = document.createElement('button'); view.type = 'button'; view.className = 'secondary'; view.textContent = 'Visualizar'; view.addEventListener('click', (event) => { event.stopPropagation(); openGoalView(item); });
+    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', (event) => { event.stopPropagation(); openGoalEdit(item); });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Excluir'; remove.addEventListener('click', (event) => { event.stopPropagation(); deleteGoal(item); });
+    actions.append(view, edit, remove);
     row.append(main, actions);
     list.appendChild(row);
   }
@@ -459,8 +477,8 @@ async function createAssessment(event) {
   saveButton.textContent = 'Salvando...';
   setModalStatus('assessment-form-status', '');
   try {
-    await api(editingAssessmentId ? `/api/assessments/${editingAssessmentId}` : '/api/assessments', {
-      method: editingAssessmentId ? 'PUT' : 'POST',
+    await api(editingAssessmentId ? `/api/assessments/${editingAssessmentId}/update` : '/api/assessments', {
+      method: 'POST',
       body: JSON.stringify({
         member_id: value('assessment-member'),
         assessment_date: value('assessment-date') || null,
@@ -493,8 +511,8 @@ async function createGoal(event) {
   saveButton.textContent = 'Salvando...';
   setModalStatus('goal-form-status', '');
   try {
-    await api(editingGoalId ? `/api/goals/${editingGoalId}` : '/api/goals', {
-      method: editingGoalId ? 'PUT' : 'POST',
+    await api(editingGoalId ? `/api/goals/${editingGoalId}/update` : '/api/goals', {
+      method: 'POST',
       body: JSON.stringify({
         member_id: value('goal-member'),
         goal_type: value('goal-type'),
@@ -625,12 +643,13 @@ function bindAssessmentEvents() {
   q('close-assessment-modal')?.addEventListener('click', () => closeModal('assessment-modal'));
   q('cancel-assessment-modal')?.addEventListener('click', () => closeModal('assessment-modal'));
   q('close-assessment-view-modal')?.addEventListener('click', () => closeModal('assessment-view-modal'));
+  q('close-goal-view-modal')?.addEventListener('click', () => closeModal('goal-view-modal'));
   q('close-goal-modal')?.addEventListener('click', () => closeModal('goal-modal'));
   q('cancel-goal-modal')?.addEventListener('click', () => closeModal('goal-modal'));
   q('close-summary-modal')?.addEventListener('click', () => closeModal('summary-modal'));
   q('cancel-summary-modal')?.addEventListener('click', () => closeModal('summary-modal'));
 
-  for (const modalId of ['assessment-modal', 'goal-modal', 'summary-modal', 'assessment-view-modal']) {
+  for (const modalId of ['assessment-modal', 'goal-modal', 'summary-modal', 'assessment-view-modal', 'goal-view-modal']) {
     q(modalId)?.addEventListener('click', (event) => {
       if (event.target === q(modalId)) closeModal(modalId);
     });

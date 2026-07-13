@@ -204,13 +204,60 @@ function renderAll() {
   planList.innerHTML = '';
   for (const item of plans) {
     const row = document.createElement('li');
+    row.className = 'entity-card';
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', `Visualizar ficha de ${item.member_name}`);
+    row.addEventListener('click', () => openPlanDetails(item));
+    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlanDetails(item); } });
     const button = document.createElement('button');
     button.className = 'mini-button';
-    button.textContent = 'Detalhar';
-    button.addEventListener('click', () => loadPlanDetail(item.id));
+    button.textContent = 'Visualizar';
+    button.addEventListener('click', (event) => { event.stopPropagation(); openPlanDetails(item); });
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
     row.append(`${item.member_name} - ${item.name} - ${level?.name || item.level} - ${item.age_days || 0} dias `, button);
     planList.appendChild(row);
+  }
+}
+
+async function openPlanDetails(item) {
+  try {
+    const detail = await api(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.id)}`);
+    t('plan-view-title').textContent = detail.plan?.name || item.name || 'Detalhes da ficha';
+    t('plan-view-member').textContent = item.member_name || 'Aluno';
+    t('plan-view-meta').textContent = `Início: ${String(detail.plan?.starts_at || item.starts_at || '').slice(0, 10) || '-'} · ${detail.plan?.status === 'active' ? 'Ativa' : (detail.plan?.status || 'Sem status')}`;
+    t('plan-view-goal').textContent = `Objetivo: ${detail.plan?.goal || 'Não informado'}`;
+    t('plan-view-level').textContent = `Nível: ${trainingLevels.find((level) => level.slug === (detail.plan?.level || item.level))?.name || detail.plan?.level || 'Não informado'}`;
+    t('plan-view-age').textContent = `${detail.plan?.age_days || item.age_days || 0} dias`;
+    const byDay = new Map((detail.days || []).map((day) => [day.id, { ...day, exercises: [] }]));
+    for (const exercise of detail.exercises || []) {
+      if (!byDay.has(exercise.workout_day_id)) byDay.set(exercise.workout_day_id, { id: exercise.workout_day_id, title: exercise.day_title, weekday: exercise.weekday, exercises: [] });
+      byDay.get(exercise.workout_day_id).exercises.push(exercise);
+    }
+    const container = t('plan-view-days');
+    container.replaceChildren();
+    if (!byDay.size) {
+      const empty = document.createElement('p'); empty.className = 'empty-state'; empty.textContent = 'Nenhum dia ou exercício foi montado nesta ficha.'; container.appendChild(empty);
+    }
+    for (const day of [...byDay.values()].sort((a, b) => Number(a.weekday || 0) - Number(b.weekday || 0))) {
+      const section = document.createElement('section'); section.className = 'plan-view-day';
+      const title = document.createElement('h4'); title.textContent = `${day.weekday ? `Dia ${day.weekday} · ` : ''}${day.title || 'Treino'}`;
+      section.appendChild(title);
+      if (day.notes) { const notes = document.createElement('p'); notes.textContent = day.notes; section.appendChild(notes); }
+      const list = document.createElement('ul'); list.className = 'plan-view-exercises';
+      for (const exercise of day.exercises || []) {
+        const row = document.createElement('li');
+        const name = document.createElement('strong'); name.textContent = exercise.exercise_name || 'Exercício';
+        const dosage = document.createElement('small'); dosage.textContent = `${exercise.sets || '-'} séries · ${exercise.reps || '-'} repetições`;
+        const rest = document.createElement('small'); rest.textContent = `${exercise.rest_seconds || '-'}s descanso`;
+        row.append(name, dosage, rest); list.appendChild(row);
+      }
+      if (!list.children.length) { const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhum exercício neste dia.'; list.appendChild(empty); }
+      section.appendChild(list); container.appendChild(section);
+    }
+    openTrainingModal('plan-view-modal');
+  } catch (error) {
+    setTrainingStatus(`Erro ao abrir ficha: ${error.message}`);
   }
 }
 
@@ -518,7 +565,8 @@ function closeTrainingModal(id) {
   ['close-day-modal', 'day-modal'],
   ['close-workout-exercise-modal', 'workout-exercise-modal'],
   ['close-review-modal', 'review-modal'],
-  ['close-exercise-view-modal', 'exercise-view-modal']
+  ['close-exercise-view-modal', 'exercise-view-modal'],
+  ['close-plan-view-modal', 'plan-view-modal']
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => closeTrainingModal(modalId)));
 
 document.querySelectorAll('[data-close-training-modal]').forEach((button) => {

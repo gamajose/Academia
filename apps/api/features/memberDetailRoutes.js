@@ -24,7 +24,12 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
         m.emergency_contact, m.emergency_contact_name, m.emergency_contact_phone,
         m.allergies, m.medical_notes, m.nutrition_notes, m.objective, m.notes,
         ms.id AS membership_id, ms.status AS membership_status, p.name AS plan_name,
-        COALESCE(SUM(pay.amount_cents) FILTER (WHERE pay.status = 'pending'), 0) AS pending_amount_cents
+        COALESCE(SUM(pay.amount_cents) FILTER (WHERE pay.status = 'pending'), 0) AS pending_amount_cents,
+        (SELECT max(a.assessment_date) FROM member_assessments a WHERE a.gym_id = m.gym_id AND a.member_id = m.id) AS latest_assessment_date,
+        (SELECT wp.id FROM workout_plans wp WHERE wp.gym_id = m.gym_id AND wp.member_id = m.id AND wp.status = 'active' ORDER BY wp.starts_at DESC, wp.created_at DESC LIMIT 1) AS training_plan_id,
+        (SELECT wp.name FROM workout_plans wp WHERE wp.gym_id = m.gym_id AND wp.member_id = m.id AND wp.status = 'active' ORDER BY wp.starts_at DESC, wp.created_at DESC LIMIT 1) AS training_plan_name,
+        (SELECT current_date - wp.starts_at FROM workout_plans wp WHERE wp.gym_id = m.gym_id AND wp.member_id = m.id AND wp.status = 'active' ORDER BY wp.starts_at DESC, wp.created_at DESC LIMIT 1) AS training_plan_age_days,
+        (SELECT count(*) FROM workout_exercises we INNER JOIN workout_days wd ON wd.id = we.workout_day_id INNER JOIN workout_plans wp ON wp.id = wd.plan_id WHERE we.gym_id = m.gym_id AND wp.member_id = m.id AND wp.status = 'active') AS training_exercise_count
        FROM members m
        LEFT JOIN memberships ms ON ms.member_id = m.id AND ms.gym_id = m.gym_id AND ms.status = 'active'
        LEFT JOIN plans p ON p.id = ms.plan_id

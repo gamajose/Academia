@@ -79,6 +79,19 @@ function plainText(value) {
   return holder.textContent?.trim() || 'Não informado';
 }
 
+function dateOnly(value) {
+  if (!value) return '-';
+  const parts = String(value).slice(0, 10).split('-').map(Number);
+  return parts.length === 3 && parts.every(Number.isFinite) ? new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('pt-BR') : String(value);
+}
+
+function assessmentAge(value) {
+  if (!value) return 'Nunca avaliado';
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Data não informada';
+  return `${Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000))} dias atrás`;
+}
+
 function openStudentViewModal() {
   $('student-view-modal').classList.remove('hidden');
   $('student-view-modal').setAttribute('aria-hidden', 'false');
@@ -96,6 +109,8 @@ async function openStudentView(item) {
   $('student-view-contact').textContent = [item.email, item.phone ? formatPhone(item.phone) : ''].filter(Boolean).join(' · ') || 'Sem contato informado';
   $('student-view-status').textContent = item.status === 'active' ? 'Ativo' : 'Inativo';
   $('student-view-plan').textContent = item.plan_name || 'Sem plano ativo';
+  $('student-view-training').textContent = item.training_plan_name ? `${item.training_plan_name} · ${item.training_exercise_count || 0} exercício(s) · ${item.training_plan_age_days || 0} dias` : 'Sem ficha ativa';
+  $('student-view-assessment-age').textContent = item.latest_assessment_date ? `${dateOnly(item.latest_assessment_date)} · ${assessmentAge(item.latest_assessment_date)}` : 'Nunca avaliado';
   $('student-view-objective').textContent = plainText(item.objective);
   $('student-view-allergies').textContent = plainText(item.allergies);
   $('student-view-medical').textContent = plainText(item.medical_notes);
@@ -104,13 +119,25 @@ async function openStudentView(item) {
   photo.hidden = !item.photo_url;
   photo.src = item.photo_url || '';
   $('student-view-photo-empty').hidden = Boolean(item.photo_url);
+  $('student-view-exercises').innerHTML = '<li class="empty-state">Carregando ficha...</li>';
   $('student-view-assessments').innerHTML = '<li class="empty-state">Carregando avaliações...</li>';
   openStudentViewModal();
   try {
-    const [assessmentResult, goalResult] = await Promise.all([
+    const [assessmentResult, goalResult, trainingResult] = await Promise.all([
       req(`/api/assessments?member_id=${encodeURIComponent(item.id)}`),
-      req(`/api/goals?member_id=${encodeURIComponent(item.id)}`)
+      req(`/api/goals?member_id=${encodeURIComponent(item.id)}`),
+      item.training_plan_id ? req(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.training_plan_id)}`) : Promise.resolve({ exercises: [] })
     ]);
+    const exerciseList = $('student-view-exercises');
+    exerciseList.innerHTML = '';
+    for (const exercise of trainingResult.exercises || []) {
+      const row = document.createElement('li');
+      row.className = 'student-view-assessment-row';
+      const name = document.createElement('strong'); name.textContent = exercise.exercise_name || 'Exercício';
+      const details = document.createElement('span'); details.textContent = `${exercise.day_title || 'Treino'} · ${exercise.sets || '-'} séries · ${exercise.reps || '-'} repetições`;
+      row.append(name, details); exerciseList.appendChild(row);
+    }
+    if (!exerciseList.children.length) exerciseList.innerHTML = '<li class="empty-state">Nenhum exercício em ficha ativa.</li>';
     const list = $('student-view-assessments');
     list.innerHTML = '';
     const assessments = assessmentResult.data || [];
@@ -138,8 +165,15 @@ async function openStudentView(item) {
 function render() {
   const list = $('students-list');
   const term = val('student-search').toLowerCase();
+  const statusFilter = $('student-filter-status')?.value || '';
+  const financeFilter = $('student-filter-finance')?.value || '';
   list.innerHTML = '';
-  const filtered = rows.filter((item) => `${item.name} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`.toLowerCase().includes(term));
+  const filtered = rows.filter((item) => {
+    const pending = Number(item.pending_amount_cents || 0);
+    return `${item.name} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`.toLowerCase().includes(term)
+      && (!statusFilter || item.status === statusFilter)
+      && (!financeFilter || (financeFilter === 'pending' ? pending > 0 : pending === 0));
+  });
 
   for (const item of filtered) {
     const pending = Number(item.pending_amount_cents || 0);
@@ -156,7 +190,8 @@ function render() {
     main.innerHTML = `
       <strong>${item.name}</strong>
       <span>${item.email || 'Sem e-mail'} · ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
-      <span>${item.plan_name || 'Sem plano'} · <span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}</span>`;
+      <span>${item.plan_name || 'Sem plano'} · <span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}</span>
+      <span>Ficha: ${item.training_plan_name || 'Sem ficha'} · ${item.training_exercise_count || 0} exercício(s) · Avaliação: ${item.latest_assessment_date ? `${dateOnly(item.latest_assessment_date)} (${assessmentAge(item.latest_assessment_date)})` : 'Nunca'}</span>`;
     const whatsapp = whatsappLink(item.phone);
     if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); main.appendChild(whatsapp); }
     const actions = document.createElement('div');
@@ -175,6 +210,7 @@ function render() {
     li.textContent = 'Nenhum aluno encontrado.';
     list.appendChild(li);
   }
+  $('student-filter-count').textContent = `${filtered.length} de ${rows.length} aluno(s)`;
 }
 
 async function load() {
@@ -500,6 +536,9 @@ $('close-student-view-modal').onclick = closeStudentViewModal;
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
 $('student-search').oninput = render;
+$('student-filter-status').onchange = render;
+$('student-filter-finance').onchange = render;
+$('student-clear-filters').onclick = () => { $('student-search').value = ''; $('student-filter-status').value = ''; $('student-filter-finance').value = ''; render(); };
 $('student-cpf').addEventListener('input', (event) => { event.target.value = formatCpf(event.target.value); });
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });

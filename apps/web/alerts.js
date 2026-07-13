@@ -77,9 +77,9 @@ async function loadAlerts() {
   g('training-count').textContent = data.summary.training_reviews_due;
   g('assessment-count').textContent = data.summary.assessments_due;
 
-  renderList('overdue-list', data.overdue_payments || [], (item) => `${item.member_name} - ${cents(item.amount_cents)} - vencido ha ${item.days_overdue} dias`, 'Nenhum pagamento vencido.');
-  renderList('membership-list', data.memberships_due_soon || [], (item) => `${item.member_name} - vence em ${item.days_remaining} dias`, 'Nenhuma matricula vencendo nos proximos 7 dias.');
-  renderList('training-list', data.training_reviews_due || [], (item) => `${item.member_name} - ${item.plan_name} - ${item.age_days} dias de ficha`, 'Nenhuma ficha precisando de revisao.');
+  renderList('overdue-list', data.overdue_payments || [], (item) => `${item.member_name} · ${cents(item.amount_cents)} · vencido há ${item.days_overdue} dias`, 'Nenhum pagamento vencido.');
+  renderList('membership-list', data.memberships_due_soon || [], (item) => `${item.member_name} · vence em ${item.days_remaining} dias`, 'Nenhuma matrícula vencendo nos próximos 7 dias.');
+  renderList('training-list', data.training_reviews_due || [], (item) => `${item.member_name} · ${item.plan_name} · ${item.age_days} dias de ficha`, 'Nenhuma ficha precisando de revisão.');
   renderAssessmentAlerts(data.assessments_due || []);
 }
 

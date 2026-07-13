@@ -1,7 +1,11 @@
 .alert-summary { margin-bottom: 28px; }
-.alert-summary article { min-height: 132px; display: grid; align-content: center; gap: 5px; }
-.alert-summary article strong { color: #b91c1c; }
-.alert-summary article small { color: #68716b; }
+.alert-summary-card { min-height: 132px; display: grid; align-content: center; gap: 5px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--text); text-decoration: none; box-shadow: var(--shadow); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.alert-summary-card:hover, .alert-summary-card:focus-visible { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 12px 28px rgba(20, 120, 212, .14); outline: none; }
+.alert-summary-card strong { font-size: 28px; }
+.alert-summary-card small { color: var(--muted); }
+.alert-summary-card.finance strong, .alert-summary-card.evolution strong { color: #b91c1c; }
+.alert-summary-card.membership strong { color: #b45309; }
+.alert-summary-card.training strong { color: #1478d4; }
 .lists-grid { gap: 24px; margin-bottom: 24px; }
 .lists-grid .panel { min-height: 220px; }
 .lists-grid .panel > h3 { margin: 0; }

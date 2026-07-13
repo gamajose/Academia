@@ -21,12 +21,21 @@
 
     <section class="panel">
       <div class="toolbar">
-        <h2>Lista de matrículas</h2>
+        <div><h2>Lista de matrículas</h2><small>Consulte plano, situação, contratação e vencimento.</small></div>
         <button id="new-link-button">Nova matrícula</button>
       </div>
-      <input id="link-search" placeholder="Buscar por aluno, plano ou status" />
+      <div class="membership-filter-panel">
+        <div class="membership-filter-grid">
+          <div class="field"><label for="link-search">Aluno</label><input id="link-search" placeholder="Nome do aluno" /></div>
+          <div class="field"><label for="link-filter-plan">Plano</label><select id="link-filter-plan"><option value="">Todos os planos</option></select></div>
+          <div class="field"><label for="link-filter-status">Situação</label><select id="link-filter-status"><option value="">Todas</option><option value="active">Ativa</option><option value="expired">Vencida</option><option value="cancelled">Cancelada</option></select></div>
+          <div class="field"><label for="link-filter-from">Início a partir de</label><input id="link-filter-from" type="date" /></div>
+          <div class="field"><label for="link-filter-to">Vencimento até</label><input id="link-filter-to" type="date" /></div>
+        </div>
+        <div class="membership-filter-actions"><button class="secondary" id="link-clear-filters" type="button">Limpar filtros</button><span id="link-filter-count"></span></div>
+      </div>
       <p class="status-line" id="link-status">Carregando...</p>
-      <ul id="link-list"></ul>
+      <div class="table-wrap"><table class="membership-table"><thead><tr><th>Aluno</th><th>Plano</th><th>Situação</th><th>Contratação</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="link-list"></tbody></table></div>
     </section>
   </main>
 

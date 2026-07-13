@@ -35,22 +35,48 @@ function mini(text, fn, disabled = false) {
   return b;
 }
 
+function dateOnly(value) {
+  if (!value) return '-';
+  const raw = String(value).slice(0, 10).split('-').map(Number);
+  return raw.length === 3 && raw.every(Number.isFinite) ? new Date(raw[0], raw[1] - 1, raw[2]).toLocaleDateString('pt-BR') : String(value);
+}
+
+function membershipStatus(item) {
+  if (item.status === 'cancelled') return 'cancelled';
+  return item.ends_at && String(item.ends_at).slice(0, 10) < new Date().toISOString().slice(0, 10) ? 'expired' : 'active';
+}
+
+function membershipStatusLabel(status) {
+  return ({ active: 'Ativa', expired: 'Vencida', cancelled: 'Cancelada' })[status] || status;
+}
+
 function render() {
   const list = v('link-list');
-  const term = (v('link-search').value || '').toLowerCase();
+  const term = (v('link-search').value || '').toLowerCase().trim();
+  const plan = v('link-filter-plan').value;
+  const status = v('link-filter-status').value;
+  const from = v('link-filter-from').value;
+  const to = v('link-filter-to').value;
   list.innerHTML = '';
-  const data = links.filter((item) => `${item.member_name || ''} ${item.plan_name || ''} ${item.status || ''}`.toLowerCase().includes(term));
+  const data = links.filter((item) => {
+    const currentStatus = membershipStatus(item);
+    const startsAt = String(item.starts_at || '').slice(0, 10);
+    const endsAt = String(item.ends_at || '').slice(0, 10);
+    return (!term || `${item.member_name || ''} ${item.plan_name || ''}`.toLowerCase().includes(term))
+      && (!plan || item.plan_id === plan)
+      && (!status || currentStatus === status)
+      && (!from || startsAt >= from)
+      && (!to || endsAt <= to);
+  });
   for (const item of data) {
-    const li = document.createElement('li');
-    li.append(`${item.member_name} | ${item.plan_name} | ${item.status} | ${item.starts_at} até ${item.ends_at} `);
-    li.appendChild(mini('Cancelar', () => cancelLink(item), item.status !== 'active'));
-    list.appendChild(li);
+    const status = membershipStatus(item);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${item.member_name || '-'}</td><td>${item.plan_name || '-'}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
+    tr.lastElementChild.appendChild(mini(status === 'active' ? 'Cancelar' : 'Encerrada', () => { if (status === 'active') return cancelLink(item); }, status !== 'active'));
+    list.appendChild(tr);
   }
-  if (!list.children.length) {
-    const li = document.createElement('li');
-    li.textContent = 'Nenhuma matrícula encontrada.';
-    list.appendChild(li);
-  }
+  if (!list.children.length) list.innerHTML = '<tr><td colspan="6">Nenhuma matrícula corresponde aos filtros.</td></tr>';
+  v('link-filter-count').textContent = `${data.length} de ${links.length} matrícula(s)`;
 }
 
 async function load() {
@@ -65,6 +91,9 @@ async function load() {
     plans = (planResult.data || []).filter((p) => p.is_active);
     opt(v('link-member'), members, (m) => m.name);
     opt(v('link-plan'), plans, (p) => p.name);
+    const planFilter = v('link-filter-plan');
+    planFilter.innerHTML = '<option value="">Todos os planos</option>';
+    for (const plan of planResult.data || []) { const option = document.createElement('option'); option.value = plan.id; option.textContent = plan.name; planFilter.appendChild(option); }
     render();
     v('link-status').textContent = 'Matrículas carregadas.';
   } catch (error) {
@@ -113,4 +142,6 @@ v('close-link-modal').onclick = closeModal;
 v('cancel-link-button').onclick = closeModal;
 v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });
 v('link-search').oninput = render;
+['link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => v(id).addEventListener('change', render));
+v('link-clear-filters').onclick = () => { ['link-search', 'link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => { v(id).value = ''; }); render(); };
 load();

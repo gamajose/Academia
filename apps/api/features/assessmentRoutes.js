@@ -89,8 +89,9 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     return send(res, 201, result.rows[0]);
   }
 
-  const assessmentIdMatch = url.pathname.match(/^\/api\/assessments\/([0-9a-f-]+)$/i);
-  if (assessmentIdMatch && ['PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+  const assessmentIdMatch = url.pathname.match(/^\/api\/assessments\/([0-9a-f-]+)(\/update)?$/i);
+  const assessmentUpdate = assessmentIdMatch && (['PUT', 'PATCH'].includes(req.method) || (req.method === 'POST' && assessmentIdMatch[2]));
+  if (assessmentIdMatch && (assessmentUpdate || req.method === 'DELETE')) {
     const assessmentId = assessmentIdMatch[1];
     const existing = await query('SELECT id, member_id FROM member_assessments WHERE id = $1 AND gym_id = $2 LIMIT 1', [assessmentId, user.gym_id]);
     if (!existing.rowCount) return send(res, 404, { error: 'avaliacao_nao_encontrada' });
@@ -160,8 +161,9 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     return send(res, 201, result.rows[0]);
   }
 
-  const goalIdMatch = url.pathname.match(/^\/api\/goals\/([0-9a-f-]+)$/i);
-  if (goalIdMatch && ['PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+  const goalIdMatch = url.pathname.match(/^\/api\/goals\/([0-9a-f-]+)(\/update)?$/i);
+  const goalUpdate = goalIdMatch && (['PUT', 'PATCH'].includes(req.method) || (req.method === 'POST' && goalIdMatch[2]));
+  if (goalIdMatch && (goalUpdate || req.method === 'DELETE')) {
     const goalId = goalIdMatch[1];
     const existing = await query('SELECT id, member_id FROM member_goals WHERE id = $1 AND gym_id = $2 LIMIT 1', [goalId, user.gym_id]);
     if (!existing.rowCount) return send(res, 404, { error: 'meta_nao_encontrada' });
