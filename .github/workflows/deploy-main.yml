@@ -64,6 +64,7 @@ jobs:
           npm test
           npm run check
           npm run migrate
+          npm run seed:demo
 
           node --check "$WEB_DIR/nav.js"
           node --check "$WEB_DIR/landing.js"
