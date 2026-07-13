@@ -12,6 +12,8 @@ let currentAssessments = [];
 let currentGoals = [];
 let editingAssessmentId = '';
 let editingGoalId = '';
+let preservedAssessmentPhoto = '';
+const canEditAssessmentPhoto = localStorage.getItem('academiaRole') === 'student';
 
 function setAssessmentStatus(text) {
   const target = q('assessment-status');
@@ -44,6 +46,7 @@ function assessmentErrorMessage(error) {
     not_implemented: 'O servidor bloqueou o método de atualização. Tente novamente; a rota compatível já foi ativada.',
     http_501: 'O servidor bloqueou o método de atualização. Tente novamente; a rota compatível já foi ativada.',
     internal_error: 'O servidor não conseguiu salvar. Verifique a conexão com o banco de dados.',
+    foto_somente_aluno: 'A foto de evolução só pode ser enviada ou alterada pelo próprio aluno.',
     foto_invalida: 'A foto precisa ser um link http(s) válido ou uma imagem enviada pelo formulário.',
     imagem_muito_grande: 'A imagem não pode ultrapassar 5 MB.',
     formato_de_imagem_invalido: 'Escolha uma imagem JPG, PNG, GIF ou WebP.',
@@ -128,6 +131,7 @@ async function uploadAssessmentPhoto(file) {
 }
 
 async function resolveAssessmentPhoto() {
+  if (!canEditAssessmentPhoto) return preservedAssessmentPhoto;
   const file = q('assessment-photo-file')?.files?.[0];
   if (file) return uploadAssessmentPhoto(file);
   return value('photo-url').trim();
@@ -155,6 +159,7 @@ function resetAssessmentForm() {
   q('assessment-date').value = new Date().toISOString().slice(0, 10);
   setModalStatus('assessment-form-status', '');
   editingAssessmentId = '';
+  preservedAssessmentPhoto = '';
   q('assessment-modal-title').textContent = 'Nova avaliação';
   q('create-assessment-button').textContent = 'Salvar avaliação';
   if (q('assessment-photo-file')) q('assessment-photo-file').value = '';
@@ -201,6 +206,7 @@ function setField(id, valueToSet) {
 
 function openAssessmentEdit(item) {
   editingAssessmentId = item.id;
+  preservedAssessmentPhoto = item.photo_url || '';
   setField('assessment-member', item.member_id);
   setField('assessment-date', String(item.assessment_date || '').slice(0, 10));
   setField('weight-kg', formatInputDecimal(item.weight_kg)); setField('height-cm', formatInputDecimal(item.height_cm)); setField('body-fat', formatInputDecimal(item.body_fat_percent)); setField('muscle-mass', formatInputDecimal(item.muscle_mass_kg)); setField('waist-cm', formatInputDecimal(item.waist_cm)); setField('chest-cm', formatInputDecimal(item.chest_cm)); setField('hip-cm', formatInputDecimal(item.hip_cm)); setField('photo-url', item.photo_url); setField('assessment-notes', item.notes);
@@ -208,6 +214,7 @@ function openAssessmentEdit(item) {
   q('assessment-modal-title').textContent = 'Editar avaliação';
   q('create-assessment-button').textContent = 'Salvar alterações';
   setModalStatus('assessment-form-status', '');
+  for (const field of document.querySelectorAll('[data-assessment-photo-field]')) field.hidden = !canEditAssessmentPhoto;
   openModal('assessment-modal', 'assessment-member');
 }
 
@@ -657,6 +664,7 @@ function bindAssessmentEvents() {
 
 async function initAssessmentsPage() {
   bindAssessmentEvents();
+  for (const field of document.querySelectorAll('[data-assessment-photo-field]')) field.hidden = !canEditAssessmentPhoto;
   try {
     await loadBase();
     const params = new URLSearchParams(window.location.search);

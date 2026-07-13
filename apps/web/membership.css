@@ -11,10 +11,10 @@
 .membership-filter-actions { display: flex; align-items: center; gap: 12px; }
 .membership-filter-actions span { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 700; }
 .membership-table { width: 100%; min-width: 860px; border-collapse: collapse; }
-.membership-table th { padding: 12px 10px; text-align: left; color: var(--text); background: #edf5fc; font-size: 12px; }
+.membership-table th { padding: 12px 10px; text-align: left; color: var(--text); background: #edf5fc; font-size: 12px; font-weight: 850; }
 .membership-table td { padding: 13px 10px; border-bottom: 1px solid var(--line); color: var(--text); vertical-align: middle; }
 .membership-table td:first-child { color: #111827; font-weight: 500; }
-.membership-table td:nth-child(2) { color: #1f2937 !important; font-weight: 750; }
+.membership-table td:nth-child(2) { color: #1f2937 !important; font-weight: 400; }
 .membership-member-name { font-weight: 600; }
 .membership-member-name.male { color: #2563eb; }
 .membership-member-name.female { color: #db2777; }

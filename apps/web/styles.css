@@ -71,6 +71,7 @@ small { min-height: 18px; color: var(--muted); }
 ul { padding-left: 18px; color: var(--muted); }
 li { margin-bottom: 10px; line-height: 1.5; }
 .status-line { color: var(--accent); font-weight: 700; }
+.status-line:empty { display: none; }
 .empty-state { color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 14px; }
 .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: rgba(185,28,28,.10); color: var(--accent); font-size: 12px; }
 .badge.warn { background: rgba(245,158,11,.15); color: var(--warn); }

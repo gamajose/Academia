@@ -51,7 +51,7 @@ async function loadProfile() {
     const canManageGym = ['owner', 'admin'].includes(user.role);
     account('gym-profile-panel').hidden = !canManageGym;
     await loadGym(canManageGym);
-    setAccountStatus('Perfil carregado.');
+    setAccountStatus('');
   } catch (error) { setAccountStatus(`Erro: ${error.message}`); }
 }
 

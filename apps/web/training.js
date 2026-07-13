@@ -158,7 +158,7 @@ async function loadBase() {
   plans = planResult.data || [];
   trainingLevels = levelResult.data || [];
   renderAll();
-  setTrainingStatus('Treinos carregados.');
+  setTrainingStatus('');
 }
 
 function renderAll() {

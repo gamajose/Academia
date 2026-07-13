@@ -10,20 +10,15 @@
 <body>
   <main class="app-shell">
     <section class="hero"><p class="eyebrow">Segurança</p><h1>Proteja sua conta</h1><p>Troque sua senha e mantenha o acesso sob seu controle.</p></section>
-    <section class="grid">
+    <section class="grid security-page">
       <form class="panel" id="security-form">
         <h3>Trocar senha</h3>
         <div class="field"><label for="current-password">Senha atual</label><input id="current-password" type="password" autocomplete="current-password" required /></div>
         <div class="field"><label for="new-password">Nova senha</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required /><small>Use pelo menos 8 caracteres, com maiúscula, minúscula e número.</small></div>
         <div class="field"><label for="confirm-password">Confirmar nova senha</label><input id="confirm-password" type="password" autocomplete="new-password" required /></div>
         <div class="form-actions"><button type="submit">Atualizar senha</button></div>
-        <p class="status-line" id="security-status">Aguardando.</p>
+        <p class="status-line" id="security-status"></p>
       </form>
-      <section class="panel security-guidance">
-        <h3>Proteção da conta</h3>
-        <p>Você já está autenticado. Para alterar o acesso, informe sua senha atual e defina uma nova senha nesta tela.</p>
-        <p class="security-note">A recuperação por e-mail ou telefone fica disponível somente na tela de login, quando você não consegue entrar.</p>
-      </section>
     </section>
   </main>
   <script src="./nav.js"></script>

@@ -52,9 +52,9 @@ async function load() {
     const result = await call('/api/signups');
     rows = result.data || [];
     render();
-    s('signup-status').textContent = 'Solicitações carregadas.';
+    s('signup-status').textContent = '';
   } catch (error) {
-    s('signup-status').textContent = `Erro: ${error.message}`;
+    if (s('signup-status')) s('signup-status').textContent = `Erro: ${error.message}`;
   }
 }
 

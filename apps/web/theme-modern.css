@@ -44,3 +44,6 @@ button:hover { filter: brightness(1.05); }
 .cards article::after { content: none; }
 .cards strong { font-size: 38px; }
 .status-line { color: #1478d4; }
+.status-line:empty { display: none; }
+.security-page { grid-template-columns: minmax(0, 680px); justify-content: center; }
+.security-page #security-status { text-align: center; }

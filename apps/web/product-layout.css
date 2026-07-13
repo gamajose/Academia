@@ -57,11 +57,22 @@
 .finance-summary .finance-overdue strong { color: #b91c1c; }
 .finance-summary .finance-paid strong, .finance-summary .finance-paid-count strong { color: #15803d; }
 .dashboard-summary-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.profile-side-grid { grid-template-columns: 1fr; }
 .dashboard-summary-card { display: grid; align-content: center; gap: 7px; min-height: 142px; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: #fff; color: var(--text); text-decoration: none; box-shadow: var(--shadow); transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .dashboard-summary-card:hover, .dashboard-summary-card:focus-visible { border-color: var(--accent); box-shadow: 0 14px 34px rgba(29, 111, 214, .14); outline: none; transform: translateY(-2px); }
 .dashboard-summary-card span { color: var(--muted); font-size: 13px; font-weight: 750; }
 .dashboard-summary-card strong { color: var(--text); font-size: 36px; line-height: 1; }
 .dashboard-summary-card small { color: var(--accent); font-size: 12px; font-weight: 800; }
+.dashboard-summary-card.members { background: #eff6ff; border-color: #bfdbfe; }
+.dashboard-summary-card.members strong { color: #2563eb; }
+.dashboard-summary-card.plans { background: #f5f3ff; border-color: #ddd6fe; }
+.dashboard-summary-card.plans strong { color: #7c3aed; }
+.dashboard-summary-card.memberships { background: #f0fdf4; border-color: #bbf7d0; }
+.dashboard-summary-card.memberships strong { color: #15803d; }
+.dashboard-summary-card.assessments { background: #fff7ed; border-color: #fed7aa; }
+.dashboard-summary-card.assessments strong { color: #c2410c; }
+.dashboard-summary-card.finance { background: #fff1f2; border-color: #fecdd3; }
+.dashboard-summary-card.finance strong { color: #be123c; }
 .finance-table th { color: #26332e; background: #f5f1ea; font-weight: 850; }
 .finance-table td { color: #26332e; border-bottom: 1px solid #e6ded3; padding: 13px 10px; vertical-align: middle; }
 .finance-table td:first-child { color: #171717; font-weight: 750; }

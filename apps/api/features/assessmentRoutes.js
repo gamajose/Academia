@@ -52,7 +52,7 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && url.pathname === '/api/assessments') {
     const input = await body(req);
     if (!input.member_id) return send(res, 400, { error: 'member_id_obrigatorio' });
-    const photoUrl = String(input.photo_url || '').trim();
+    const photoUrl = user.role === 'student' ? String(input.photo_url || '').trim() : '';
     if (photoUrl.length > 1000 || !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
     const member = await query('SELECT id FROM members WHERE id = $1 AND gym_id = $2', [input.member_id, user.gym_id]);
     if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
@@ -93,7 +93,7 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
   const assessmentUpdate = assessmentIdMatch && (['PUT', 'PATCH'].includes(req.method) || (req.method === 'POST' && assessmentIdMatch[2]));
   if (assessmentIdMatch && (assessmentUpdate || req.method === 'DELETE')) {
     const assessmentId = assessmentIdMatch[1];
-    const existing = await query('SELECT id, member_id FROM member_assessments WHERE id = $1 AND gym_id = $2 LIMIT 1', [assessmentId, user.gym_id]);
+    const existing = await query('SELECT id, member_id, photo_url FROM member_assessments WHERE id = $1 AND gym_id = $2 LIMIT 1', [assessmentId, user.gym_id]);
     if (!existing.rowCount) return send(res, 404, { error: 'avaliacao_nao_encontrada' });
     if (req.method === 'DELETE') {
       await query('DELETE FROM member_assessments WHERE id = $1 AND gym_id = $2', [assessmentId, user.gym_id]);
@@ -101,7 +101,9 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
       return send(res, 200, { status: 'avaliacao_excluida' });
     }
     const input = await body(req);
-    const photoUrl = String(input.photo_url || '').trim();
+    const submittedPhoto = String(input.photo_url || '').trim();
+    if (user.role !== 'student' && submittedPhoto && submittedPhoto !== String(existing.rows[0].photo_url || '')) return send(res, 403, { error: 'foto_somente_aluno' });
+    const photoUrl = user.role === 'student' ? submittedPhoto : String(existing.rows[0].photo_url || '');
     if (photoUrl.length > 1000 || !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
     const result = await query(
       `UPDATE member_assessments SET assessment_date=COALESCE($3::date,assessment_date),weight_kg=$4,height_cm=$5,body_fat_percent=$6,muscle_mass_kg=$7,

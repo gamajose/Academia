@@ -125,9 +125,9 @@ async function load() {
     planFilter.innerHTML = '<option value="">Todos os planos</option>';
     for (const plan of planResult.data || []) { const option = document.createElement('option'); option.value = plan.id; option.textContent = plan.name; planFilter.appendChild(option); }
     render();
-    v('link-status').textContent = 'Matrículas carregadas.';
+    v('link-status').textContent = '';
   } catch (error) {
-    v('link-status').textContent = `Erro: ${error.message}`;
+    if (v('link-status')) v('link-status').textContent = `Erro: ${error.message}`;
   }
 }
 
@@ -168,7 +168,7 @@ async function save() {
     closeModal();
     await load();
   } catch (error) {
-    v('link-status').textContent = `Erro ao salvar: ${error.message}`;
+    if (v('link-status')) v('link-status').textContent = `Erro ao salvar: ${error.message}`;
   } finally {
     v('save-link-button').disabled = false;
   }

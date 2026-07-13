@@ -87,7 +87,6 @@ function renderNavigation() {
       <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>
         <span class="profile-copy"><strong id="profile-name">Meu perfil</strong><span id="profile-role">Perfil</span></span>
-        <span aria-hidden="true">⌄</span>
       </button>
       <div class="profile-dropdown hidden" id="profile-dropdown">
         <a href="${pageUrl('account.html')}">Perfil</a>

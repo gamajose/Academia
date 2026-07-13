@@ -131,7 +131,7 @@ async function saveAssessment(event) {
         waist_cm: numberValue('alert-assessment-waist'),
         chest_cm: numberValue('alert-assessment-chest'),
         hip_cm: numberValue('alert-assessment-hip'),
-        photo_url: g('alert-assessment-photo').value.trim() || null,
+        photo_url: null,
         notes: g('alert-assessment-notes').value.trim() || null
       })
     });
