@@ -102,7 +102,49 @@ class SiteHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def proxy_api(self):
+        """Keep browser API calls on the same origin as the web application."""
+        length = int(self.headers.get('Content-Length', '0') or 0)
+        payload = self.rfile.read(length) if length else None
+        headers = {}
+        for header in ('Accept', 'Authorization', 'Content-Type', 'X-Access-Device-Key'):
+            value = self.headers.get(header)
+            if value:
+                headers[header] = value
+
+        upstream_request = request.Request(
+            f'{API_BASE_URL}{self.path}',
+            data=payload,
+            headers=headers,
+            method=self.command
+        )
+        try:
+            with request.urlopen(upstream_request, timeout=20) as upstream:
+                response_body = upstream.read()
+                self.send_response(upstream.status)
+                self.send_header('Content-Type', upstream.headers.get('Content-Type', 'application/json; charset=utf-8'))
+                self.send_header('Content-Length', str(len(response_body)))
+                self.end_headers()
+                self.wfile.write(response_body)
+        except error.HTTPError as upstream_error:
+            response_body = upstream_error.read() or b'{"error":"api_error"}'
+            self.send_response(upstream_error.code)
+            self.send_header('Content-Type', upstream_error.headers.get('Content-Type', 'application/json; charset=utf-8'))
+            self.send_header('Content-Length', str(len(response_body)))
+            self.end_headers()
+            self.wfile.write(response_body)
+        except (error.URLError, TimeoutError, OSError):
+            response_body = b'{"error":"api_indisponivel"}'
+            self.send_response(502)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Content-Length', str(len(response_body)))
+            self.end_headers()
+            self.wfile.write(response_body)
+
     def do_GET(self):
+        if self.path.split('?', 1)[0].startswith('/api/'):
+            return self.proxy_api()
+
         name = self.path.split('?', 1)[0].split('#', 1)[0].lstrip('/') or 'index.html'
 
         if name in LEGACY_REDIRECTS:
@@ -117,6 +159,16 @@ class SiteHandler(SimpleHTTPRequestHandler):
             return self.serve_html(name)
 
         return super().do_GET()
+
+    def do_POST(self):
+        if self.path.split('?', 1)[0].startswith('/api/'):
+            return self.proxy_api()
+        self.send_error(405, 'Método não permitido')
+
+    def do_OPTIONS(self):
+        if self.path.split('?', 1)[0].startswith('/api/'):
+            return self.proxy_api()
+        self.send_error(405, 'Método não permitido')
 
 
 if __name__ == '__main__':

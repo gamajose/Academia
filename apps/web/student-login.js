@@ -1,5 +1,9 @@
 const defaultHost = window.location.hostname || 'localhost';
 function resolveApiBase() {
+  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+    return window.location.origin;
+  }
+
   const fallback = `${window.location.protocol}//${defaultHost}:3004`;
   try {
     const stored = localStorage.getItem('apiBaseUrl') || '';
@@ -52,6 +56,7 @@ async function accountLogin() {
   msg('Validando acesso...');
   const payload = { identifier, password };
 
+  let adminError;
   try {
     const admin = await post('/api/auth/login', payload);
     localStorage.setItem('academiaToken', admin.token);
@@ -62,7 +67,8 @@ async function accountLogin() {
     portalOn();
     window.location.href = './painel.html';
     return;
-  } catch (_) {
+  } catch (error) {
+    adminError = error;
     // O mesmo formulário atende aluno e equipe; tenta o perfil de aluno em seguida.
   }
 
@@ -74,8 +80,14 @@ async function accountLogin() {
     studentPortalOn();
     window.location.href = './student-portal.html';
   } catch (error) {
-    const map = { credenciais_invalidas: 'E-mail ou senha inválidos.', dados_invalidos: 'Informe e-mail e senha.' };
-    msg(map[error.message] || 'Não foi possível acessar sua conta. Confira os dados e tente novamente.');
+    const map = {
+      credenciais_invalidas: 'E-mail ou senha inválidos.',
+      dados_invalidos: 'Informe e-mail e senha.',
+      muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
+      api_indisponivel: 'Não foi possível conectar ao servidor. Tente novamente em instantes.'
+    };
+    const networkFailure = [adminError, error].some((item) => item?.message === 'Failed to fetch' || item?.message === 'api_indisponivel');
+    msg(networkFailure ? 'Não foi possível conectar ao servidor. Verifique a conexão da academia e tente novamente.' : (map[error.message] || 'Não foi possível acessar sua conta. Confira os dados e tente novamente.'));
     loginButton.disabled = false;
     loginButton.textContent = 'Entrar';
   }
