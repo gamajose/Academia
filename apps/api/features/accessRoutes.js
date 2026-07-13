@@ -708,6 +708,7 @@ async function handleAccessRoutes(req, res, user, url, helpers) {
 
 module.exports = {
   deriveOfflinePin,
+  ensureOfflineCredential,
   handleAccessRoutes,
   loadAccessContext,
   normalizeAccessCode,

@@ -82,6 +82,8 @@
 .rich-editor-status.dirty { color: var(--warn); font-weight: 800; }
 .rich-editor-status.error { color: var(--bad); font-weight: 800; }
 .international-phone, .international-phone .iti, .international-phone .iti input { width: 100%; }
+.international-phone .iti__selected-dial-code { margin-right: 8px; }
+.international-phone .iti--separate-dial-code .iti__selected-dial-code { margin-left: 6px; }
 .modal .iti__country-list { z-index: 10002; }
 .alert-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .table-wrap { overflow-x: auto; }

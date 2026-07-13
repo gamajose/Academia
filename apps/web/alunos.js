@@ -247,7 +247,7 @@ async function save(event) {
 
   try {
     $('save-student-button').disabled = true;
-    await req('/api/members/detail/save', {
+    const saved = await req('/api/members/detail/save', {
       method: 'POST',
       body: JSON.stringify({
         member_id: val('student-id') || undefined,
@@ -269,7 +269,16 @@ async function save(event) {
     AcademiaRichEditor.markSaved(richIds);
     closeModal();
     await load();
-    $('students-status').textContent = 'Cadastro salvo com sucesso.';
+    const access = saved.student_access;
+    if (access?.account_created && access.pin) {
+      $('students-status').textContent = `Cadastro salvo. Acesso criado: ${access.account_email} · senha PIN ${access.pin} · matrícula ${access.registration_number}.`;
+    } else if (access?.error === 'email_ja_vinculado_a_outro_aluno') {
+      $('students-status').textContent = 'Cadastro salvo, mas o e-mail já está vinculado a outro aluno. Use outro e-mail para criar o acesso web.';
+    } else if (!access?.account_email) {
+      $('students-status').textContent = 'Cadastro salvo. Informe um e-mail para criar o acesso web com o PIN.';
+    } else {
+      $('students-status').textContent = 'Cadastro salvo com sucesso.';
+    }
   } catch (error) {
     const labels = { cpf_ja_cadastrado: 'Este CPF já pertence a outro aluno.', email_invalido: 'Informe um e-mail válido.', cpf_invalido: 'O CPF deve possuir 11 dígitos.', telefone_invalido: 'O telefone precisa ter a quantidade correta de dígitos.' };
     $('students-status').textContent = labels[error.message] || `Erro ao salvar: ${error.message}`;
