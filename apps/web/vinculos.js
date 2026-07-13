@@ -87,17 +87,19 @@ function render() {
   for (const item of data) {
     const status = membershipStatus(item);
     const tr = document.createElement('tr');
+    tr.className = 'membership-row-action';
+    tr.tabIndex = 0;
+    tr.setAttribute('role', 'button');
+    tr.title = 'Abrir edição da matrícula';
     tr.innerHTML = `<td><span class="membership-member-name ${memberNameTone(item)}">${item.member_name || '-'}</span></td><td>${item.plan_name || '-'}</td><td>${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
-    tr.querySelector('.membership-member-name').addEventListener('click', () => openModal(item));
-    tr.querySelector('.membership-member-name').addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
-    tr.querySelector('.membership-member-name').tabIndex = 0;
-    tr.querySelector('.membership-member-name').setAttribute('role', 'button');
+    tr.addEventListener('click', () => openModal(item));
+    tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
     const actions = tr.lastElementChild;
-    actions.appendChild(mini('✎', () => openModal(item)));
+    actions.appendChild(mini('✎', (event) => { event.stopPropagation(); openModal(item); }));
     actions.lastElementChild.className = 'icon-button';
     actions.lastElementChild.title = 'Editar matrícula';
     actions.lastElementChild.setAttribute('aria-label', 'Editar matrícula');
-    actions.appendChild(mini(status === 'active' ? '⊘' : '●', () => { if (status === 'active') return cancelLink(item); }, status !== 'active'));
+    actions.appendChild(mini(status === 'active' ? '⊘' : '●', (event) => { event.stopPropagation(); if (status === 'active') return cancelLink(item); }, status !== 'active'));
     actions.lastElementChild.className = 'icon-button';
     actions.lastElementChild.title = status === 'active' ? 'Cancelar matrícula' : 'Matrícula encerrada';
     actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);

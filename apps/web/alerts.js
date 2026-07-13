@@ -12,6 +12,16 @@ async function api(path) {
   return data;
 }
 
+async function apiWrite(path, options = {}) {
+  const response = await fetch(`${ALERTS_API}${path}`, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ALERTS_TOKEN}`, ...(options.headers || {}) }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'erro_requisicao');
+  return data;
+}
+
 function cents(value) {
   return `R$ ${(Number(value || 0) / 100).toFixed(2).replace('.', ',')}`;
 }
@@ -64,10 +74,73 @@ function renderAssessmentAlerts(rows) {
     row.setAttribute('role', 'button');
     row.tabIndex = 0;
     row.title = 'Abrir avaliação do aluno';
-    const openAssessment = () => { window.location.href = `./assessments.html?member_id=${encodeURIComponent(item.member_id)}&new=1`; };
+    const openAssessment = () => openAssessmentModal(item);
     row.addEventListener('click', openAssessment);
     row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openAssessment(); } });
     list.appendChild(row);
+  }
+}
+
+function localDate() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+function numberValue(id) {
+  const value = String(g(id)?.value || '').trim().replace(',', '.');
+  return value ? Number(value) : null;
+}
+
+function openAssessmentModal(item) {
+  const modal = g('alert-assessment-modal');
+  const form = g('alert-assessment-form');
+  form.reset();
+  g('alert-assessment-member').value = item.member_id || '';
+  g('alert-assessment-member-name').textContent = item.member_name || 'Aluno';
+  g('alert-assessment-date').value = localDate();
+  g('alert-assessment-status').textContent = '';
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  g('alert-assessment-weight').focus();
+}
+
+function closeAssessmentModal() {
+  const modal = g('alert-assessment-modal');
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+async function saveAssessment(event) {
+  event.preventDefault();
+  const form = g('alert-assessment-form');
+  if (!form.reportValidity()) return;
+  const button = g('save-alert-assessment');
+  const status = g('alert-assessment-status');
+  button.disabled = true;
+  status.textContent = 'Salvando avaliação...';
+  try {
+    await apiWrite('/api/assessments', {
+      method: 'POST',
+      body: JSON.stringify({
+        member_id: g('alert-assessment-member').value,
+        assessment_date: g('alert-assessment-date').value || null,
+        weight_kg: numberValue('alert-assessment-weight'),
+        height_cm: numberValue('alert-assessment-height'),
+        body_fat_percent: numberValue('alert-assessment-fat'),
+        muscle_mass_kg: numberValue('alert-assessment-muscle'),
+        waist_cm: numberValue('alert-assessment-waist'),
+        chest_cm: numberValue('alert-assessment-chest'),
+        hip_cm: numberValue('alert-assessment-hip'),
+        photo_url: g('alert-assessment-photo').value.trim() || null,
+        notes: g('alert-assessment-notes').value.trim() || null
+      })
+    });
+    closeAssessmentModal();
+    await loadAlerts();
+  } catch (error) {
+    status.textContent = `Não foi possível salvar: ${error.message}`;
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -93,3 +166,8 @@ loadAlerts().catch((error) => {
   if (g('alerts-total')) g('alerts-total').textContent = 'erro';
   renderList('overdue-list', [], () => '', `Erro ao carregar alertas: ${error.message}`);
 });
+
+g('alert-assessment-form')?.addEventListener('submit', saveAssessment);
+g('close-alert-assessment')?.addEventListener('click', closeAssessmentModal);
+g('cancel-alert-assessment')?.addEventListener('click', closeAssessmentModal);
+g('alert-assessment-modal')?.addEventListener('click', (event) => { if (event.target === g('alert-assessment-modal')) closeAssessmentModal(); });

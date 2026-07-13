@@ -118,9 +118,13 @@ function draw() {
 
   for (const item of visibleRows) {
     const tr = document.createElement('tr');
+    tr.className = 'finance-row-action';
+    tr.tabIndex = 0;
+    tr.setAttribute('role', 'button');
+    tr.title = 'Abrir ajuste financeiro';
     const label = statusLabel(item);
     tr.innerHTML = `
-      <td class="finance-member-name" tabindex="0" role="button" title="Abrir ajuste financeiro">${item.member_name || '-'}</td>
+      <td class="finance-member-name">${item.member_name || '-'}</td>
       <td>${brl(item.amount_cents)}</td>
       <td><span class="badge ${statusClass(label)}">${label}</span></td>
       <td class="finance-date-cell">${item.paid_at ? `<strong>Recebido em</strong><span>${dateTime(item.paid_at)}</span>` : `<strong>Vencimento</strong><span>${dateOnly(item.due_date)}</span>`}</td>
@@ -128,10 +132,10 @@ function draw() {
       <td></td>
     `;
     const actions = tr.querySelector('td:last-child');
-    tr.querySelector('.finance-member-name').addEventListener('click', () => openM(item));
-    tr.querySelector('.finance-member-name').addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openM(item); } });
-    actions.appendChild(actionButton('Ajustar', () => openM(item)));
-    actions.appendChild(actionButton(item.status === 'paid' ? 'Recebido' : 'Marcar como recebido', () => pay(item), item.status === 'paid'));
+    tr.addEventListener('click', () => openM(item));
+    tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openM(item); } });
+    actions.appendChild(actionButton('Ajustar', (event) => { event.stopPropagation(); openM(item); }));
+    actions.appendChild(actionButton(item.status === 'paid' ? 'Recebido' : 'Marcar como recebido', (event) => { event.stopPropagation(); pay(item); }, item.status === 'paid'));
     list.appendChild(tr);
   }
 

@@ -35,6 +35,30 @@
       <article class="panel"><h3>Avaliações pendentes</h3><ul id="assessment-alert-list"></ul></article>
     </section>
   </main>
+
+  <div class="modal hidden" id="alert-assessment-modal" role="dialog" aria-modal="true" aria-labelledby="alert-assessment-title" aria-hidden="true">
+    <form class="modal-card alert-assessment-card" id="alert-assessment-form">
+      <div class="modal-header">
+        <div><p class="eyebrow">Avaliação pendente</p><h3 id="alert-assessment-title">Nova avaliação</h3><p id="alert-assessment-member-name">Aluno</p></div>
+        <button type="button" id="close-alert-assessment" class="secondary modal-close" aria-label="Fechar">×</button>
+      </div>
+      <input type="hidden" id="alert-assessment-member" />
+      <div class="alert-assessment-grid">
+        <label>Data da avaliação<input type="date" id="alert-assessment-date" required /></label>
+        <label>Peso (kg)<input type="number" id="alert-assessment-weight" min="0" step="0.01" /></label>
+        <label>Altura (cm)<input type="number" id="alert-assessment-height" min="0" step="0.01" /></label>
+        <label>Gordura corporal (%)<input type="number" id="alert-assessment-fat" min="0" step="0.01" /></label>
+        <label>Massa muscular (kg)<input type="number" id="alert-assessment-muscle" min="0" step="0.01" /></label>
+        <label>Cintura (cm)<input type="number" id="alert-assessment-waist" min="0" step="0.01" /></label>
+        <label>Peito (cm)<input type="number" id="alert-assessment-chest" min="0" step="0.01" /></label>
+        <label>Quadril (cm)<input type="number" id="alert-assessment-hip" min="0" step="0.01" /></label>
+        <label class="full">Foto de evolução por link<input type="url" id="alert-assessment-photo" placeholder="https://.../foto.jpg" /></label>
+        <label class="full">Observações<textarea id="alert-assessment-notes" rows="4" placeholder="Observações da avaliação"></textarea></label>
+      </div>
+      <p class="status-line" id="alert-assessment-status" aria-live="polite"></p>
+      <div class="modal-actions"><button type="button" class="secondary" id="cancel-alert-assessment">Cancelar</button><button type="submit" class="primary" id="save-alert-assessment">Salvar avaliação</button></div>
+    </form>
+  </div>
   <script src="./nav.js"></script>
   <script src="./alerts.js"></script>
 </body>
