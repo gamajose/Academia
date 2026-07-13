@@ -45,7 +45,8 @@ button:hover { filter: brightness(1.05); }
 .cards strong { font-size: 38px; }
 .status-line { color: #1478d4; }
 .status-line:empty { display: none; }
-.security-shell { width: min(900px, 92vw); margin-left: auto; margin-right: auto; }
+.security-page-body { overflow-x: hidden; }
+.security-page-body > .security-shell { display: block; position: relative; left: 50%; width: min(900px, calc(100vw - 32px)) !important; margin-left: 0 !important; margin-right: 0 !important; transform: translateX(-50%); }
 .security-shell .hero { display: block; text-align: center; }
 .security-shell .hero p { margin-left: auto; margin-right: auto; }
 .security-page { display: grid !important; grid-template-columns: minmax(0, 680px); justify-content: center; width: 100%; max-width: none; margin: 0 0 18px; padding: 0; }
@@ -53,7 +54,7 @@ button:hover { filter: brightness(1.05); }
 .security-page #security-status { text-align: center; }
 
 @media (max-width: 720px) {
-  .security-shell { width: min(100% - 28px, 680px); }
+  .security-page-body > .security-shell { width: min(680px, calc(100vw - 28px)) !important; }
   .security-page { grid-template-columns: minmax(0, 1fr); }
 }
 
