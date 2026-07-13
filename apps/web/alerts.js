@@ -61,6 +61,12 @@ function renderAssessmentAlerts(rows) {
     badge.className = `alert-highlight-badge ${item.last_assessment_date ? 'warn' : 'critical'}`;
     badge.textContent = item.last_assessment_date ? 'Atualizar avaliação' : 'Nunca avaliado';
     row.append(icon, copy, badge);
+    row.setAttribute('role', 'button');
+    row.tabIndex = 0;
+    row.title = 'Abrir avaliação do aluno';
+    const openAssessment = () => { window.location.href = `./assessments.html?member_id=${encodeURIComponent(item.member_id)}&new=1`; };
+    row.addEventListener('click', openAssessment);
+    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openAssessment(); } });
     list.appendChild(row);
   }
 }

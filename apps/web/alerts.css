@@ -6,12 +6,14 @@
 .alert-summary-card.finance strong, .alert-summary-card.evolution strong { color: #b91c1c; }
 .alert-summary-card.membership strong { color: #b45309; }
 .alert-summary-card.training strong { color: #1478d4; }
+.alert-summary-card.total strong { color: #172554; }
 .lists-grid { gap: 24px; margin-bottom: 24px; }
 .lists-grid .panel { min-height: 220px; }
 .lists-grid .panel > h3 { margin: 0; }
 .lists-grid .panel > ul { display: grid; gap: 9px; list-style: none; padding: 0; margin: 0; }
 .lists-grid .panel > ul > li { padding: 12px 14px; border: 1px solid #e7dfd4; border-radius: 12px; background: #fff; color: #3d4540; }
-.alert-highlight { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 11px; }
+.alert-highlight { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 11px; cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.alert-highlight:hover, .alert-highlight:focus-visible { border-color: var(--accent) !important; box-shadow: 0 8px 20px rgba(20, 120, 212, .12); transform: translateY(-1px); outline: none; }
 .alert-highlight-icon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff1f2; color: #b91c1c; font-weight: 950; }
 .alert-highlight-copy { display: grid; gap: 3px; }
 .alert-highlight-copy strong { color: #171717; }

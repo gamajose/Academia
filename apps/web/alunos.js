@@ -196,10 +196,12 @@ function render() {
     if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); main.appendChild(whatsapp); }
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
-    actions.appendChild(button('Visualizar', (event) => { event?.stopPropagation?.(); openStudentView(item); }, 'mini-button secondary'));
-    actions.appendChild(button('Ver credencial', (event) => { event?.stopPropagation?.(); openCredentialPreview(item); }, 'mini-button'));
-    actions.appendChild(button('Editar cadastro', (event) => { event?.stopPropagation?.(); openModal(item); }, 'mini-button secondary'));
-    actions.appendChild(button(item.status === 'active' ? 'Desativar' : 'Ativar', (event) => { event?.stopPropagation?.(); toggle(item); }, 'mini-button'));
+    actions.appendChild(button('▦', (event) => { event?.stopPropagation?.(); openCredentialPreview(item); }, 'icon-button'));
+    actions.lastElementChild.title = 'Abrir QR Code e credencial'; actions.lastElementChild.setAttribute('aria-label', 'Abrir QR Code e credencial');
+    actions.appendChild(button('✎', (event) => { event?.stopPropagation?.(); openModal(item); }, 'icon-button'));
+    actions.lastElementChild.title = 'Editar cadastro'; actions.lastElementChild.setAttribute('aria-label', 'Editar cadastro');
+    actions.appendChild(button(item.status === 'active' ? '⊘' : '●', (event) => { event?.stopPropagation?.(); toggle(item); }, 'icon-button'));
+    actions.lastElementChild.title = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno'; actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);
     li.append(main, actions);
     list.appendChild(li);
   }

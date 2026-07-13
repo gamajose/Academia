@@ -47,6 +47,11 @@ function statusClass(label) {
   return label === 'Recebido' ? 'ok' : label === 'Vencido' ? 'bad' : label === 'Pendente' ? 'warn' : '';
 }
 
+function financeStatusKey(item) {
+  if (item.status === 'paid') return 'paid';
+  return statusLabel(item) === 'Vencido' ? 'overdue' : item.status || 'other';
+}
+
 function methodLabel(value) {
   const labels = { demo: 'Demonstração', pix: 'Pix', paypal: 'PayPal', card: 'Cartão', cash: 'Dinheiro', transfer: 'Transferência', manual: 'Manual', other: 'Outro' };
   return labels[String(value || '').toLowerCase()] || value || 'Não informado';
@@ -161,6 +166,38 @@ function closeM() {
   f('finance-modal').classList.add('hidden');
 }
 
+function openFinanceStatus(kind) {
+  const labels = { pending: 'Lançamentos pendentes', overdue: 'Lançamentos vencidos', paid: 'Pagamentos recebidos', open: 'Lançamentos em aberto' };
+  const matching = rows.filter((item) => {
+    const key = financeStatusKey(item);
+    return kind === 'open' ? key === 'pending' || key === 'overdue' : key === kind;
+  });
+  f('finance-status-title').textContent = labels[kind] || 'Lançamentos';
+  const list = f('finance-status-list');
+  list.innerHTML = '';
+  if (!matching.length) {
+    const empty = document.createElement('li');
+    empty.textContent = 'Nenhum lançamento nesta categoria.';
+    list.appendChild(empty);
+  } else {
+    for (const item of matching) {
+      const entry = document.createElement('li');
+      const title = document.createElement('strong');
+      title.textContent = item.member_name || 'Aluno';
+      const detail = document.createElement('span');
+      const date = item.paid_at ? `Recebido em ${dateTime(item.paid_at)}` : `Vencimento: ${dateOnly(item.due_date)}`;
+      detail.textContent = `${brl(item.amount_cents)} · ${statusLabel(item)} · ${date} · ${methodLabel(item.method)}`;
+      entry.append(title, detail);
+      list.appendChild(entry);
+    }
+  }
+  f('finance-status-modal').classList.remove('hidden');
+}
+
+function closeFinanceStatus() {
+  f('finance-status-modal').classList.add('hidden');
+}
+
 async function adjust() {
   await rq('/api/reports/finance-adjust', {
     method: 'POST',
@@ -223,4 +260,12 @@ f('finance-download-csv')?.addEventListener('click', () => downloadExport('csv')
 f('finance-download-pdf')?.addEventListener('click', () => downloadExport('pdf').catch((error) => { f('reports-status').textContent = `Erro ao exportar PDF: ${error.message}`; }));
 f('close-finance-modal')?.addEventListener('click', closeM);
 f('finance-adjust-button')?.addEventListener('click', adjust);
+for (const [selector, kind] of [['.finance-pending', 'pending'], ['.finance-overdue', 'overdue'], ['.finance-paid', 'paid'], ['.finance-open', 'open'], ['.finance-paid-count', 'paid']]) {
+  document.querySelector(selector)?.addEventListener('click', () => openFinanceStatus(kind));
+  document.querySelector(selector)?.setAttribute('tabindex', '0');
+  document.querySelector(selector)?.setAttribute('role', 'button');
+  document.querySelector(selector)?.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openFinanceStatus(kind); } });
+}
+f('close-finance-status-modal')?.addEventListener('click', closeFinanceStatus);
+f('finance-status-modal')?.addEventListener('click', (event) => { if (event.target === f('finance-status-modal')) closeFinanceStatus(); });
 load();

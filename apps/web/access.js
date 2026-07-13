@@ -49,7 +49,7 @@ function renderMembers() {
     info.append(name, contact);
     const meta = document.createElement('div'); meta.className = 'access-member-meta';
     const badge = document.createElement('span'); badge.className = `badge ${member.status === 'active' ? 'ok' : 'bad'}`; badge.textContent = statusLabel(member);
-    const button = document.createElement('button'); button.type = 'button'; button.className = 'mini-button'; button.textContent = 'Ver QR e credencial'; button.addEventListener('click', () => openCredential(member));
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'icon-button'; button.textContent = '▦'; button.title = 'Abrir QR Code e credencial'; button.setAttribute('aria-label', 'Abrir QR Code e credencial'); button.addEventListener('click', () => openCredential(member));
     meta.append(badge, button); row.append(info, meta); list.appendChild(row);
   }
 }

@@ -199,14 +199,20 @@ function renderUsers(rows) {
     const edit = document.createElement('button');
     edit.className = 'mini-button secondary';
     edit.type = 'button';
-    edit.textContent = 'Editar';
+    edit.textContent = '✎';
+    edit.title = 'Editar funcionário';
+    edit.setAttribute('aria-label', 'Editar funcionário');
+    edit.className = 'icon-button';
     edit.addEventListener('click', () => editUser(user));
     actions.appendChild(edit);
 
     const toggle = document.createElement('button');
     toggle.className = 'mini-button';
     toggle.type = 'button';
-    toggle.textContent = user.is_active ? 'Desativar' : 'Ativar';
+    toggle.textContent = user.is_active ? '⊘' : '●';
+    toggle.title = user.is_active ? 'Desativar funcionário' : 'Ativar funcionário';
+    toggle.setAttribute('aria-label', toggle.title);
+    toggle.className = 'icon-button';
     toggle.addEventListener('click', () => toggleUser(user));
     actions.appendChild(toggle);
 
@@ -324,21 +330,30 @@ function renderPermissionProfiles() {
     const edit = document.createElement('button');
     edit.className = 'mini-button secondary';
     edit.type = 'button';
-    edit.textContent = 'Editar';
+    edit.textContent = '✎';
+    edit.className = 'icon-button';
+    edit.title = 'Editar perfil de acesso';
+    edit.setAttribute('aria-label', 'Editar perfil de acesso');
     edit.addEventListener('click', () => openPermissionsEditor(profile));
     actions.appendChild(edit);
 
     const toggle = document.createElement('button');
     toggle.className = 'mini-button';
     toggle.type = 'button';
-    toggle.textContent = profile.is_active ? 'Desativar' : 'Ativar';
+    toggle.textContent = profile.is_active ? '⊘' : '●';
+    toggle.className = 'icon-button';
+    toggle.title = profile.is_active ? 'Desativar perfil de acesso' : 'Ativar perfil de acesso';
+    toggle.setAttribute('aria-label', toggle.title);
     toggle.addEventListener('click', () => toggleAccessProfile(profile));
     actions.appendChild(toggle);
 
     const remove = document.createElement('button');
     remove.className = 'mini-button secondary';
     remove.type = 'button';
-    remove.textContent = 'Excluir';
+    remove.textContent = '🗑';
+    remove.className = 'icon-button danger';
+    remove.title = 'Excluir perfil de acesso';
+    remove.setAttribute('aria-label', 'Excluir perfil de acesso');
     remove.addEventListener('click', () => deleteAccessProfile(profile));
     actions.appendChild(remove);
 

@@ -5,6 +5,7 @@ const v = (id) => document.getElementById(id);
 let links = [];
 let members = [];
 let plans = [];
+let editingLinkId = '';
 
 async function call(path, options = {}) {
   const response = await fetch(`${VAPI}${path}`, {
@@ -41,6 +42,10 @@ function dateOnly(value) {
   return raw.length === 3 && raw.every(Number.isFinite) ? new Date(raw[0], raw[1] - 1, raw[2]).toLocaleDateString('pt-BR') : String(value);
 }
 
+function money(cents) {
+  return (Number(cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 function membershipStatus(item) {
   if (item.status === 'cancelled') return 'cancelled';
   return item.ends_at && String(item.ends_at).slice(0, 10) < new Date().toISOString().slice(0, 10) ? 'expired' : 'active';
@@ -71,11 +76,19 @@ function render() {
   for (const item of data) {
     const status = membershipStatus(item);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${item.member_name || '-'}</td><td>${item.plan_name || '-'}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
-    tr.lastElementChild.appendChild(mini(status === 'active' ? 'Cancelar' : 'Encerrada', () => { if (status === 'active') return cancelLink(item); }, status !== 'active'));
+    tr.innerHTML = `<td>${item.member_name || '-'}</td><td>${item.plan_name || '-'}</td><td>${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
+    const actions = tr.lastElementChild;
+    actions.appendChild(mini('✎', () => openModal(item)));
+    actions.lastElementChild.className = 'icon-button';
+    actions.lastElementChild.title = 'Editar matrícula';
+    actions.lastElementChild.setAttribute('aria-label', 'Editar matrícula');
+    actions.appendChild(mini(status === 'active' ? '⊘' : '●', () => { if (status === 'active') return cancelLink(item); }, status !== 'active'));
+    actions.lastElementChild.className = 'icon-button';
+    actions.lastElementChild.title = status === 'active' ? 'Cancelar matrícula' : 'Matrícula encerrada';
+    actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);
     list.appendChild(tr);
   }
-  if (!list.children.length) list.innerHTML = '<tr><td colspan="6">Nenhuma matrícula corresponde aos filtros.</td></tr>';
+  if (!list.children.length) list.innerHTML = '<tr><td colspan="7">Nenhuma matrícula corresponde aos filtros.</td></tr>';
   v('link-filter-count').textContent = `${data.length} de ${links.length} matrícula(s)`;
 }
 
@@ -101,7 +114,14 @@ async function load() {
   }
 }
 
-function openModal() {
+function openModal(item = {}) {
+  editingLinkId = item.id || '';
+  v('link-modal-title').textContent = editingLinkId ? 'Editar matrícula' : 'Nova matrícula';
+  v('link-member').value = item.member_id || '';
+  v('link-member').disabled = Boolean(editingLinkId);
+  v('link-plan').value = item.plan_id || '';
+  v('link-start').value = String(item.starts_at || '').slice(0, 10);
+  v('save-link-button').textContent = editingLinkId ? 'Salvar alterações' : 'Salvar matrícula';
   v('link-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   setTimeout(() => v('link-member').focus(), 50);
@@ -111,15 +131,21 @@ function closeModal() {
   v('link-modal').classList.add('hidden');
   document.body.style.overflow = '';
   v('link-form').reset();
+  editingLinkId = '';
+  v('link-member').disabled = false;
+  v('link-modal-title').textContent = 'Nova matrícula';
+  v('save-link-button').textContent = 'Salvar matrícula';
 }
 
 async function save() {
   if (!v('link-form').reportValidity()) return;
   try {
     v('save-link-button').disabled = true;
-    await call('/api/memberships', {
+    await call(editingLinkId ? '/api/memberships/update' : '/api/memberships', {
       method: 'POST',
-      body: JSON.stringify({ member_id: v('link-member').value, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined })
+      body: JSON.stringify(editingLinkId
+        ? { membership_id: editingLinkId, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined }
+        : { member_id: v('link-member').value, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined })
     });
     v('link-start').value = '';
     closeModal();

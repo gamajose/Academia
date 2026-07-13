@@ -9,10 +9,26 @@ async function handleMemberships(req, res, user, url, helpers) {
 
   if (req.method === 'GET' && url.pathname === '/api/memberships') {
     const result = await query(
-      'SELECT ms.id, ms.member_id, m.name AS member_name, ms.plan_id, p.name AS plan_name, ms.starts_at, ms.ends_at, ms.status, ms.created_at FROM memberships ms INNER JOIN members m ON m.id = ms.member_id INNER JOIN plans p ON p.id = ms.plan_id WHERE ms.gym_id = $1 ORDER BY ms.created_at DESC LIMIT 100',
+      'SELECT ms.id, ms.member_id, m.name AS member_name, ms.plan_id, p.name AS plan_name, p.price_cents AS plan_price_cents, ms.starts_at, ms.ends_at, ms.status, ms.created_at FROM memberships ms INNER JOIN members m ON m.id = ms.member_id INNER JOIN plans p ON p.id = ms.plan_id WHERE ms.gym_id = $1 ORDER BY ms.created_at DESC LIMIT 100',
       [user.gym_id]
     );
     return send(res, 200, { data: result.rows });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/memberships/update') {
+    const input = await body(req);
+    if (!input.membership_id || !input.plan_id) return send(res, 400, { error: 'matricula_e_plano_obrigatorios' });
+    const current = await query('SELECT id, starts_at, status FROM memberships WHERE id = $1 AND gym_id = $2', [input.membership_id, user.gym_id]);
+    if (!current.rowCount) return send(res, 404, { error: 'matricula_nao_encontrada' });
+    const plan = await query('SELECT id, duration_days FROM plans WHERE id = $1 AND gym_id = $2 AND is_active = true', [input.plan_id, user.gym_id]);
+    if (!plan.rowCount) return send(res, 404, { error: 'plano_nao_encontrado' });
+    const startsAt = input.starts_at || String(current.rows[0].starts_at).slice(0, 10);
+    const endsAt = input.ends_at || addDays(startsAt, plan.rows[0].duration_days);
+    const result = await query(
+      'UPDATE memberships SET plan_id = $3, starts_at = $4, ends_at = $5, status = $6 WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, plan_id, starts_at, ends_at, status, created_at',
+      [input.membership_id, user.gym_id, input.plan_id, startsAt, endsAt, input.status || current.rows[0].status || 'active']
+    );
+    return send(res, 200, result.rows[0]);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/memberships') {

@@ -49,7 +49,8 @@
 .quick-card { text-decoration: none; color: #171717; border: 1px solid #ded6ca; border-radius: 8px; padding: 18px; background: #fff; }
 .quick-card strong { display: block; color: #1478d4; font-size: 18px; margin-bottom: 8px; }
 .finance-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
-.finance-summary article { min-height: 118px; display: grid; align-content: center; gap: 5px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.finance-summary article { min-height: 118px; display: grid; align-content: center; gap: 5px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.finance-summary article:hover, .finance-summary article:focus-visible { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 10px 24px rgba(20, 120, 212, .12); outline: none; }
 .finance-summary article strong { font-size: 25px; }
 .finance-summary article span { color: var(--muted); font-size: 12px; font-weight: 800; }
 .finance-summary .finance-pending strong, .finance-summary .finance-open strong { color: #b45309; }
@@ -79,6 +80,11 @@
 .finance-filter-grid label { color: #26332e; font-size: 12px; font-weight: 850; }
 .finance-filter-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
 .finance-filter-actions span { margin-right: auto; color: #68716b; font-size: 13px; font-weight: 700; }
+.finance-status-card { width: min(680px, 94vw); }
+.finance-status-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 0; max-height: 55vh; overflow: auto; }
+.finance-status-list li { display: grid; gap: 4px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 11px; }
+.finance-status-list strong { color: var(--text); }
+.finance-status-list span { color: var(--muted); font-size: 13px; }
 .entity-card[role="button"] { cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .entity-card[role="button"]:hover, .entity-card[role="button"]:focus-visible { border-color: var(--accent); box-shadow: 0 10px 24px rgba(29, 111, 214, .12); outline: none; transform: translateY(-1px); }
 .student-filter-panel { display: grid; gap: 14px; margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }

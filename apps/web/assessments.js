@@ -169,8 +169,9 @@ function resetGoalForm() {
   q('create-goal-button').textContent = 'Salvar meta';
 }
 
-function openAssessmentModal() {
+function openAssessmentModal(memberId = '') {
   resetAssessmentForm();
+  if (memberId) q('assessment-member').value = memberId;
   openModal('assessment-modal', 'assessment-member');
 }
 
@@ -345,10 +346,9 @@ function renderAssessments(rows) {
       thumb.className = 'assessment-photo-thumb'; thumb.src = item.photo_url; thumb.alt = ''; thumb.loading = 'lazy';
       actions.appendChild(thumb);
     }
-    const view = document.createElement('button'); view.type = 'button'; view.className = 'secondary'; view.textContent = 'Visualizar'; view.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentView(item); });
-    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentEdit(item); });
-    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Excluir'; remove.addEventListener('click', (event) => { event.stopPropagation(); deleteAssessment(item); });
-    actions.append(view, edit, remove);
+    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'icon-button'; edit.textContent = '✎'; edit.title = 'Editar avaliação'; edit.setAttribute('aria-label', 'Editar avaliação'); edit.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentEdit(item); });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'icon-button danger'; remove.textContent = '🗑'; remove.title = 'Excluir avaliação'; remove.setAttribute('aria-label', 'Excluir avaliação'); remove.addEventListener('click', (event) => { event.stopPropagation(); deleteAssessment(item); });
+    actions.append(edit, remove);
     row.append(main, actions);
     list.appendChild(row);
   }
@@ -387,10 +387,9 @@ function renderGoals(rows) {
     main.append(title, target, status);
     const actions = document.createElement('div');
     actions.className = 'workflow-record-actions';
-    const view = document.createElement('button'); view.type = 'button'; view.className = 'secondary'; view.textContent = 'Visualizar'; view.addEventListener('click', (event) => { event.stopPropagation(); openGoalView(item); });
-    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', (event) => { event.stopPropagation(); openGoalEdit(item); });
-    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Excluir'; remove.addEventListener('click', (event) => { event.stopPropagation(); deleteGoal(item); });
-    actions.append(view, edit, remove);
+    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'icon-button'; edit.textContent = '✎'; edit.title = 'Editar meta'; edit.setAttribute('aria-label', 'Editar meta'); edit.addEventListener('click', (event) => { event.stopPropagation(); openGoalEdit(item); });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'icon-button danger'; remove.textContent = '🗑'; remove.title = 'Excluir meta'; remove.setAttribute('aria-label', 'Excluir meta'); remove.addEventListener('click', (event) => { event.stopPropagation(); deleteGoal(item); });
+    actions.append(edit, remove);
     row.append(main, actions);
     list.appendChild(row);
   }
@@ -660,6 +659,8 @@ async function initAssessmentsPage() {
   bindAssessmentEvents();
   try {
     await loadBase();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('new') === '1') openAssessmentModal(params.get('member_id') || '');
     startRealtimeUpdates();
   } catch (error) {
     setAssessmentStatus(`Erro: ${error.message}`);

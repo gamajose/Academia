@@ -51,6 +51,13 @@
       <button id="finance-adjust-button">Aplicar ajuste</button>
     </div>
   </div>
+
+  <div class="modal hidden" id="finance-status-modal" role="dialog" aria-modal="true" aria-labelledby="finance-status-title">
+    <div class="modal-card finance-status-card">
+      <div class="toolbar"><div><p class="eyebrow">Resumo financeiro</p><h3 id="finance-status-title">Lançamentos</h3></div><button class="secondary modal-close" id="close-finance-status-modal" aria-label="Fechar" title="Fechar">×</button></div>
+      <ul id="finance-status-list" class="finance-status-list"></ul>
+    </div>
+  </div>
   <script src="./guard.js"></script>
   <script src="./nav.js"></script>
   <script src="./fin-core.js"></script>

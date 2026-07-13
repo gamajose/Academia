@@ -10,7 +10,7 @@
 .membership-filter-grid label { color: var(--muted); font-size: 12px; font-weight: 800; }
 .membership-filter-actions { display: flex; align-items: center; gap: 12px; }
 .membership-filter-actions span { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 700; }
-.membership-table { width: 100%; min-width: 760px; border-collapse: collapse; }
+.membership-table { width: 100%; min-width: 860px; border-collapse: collapse; }
 .membership-table th { padding: 12px 10px; text-align: left; color: var(--text); background: #edf5fc; font-size: 12px; }
 .membership-table td { padding: 13px 10px; border-bottom: 1px solid var(--line); color: var(--text); vertical-align: middle; }
 .membership-table td:first-child, .membership-table td:nth-child(2) { font-weight: 750; }
