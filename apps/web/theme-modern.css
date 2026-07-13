@@ -45,7 +45,7 @@ button:hover { filter: brightness(1.05); }
 .cards strong { font-size: 38px; }
 .status-line { color: #1478d4; }
 .status-line:empty { display: none; }
-.security-shell { width: min(900px, 92vw); }
+.security-shell { width: min(900px, 92vw); margin-left: auto; margin-right: auto; }
 .security-shell .hero { display: block; text-align: center; }
 .security-shell .hero p { margin-left: auto; margin-right: auto; }
 .security-page { display: grid !important; grid-template-columns: minmax(0, 680px); justify-content: center; width: 100%; max-width: none; margin: 0 0 18px; padding: 0; }
