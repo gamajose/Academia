@@ -23,12 +23,14 @@ async function main() {
     const plans = [await plan(client, gym.id, 'Demo Mensal', 8990), await plan(client, gym.id, 'Demo Performance', 12990)];
     const members = [];
     for (const person of PEOPLE) members.push({ id: await member(client, gym.id, person), email: person[1] });
+    const existingJose = await first(client, "SELECT id,email FROM members WHERE gym_id=$1 AND lower(name) LIKE 'jos%' AND lower(COALESCE(email,'')) NOT LIKE 'demo.%' ORDER BY created_at ASC LIMIT 1", [gym.id]);
+    if (existingJose && !members.some((person) => person.id === existingJose.id)) members.unshift({ id: existingJose.id, email: existingJose.email });
     for (const [index, person] of members.entries()) {
       const selected = plans[index % 2];
       let membership = await first(client, "SELECT id FROM memberships WHERE gym_id=$1 AND member_id=$2 AND status='active' LIMIT 1", [gym.id, person.id]);
       if (!membership) membership = await first(client, "INSERT INTO memberships(gym_id,member_id,plan_id,starts_at,ends_at,status) VALUES($1,$2,$3,current_date,current_date+30,'active') RETURNING id", [gym.id,person.id,selected.id]);
       await client.query("INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,status,due_date,paid_at,method) SELECT $1,$2,$3,$4,'paid',current_date,now(),'demo' WHERE NOT EXISTS (SELECT 1 FROM payments WHERE membership_id=$3 AND status='paid')", [gym.id,person.id,membership.id,selected.price_cents]);
-      await client.query('INSERT INTO member_accounts(gym_id,member_id,email,secret_hash,is_active) VALUES($1,$2,$3,$4,true) ON CONFLICT(gym_id,member_id) DO NOTHING', [gym.id,person.id,person.email,hashPassword(DEMO_PASSWORD)]);
+      if (person.email) await client.query('INSERT INTO member_accounts(gym_id,member_id,email,secret_hash,is_active) VALUES($1,$2,$3,$4,true) ON CONFLICT(gym_id,member_id) DO NOTHING', [gym.id,person.id,person.email,hashPassword(DEMO_PASSWORD)]);
     }
     const exerciseIds = [];
     for (const item of [['Agachamento livre','Pernas','Barra','Frango','Desça com controle e mantenha a técnica.'],['Supino reto','Peito','Barra','Intermediario','Mantenha os ombros apoiados.'],['Puxada alta','Costas','Polia','Frango','Puxe em direção ao peito sem balançar.']]) exerciseIds.push(await exercise(client,gym.id,...item));
