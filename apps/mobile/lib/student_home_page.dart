@@ -38,6 +38,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
   String? currentDayId;
   String? qrPayload;
   String? accessCode;
+  String? offlineRegistrationNumber;
+  String? offlinePin;
   DateTime? credentialExpiresAt;
   Timer? countdownTimer;
   String message = 'Carregando seus dados...';
@@ -51,6 +53,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
       };
 
   bool get accessAllowed => access['allowed'] == true;
+  bool get hasOfflineCredential =>
+      (offlineRegistrationNumber?.isNotEmpty ?? false) && (offlinePin?.isNotEmpty ?? false);
 
   int get remainingSeconds {
     if (credentialExpiresAt == null) return 0;
@@ -67,7 +71,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   void initState() {
     super.initState();
-    _refresh();
+    unawaited(_initialize());
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final remaining = remainingSeconds;
@@ -92,6 +96,39 @@ class _StudentHomePageState extends State<StudentHomePage> {
     super.dispose();
   }
 
+  Future<void> _initialize() async {
+    await _loadOfflineCredentialCache();
+    await _refresh();
+  }
+
+  Future<void> _loadOfflineCredentialCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final registration = prefs.getString('studentOfflineRegistrationNumber');
+    final pin = prefs.getString('studentOfflinePin');
+    if (!mounted) return;
+    setState(() {
+      offlineRegistrationNumber = registration;
+      offlinePin = pin;
+      if (registration != null && pin != null) {
+        message = 'Credencial sem internet carregada do aparelho.';
+      }
+    });
+  }
+
+  Future<void> _saveOfflineCredential(Map<String, dynamic> credential) async {
+    final registration = credential['registration_number']?.toString();
+    final pin = credential['offline_pin']?.toString();
+    if (registration == null || registration.isEmpty || pin == null || pin.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('studentOfflineRegistrationNumber', registration);
+    await prefs.setString('studentOfflinePin', pin);
+    if (!mounted) return;
+    setState(() {
+      offlineRegistrationNumber = registration;
+      offlinePin = pin;
+    });
+  }
+
   Future<Map<String, dynamic>> _request(
     String method,
     String path, [
@@ -114,10 +151,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
       final profileResult = await _request('GET', '/api/student/me');
       final accessResult = await _request('GET', '/api/student/access/status');
       Map<String, dynamic> overview = {};
+      Map<String, dynamic> offlineCredential = {};
       try {
         overview = await _request('GET', '/api/student/account/overview');
       } catch (_) {
         overview = {};
+      }
+      try {
+        offlineCredential = await _request('GET', '/api/student/access/offline-credential');
+        await _saveOfflineCredential(offlineCredential);
+      } catch (_) {
+        offlineCredential = {};
       }
 
       Map<String, dynamic>? currentPlan;
@@ -166,6 +210,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
         assessments = progressAssessments;
         goals = progressGoals;
         currentDayId = workoutDayId;
+        if (offlineCredential.isNotEmpty) {
+          offlineRegistrationNumber = offlineCredential['registration_number']?.toString();
+          offlinePin = offlineCredential['offline_pin']?.toString();
+        }
         message = access['message']?.toString() ?? 'Dados atualizados.';
         if (!accessAllowed) {
           qrPayload = null;
@@ -175,7 +223,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
       });
       await _ensureCredential();
     } catch (error) {
-      if (mounted) setState(() => message = 'Erro ao carregar: $error');
+      if (mounted) {
+        setState(() {
+          message = hasOfflineCredential
+              ? 'Sem conexão. Use sua matrícula e PIN salvos para entrar.'
+              : 'Erro ao carregar: $error';
+        });
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -216,7 +270,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
         }
       });
     } catch (error) {
-      if (mounted && !silent) setState(() => message = 'Não foi possível gerar a credencial: $error');
+      if (mounted && !silent) {
+        setState(() {
+          message = hasOfflineCredential
+              ? 'Sem conexão. Use sua matrícula e PIN.'
+              : 'Não foi possível gerar a credencial: $error';
+        });
+      }
     } finally {
       if (mounted) setState(() => generatingCredential = false);
     }
@@ -244,6 +304,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('sessionRole');
+    await prefs.remove('studentOfflineRegistrationNumber');
+    await prefs.remove('studentOfflinePin');
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
@@ -336,6 +398,72 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
+  Widget _offlineCredentialSection() {
+    if (!hasOfflineCredential) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: Text(
+          'Conecte-se uma vez à internet para ativar a matrícula e o PIN de emergência.',
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 18),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.shade300),
+      ),
+      child: Column(
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.signal_wifi_off),
+              SizedBox(width: 8),
+              Text('Acesso sem internet', style: TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Na catraca, informe sua matrícula e depois o PIN de 4 números.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 24,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              Column(
+                children: [
+                  const Text('Matrícula', style: TextStyle(fontWeight: FontWeight.w600)),
+                  SelectableText(
+                    offlineRegistrationNumber ?? '------',
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: 3),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  const Text('PIN', style: TextStyle(fontWeight: FontWeight.w600)),
+                  SelectableText(
+                    offlinePin ?? '----',
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: 4),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _credentialCard() {
     return Card(
       child: Padding(
@@ -345,7 +473,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             const Text('Minha entrada', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             const Text(
-              'Apresente o QR Code ao leitor da catraca ou digite o código de 6 números. Os dois mudam automaticamente.',
+              'Com internet, apresente o QR Code ou digite o código temporário. Sem internet, use a matrícula e o PIN salvos.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -382,9 +510,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
               )
             else
               const SizedBox(
-                height: 180,
-                child: Center(child: Icon(Icons.qr_code_2, size: 110)),
+                height: 120,
+                child: Center(child: Icon(Icons.qr_code_2, size: 90)),
               ),
+            _offlineCredentialSection(),
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: accessAllowed
