@@ -4,10 +4,16 @@ const TOKEN = localStorage.getItem('academiaToken') || '';
 const $ = (id) => document.getElementById(id);
 let rows = [];
 let phoneWidget = null;
+let credentialMemberId = '';
+let credentialExpiresAt = null;
+let credentialTimer = null;
+let credentialRequestInFlight = false;
+let credentialTtlSeconds = 30;
 
 async function req(path, options = {}) {
   const response = await fetch(`${API}${path}`, {
     ...options,
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}`, ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
@@ -38,6 +44,11 @@ function formatPhone(value) {
 
 function formatCep(value) {
   return digits(value).slice(0, 8).replace(/^(\d{5})(\d)/, '$1-$2');
+}
+
+function formatDynamicCode(value) {
+  const number = digits(value).slice(0, 6);
+  return number.length === 6 ? `${number.slice(0, 3)} ${number.slice(3)}` : '--- ---';
 }
 
 function button(text, action, className = 'mini-button') {
@@ -83,6 +94,7 @@ function render() {
     if (whatsapp) main.appendChild(whatsapp);
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
+    actions.appendChild(button('Ver credencial', () => openCredentialPreview(item), 'mini-button'));
     actions.appendChild(button('Editar cadastro', () => openModal(item), 'mini-button secondary'));
     actions.appendChild(button(item.status === 'active' ? 'Desativar' : 'Ativar', () => toggle(item), 'mini-button'));
     li.append(main, actions);
@@ -262,6 +274,133 @@ async function toggle(item) {
   } catch (error) { $('students-status').textContent = `Erro: ${error.message}`; }
 }
 
+function credentialRemainingSeconds() {
+  if (!credentialExpiresAt) return 0;
+  return Math.max(0, Math.ceil((credentialExpiresAt.getTime() - Date.now()) / 1000));
+}
+
+function updateCredentialCountdown() {
+  const remaining = credentialRemainingSeconds();
+  $('credential-countdown').textContent = credentialExpiresAt ? `Muda em ${remaining} segundo(s)` : 'Credencial temporária indisponível';
+  const ratio = credentialTtlSeconds > 0 ? Math.min(1, Math.max(0, remaining / credentialTtlSeconds)) : 0;
+  $('credential-progress-bar').style.width = `${ratio * 100}%`;
+  if (remaining <= 2 && credentialMemberId && !credentialRequestInFlight && !$('credential-preview-modal').classList.contains('hidden')) {
+    void loadCredentialPreview({ silent: true });
+  }
+}
+
+function setCredentialAccessState(access = {}) {
+  const allowed = access.allowed === true;
+  const dot = $('credential-state-dot');
+  dot.classList.toggle('allowed', allowed);
+  dot.classList.toggle('blocked', !allowed);
+  $('credential-state-label').textContent = allowed ? 'Acesso liberado' : 'Acesso bloqueado';
+}
+
+async function drawCredentialQr(payload) {
+  const canvas = $('credential-preview-qr');
+  const empty = $('credential-qr-empty');
+  if (!payload || !window.QRCode?.toCanvas) {
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  await window.QRCode.toCanvas(canvas, payload, {
+    width: 220,
+    margin: 1,
+    errorCorrectionLevel: 'M',
+    color: { dark: '#111111', light: '#ffffff' }
+  });
+}
+
+async function loadCredentialPreview({ silent = false } = {}) {
+  if (!credentialMemberId || credentialRequestInFlight) return;
+  credentialRequestInFlight = true;
+  if (!silent) $('credential-preview-status').textContent = 'Gerando credencial segura...';
+  try {
+    const result = await req('/api/access/member-credential/preview', {
+      method: 'POST',
+      body: JSON.stringify({ member_id: credentialMemberId })
+    });
+    const dynamic = result.dynamic || {};
+    const offline = result.offline || {};
+    const access = result.access || {};
+    const member = result.member || {};
+
+    $('credential-student-name').textContent = member.name || 'Aluno';
+    $('credential-preview-subtitle').textContent = `Prévia real da credencial de ${member.name || 'aluno'}.`;
+    $('offline-registration-number').textContent = offline.registration_number || '------';
+    $('offline-pin').textContent = offline.pin || '----';
+    $('credential-dynamic-code').textContent = formatDynamicCode(dynamic.access_code);
+    credentialExpiresAt = dynamic.expires_at ? new Date(dynamic.expires_at) : null;
+    credentialTtlSeconds = Number(dynamic.ttl_seconds || 30);
+    setCredentialAccessState(access);
+    await drawCredentialQr(dynamic.qr_payload || '');
+    $('credential-preview-status').textContent = access.allowed
+      ? 'QR e código temporário ativos. Matrícula e PIN funcionam mesmo sem internet no celular.'
+      : (access.message || 'O acesso deste aluno está bloqueado.');
+    updateCredentialCountdown();
+  } catch (error) {
+    credentialExpiresAt = null;
+    $('credential-preview-status').textContent = `Erro: ${error.message}`;
+    $('credential-dynamic-code').textContent = '--- ---';
+    await drawCredentialQr('');
+  } finally {
+    credentialRequestInFlight = false;
+  }
+}
+
+function openCredentialPreview(item) {
+  credentialMemberId = item.id;
+  credentialExpiresAt = null;
+  $('credential-preview-modal').classList.remove('hidden');
+  $('credential-preview-modal').setAttribute('aria-hidden', 'false');
+  $('credential-student-name').textContent = item.name || 'Aluno';
+  $('credential-preview-subtitle').textContent = `Carregando a credencial de ${item.name || 'aluno'}...`;
+  $('offline-registration-number').textContent = '------';
+  $('offline-pin').textContent = '----';
+  $('credential-dynamic-code').textContent = '--- ---';
+  document.body.classList.add('modal-open');
+  document.body.style.overflow = 'hidden';
+  if (credentialTimer) window.clearInterval(credentialTimer);
+  credentialTimer = window.setInterval(updateCredentialCountdown, 1000);
+  void loadCredentialPreview();
+}
+
+function closeCredentialPreview() {
+  credentialMemberId = '';
+  credentialExpiresAt = null;
+  $('credential-preview-modal').classList.add('hidden');
+  $('credential-preview-modal').setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  if (credentialTimer) window.clearInterval(credentialTimer);
+  credentialTimer = null;
+}
+
+async function resetOfflinePin() {
+  if (!credentialMemberId) return;
+  const confirmed = window.confirm('Gerar um novo PIN de 4 dígitos? O PIN anterior deixará de funcionar imediatamente.');
+  if (!confirmed) return;
+  const buttonElement = $('reset-offline-pin');
+  buttonElement.disabled = true;
+  try {
+    const result = await req('/api/access/member-offline-pin/reset', {
+      method: 'POST',
+      body: JSON.stringify({ member_id: credentialMemberId })
+    });
+    $('offline-registration-number').textContent = result.registration_number || '------';
+    $('offline-pin').textContent = result.pin || '----';
+    $('credential-preview-status').textContent = 'Novo PIN gerado. Oriente o aluno a atualizar o código salvo no celular.';
+  } catch (error) {
+    $('credential-preview-status').textContent = `Erro: ${error.message}`;
+  } finally {
+    buttonElement.disabled = false;
+  }
+}
+
 $('new-student-button').onclick = () => openModal();
 $('close-student-modal').onclick = closeModal;
 $('cancel-student-button').onclick = closeModal;
@@ -271,6 +410,11 @@ $('student-cpf').addEventListener('input', (event) => { event.target.value = for
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });
 $('student-postal-code').addEventListener('input', (event) => { event.target.value = formatCep(event.target.value); });
+$('close-credential-preview').onclick = closeCredentialPreview;
+$('reset-offline-pin').onclick = resetOfflinePin;
+$('credential-preview-modal').addEventListener('click', (event) => {
+  if (event.target === $('credential-preview-modal')) closeCredentialPreview();
+});
 AcademiaRichEditor.initAll().catch((error) => { $('students-status').textContent = error.message; });
 initPhoneWidget();
 load();
