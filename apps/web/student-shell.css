@@ -33,6 +33,9 @@
 .student-page .nav-icon { color: #9bd1ff; }
 .student-page .top-nav-links a.active .nav-icon { color: #fff; }
 .student-page .top-nav-links a[data-student-link="complete"] { display: none; }
+.student-module-nav a { min-width: 76px; min-height: 58px; padding: 8px 10px; }
+.student-module-nav a .nav-icon { min-height: 27px; font-size: 27px; line-height: 1; }
+.student-module-nav a .nav-label { font-size: 10px; font-weight: 750; }
 
 .student-stat-grid .student-stat:nth-child(1) { border-color: #b9dcff; background: linear-gradient(135deg, #f2f8ff, #e2f1ff); }
 .student-stat-grid .student-stat:nth-child(2) { border-color: #f4c5da; background: linear-gradient(135deg, #fff7fb, #ffe8f2); }
