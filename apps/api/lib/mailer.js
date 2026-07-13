@@ -5,12 +5,15 @@ function isTruthy(value) {
 }
 
 function smtpConfig() {
+  const host = String(process.env.SMTP_HOST || '').trim();
+  const rawPassword = String(process.env.SMTP_PASS || '');
   return {
-    host: String(process.env.SMTP_HOST || '').trim(),
+    host,
     port: Number(process.env.SMTP_PORT || 587),
     secure: isTruthy(process.env.SMTP_SECURE) || Number(process.env.SMTP_PORT || 0) === 465,
     user: String(process.env.SMTP_USER || '').trim(),
-    pass: String(process.env.SMTP_PASS || '')
+    // O Google exibe a senha de app em quatro blocos; os espacos nao fazem parte dela.
+    pass: /^smtp\.gmail\.com$/i.test(host) ? rawPassword.replace(/\s+/g, '') : rawPassword
   };
 }
 

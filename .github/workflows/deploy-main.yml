@@ -56,7 +56,8 @@ jobs:
           cd "$API_DIR"
 
           set -a
-          source .env
+          # Aceita arquivos antigos que usavam "*#" como marcador de comentario.
+          source <(sed 's/^\*#/#/' .env)
           set +a
 
           # A pasta compartilhada do VMware não suporta links simbólicos.
