@@ -13,8 +13,11 @@ PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'p
 STUDENT_HTML = {'student-portal.html'}
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
 NO_CACHE_SUFFIXES = ('.html', '.js', '.css')
-BUILD_VERSION = '20260712-2355'
-LEGACY_REDIRECTS = {'permissions.html': f'/users.html?v={BUILD_VERSION}'}
+BUILD_VERSION = '20260713-0035'
+LEGACY_REDIRECTS = {
+    'permissions.html': f'/users.html?v={BUILD_VERSION}',
+    'student-accounts.html': f'/alunos.html?v={BUILD_VERSION}',
+}
 NAV_SCRIPT_PATTERN = re.compile(r'<script\s+src=["\']\./nav\.js(?:\?[^"\']*)?["\']></script>', re.IGNORECASE)
 
 
