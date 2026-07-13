@@ -284,7 +284,7 @@ function updateCredentialCountdown() {
   $('credential-countdown').textContent = credentialExpiresAt ? `Muda em ${remaining} segundo(s)` : 'Credencial temporária indisponível';
   const ratio = credentialTtlSeconds > 0 ? Math.min(1, Math.max(0, remaining / credentialTtlSeconds)) : 0;
   $('credential-progress-bar').style.width = `${ratio * 100}%`;
-  if (remaining <= 2 && credentialMemberId && !credentialRequestInFlight && !$('credential-preview-modal').classList.contains('hidden')) {
+  if (credentialExpiresAt && remaining <= 2 && credentialMemberId && !credentialRequestInFlight && !$('credential-preview-modal').classList.contains('hidden')) {
     void loadCredentialPreview({ silent: true });
   }
 }
