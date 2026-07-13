@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: academia-production
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -16,7 +16,6 @@ jobs:
     runs-on:
       - self-hosted
       - linux
-      - academia
     timeout-minutes: 15
 
     steps:
