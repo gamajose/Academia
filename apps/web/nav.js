@@ -1,3 +1,11 @@
+const NAV_BUILD_VERSION = '20260712-2355';
+const pageName = (value) => String(value || '').split('/').pop().split('?')[0].split('#')[0];
+const pageUrl = (href) => `./${href}?v=${NAV_BUILD_VERSION}`;
+
+if (pageName(window.location.pathname) === 'permissions.html') {
+  window.location.replace(pageUrl('users.html'));
+}
+
 function loadStyle(href) {
   if (document.querySelector(`link[href="${href}"]`)) return;
   const link = document.createElement('link');
@@ -19,7 +27,7 @@ function clearSession() {
   localStorage.removeItem('academiaAccessProfileName');
   localStorage.removeItem('academiaAccessPermissions');
   document.cookie = 'academiaAuth=; Path=/; Max-Age=0; SameSite=Lax';
-  window.location.href = './student-login.html';
+  window.location.href = pageUrl('student-login.html');
 }
 
 function roleLabel(role, accessProfile = '', accessProfileName = '') {
@@ -51,13 +59,15 @@ function applyNavPermissions(user) {
   const role = user.role || '';
   const accessProfile = user.access_profile || (role === 'staff' ? 'reception' : role === 'operator' ? 'operator' : 'admin');
   document.querySelectorAll('.top-nav-links a').forEach((link) => {
-    link.hidden = !canSeePage(link.getAttribute('href')?.split('/').pop(), role, accessProfile, user.access_permissions || null);
+    link.hidden = !canSeePage(link.dataset.page || pageName(link.getAttribute('href')), role, accessProfile, user.access_permissions || null);
   });
 }
 
 function renderNavigation() {
   loadNavigationStyles();
-  const current = window.location.pathname.split('/').pop() || 'painel.html';
+  document.querySelectorAll('a[href*="permissions.html"]').forEach((link) => link.remove());
+
+  const current = pageName(window.location.pathname) || 'painel.html';
   const pages = [
     ['painel.html', 'Painel'], ['alunos.html', 'Alunos'], ['planos.html', 'Planos'],
     ['vinculos.html', 'Matrículas'], ['solicitacoes.html', 'Pré-matrículas'],
@@ -68,11 +78,11 @@ function renderNavigation() {
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
   nav.innerHTML = `
-    <a class="top-nav-brand" href="./painel.html" aria-label="Academia Lobo, voltar ao painel">
+    <a class="top-nav-brand" href="${pageUrl('painel.html')}" aria-label="Academia Lobo, voltar ao painel">
       <img class="top-nav-logo" src="./logo.svg" alt="" width="36" height="36" />
       <span class="brand-wordmark"><strong><span class="brand-academia">ACADEMIA</span> LOBO</strong><small>gestão da academia</small></span>
     </a>
-    <div class="top-nav-links">${pages.map(([href, label]) => `<a class="${current === href ? 'active' : ''}" href="./${href}">${label}</a>`).join('')}</div>
+    <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}">${label}</a>`).join('')}</div>
     <div class="profile-menu">
       <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>
@@ -80,8 +90,8 @@ function renderNavigation() {
         <span aria-hidden="true">⌄</span>
       </button>
       <div class="profile-dropdown hidden" id="profile-dropdown">
-        <a href="./account.html">Perfil</a>
-        <a href="./security.html">Segurança</a>
+        <a href="${pageUrl('account.html')}">Perfil</a>
+        <a href="${pageUrl('security.html')}">Segurança</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
       </div>
     </div>`;
@@ -140,9 +150,9 @@ async function loadProfile() {
 
 function requireSession() {
   const publicPages = ['home.html', 'index.html', 'plans.html', 'matricula-publica.html', 'student-login.html', 'admin.html'];
-  const current = window.location.pathname.split('/').pop() || 'index.html';
+  const current = pageName(window.location.pathname) || 'index.html';
   const token = localStorage.getItem('academiaToken') || '';
-  if (!token && !publicPages.includes(current)) window.location.href = './student-login.html';
+  if (!token && !publicPages.includes(current)) window.location.href = pageUrl('student-login.html');
 }
 
 function upgradeModals() {

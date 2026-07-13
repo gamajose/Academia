@@ -24,6 +24,10 @@ yarn-error.log*
 .vscode/
 .idea/
 
+# Python
+__pycache__/
+*.py[cod]
+
 # Runtime
 *.pid
 apps/web/uploads/

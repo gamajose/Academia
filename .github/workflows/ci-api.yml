@@ -122,6 +122,10 @@ jobs:
           grep -q 'plan-price-page' apps/web/planos.html
           grep -q 'id="manage-permissions-button"' apps/web/users.html
           grep -q 'id="permissions-manager-modal"' apps/web/users.html
+          grep -q 'NAV_BUILD_VERSION' apps/web/nav.js
+          grep -q 'data-page=' apps/web/nav.js
+          grep -q "LEGACY_REDIRECTS = {'permissions.html':" apps/web/site_server.py
+          grep -q 'NAV_SCRIPT_PATTERN' apps/web/site_server.py
           ! grep -q "\['permissions.html', 'Permissões'\]" apps/web/nav.js
           test ! -e apps/web/permissions.html
           test ! -e apps/web/permissions.js
