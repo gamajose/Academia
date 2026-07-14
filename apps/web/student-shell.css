@@ -66,6 +66,15 @@
 .student-page .panel h3 { margin: 0; }
 
 .student-calendar-panel { overflow: hidden; }
+.student-training-day-panel { max-width: 900px; margin-inline: auto; }
+.student-day-switcher { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 14px; padding: 18px 0 8px; }
+.student-day-switcher > div { display: grid; gap: 3px; text-align: center; text-transform: capitalize; }
+.student-day-switcher span { color: #1478d4; font-size: 13px; font-weight: 700; }
+.student-day-switcher strong { color: #101923; font-size: 22px; }
+.student-day-switcher .icon-button { width: 44px; height: 44px; border: 1px solid #c9dceb; border-radius: 12px; background: #f7fbff; color: #1478d4; font-size: 28px; line-height: 1; cursor: pointer; }
+.student-day-switcher .icon-button:hover, .student-day-switcher .icon-button:focus-visible { background: #e7f2ff; border-color: #1478d4; outline: none; }
+.student-day-empty { display: grid; gap: 6px; text-align: center; }
+.student-day-empty span { color: #5e7081; }
 .student-calendar-toolbar { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: 12px; margin-top: 4px; }
 .student-calendar-toolbar h3 { text-align: center; text-transform: capitalize; }
 .student-calendar-toolbar .icon-button { width: 42px; height: 42px; border: 1px solid #c9dceb; border-radius: 12px; background: #f7fbff; color: #1478d4; font-size: 26px; line-height: 1; cursor: pointer; }
@@ -95,6 +104,8 @@
 .student-exercise-result:hover, .student-exercise-result:focus-visible { border-color: #1478d4; background: #f2f8ff; outline: none; }
 .student-exercise-result strong { color: #101923; }
 .student-exercise-result small { color: #5e7081; }
+.student-custom-exercise-result { border-color: #9bcaf2; background: linear-gradient(135deg, #f1f8ff, #e6f3ff); }
+.student-custom-exercise-result strong { color: #1478d4; }
 .student-private-action { width: 100%; }
 .danger-outline { border-color: #e8b9c0; background: #fff; color: #bd1f2d; }
 .danger-outline:hover, .danger-outline:focus-visible { border-color: #bd1f2d; background: #fff4f5; }
@@ -130,6 +141,10 @@
 
 .student-day-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 14px; background: #f8fbff; }
 .student-workout-exercise-row { align-items: center; }
+.student-exercise-inline-media { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.student-exercise-inline-media:empty { display: none; }
+.student-exercise-inline-media img, .student-exercise-inline-media video, .student-exercise-inline-media iframe { width: min(220px, 100%); max-height: 150px; border: 1px solid #d7e3ef; border-radius: 10px; object-fit: cover; }
+.student-form-hint { margin: 0; color: #5e7081; font-size: 13px; line-height: 1.45; }
 .student-workout-editor-card { width: min(760px, 96vw); }
 .student-workout-editor-form { display: grid; gap: 16px; }
 .student-workout-editor-form > small { color: #5e7081; }

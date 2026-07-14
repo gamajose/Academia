@@ -1,6 +1,8 @@
 (function () {
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
-  const token = localStorage.getItem('studentToken') || '';
+  function getToken() {
+    return localStorage.getItem('studentToken') || localStorage.getItem('academiaStudentToken') || '';
+  }
   const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
   const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
 
@@ -43,7 +45,8 @@
   }
 
   async function api(path, options = {}) {
-    const headers = { Authorization: `Bearer ${token}`, ...(options.headers || {}) };
+    const token = getToken();
+    const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) };
     if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
     const response = await fetch(`${apiBase}${path}`, { ...options, headers });
     const data = await response.json().catch(() => ({}));
@@ -89,7 +92,7 @@
   }
 
   async function init() {
-    if (!token) {
+    if (!getToken()) {
       window.location.href = './student-login.html';
       return null;
     }
@@ -120,5 +123,5 @@
     }
   }
 
-  window.StudentPortal = { api, apiBase, token, escapeHtml, init, logout };
+  window.StudentPortal = { api, apiBase, getToken, escapeHtml, init, logout };
 }());

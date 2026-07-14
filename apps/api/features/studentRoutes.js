@@ -163,9 +163,11 @@ async function studentCustomDetail(query, user, customPlan) {
             swd.weekday, swd.title AS day_title,
             COALESCE(el.name, pe.name) AS exercise_name,
             COALESCE(el.muscle_group, pe.muscle_group) AS muscle_group,
-            el.muscle_group_primary, el.muscle_group_secondary,
+            COALESCE(el.muscle_group_primary, pe.muscle_group_primary) AS muscle_group_primary,
+            COALESCE(el.muscle_group_secondary, pe.muscle_group_secondary) AS muscle_group_secondary,
             COALESCE(el.equipment, pe.equipment) AS equipment,
             COALESCE(el.video_url, pe.video_url) AS video_url,
+            pe.image_url AS image_url,
             COALESCE(el.instructions, pe.instructions) AS instructions,
             (swe.private_exercise_id IS NOT NULL) AS is_private
      FROM student_workout_exercises swe
@@ -202,6 +204,7 @@ async function studentCalendarDetail(query, user, month) {
             el.muscle_group_primary, el.muscle_group_secondary,
             COALESCE(el.equipment, pe.equipment) AS equipment,
             COALESCE(el.video_url, pe.video_url) AS video_url,
+            pe.image_url AS image_url,
             COALESCE(el.instructions, pe.instructions) AS instructions,
             (ste.private_exercise_id IS NOT NULL) AS is_private
      FROM student_training_event_exercises ste
@@ -628,7 +631,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
         [user.gym_id]
       ),
       query(
-        `SELECT id, name, muscle_group, equipment, instructions, video_url
+        `SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, instructions, video_url, image_url
          FROM student_private_exercises WHERE gym_id = $1 AND member_id = $2 AND is_active = true
          ORDER BY name`,
         [user.gym_id, user.member_id]
@@ -812,14 +815,15 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const input = await body(req);
     const name = studentText(input.name, '', 120);
     const videoUrl = studentText(input.video_url, '', 1000);
-    if (name.length < 2 || !validStudentVideoSource(videoUrl)) return send(res, 400, { error: 'exercicio_invalido' });
+    const imageUrl = studentText(input.image_url, '', 1000);
+    if (name.length < 2 || !validStudentVideoSource(videoUrl) || (imageUrl && !validPhotoSource(imageUrl))) return send(res, 400, { error: 'exercicio_invalido' });
     const duplicate = await query('SELECT id FROM student_private_exercises WHERE gym_id = $1 AND member_id = $2 AND lower(name) = lower($3) LIMIT 1', [user.gym_id, user.member_id, name]);
     if (duplicate.rowCount) return send(res, 409, { error: 'exercicio_privado_ja_cadastrado' });
     const result = await query(
-      `INSERT INTO student_private_exercises (gym_id, member_id, name, muscle_group, equipment, instructions, video_url)
-       VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, ''))
-       RETURNING id, name, muscle_group, equipment, instructions, video_url`,
-      [user.gym_id, user.member_id, name, studentText(input.muscle_group, 'Personalizado', 120), studentText(input.equipment, '', 120) || null, studentText(input.instructions, '', 2000) || null, videoUrl]
+      `INSERT INTO student_private_exercises (gym_id, member_id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, instructions, video_url, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NULLIF($9, ''), NULLIF($10, ''))
+       RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, instructions, video_url, image_url`,
+      [user.gym_id, user.member_id, name, studentText(input.muscle_group_primary || input.muscle_group, 'Personalizado', 120), studentText(input.muscle_group_primary || input.muscle_group, 'Personalizado', 120), studentText(input.muscle_group_secondary, '', 240) || null, studentText(input.equipment, '', 120) || null, studentText(input.instructions, '', 2000) || null, videoUrl, imageUrl]
     );
     return send(res, 201, result.rows[0]);
   }
