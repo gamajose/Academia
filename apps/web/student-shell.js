@@ -1,8 +1,8 @@
 (function () {
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
   const token = localStorage.getItem('studentToken') || '';
-  const navigationIcons = { training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
-  const navigationLabels = { training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
+  const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
+  const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
 
   function iconSvg(name) {
     const paths = {
@@ -11,7 +11,8 @@
       target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
       upload: '<path d="M12 16V4m0 0-4 4m4-4 4 4M5 14v5h14v-5"/>',
       history: '<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l3 2"/>',
-      profile: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>'
+      profile: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+      users: '<path d="M16 20v-1.5a4.5 4.5 0 0 0-9 0V20M12 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM19 11a2.8 2.8 0 0 0-1.8-5.2M19.5 20v-1a3.7 3.7 0 0 0-2.8-3.6"/>'
     };
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.target}</svg>`;
   }
@@ -22,6 +23,7 @@
     nav.className = 'student-mobile-nav';
     nav.setAttribute('aria-label', 'Navegação principal');
     const items = [
+      ['community', './student-feed.html', 'users', 'Comunidade'],
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
       ['progress', './student-progress.html', 'chart', 'Evolução'],
       ['profile', './student-profile.html', 'profile', 'Perfil']
@@ -57,6 +59,14 @@
 
   function setActiveLink() {
     createMobileNavigation();
+    const desktopNav = document.querySelector('.student-module-nav');
+    if (desktopNav && !desktopNav.querySelector('[data-student-link="community"]')) {
+      const community = document.createElement('a');
+      community.dataset.studentLink = 'community';
+      community.href = './student-feed.html';
+      community.textContent = 'Comunidade';
+      desktopNav.insertBefore(community, desktopNav.firstElementChild);
+    }
     const current = document.body.dataset.studentPage || 'training';
     document.querySelectorAll('[data-student-link]').forEach((link) => {
       link.classList.toggle('active', link.dataset.studentLink === current);
@@ -74,7 +84,7 @@
         link.querySelector('.nav-label').textContent = navigationLabels[key];
       }
     });
-    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : 'training';
+    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'community' ? 'community' : 'training';
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 

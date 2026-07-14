@@ -198,7 +198,7 @@
   .student-top-nav .top-nav-logo { width: 76px; height: 46px; }
   .student-top-nav .profile-copy { display: none; }
   .student-top-nav .profile-trigger { padding-right: 7px; }
-  .student-mobile-nav { position: fixed; inset: auto 0 0; z-index: 1000; display: grid; grid-template-columns: repeat(3, 1fr); min-height: 72px; padding: 7px 12px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #d7e3ef; background: rgba(255, 255, 255, .97); box-shadow: 0 -10px 28px rgba(8, 31, 53, .12); }
+  .student-mobile-nav { position: fixed; inset: auto 0 0; z-index: 1000; display: grid; grid-template-columns: repeat(4, 1fr); min-height: 72px; padding: 7px 8px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #d7e3ef; background: rgba(255, 255, 255, .97); box-shadow: 0 -10px 28px rgba(8, 31, 53, .12); }
   .student-mobile-nav a { display: grid; place-items: center; align-content: center; gap: 3px; min-height: 58px; border-radius: 12px; color: #687b8d; text-decoration: none; }
   .student-mobile-nav a.active { background: #e7f2ff; color: #1478d4; }
   .student-mobile-nav .nav-icon svg { width: 34px; height: 34px; }

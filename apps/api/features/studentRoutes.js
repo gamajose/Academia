@@ -59,6 +59,99 @@ function studentText(value, fallback = '', maximum = 2000) {
   return String(value ?? fallback).trim().slice(0, maximum);
 }
 
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+}
+
+function validSocialTheme(value) {
+  return ['light', 'dark', 'system'].includes(String(value || ''));
+}
+
+function validSocialMediaType(value) {
+  return ['image', 'video', 'link'].includes(String(value || ''));
+}
+
+async function socialProfileDetail(query, user, memberId) {
+  const result = await query(
+    `SELECT m.id, m.name, m.status,
+            COALESCE(sp.bio, '') AS bio,
+            COALESCE(sp.website_url, '') AS website_url,
+            COALESCE(sp.profile_photo_url, '') AS profile_photo_url,
+            COALESCE(sp.is_private, false) AS is_private,
+            COALESCE(sp.weight_unit, 'kg') AS weight_unit,
+            COALESCE(sp.distance_unit, 'km') AS distance_unit,
+            COALESCE(sp.theme, 'light') AS theme,
+            (SELECT count(*) FROM student_social_posts p WHERE p.gym_id = $1 AND p.member_id = m.id AND p.is_active = true) AS posts_count,
+            (SELECT count(*) FROM student_social_follows f WHERE f.gym_id = $1 AND f.following_member_id = m.id AND f.status = 'accepted') AS followers_count,
+            (SELECT count(*) FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = m.id AND f.status = 'accepted') AS following_count,
+            EXISTS (SELECT 1 FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = $2 AND f.following_member_id = m.id AND f.status = 'accepted') AS viewer_follows,
+            (SELECT f.status FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = $2 AND f.following_member_id = m.id LIMIT 1) AS viewer_follow_status
+     FROM members m
+     LEFT JOIN student_social_profiles sp ON sp.gym_id = m.gym_id AND sp.member_id = m.id
+     WHERE m.gym_id = $1 AND m.id = $3 AND m.status = 'active'
+     LIMIT 1`,
+    [user.gym_id, user.member_id, memberId]
+  );
+  if (!result.rowCount) return null;
+  const profile = result.rows[0];
+  const canViewPrivate = String(memberId) === String(user.member_id) || profile.viewer_follows;
+  if (profile.is_private && !canViewPrivate) {
+    return { ...profile, bio: '', website_url: '', restricted: true, posts: [] };
+  }
+  return profile;
+}
+
+async function socialPosts(query, user, memberId = null) {
+  const params = [user.gym_id, user.member_id];
+  let targetClause = '';
+  if (memberId) {
+    params.push(memberId);
+    targetClause = 'AND p.member_id = $3';
+  }
+  const posts = await query(
+    `SELECT p.id, p.member_id, p.caption, p.media_url, p.media_type, p.created_at,
+            m.name AS author_name,
+            COALESCE(sp.profile_photo_url, '') AS author_photo,
+            (SELECT count(*) FROM student_social_post_likes l WHERE l.post_id = p.id) AS likes_count,
+            (SELECT count(*) FROM student_social_comments c WHERE c.post_id = p.id) AS comments_count,
+            EXISTS (SELECT 1 FROM student_social_post_likes l WHERE l.post_id = p.id AND l.member_id = $2) AS viewer_liked
+     FROM student_social_posts p
+     INNER JOIN members m ON m.id = p.member_id AND m.gym_id = p.gym_id AND m.status = 'active'
+     LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id
+     WHERE p.gym_id = $1 AND p.is_active = true
+       ${targetClause}
+       AND (
+         p.member_id = $2
+         OR COALESCE(sp.is_private, false) = false
+         OR EXISTS (
+           SELECT 1 FROM student_social_follows f
+           WHERE f.gym_id = $1 AND f.follower_member_id = $2
+             AND f.following_member_id = p.member_id AND f.status = 'accepted'
+         )
+       )
+     ORDER BY p.created_at DESC
+     LIMIT 40`,
+    params
+  );
+  if (!posts.rowCount) return [];
+  const postIds = posts.rows.map((post) => post.id);
+  const comments = await query(
+    `SELECT c.id, c.post_id, c.body, c.created_at, c.member_id, m.name AS author_name,
+            COALESCE(sp.profile_photo_url, '') AS author_photo
+     FROM student_social_comments c
+     INNER JOIN members m ON m.id = c.member_id AND m.gym_id = c.gym_id AND m.status = 'active'
+     LEFT JOIN student_social_profiles sp ON sp.gym_id = c.gym_id AND sp.member_id = c.member_id
+     WHERE c.gym_id = $1 AND c.post_id = ANY($2::uuid[])
+     ORDER BY c.created_at ASC`,
+    [user.gym_id, postIds]
+  );
+  const grouped = new Map(posts.rows.map((post) => [String(post.id), []]));
+  comments.rows.forEach((comment) => {
+    if (grouped.has(String(comment.post_id)) && grouped.get(String(comment.post_id)).length < 10) grouped.get(String(comment.post_id)).push(comment);
+  });
+  return posts.rows.map((post) => ({ ...post, comments: grouped.get(String(post.id)) || [] }));
+}
+
 async function studentCustomDetail(query, user, customPlan) {
   const days = await query(
     'SELECT id, plan_id, weekday, title, notes FROM student_workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday',
@@ -367,6 +460,150 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const assessments = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
     const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
     return send(res, 200, { assessments: assessments.rows, goals: goals.rows });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/feed') {
+    return send(res, 200, { posts: await socialPosts(query, user) });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/profile') {
+    const memberId = String(url.searchParams.get('member_id') || user.member_id);
+    if (!isUuid(memberId)) return send(res, 400, { error: 'perfil_invalido' });
+    const profile = await socialProfileDetail(query, user, memberId);
+    if (!profile) return send(res, 404, { error: 'perfil_nao_encontrado' });
+    const posts = profile.restricted ? [] : await socialPosts(query, user, memberId);
+    const stats = await query(
+      `SELECT
+         (SELECT count(*) FROM student_training_events WHERE gym_id = $1 AND member_id = $2 AND status <> 'cancelled') AS scheduled_training_count,
+         (SELECT count(*) FROM student_training_event_exercises e INNER JOIN student_training_events t ON t.id = e.event_id WHERE e.gym_id = $1 AND t.member_id = $2 AND t.status <> 'cancelled') AS planned_exercise_count
+       `,
+      [user.gym_id, memberId]
+    );
+    return send(res, 200, { profile, posts, stats: stats.rows[0] || {} });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/people') {
+    const search = studentText(url.searchParams.get('q'), '', 100).toLowerCase();
+    const result = await query(
+      `SELECT m.id, m.name, COALESCE(sp.profile_photo_url, '') AS profile_photo_url,
+              COALESCE(sp.bio, '') AS bio, COALESCE(sp.is_private, false) AS is_private,
+              EXISTS (SELECT 1 FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = $2 AND f.following_member_id = m.id AND f.status = 'accepted') AS viewer_follows,
+              (SELECT f.status FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = $2 AND f.following_member_id = m.id LIMIT 1) AS viewer_follow_status
+       FROM members m
+       LEFT JOIN student_social_profiles sp ON sp.gym_id = m.gym_id AND sp.member_id = m.id
+       WHERE m.gym_id = $1 AND m.status = 'active' AND m.id <> $2
+         AND ($3 = '' OR lower(m.name) LIKE '%' || $3 || '%')
+       ORDER BY m.name
+       LIMIT 20`,
+      [user.gym_id, user.member_id, search]
+    );
+    return send(res, 200, { people: result.rows });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/follow-requests') {
+    const result = await query(
+      `SELECT f.id, f.created_at, m.id AS member_id, m.name,
+              COALESCE(sp.profile_photo_url, '') AS profile_photo_url,
+              COALESCE(sp.bio, '') AS bio
+       FROM student_social_follows f
+       INNER JOIN members m ON m.id = f.follower_member_id AND m.gym_id = f.gym_id AND m.status = 'active'
+       LEFT JOIN student_social_profiles sp ON sp.gym_id = f.gym_id AND sp.member_id = f.follower_member_id
+       WHERE f.gym_id = $1 AND f.following_member_id = $2 AND f.status = 'pending'
+       ORDER BY f.created_at DESC`,
+      [user.gym_id, user.member_id]
+    );
+    return send(res, 200, { requests: result.rows });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/follow-request') {
+    const input = await body(req);
+    const decision = String(input.decision || '');
+    if (!isUuid(input.request_id) || !['accepted', 'rejected'].includes(decision)) return send(res, 400, { error: 'solicitacao_invalida' });
+    const result = await query(
+      `UPDATE student_social_follows SET status = CASE WHEN $3 = 'accepted' THEN 'accepted' ELSE 'pending' END, updated_at = now()
+       WHERE id = $1 AND gym_id = $2 AND following_member_id = $4 AND status = 'pending'
+       RETURNING id, status`,
+      [input.request_id, user.gym_id, decision, user.member_id]
+    );
+    if (decision === 'rejected' && result.rowCount) await query('DELETE FROM student_social_follows WHERE id = $1 AND gym_id = $2', [input.request_id, user.gym_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'solicitacao_nao_encontrada' });
+    return send(res, 200, { status: decision });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/profile') {
+    const input = await body(req);
+    const name = studentText(input.name, '', 160);
+    const bio = studentText(input.bio, '', 500) || null;
+    const website = studentText(input.website_url, '', 500) || null;
+    const photo = studentText(input.profile_photo_url, '', 1000) || null;
+    const isPrivate = input.is_private === true || input.is_private === 'true';
+    const weightUnit = ['kg', 'lb'].includes(String(input.weight_unit)) ? String(input.weight_unit) : 'kg';
+    const distanceUnit = ['km', 'mi'].includes(String(input.distance_unit)) ? String(input.distance_unit) : 'km';
+    const theme = validSocialTheme(input.theme) ? String(input.theme) : 'light';
+    if (!name || !validPhotoSource(photo || 'https://example.com/placeholder') || (website && !validPhotoSource(website))) return send(res, 400, { error: 'perfil_invalido' });
+    await query('UPDATE members SET name = $3 WHERE id = $1 AND gym_id = $2', [user.member_id, user.gym_id, name]);
+    const result = await query(
+      `INSERT INTO student_social_profiles (gym_id, member_id, bio, website_url, profile_photo_url, is_private, weight_unit, distance_unit, theme)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (gym_id, member_id) DO UPDATE SET bio = EXCLUDED.bio, website_url = EXCLUDED.website_url,
+         profile_photo_url = EXCLUDED.profile_photo_url, is_private = EXCLUDED.is_private, weight_unit = EXCLUDED.weight_unit,
+         distance_unit = EXCLUDED.distance_unit, theme = EXCLUDED.theme, updated_at = now()
+       RETURNING bio, website_url, profile_photo_url, is_private, weight_unit, distance_unit, theme`,
+      [user.gym_id, user.member_id, bio, website, photo, isPrivate, weightUnit, distanceUnit, theme]
+    );
+    return send(res, 200, { profile: { ...(result.rows[0] || {}), name } });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/posts') {
+    const input = await body(req);
+    const caption = studentText(input.caption, '', 2000) || null;
+    const mediaUrl = studentText(input.media_url, '', 1000) || null;
+    const mediaType = String(input.media_type || (mediaUrl ? 'image' : 'link'));
+    if (!caption && !mediaUrl) return send(res, 400, { error: 'post_vazio' });
+    if (!validSocialMediaType(mediaType) || (mediaUrl && !validPhotoSource(mediaUrl))) return send(res, 400, { error: 'midia_invalida' });
+    const result = await query(
+      `INSERT INTO student_social_posts (gym_id, member_id, caption, media_url, media_type)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, member_id, caption, media_url, media_type, created_at`,
+      [user.gym_id, user.member_id, caption, mediaUrl, mediaType]
+    );
+    return send(res, 201, { post: result.rows[0] });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/posts/like') {
+    const input = await body(req);
+    if (!isUuid(input.post_id)) return send(res, 400, { error: 'post_invalido' });
+    const removed = await query(
+      'DELETE FROM student_social_post_likes WHERE gym_id = $1 AND post_id = $2 AND member_id = $3 RETURNING id',
+      [user.gym_id, input.post_id, user.member_id]
+    );
+    if (removed.rowCount) return send(res, 200, { liked: false });
+    const post = await query('SELECT id FROM student_social_posts WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1', [input.post_id, user.gym_id]);
+    if (!post.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
+    await query('INSERT INTO student_social_post_likes (gym_id, post_id, member_id) VALUES ($1, $2, $3) ON CONFLICT (post_id, member_id) DO NOTHING', [user.gym_id, input.post_id, user.member_id]);
+    return send(res, 200, { liked: true });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/posts/comment') {
+    const input = await body(req);
+    const bodyText = studentText(input.body, '', 800);
+    if (!isUuid(input.post_id) || !bodyText) return send(res, 400, { error: 'comentario_invalido' });
+    const post = await query('SELECT id, member_id FROM student_social_posts p LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id WHERE p.id = $1 AND p.gym_id = $2 AND p.is_active = true AND (p.member_id = $3 OR COALESCE(sp.is_private, false) = false OR EXISTS (SELECT 1 FROM student_social_follows f WHERE f.gym_id = $2 AND f.follower_member_id = $3 AND f.following_member_id = p.member_id AND f.status = \'accepted\')) LIMIT 1', [input.post_id, user.gym_id, user.member_id]);
+    if (!post.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
+    const result = await query('INSERT INTO student_social_comments (gym_id, post_id, member_id, body) VALUES ($1, $2, $3, $4) RETURNING id, post_id, member_id, body, created_at', [user.gym_id, input.post_id, user.member_id, bodyText]);
+    return send(res, 201, { comment: result.rows[0] });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/follow') {
+    const input = await body(req);
+    if (!isUuid(input.member_id) || String(input.member_id) === String(user.member_id)) return send(res, 400, { error: 'perfil_invalido' });
+    const target = await query('SELECT m.id, COALESCE(sp.is_private, false) AS is_private FROM members m LEFT JOIN student_social_profiles sp ON sp.gym_id = m.gym_id AND sp.member_id = m.id WHERE m.id = $1 AND m.gym_id = $2 AND m.status = \'active\' LIMIT 1', [input.member_id, user.gym_id]);
+    if (!target.rowCount) return send(res, 404, { error: 'perfil_nao_encontrado' });
+    const existing = await query('DELETE FROM student_social_follows WHERE gym_id = $1 AND follower_member_id = $2 AND following_member_id = $3 RETURNING status', [user.gym_id, user.member_id, input.member_id]);
+    if (existing.rowCount) return send(res, 200, { following: false, status: null });
+    const followStatus = target.rows[0].is_private ? 'pending' : 'accepted';
+    await query('INSERT INTO student_social_follows (gym_id, follower_member_id, following_member_id, status) VALUES ($1, $2, $3, $4)', [user.gym_id, user.member_id, input.member_id, followStatus]);
+    return send(res, 200, { following: followStatus === 'accepted', status: followStatus });
   }
 
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/progress/photos') {
