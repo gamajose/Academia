@@ -1,14 +1,16 @@
-.social-profile-page .social-profile-page-hero { display: grid; gap: 18px; }
-.social-profile-page .social-profile-page-header { display: flex; align-items: center; gap: 18px; }
+.social-profile-page .app-shell { display: grid; gap: 18px; }
+.social-profile-page .social-profile-page-hero { display: block; max-width: none; margin: 0; }
+.social-profile-page .social-profile-page-header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; }
 .social-profile-page .social-profile-page-header .social-avatar { flex: 0 0 86px; width: 86px; height: 86px; font-size: 28px; }
-.social-profile-page .social-profile-page-identity { display: grid; flex: 1; gap: 5px; min-width: 0; }
+.social-profile-page .social-profile-page-identity { display: grid; gap: 5px; min-width: 0; }
 .social-profile-page .social-profile-page-identity h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); }
 .social-profile-page .social-profile-page-identity small { color: #5e7081; }
 .social-profile-page .social-profile-page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .social-profile-page .social-profile-page-actions .button { width: auto; }
-.social-profile-page .social-profile-page-bio { max-width: 720px; margin: 0; color: #415a70; white-space: pre-wrap; }
-.social-profile-page .social-profile-page-link { width: fit-content; overflow-wrap: anywhere; }
-.social-profile-page .social-profile-page-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 18px; border-top: 1px solid #edf2f6; text-align: center; }
+.social-profile-page .social-profile-page-bio { grid-column: 2 / -1; max-width: 720px; margin: 0; color: #415a70; white-space: pre-wrap; }
+.social-profile-page .social-profile-page-bio:empty { display: none; }
+.social-profile-page .social-profile-page-link { grid-column: 2 / -1; width: fit-content; overflow-wrap: anywhere; }
+.social-profile-page .social-profile-page-stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 18px; border-top: 1px solid #edf2f6; text-align: center; }
 .social-profile-page .social-profile-page-stats span { display: grid; gap: 4px; color: #5e7081; }
 .social-profile-page .social-profile-page-stats strong { color: #101923; font-size: 22px; }
 .social-profile-page .social-profile-page-stats small { font-size: 12px; }
@@ -41,6 +43,10 @@
 .social-profile-page .social-profile-post-tile img, .social-profile-page .social-profile-post-tile video { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; }
 .social-profile-page .social-profile-empty { color: #5e7081; }
 .social-profile-page .social-profile-edit-note { margin: 0; color: #5e7081; }
+.social-profile-page .social-profile-training-modal-card { width: min(720px, 94vw); }
+.social-profile-page .social-profile-training-modal-card #social-profile-training-modal-content { display: grid; gap: 14px; }
+.social-profile-page .social-profile-training-modal-card .social-profile-workout-card { background: #fff; }
+.social-profile-page .social-profile-training-modal-card .social-profile-modal-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .social-profile-edit-page .social-profile-settings-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 24px; align-items: start; }
 .social-profile-edit-page .social-profile-settings-nav { display: grid; gap: 4px; }
 .social-profile-edit-page .social-profile-settings-nav h2 { margin: 0 0 8px; color: #5e7081; font-size: 14px; font-weight: 600; }
@@ -53,8 +59,10 @@
 .social-profile-edit-page .social-profile-account-actions .button { width: auto; }
 
 @media (max-width: 760px) {
-  .social-profile-page .social-profile-page-header { align-items: flex-start; flex-direction: column; }
+  .social-profile-page .social-profile-page-header { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
+  .social-profile-page .social-profile-page-actions { grid-column: 1 / -1; }
   .social-profile-page .social-profile-page-actions, .social-profile-page .social-profile-page-actions .button { width: 100%; }
+  .social-profile-page .social-profile-page-bio, .social-profile-page .social-profile-page-link { grid-column: 1 / -1; }
   .social-profile-page .social-profile-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .social-profile-page .social-profile-content-grid { grid-template-columns: 1fr; }
   .social-profile-page .social-profile-chart-grid { gap: 5px; padding-inline: 2px; }

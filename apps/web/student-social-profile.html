@@ -25,12 +25,12 @@
   </nav>
 
   <main class="app-shell">
-    <section class="hero social-profile-page-hero">
+    <section class="social-profile-page-hero">
       <div class="social-profile-page-header panel">
         <div class="social-avatar" id="social-profile-page-avatar">A</div>
         <div class="social-profile-page-identity"><p class="eyebrow">Perfil do aluno</p><h1 id="social-profile-page-name">Aluno</h1><small id="social-profile-page-visibility">Perfil público</small></div>
-        <div class="social-profile-page-actions"><a class="button secondary" href="./student-social-profile-edit.html">Editar perfil</a><a class="button secondary" href="./student-feed.html">Comunidade</a></div>
-        <p class="social-profile-page-bio" id="social-profile-page-bio">Complete seu perfil para compartilhar sua jornada.</p>
+        <div class="social-profile-page-actions"><a class="button secondary" href="./student-social-profile-edit.html">Editar perfil</a></div>
+        <p class="social-profile-page-bio" id="social-profile-page-bio"></p>
         <a class="social-profile-page-link" id="social-profile-page-link" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
         <div class="social-profile-page-stats"><span><strong id="social-profile-page-posts">0</strong><small>publicações</small></span><span><strong id="social-profile-page-followers">0</strong><small>seguidores</small></span><span><strong id="social-profile-page-following">0</strong><small>seguindo</small></span></div>
       </div>
@@ -38,14 +38,23 @@
 
     <section class="panel social-profile-section"><h2>Estatísticas</h2><div class="social-profile-overview-grid"><div class="social-profile-overview-card"><strong id="social-profile-completed">0</strong><small>treinos concluídos</small></div><div class="social-profile-overview-card"><strong id="social-profile-exercises">0</strong><small>exercícios planejados</small></div><div class="social-profile-overview-card"><strong id="social-profile-checkins">0</strong><small>check-ins</small></div><div class="social-profile-overview-card"><strong id="social-profile-scheduled">0</strong><small>treinos agendados</small></div></div></section>
 
-    <section class="panel social-profile-section"><h2>Evolução recente</h2><div class="social-profile-chart-legend"><span><i></i>Peso</span><span><i></i>Gordura corporal</span></div><div class="social-profile-chart-grid" id="social-profile-chart"><p class="social-profile-empty">Carregando histórico...</p></div></section>
-
     <div class="social-profile-content-grid">
+      <section class="panel social-profile-section"><h2>Evolução recente</h2><div class="social-profile-chart-legend"><span><i></i>Peso</span><span><i></i>Gordura corporal</span></div><div class="social-profile-chart-grid" id="social-profile-chart"><p class="social-profile-empty">Carregando histórico...</p></div></section>
       <section class="panel social-profile-section"><h2>Ficha atual</h2><div id="social-profile-workout"><p class="social-profile-empty">Carregando sua ficha...</p></div></section>
-      <section class="panel social-profile-section"><h2>Publicações</h2><div class="social-profile-post-grid" id="social-profile-posts"><p class="social-profile-empty">Carregando publicações...</p></div></section>
     </div>
+    <section class="panel social-profile-section social-profile-publications-section"><h2>Publicações</h2><div class="social-profile-post-grid" id="social-profile-posts"><p class="social-profile-empty">Carregando publicações...</p></div></section>
     <p class="status-line" id="social-profile-page-status" aria-live="polite"></p>
   </main>
+
+  <div class="modal hidden" id="social-profile-training-modal" role="dialog" aria-modal="true" aria-labelledby="social-profile-training-title">
+    <article class="modal-card social-profile-training-modal-card">
+      <div class="modal-header">
+        <div><h3 id="social-profile-training-title">Ficha atual</h3><p>Confira os exercícios e ajuste sua ficha na tela de treinos.</p></div>
+        <button class="modal-close" id="social-profile-training-close" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div id="social-profile-training-modal-content"></div>
+    </article>
+  </div>
 
   <script src="./student-shell.js"></script>
   <script src="./student-social-profile.js"></script>
