@@ -22,9 +22,10 @@ function buildProgressAnalysis(current, previous, goals = []) {
     waist_cm: numericDelta(current, previous, 'waist_cm')
   };
   const signals = [];
-  if (delta.body_fat_percent !== null && delta.body_fat_percent < 0) signals.push(`gordura corporal caiu ${Math.abs(delta.body_fat_percent).toFixed(2).replace('.', ',')} p.p.`);
-  if (delta.muscle_mass_kg !== null && delta.muscle_mass_kg > 0) signals.push(`massa muscular subiu ${delta.muscle_mass_kg.toFixed(2).replace('.', ',')} kg`);
-  if (delta.waist_cm !== null && delta.waist_cm < 0) signals.push(`cintura reduziu ${Math.abs(delta.waist_cm).toFixed(2).replace('.', ',')} cm`);
+  if (delta.weight_kg !== null && delta.weight_kg !== 0) signals.push(`peso ${delta.weight_kg < 0 ? 'reduziu' : 'subiu'} ${Math.abs(delta.weight_kg).toFixed(2).replace('.', ',')} kg`);
+  if (delta.body_fat_percent !== null && delta.body_fat_percent !== 0) signals.push(`gordura corporal ${delta.body_fat_percent < 0 ? 'caiu' : 'subiu'} ${Math.abs(delta.body_fat_percent).toFixed(2).replace('.', ',')} p.p.`);
+  if (delta.muscle_mass_kg !== null && delta.muscle_mass_kg !== 0) signals.push(`massa muscular ${delta.muscle_mass_kg > 0 ? 'subiu' : 'caiu'} ${Math.abs(delta.muscle_mass_kg).toFixed(2).replace('.', ',')} kg`);
+  if (delta.waist_cm !== null && delta.waist_cm !== 0) signals.push(`cintura ${delta.waist_cm < 0 ? 'reduziu' : 'subiu'} ${Math.abs(delta.waist_cm).toFixed(2).replace('.', ',')} cm`);
   if (!signals.length) signals.push('continue registrando medições para identificar tendências com mais confiança');
 
   return {

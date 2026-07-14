@@ -56,7 +56,7 @@
         `Massa muscular ${value(item, 'muscle_mass_kg', ' kg')}`,
         `Cintura ${value(item, 'waist_cm', ' cm')}`,
         `Bíceps ${value(item, 'biceps_cm', ' cm')}`,
-        `Costas ${value(item, 'back_cm', ' cm')}`
+        `Coxas ${value(item, 'left_thigh_cm', ' cm')}`
       ].join(' · ');
       list.appendChild(entity(dateLabel(item.assessment_date), details, item.notes || 'Nova medição adicionada ao histórico.'));
     });
@@ -95,8 +95,8 @@
     try {
       button.disabled = true; setFormStatus('Salvando nova medição...');
       const file = p('student-assessment-photo').files?.[0];
-      const photoUrl = file ? await uploadPhoto(file) : p('student-assessment-photo-url').value.trim();
-      const fields = { assessment_date: p('student-assessment-date').value || null, weight_kg: p('student-weight').value, height_cm: p('student-height').value, body_fat_percent: p('student-fat').value, muscle_mass_kg: p('student-muscle').value, waist_cm: p('student-waist').value, chest_cm: p('student-chest').value, hip_cm: p('student-hip').value, biceps_cm: p('student-biceps').value, back_cm: p('student-back').value, left_arm_cm: p('student-left-arm').value, right_arm_cm: p('student-right-arm').value, left_thigh_cm: p('student-left-thigh').value, right_thigh_cm: p('student-right-thigh').value, resting_heart_rate: p('student-heart-rate').value, photo_url: photoUrl, notes: p('student-assessment-notes').value.trim() };
+      const photoUrl = file ? await uploadPhoto(file) : '';
+      const fields = { assessment_date: p('student-assessment-date').value || null, weight_kg: p('student-weight').value, height_cm: p('student-height').value, body_fat_percent: p('student-fat').value, waist_cm: p('student-waist').value, chest_cm: p('student-chest').value, hip_cm: p('student-hip').value, biceps_cm: p('student-biceps').value, thigh_cm: p('student-thigh').value, photo_url: photoUrl, notes: p('student-assessment-notes').value.trim() };
       await StudentPortal.api('/api/student/progress/assessment', { method: 'POST', body: JSON.stringify(fields) });
       p('student-assessment-form').reset(); p('student-assessment-date').value = localDate(); preview(''); setFormStatus('Nova medição adicionada ao histórico.'); await load();
     } catch (error) { setFormStatus(`Erro: ${error.message}`, true); } finally { button.disabled = false; }
@@ -104,7 +104,7 @@
 
   p('student-assessment-date').value = localDate();
   p('student-assessment-photo').addEventListener('change', (event) => { const file = event.target.files?.[0]; if (file) preview(URL.createObjectURL(file)); });
-  p('student-assessment-photo-url').addEventListener('input', (event) => { if (!p('student-assessment-photo').files?.length) preview(event.target.value.trim()); });
+  p('open-student-assessment').addEventListener('click', () => { const form = p('student-assessment-form'); form.hidden = !form.hidden; if (!form.hidden) p('student-assessment-date').focus(); });
   p('student-assessment-form').addEventListener('submit', saveAssessment);
   load();
 }());

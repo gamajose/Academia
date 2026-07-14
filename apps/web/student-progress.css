@@ -1,6 +1,7 @@
 .student-assessment-form { display: grid; gap: 16px; }
 .student-assessment-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .student-assessment-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.student-assessment-form[hidden] { display: none; }
 .student-assessment-form .field { display: grid; gap: 7px; }
 .student-assessment-form .field label { color: #263b4c; font-size: 13px; font-weight: 700; }
 .student-assessment-form .field small, .section-help { color: #60778b; font-size: 13px; line-height: 1.45; }
@@ -17,6 +18,9 @@
 .progress-analysis-projection span { color: #60778b; font-size: 12px; }
 .progress-analysis-projection strong { color: #1478d4; }
 .progress-analysis-disclaimer { color: #6c7e8d; font-size: 12px; }
+.progress-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.progress-summary-grid .student-stat { min-width: 0; padding: 10px 12px; }
+.progress-summary-grid .student-stat strong { margin-top: 3px; font-size: 20px; }
 html[data-student-theme="dark"] body.student-page .student-assessment-form .field label { color: #e8f0f8; }
 html[data-student-theme="dark"] body.student-page .student-assessment-form .field small,
 html[data-student-theme="dark"] body.student-page .section-help,
@@ -28,4 +32,5 @@ html[data-student-theme="dark"] body.student-page .progress-analysis-panel { bor
 html[data-student-theme="dark"] body.student-page .progress-analysis-projection > div { border-color: #34536e; background: #122235; }
 @media (max-width: 900px) { .student-assessment-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .progress-analysis-projection { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 650px) { .student-assessment-grid, .student-assessment-media-grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
-@media (max-width: 460px) { .student-assessment-grid, .student-assessment-media-grid, .progress-analysis-projection { grid-template-columns: 1fr; } }
+@media (max-width: 650px) { .progress-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .student-assessment-grid, .student-assessment-media-grid, .progress-analysis-projection { grid-template-columns: 1fr; } .progress-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

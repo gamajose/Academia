@@ -485,9 +485,9 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
         gym_id, member_id, assessment_date, weight_kg, height_cm, body_fat_percent, muscle_mass_kg,
         waist_cm, chest_cm, hip_cm, biceps_cm, back_cm, left_arm_cm, right_arm_cm, left_thigh_cm, right_thigh_cm,
         resting_heart_rate, photo_url, notes
-      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,COALESCE($7,(SELECT muscle_mass_kg FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 1)),$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
       RETURNING *`,
-      [user.gym_id, user.member_id, assessmentDate || null, studentNumber(input.weight_kg), studentNumber(input.height_cm), studentNumber(input.body_fat_percent), studentNumber(input.muscle_mass_kg), studentNumber(input.waist_cm), studentNumber(input.chest_cm), studentNumber(input.hip_cm), studentNumber(input.biceps_cm), studentNumber(input.back_cm), studentNumber(input.left_arm_cm), studentNumber(input.right_arm_cm), studentNumber(input.left_thigh_cm), studentNumber(input.right_thigh_cm), studentInteger(input.resting_heart_rate, null, 20, 250), photoUrl || null, studentText(input.notes, '', 5000) || null]
+      [user.gym_id, user.member_id, assessmentDate || null, studentNumber(input.weight_kg), studentNumber(input.height_cm), studentNumber(input.body_fat_percent), studentNumber(input.muscle_mass_kg), studentNumber(input.waist_cm), studentNumber(input.chest_cm), studentNumber(input.hip_cm), studentNumber(input.biceps_cm), null, studentNumber(input.thigh_cm), studentNumber(input.thigh_cm), null, null, null, photoUrl || null, studentText(input.notes, '', 5000) || null]
     );
     const history = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 2', [user.gym_id, user.member_id]);
     const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
