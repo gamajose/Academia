@@ -50,7 +50,7 @@
 .student-page .top-nav-links a[data-student-link="complete"] { display: none; }
 .student-module-nav a { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 94px; min-height: 78px; padding: 8px 10px; text-align: center; }
 .student-module-nav a .nav-icon { display: grid; place-items: center; min-height: 36px; line-height: 1; }
-.student-module-nav a .nav-label { display: block; font-size: 11px; font-weight: 800; line-height: 1.1; }
+.student-module-nav a .nav-label { display: block; font-size: 11px; font-weight: 600; line-height: 1.1; }
 
 .student-stat-grid .student-stat:nth-child(1) { border-color: #b9dcff; background: linear-gradient(135deg, #f2f8ff, #e2f1ff); }
 .student-stat-grid .student-stat:nth-child(2) { border-color: #f4c5da; background: linear-gradient(135deg, #fff7fb, #ffe8f2); }
@@ -159,7 +159,7 @@
   .student-mobile-nav a { display: grid; place-items: center; align-content: center; gap: 3px; min-height: 58px; border-radius: 12px; color: #687b8d; text-decoration: none; }
   .student-mobile-nav a.active { background: #e7f2ff; color: #1478d4; }
   .student-mobile-nav .nav-icon svg { width: 34px; height: 34px; }
-  .student-mobile-nav .nav-label { font-size: 11px; font-weight: 850; line-height: 1.1; }
+  .student-mobile-nav .nav-label { font-size: 11px; font-weight: 600; line-height: 1.1; }
   .student-stat-grid { grid-template-columns: 1fr; }
   .student-goal-list { grid-template-columns: 1fr; }
   .student-page .app-shell { padding-top: 26px; }
