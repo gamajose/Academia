@@ -2,6 +2,7 @@
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
   const token = localStorage.getItem('studentToken') || '';
   const navigationIcons = { home: 'home', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
+  const navigationLabels = { home: 'Início', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
 
   function iconSvg(name) {
     const paths = {
@@ -79,8 +80,10 @@
         icon.innerHTML = iconSvg(navigationIcons[key]);
         const label = document.createElement('span');
         label.className = 'nav-label';
-        label.textContent = link.textContent.trim();
+        label.textContent = navigationLabels[key] || link.textContent.trim();
         link.replaceChildren(icon, label);
+      } else if (link.querySelector('.nav-label') && navigationLabels[key]) {
+        link.querySelector('.nav-label').textContent = navigationLabels[key];
       }
     });
     const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'home' ? 'home' : current === 'training' ? 'training' : '';
