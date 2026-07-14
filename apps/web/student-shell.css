@@ -106,6 +106,13 @@
 .student-exercise-result small { color: #5e7081; }
 .student-custom-exercise-result { border-color: #9bcaf2; background: linear-gradient(135deg, #f1f8ff, #e6f3ff); }
 .student-custom-exercise-result strong { color: #1478d4; }
+.student-event-form-exercise-list { display: grid; gap: 7px; max-height: 210px; overflow-y: auto; margin-top: 9px; padding: 2px; }
+.student-event-form-selected { display: grid; gap: 7px; margin-top: 10px; }
+.student-selected-exercise { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid #b9dcff; border-radius: 10px; background: #f2f8ff; }
+.student-selected-exercise span { display: grid; gap: 2px; }
+.student-selected-exercise strong { color: #101923; }
+.student-selected-exercise small { color: #5e7081; }
+.student-selected-exercise .icon-button { width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: #1478d4; font-size: 20px; cursor: pointer; }
 .student-private-action { width: 100%; }
 .danger-outline { border-color: #e8b9c0; background: #fff; color: #bd1f2d; }
 .danger-outline:hover, .danger-outline:focus-visible { border-color: #bd1f2d; background: #fff4f5; }
