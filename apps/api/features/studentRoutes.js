@@ -695,8 +695,10 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     }
 
     const client = await pool.connect();
+    let saveStage = 'inicio';
     try {
       await client.query('BEGIN');
+      saveStage = 'sessao';
       let result;
       if (eventId) {
         result = await client.query(
@@ -725,6 +727,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       }
 
       for (const [index, exercise] of exercises.entries()) {
+        saveStage = `exercicio_${index + 1}`;
         const publicId = String(exercise.exercise_id || '').trim();
         const privateId = String(exercise.private_exercise_id || '').trim();
         let publicExerciseId = null;
@@ -764,6 +767,20 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       return send(res, eventId ? 200 : 201, { ...result.rows[0], exercises });
     } catch (error) {
       await client.query('ROLLBACK').catch(() => {});
+      if (!error.statusCode) {
+        const code = String(error.code || '');
+        const errorName = ['42P01', '42703'].includes(code)
+          ? 'estrutura_treino_desatualizada'
+          : ['23503', '22P02'].includes(code)
+            ? 'exercicio_invalido'
+            : code === '23514'
+              ? 'dados_do_treino_invalidos'
+              : `falha_salvar_treino_${saveStage}`;
+        console.error('[student-training-save]', { stage: saveStage, code, message: error.message });
+        const safeError = new Error(errorName);
+        safeError.statusCode = 500;
+        throw safeError;
+      }
       throw error;
     } finally {
       client.release();
