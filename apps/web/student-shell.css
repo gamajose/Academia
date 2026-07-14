@@ -91,12 +91,28 @@
 .student-calendar-day.is-selected { border-color: #1478d4; background: #e7f2ff; box-shadow: inset 0 0 0 1px #1478d4; }
 .student-calendar-event-preview { display: block; width: 100%; overflow: hidden; color: #183b5c; font-size: 11px; font-weight: 700; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .student-event-list { display: grid; gap: 10px; }
-.student-event-card { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; padding: 15px 16px; border: 1px solid #d7e3ef; border-radius: 14px; background: #fff; color: #24405a; text-align: left; cursor: pointer; }
+.student-event-card { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border: 1px solid #d7e3ef; border-radius: 12px; background: #fff; color: #24405a; text-align: left; cursor: pointer; }
 .student-event-card:hover, .student-event-card:focus-visible { border-color: #1478d4; box-shadow: 0 0 0 3px rgba(20, 120, 212, .1); outline: none; }
 .student-event-card.is-selected { border-color: #1478d4; background: #f2f8ff; box-shadow: inset 4px 0 #1478d4; }
 .student-event-card strong { color: #101923; }
-.student-event-card small { color: #5e7081; }
-.student-event-time { color: #1478d4; font-weight: 700; }
+.student-event-calendar-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: #e7f2ff; color: #1478d4; }
+.student-event-calendar-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.student-event-copy { min-width: 0; }
+.student-event-copy strong { display: block; overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.student-event-chevron { color: #6c849b; font-size: 22px; line-height: 1; }
+.student-detail-day-switcher { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.student-detail-day-switcher > div { display: grid; gap: 2px; text-align: center; }
+.student-detail-day-switcher span { color: #1478d4; font-size: 12px; font-weight: 700; text-transform: capitalize; }
+.student-detail-day-switcher strong { color: #101923; font-size: 18px; font-weight: 600; }
+.student-detail-day-switcher .icon-button { flex: 0 0 auto; width: 36px; height: 36px; border: 1px solid #d7e3ef; background: #fff; color: #1478d4; font-size: 24px; line-height: 1; }
+.student-detail-icon-actions { display: flex; align-items: center; gap: 8px; }
+.student-detail-icon-action { display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid #d7e3ef; border-radius: 10px; background: #fff; color: #1478d4; cursor: pointer; }
+.student-detail-icon-action:hover, .student-detail-icon-action:focus-visible { border-color: #1478d4; background: #f2f8ff; outline: none; box-shadow: 0 0 0 3px rgba(20, 120, 212, .1); }
+.student-detail-icon-action svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.student-detail-icon-action.compact { width: 32px; height: 32px; border-radius: 8px; }
+.student-detail-icon-action.compact svg { width: 16px; height: 16px; }
+.student-detail-icon-action.is-danger { color: #bd1f2d; border-color: #e8b9c0; }
+.student-detail-icon-action.is-danger:hover, .student-detail-icon-action.is-danger:focus-visible { border-color: #bd1f2d; background: #fff4f5; box-shadow: 0 0 0 3px rgba(189, 31, 45, .1); }
 #student-event-exercise-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 18px 0 0; }
 .student-exercise-picker { display: grid; gap: 14px; }
 .student-exercise-results { display: grid; max-height: 300px; gap: 8px; overflow: auto; padding: 2px; }
@@ -156,7 +172,8 @@
 }
 
 .student-day-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 14px; background: #f8fbff; }
-.student-workout-exercise-row { align-items: center; }
+.student-workout-exercise-row { align-items: center; cursor: pointer; }
+.student-workout-exercise-row:hover, .student-workout-exercise-row:focus-visible { border-color: #1478d4; box-shadow: 0 0 0 3px rgba(20, 120, 212, .1); outline: none; }
 .student-exercise-inline-media { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .student-exercise-inline-media:empty { display: none; }
 .student-exercise-inline-media img, .student-exercise-inline-media video, .student-exercise-inline-media iframe { width: min(220px, 100%); max-height: 150px; border: 1px solid #d7e3ef; border-radius: 10px; object-fit: cover; }
@@ -242,10 +259,11 @@
   .student-calendar-day.is-empty { min-height: 78px; }
   .student-calendar-day strong { font-size: 13px; }
   .student-calendar-day small, .student-calendar-event-preview { font-size: 9px; }
-  .student-event-card { grid-template-columns: 1fr auto; gap: 5px 10px; }
-  .student-event-card .student-event-time { grid-row: span 2; }
-  .student-event-card small { grid-column: 2; }
-  #student-event-detail-panel .toolbar { align-items: flex-start; }
-  #student-event-detail-panel .toolbar-actions { width: 100%; }
-  #student-event-detail-panel .toolbar-actions .button { flex: 1 1 auto; }
+  .student-event-card { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 9px; }
+  .student-event-calendar-icon { width: 30px; height: 30px; }
+  .student-event-calendar-icon svg { width: 17px; height: 17px; }
+  .student-detail-day-switcher { margin-bottom: 14px; }
+  .student-detail-day-switcher strong { font-size: 16px; }
+  .student-detail-icon-actions { gap: 6px; }
+  .student-detail-icon-action { width: 34px; height: 34px; }
 }

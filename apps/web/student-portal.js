@@ -66,9 +66,6 @@
   }
 
   function renderSelectedDate() {
-    const date = fromDateKey(selectedDate);
-    p('student-selected-date-weekday').textContent = date.toLocaleDateString('pt-BR', { weekday: 'long' });
-    p('student-selected-date-title').textContent = date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
     const list = p('student-event-list');
     list.replaceChildren();
     const dayEvents = eventForDate(selectedDate);
@@ -83,8 +80,8 @@
       const card = document.createElement('button');
       card.type = 'button';
       card.className = `student-event-card${selectedEvent?.id === event.id ? ' is-selected' : ''}`;
-      const muscles = [...new Set(event.exercises.flatMap((item) => [item.muscle_group_primary, item.muscle_group_secondary, item.muscle_group].filter(Boolean).flatMap((value) => String(value).split(',').map((part) => part.trim()))))].slice(0, 3);
-      card.innerHTML = `<span class="student-event-time">${text(timeLabel(event.start_time))}${event.end_time ? ` - ${text(timeLabel(event.end_time))}` : ''}</span><span class="student-event-copy"><strong>${text(event.title)}</strong><small>${event.exercises.length} exercício(s)${muscles.length ? ` · ${text(muscles.join(', '))}` : ''}</small></span><span class="student-event-chevron" aria-hidden="true">›</span>`;
+      card.setAttribute('aria-label', `Abrir ${event.title || 'treino'}`);
+      card.innerHTML = '<span class="student-event-calendar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span><span class="student-event-copy"><strong>' + text(event.title || 'Treino') + '</strong></span><span class="student-event-chevron" aria-hidden="true">›</span>';
       card.addEventListener('click', () => { selectedEvent = event; renderSelectedDate(); renderEventDetail(); });
       list.appendChild(card);
     });
@@ -100,12 +97,25 @@
 
   function renderEventDetail() {
     const panel = p('student-event-detail-panel');
-    if (!selectedEvent) { panel.classList.add('hidden'); return; }
     panel.classList.remove('hidden');
+    const date = fromDateKey(selectedDate);
+    p('student-selected-date-weekday').textContent = date.toLocaleDateString('pt-BR', { weekday: 'long' });
+    p('student-selected-date-title').textContent = date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+    const actions = p('student-event-detail-actions');
+    const list = p('student-event-exercise-list');
+    list.replaceChildren();
+    if (!selectedEvent) {
+      actions.classList.add('hidden');
+      p('student-event-detail-title').textContent = 'Treino do dia';
+      p('student-event-detail-time').textContent = 'Nenhum treino selecionado';
+      p('student-event-detail-notes').textContent = 'Selecione um treino acima ou crie um novo para este dia.';
+      const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhum treino agendado para este dia.'; list.appendChild(empty);
+      return;
+    }
+    actions.classList.remove('hidden');
     p('student-event-detail-title').textContent = selectedEvent.title;
     p('student-event-detail-time').textContent = `${dateLabel(String(selectedEvent.scheduled_date).slice(0, 10))} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
     p('student-event-detail-notes').textContent = selectedEvent.notes || 'Sem observações para este treino.';
-    const list = p('student-event-exercise-list'); list.replaceChildren();
     if (!selectedEvent.exercises.length) {
       const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhum exercício adicionado a este treino.'; list.appendChild(empty); return;
     }
@@ -115,11 +125,13 @@
       main.innerHTML = `<strong>${text(item.exercise_name || 'Exercício')}</strong><span>${text(item.sets || '-')} séries · ${text(item.reps || '-')} repetições · ${text(item.rest_seconds ?? '-')}s de descanso</span><span>${text([item.is_private ? 'Exercício personalizado' : 'Catálogo da academia', item.muscle_group_primary || item.muscle_group].filter(Boolean).join(' · '))}</span>`;
       const media = document.createElement('div'); media.className = 'student-exercise-inline-media'; appendExerciseMedia(media, item); if (!media.children.length) media.hidden = true;
       main.appendChild(media); row.appendChild(main);
+      row.tabIndex = 0; row.setAttribute('role', 'button'); row.setAttribute('aria-label', `Ver detalhes de ${item.exercise_name || 'exercício'}`);
+      row.addEventListener('click', () => openExercise(item));
+      row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openExercise(item); } });
       const actions = document.createElement('div'); actions.className = 'entity-actions';
-      const view = document.createElement('button'); view.type = 'button'; view.className = 'mini-button secondary'; view.textContent = 'Ver detalhes'; view.addEventListener('click', () => openExercise(item));
-      const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'mini-button secondary'; edit.textContent = 'Editar'; edit.addEventListener('click', () => openExercisePicker(item));
-      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'mini-button'; remove.textContent = 'Remover'; remove.addEventListener('click', () => removeEventExercise(item));
-      actions.append(view, edit, remove); row.appendChild(actions); list.appendChild(row);
+      const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'student-detail-icon-action compact'; edit.setAttribute('aria-label', `Editar ${item.exercise_name || 'exercício'}`); edit.title = 'Editar exercício'; edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg>'; edit.addEventListener('click', (event) => { event.stopPropagation(); openExercisePicker(item); });
+      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'student-detail-icon-action compact is-danger'; remove.setAttribute('aria-label', `Remover ${item.exercise_name || 'exercício'}`); remove.title = 'Remover exercício'; remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg>'; remove.addEventListener('click', (event) => { event.stopPropagation(); removeEventExercise(item); });
+      actions.append(edit, remove); row.appendChild(actions); list.appendChild(row);
     });
   }
 
@@ -176,7 +188,7 @@
   function closeExercisePicker() { p('student-exercise-picker-modal').classList.add('hidden'); clearPickedExercise(); }
 
   function openEventEditor(event = null) {
-    p('student-event-editor-title').textContent = event ? 'Editar treino' : 'Novo treino'; p('student-event-form').dataset.id = event?.id || ''; p('student-event-title').value = event?.title || 'Meu treino'; p('student-event-date').value = String(event?.scheduled_date || selectedDate).slice(0, 10); p('student-event-start').value = timeLabel(event?.start_time) || '18:00'; p('student-event-end').value = timeLabel(event?.end_time) || '19:00'; p('student-event-notes').value = event?.notes || ''; p('student-event-exercise-search-inline').value = ''; selectedExerciseDrafts = []; privateExerciseDraftMode = false; renderEventExerciseOptions(); status('student-event-editor-status', ''); p('student-event-editor-modal').classList.remove('hidden');
+    p('student-event-editor-title').textContent = event ? 'Editar treino' : 'Novo treino'; p('student-event-form').dataset.id = event?.id || ''; p('student-event-title').value = event?.title || 'Treino'; p('student-event-date').value = String(event?.scheduled_date || selectedDate).slice(0, 10); p('student-event-start').value = timeLabel(event?.start_time) || '18:00'; p('student-event-end').value = timeLabel(event?.end_time) || '19:00'; p('student-event-notes').value = event?.notes || ''; p('student-event-exercise-search-inline').value = ''; selectedExerciseDrafts = []; privateExerciseDraftMode = false; renderEventExerciseOptions(); status('student-event-editor-status', ''); p('student-event-editor-modal').classList.remove('hidden');
   }
   function closeEventEditor() { p('student-event-editor-modal').classList.add('hidden'); }
   function openPrivateExercise(draftMode = false) { privateExerciseDraftMode = draftMode; if (!draftMode) closeExercisePicker(); p('student-private-exercise-form').reset(); status('student-private-exercise-status', ''); p('student-private-exercise-modal').classList.remove('hidden'); }
@@ -232,7 +244,7 @@
   }
 
   async function loadCalendar() {
-    try { const result = await StudentPortal.api(`/api/student/training/calendar?month=${encodeURIComponent(currentMonth())}`); events = result.events || []; if (selectedEvent) selectedEvent = events.find((event) => event.id === selectedEvent.id) || null; renderSelectedDate(); renderEventDetail(); p('student-auto-sync').textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`; status('student-calendar-status', ''); }
+    try { const result = await StudentPortal.api(`/api/student/training/calendar?month=${encodeURIComponent(currentMonth())}`); events = result.events || []; if (selectedEvent) selectedEvent = events.find((event) => event.id === selectedEvent.id) || null; renderSelectedDate(); renderEventDetail(); status('student-calendar-status', ''); }
     catch (error) { status('student-portal-status', `Não foi possível carregar seus treinos: ${error.message}`, true); }
   }
 
