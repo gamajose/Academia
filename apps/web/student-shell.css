@@ -63,11 +63,6 @@
 .student-goal-card { min-height: 132px; padding: 18px; border: 1px solid #c5ddf3; border-radius: 16px; background: linear-gradient(135deg, #f8fcff, #eaf5ff); }
 .student-goal-card .entity-main strong { color: #1478d4; font-size: 18px; }
 
-.student-home-grid .quick-card { display: grid; gap: 5px; min-height: 142px; }
-.student-home-grid .quick-card strong { font-size: 28px; line-height: 1; color: #1478d4; }
-.student-home-grid .quick-card span { font-size: 16px; font-weight: 850; color: #101923; }
-.student-home-grid .quick-card small { color: #5e7081; line-height: 1.45; }
-
 .student-page .panel h3 { margin: 0; }
 
 .student-day-picker {

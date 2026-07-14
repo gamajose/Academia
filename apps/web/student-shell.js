@@ -1,12 +1,11 @@
 (function () {
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
   const token = localStorage.getItem('studentToken') || '';
-  const navigationIcons = { home: 'home', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
-  const navigationLabels = { home: 'Início', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
+  const navigationIcons = { training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
+  const navigationLabels = { training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
 
   function iconSvg(name) {
     const paths = {
-      home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/>',
       dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11M3 9h3.5v6H3zM17.5 9H21v6h-3.5z"/>',
       chart: '<path d="M4 19V5M4 19h16M8 15v-3M12 15V8M16 15v-6"/>',
       target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
@@ -17,24 +16,14 @@
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.target}</svg>`;
   }
 
-  function ensureStudentHomeLink() {
-    const nav = document.querySelector('.student-module-nav');
-    if (!nav || nav.querySelector('[data-student-link="home"]')) return;
-    const link = document.createElement('a');
-    link.dataset.studentLink = 'home';
-    link.href = './student-home.html';
-    link.textContent = 'Início';
-    nav.prepend(link);
-  }
-
   function createMobileNavigation() {
     if (document.querySelector('.student-mobile-nav')) return;
     const nav = document.createElement('nav');
     nav.className = 'student-mobile-nav';
     nav.setAttribute('aria-label', 'Navegação principal');
     const items = [
-      ['home', './student-home.html', 'home', 'Início'],
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
+      ['progress', './student-progress.html', 'chart', 'Evolução'],
       ['profile', './student-profile.html', 'profile', 'Perfil']
     ];
     items.forEach(([key, href, iconText, label]) => {
@@ -67,7 +56,6 @@
   }
 
   function setActiveLink() {
-    ensureStudentHomeLink();
     createMobileNavigation();
     const current = document.body.dataset.studentPage || 'training';
     document.querySelectorAll('[data-student-link]').forEach((link) => {
@@ -86,7 +74,7 @@
         link.querySelector('.nav-label').textContent = navigationLabels[key];
       }
     });
-    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'home' ? 'home' : current === 'training' ? 'training' : '';
+    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : 'training';
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 

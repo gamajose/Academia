@@ -58,7 +58,7 @@ function finishLogin(data) {
   localStorage.setItem('studentAccountType', data.account_type || 'student');
   localStorage.setItem('studentApiBaseUrl', API);
   studentPortalOn();
-  window.location.href = data.account_type === 'visitor' ? './visitor-portal.html' : './student-portal.html';
+  window.location.href = data.account_type === 'visitor' ? './visitor-portal.html' : './student-progress.html';
 }
 
 async function googleLogin(credential) {

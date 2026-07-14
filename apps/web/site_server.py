@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent
 UPLOAD_ROOT = Path(os.environ.get('EDITOR_UPLOAD_DIR', str(ROOT / 'uploads'))).resolve()
 PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-register.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
 STUDENT_HTML = {
-    'student-home.html', 'student-portal.html', 'student-complete.html', 'student-progress.html',
+    'student-portal.html', 'student-complete.html', 'student-progress.html',
     'student-goals.html', 'student-share.html', 'student-history.html',
     'student-profile.html', 'student-security.html', 'student-change-password.html',
     'visitor-portal.html'
