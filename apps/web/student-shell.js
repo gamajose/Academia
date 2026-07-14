@@ -1,7 +1,37 @@
 (function () {
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
   const token = localStorage.getItem('studentToken') || '';
-  const navigationIcons = { training: '▣', progress: '◔', goals: '◎', share: '↗', history: '◷' };
+  const navigationIcons = { home: '⌂', training: '▣', progress: '◔', goals: '◎', share: '↗', history: '◷' };
+
+  function ensureStudentHomeLink() {
+    const nav = document.querySelector('.student-module-nav');
+    if (!nav || nav.querySelector('[data-student-link="home"]')) return;
+    const link = document.createElement('a');
+    link.dataset.studentLink = 'home';
+    link.href = './student-home.html';
+    link.textContent = 'Início';
+    nav.prepend(link);
+  }
+
+  function createMobileNavigation() {
+    if (document.querySelector('.student-mobile-nav')) return;
+    const nav = document.createElement('nav');
+    nav.className = 'student-mobile-nav';
+    nav.setAttribute('aria-label', 'Navegação principal');
+    const items = [
+      ['home', './student-home.html', '⌂', 'Início'],
+      ['training', './student-portal.html', '▣', 'Treino'],
+      ['profile', './student-profile.html', '♙', 'Perfil']
+    ];
+    items.forEach(([key, href, iconText, label]) => {
+      const link = document.createElement('a');
+      link.href = href;
+      link.dataset.mobileStudentLink = key;
+      link.innerHTML = `<span class="nav-icon" aria-hidden="true">${iconText}</span><span class="nav-label">${label}</span>`;
+      nav.appendChild(link);
+    });
+    document.body.appendChild(nav);
+  }
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -23,6 +53,8 @@
   }
 
   function setActiveLink() {
+    ensureStudentHomeLink();
+    createMobileNavigation();
     const current = document.body.dataset.studentPage || 'training';
     document.querySelectorAll('[data-student-link]').forEach((link) => {
       link.classList.toggle('active', link.dataset.studentLink === current);
@@ -38,6 +70,8 @@
         link.replaceChildren(icon, label);
       }
     });
+    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'home' ? 'home' : current === 'training' ? 'training' : '';
+    document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 
   async function init() {
