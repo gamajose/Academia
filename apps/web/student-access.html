@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acesso - BlueREC Academia</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
+  <link rel="stylesheet" href="./student-shell.css" />
+  <link rel="stylesheet" href="./student-access.css" />
+</head>
+<body class="student-page student-access-page" data-student-page="access">
+  <nav class="top-nav student-top-nav">
+    <a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno">
+      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
+    </a>
+    <div class="top-nav-links student-module-nav" aria-label="Navegação do aluno">
+      <a data-student-link="training" href="./student-portal.html">Meu treino</a>
+      <a data-student-link="progress" href="./student-progress.html">Minha evolução</a>
+      <a data-student-link="goals" href="./student-goals.html">Minhas metas</a>
+      <a data-student-link="share" href="./student-share.html">Compartilhar foto</a>
+      <a data-student-link="access" href="./student-access.html">Acesso</a>
+    </div>
+    <div class="profile-menu">
+      <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false" aria-haspopup="menu">
+        <span class="profile-avatar" data-student-avatar>A</span>
+      </button>
+      <div class="profile-dropdown hidden" id="student-profile-dropdown" role="menu">
+        <a href="./student-social-profile.html">Meu perfil</a>
+        <a href="./student-social-profile-edit.html#social-security">Segurança</a>
+        <button class="logout-item" id="student-profile-logout" type="button">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-shell">
+    <section class="student-access-header">
+      <p class="eyebrow">Entrada na academia</p>
+      <h1>Seu acesso</h1>
+      <p>Apresente o QR Code na catraca ou use sua matrícula e PIN.</p>
+    </section>
+
+    <section class="student-access-grid" aria-live="polite">
+      <article class="panel student-access-qr-card">
+        <div class="student-access-card-heading">
+          <div><h2>QR Code da catraca</h2><p id="student-access-status">Verificando seu acesso...</p></div>
+          <span class="badge" id="student-access-badge">Verificando</span>
+        </div>
+        <div class="student-access-qr-frame">
+          <img id="student-access-qr" alt="QR Code temporário para entrada na academia" hidden />
+          <span id="student-access-qr-empty">Gerando seu QR Code...</span>
+        </div>
+        <div class="student-access-code-block"><span>Código temporário</span><strong id="student-access-code">--- ---</strong><small id="student-access-countdown">Atualizando...</small></div>
+        <button class="button secondary student-access-refresh" id="student-access-refresh" type="button">Atualizar QR Code</button>
+      </article>
+
+      <article class="panel student-access-offline-card">
+        <div><h2>Entrada sem internet</h2><p>Se estiver sem conexão no celular, informe estes dados na catraca.</p></div>
+        <div class="student-access-offline-values"><div><span>Matrícula</span><strong id="student-access-registration">------</strong></div><div><span>PIN</span><strong id="student-access-pin">----</strong></div></div>
+        <p class="student-access-note">O acesso só é liberado quando a matrícula e o pagamento estiverem em dia.</p>
+      </article>
+    </section>
+    <p class="status-line" id="student-access-page-status" aria-live="polite"></p>
+  </main>
+
+  <script src="./student-shell.js"></script>
+  <script src="./student-access.js"></script>
+</body>
+</html>

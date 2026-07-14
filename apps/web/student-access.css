@@ -1,0 +1,30 @@
+.student-access-header { max-width: 720px; margin: 0 auto 24px; text-align: center; }
+.student-access-header h1 { margin: 5px 0 8px; }
+.student-access-header p:last-child { margin: 0 auto; }
+.student-access-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); gap: 18px; width: min(900px, 100%); margin: 0 auto; }
+.student-access-grid .panel { gap: 18px; }
+.student-access-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.student-access-card-heading h2, .student-access-offline-card h2 { margin: 0; font-size: 20px; }
+.student-access-card-heading p, .student-access-offline-card p { margin: 5px 0 0; }
+.student-access-qr-frame { display: grid; place-items: center; min-height: 280px; padding: 20px; border: 1px solid #d7e3ef; border-radius: 16px; background: #f8fbff; }
+.student-access-qr-frame img { display: block; width: min(240px, 100%); aspect-ratio: 1; image-rendering: pixelated; }
+.student-access-qr-frame span { color: #5e7081; font-size: 14px; text-align: center; }
+.student-access-code-block { display: grid; gap: 3px; text-align: center; }
+.student-access-code-block span, .student-access-code-block small { color: #5e7081; font-size: 13px; }
+.student-access-code-block strong { color: #1478d4; font-size: 30px; letter-spacing: .12em; }
+.student-access-refresh { align-self: center; }
+.student-access-offline-card { align-content: start; }
+.student-access-offline-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.student-access-offline-values > div { display: grid; gap: 5px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 12px; background: #f8fbff; }
+.student-access-offline-values span { color: #5e7081; font-size: 13px; }
+.student-access-offline-values strong { color: #101923; font-size: 22px; letter-spacing: .08em; }
+.student-access-note { margin-top: auto !important; padding-top: 14px; border-top: 1px solid #d7e3ef; font-size: 13px; line-height: 1.5; }
+html[data-student-theme="dark"] body.student-access-page .student-access-qr-frame,
+html[data-student-theme="dark"] body.student-access-page .student-access-offline-values > div { border-color: #29445d; background: #102033; }
+html[data-student-theme="dark"] body.student-access-page .student-access-qr-frame span,
+html[data-student-theme="dark"] body.student-access-page .student-access-code-block span,
+html[data-student-theme="dark"] body.student-access-page .student-access-code-block small,
+html[data-student-theme="dark"] body.student-access-page .student-access-offline-values span { color: #a9bed1; }
+html[data-student-theme="dark"] body.student-access-page .student-access-offline-values strong { color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-access-page .student-access-note { border-color: #29445d; }
+@media (max-width: 760px) { .student-access-grid { grid-template-columns: 1fr; } .student-access-qr-frame { min-height: 230px; } }

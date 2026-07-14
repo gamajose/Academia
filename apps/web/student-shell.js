@@ -14,15 +14,15 @@
   function getToken() {
     return localStorage.getItem('studentToken') || localStorage.getItem('academiaStudentToken') || getCookie('academiaStudentAuth') || '';
   }
-  const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
-  const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
+  const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history', access: 'qr' };
+  const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico', access: 'Acesso' };
   const translations = {
     en: {
-      'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Compartilhar': 'Share', 'Histórico': 'History', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
+      'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Compartilhar': 'Share', 'Histórico': 'History', 'Acesso': 'Access', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
       'Editar perfil': 'Edit profile', 'Conta': 'Account', 'Dados da conta': 'Account details', 'Segurança': 'Security', 'Preferências': 'Preferences', 'Idioma': 'Language', 'Tema': 'Theme', 'Exportar dados': 'Export data', 'Foto visível no seu perfil': 'Profile photo', 'Nome': 'Name', 'Bio': 'Bio', 'Link': 'Link', 'Deixar meu perfil privado': 'Make my profile private', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'On a private profile, only approved followers can see your posts.', 'Salvar alterações': 'Save changes', 'Cancelar': 'Cancel', 'Dados pessoais': 'Personal details', 'Contato': 'Contact', 'Endereço': 'Address', 'Sobre você': 'About you', 'Nome completo': 'Full name', 'Data de nascimento': 'Date of birth', 'CPF': 'Tax ID', 'RG': 'ID document', 'E-mail': 'Email', 'Telefone': 'Phone', 'Rua': 'Street', 'Número': 'Number', 'Bairro': 'Neighborhood', 'Cidade': 'City', 'Estado': 'State', 'Objetivo': 'Goal', 'Alergias e restrições': 'Allergies and restrictions', 'Observações': 'Notes', 'Salvar preferências': 'Save preferences', 'Salvar idioma': 'Save language', 'Salvar tema': 'Save theme', 'O idioma escolhido será aplicado à interface do aluno.': 'The selected language will be applied to the student interface.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'The appearance is applied immediately and kept on future screens.', 'Trocar senha': 'Change password', 'Senha atual': 'Current password', 'Nova senha': 'New password', 'Confirmar nova senha': 'Confirm new password', 'Atualizar senha': 'Update password', 'Português': 'Portuguese', 'Inglês': 'English', 'Espanhol': 'Spanish', 'Español': 'Spanish', 'Claro': 'Light', 'Escuro': 'Dark', 'Automático': 'System'
     },
     es: {
-      'Comunidade': 'Comunidad', 'Treino': 'Entrenamiento', 'Evolução': 'Progreso', 'Metas': 'Metas', 'Compartilhar': 'Compartir', 'Histórico': 'Historial', 'Perfil': 'Perfil', 'Minha conta': 'Mi cuenta', 'Meu perfil': 'Mi perfil', 'Sair': 'Cerrar sesión',
+      'Comunidade': 'Comunidad', 'Treino': 'Entrenamiento', 'Evolução': 'Progreso', 'Metas': 'Metas', 'Compartilhar': 'Compartir', 'Histórico': 'Historial', 'Acesso': 'Acceso', 'Perfil': 'Perfil', 'Minha conta': 'Mi cuenta', 'Meu perfil': 'Mi perfil', 'Sair': 'Cerrar sesión',
       'Editar perfil': 'Editar perfil', 'Conta': 'Cuenta', 'Dados da conta': 'Datos de la cuenta', 'Segurança': 'Seguridad', 'Preferências': 'Preferencias', 'Idioma': 'Idioma', 'Tema': 'Tema', 'Exportar dados': 'Exportar datos', 'Foto visível no seu perfil': 'Foto visible en tu perfil', 'Nome': 'Nombre', 'Bio': 'Biografía', 'Link': 'Enlace', 'Deixar meu perfil privado': 'Hacer mi perfil privado', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'En un perfil privado, solo los seguidores aprobados ven tus publicaciones.', 'Salvar alterações': 'Guardar cambios', 'Cancelar': 'Cancelar', 'Dados pessoais': 'Datos personales', 'Contato': 'Contacto', 'Endereço': 'Dirección', 'Sobre você': 'Sobre ti', 'Nome completo': 'Nombre completo', 'Data de nascimento': 'Fecha de nacimiento', 'CPF': 'Documento fiscal', 'RG': 'Documento de identidad', 'E-mail': 'Correo electrónico', 'Telefone': 'Teléfono', 'Rua': 'Calle', 'Número': 'Número', 'Bairro': 'Barrio', 'Cidade': 'Ciudad', 'Estado': 'Estado', 'Objetivo': 'Objetivo', 'Alergias e restrições': 'Alergias y restricciones', 'Observações': 'Observaciones', 'Salvar preferências': 'Guardar preferencias', 'Salvar idioma': 'Guardar idioma', 'Salvar tema': 'Guardar tema', 'O idioma escolhido será aplicado à interface do aluno.': 'El idioma elegido se aplicará a la interfaz del alumno.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'La apariencia se aplica inmediatamente y se mantiene en las próximas pantallas.', 'Trocar senha': 'Cambiar contraseña', 'Senha atual': 'Contraseña actual', 'Nova senha': 'Nueva contraseña', 'Confirmar nova senha': 'Confirmar nueva contraseña', 'Atualizar senha': 'Actualizar contraseña', 'Português': 'Portugués', 'Inglês': 'Inglés', 'Espanhol': 'Español', 'Español': 'Español', 'Claro': 'Claro', 'Escuro': 'Oscuro', 'Automático': 'Sistema'
     }
   };
@@ -71,7 +71,8 @@
       upload: '<path d="M12 16V4m0 0-4 4m4-4 4 4M5 14v5h14v-5"/>',
       history: '<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l3 2"/>',
       profile: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
-      users: '<path d="M16 20v-1.5a4.5 4.5 0 0 0-9 0V20M12 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM19 11a2.8 2.8 0 0 0-1.8-5.2M19.5 20v-1a3.7 3.7 0 0 0-2.8-3.6"/>'
+      users: '<path d="M16 20v-1.5a4.5 4.5 0 0 0-9 0V20M12 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM19 11a2.8 2.8 0 0 0-1.8-5.2M19.5 20v-1a3.7 3.7 0 0 0-2.8-3.6"/>',
+      qr: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z"/>'
     };
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.target}</svg>`;
   }
@@ -85,6 +86,7 @@
       ['community', './student-feed.html', 'users', 'Comunidade'],
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
       ['progress', './student-progress.html', 'chart', 'Evolução'],
+      ['access', './student-access.html', 'qr', 'Acesso'],
       ['profile', './student-social-profile.html', 'profile', 'Perfil']
     ];
     items.forEach(([key, href, iconText, label]) => {
@@ -120,6 +122,11 @@
   function setActiveLink() {
     createMobileNavigation();
     const desktopNav = document.querySelector('.student-module-nav');
+    document.querySelectorAll('[data-student-link="history"]').forEach((link) => {
+      link.dataset.studentLink = 'access';
+      link.href = './student-access.html';
+      link.textContent = 'Acesso';
+    });
     if (desktopNav && !desktopNav.querySelector('[data-student-link="community"]')) {
       const community = document.createElement('a');
       community.dataset.studentLink = 'community';
@@ -144,7 +151,7 @@
         link.querySelector('.nav-label').textContent = translations[getLocale()]?.[navigationLabels[key]] || navigationLabels[key];
       }
     });
-    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'community' ? 'community' : 'training';
+    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'community' ? 'community' : current === 'access' ? 'access' : 'training';
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 

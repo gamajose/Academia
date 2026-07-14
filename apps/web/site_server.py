@@ -12,7 +12,7 @@ UPLOAD_ROOT = Path(os.environ.get('EDITOR_UPLOAD_DIR', str(ROOT / 'uploads'))).r
 PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-register.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
 STUDENT_HTML = {
     'student-portal.html', 'student-complete.html', 'student-progress.html',
-    'student-goals.html', 'student-share.html', 'student-history.html',
+    'student-goals.html', 'student-share.html', 'student-history.html', 'student-access.html',
     'student-profile.html', 'student-security.html', 'student-change-password.html',
     'student-feed.html', 'student-social-profile.html', 'student-social-profile-edit.html',
     'visitor-portal.html'
