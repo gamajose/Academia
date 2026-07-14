@@ -8,6 +8,8 @@
   let editingExerciseId = null;
   let selectedExerciseDrafts = [];
   let privateExerciseDraftMode = false;
+  let exercisePreviewTimer = null;
+  let exercisePreviewNode = null;
 
   function toDateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -28,6 +30,40 @@
   function status(id, message, error = false) { const element = p(id); if (!element) return; element.textContent = message || ''; element.classList.toggle('error', error); }
   function eventForDate(dateKey) { return events.filter((event) => String(event.scheduled_date).slice(0, 10) === dateKey); }
   function currentMonth() { return selectedDate.slice(0, 7); }
+
+  function hideExercisePreview() {
+    if (exercisePreviewTimer) { clearTimeout(exercisePreviewTimer); exercisePreviewTimer = null; }
+    exercisePreviewNode?.remove(); exercisePreviewNode = null;
+  }
+
+  function showExercisePreview(item, button, touch = false) {
+    const source = item.video_url || item.image_url;
+    if (!source || !window.AcademiaTrainingMedia) return;
+    hideExercisePreview();
+    const preview = document.createElement('div'); preview.className = `student-exercise-hover-preview${touch ? ' is-touch-preview' : ''}`; preview.setAttribute('role', 'status');
+    const title = document.createElement('strong'); title.textContent = item.name || item.exercise_name || 'Exercício';
+    const media = document.createElement('div'); media.className = 'student-exercise-hover-media';
+    if (item.video_url) window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+    else { const image = document.createElement('img'); image.src = item.image_url; image.alt = ''; image.loading = 'eager'; media.appendChild(image); }
+    preview.append(title, media); document.body.appendChild(preview); exercisePreviewNode = preview;
+    if (!touch) {
+      const rect = button.getBoundingClientRect();
+      const left = Math.min(Math.max(12, rect.left), window.innerWidth - preview.offsetWidth - 12);
+      const top = rect.bottom + 8 + preview.offsetHeight <= window.innerHeight ? rect.bottom + 8 : rect.top - preview.offsetHeight - 8;
+      preview.style.left = `${left}px`; preview.style.top = `${Math.max(12, top)}px`;
+    }
+  }
+
+  function bindExercisePreview(button, item) {
+    if (!item.video_url && !item.image_url) return;
+    button.addEventListener('mouseenter', () => showExercisePreview(item, button));
+    button.addEventListener('mouseleave', hideExercisePreview);
+    button.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'touch') return;
+      exercisePreviewTimer = setTimeout(() => showExercisePreview(item, button, true), 450);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => button.addEventListener(eventName, hideExercisePreview));
+  }
 
   function renderSelectedDate() {
     const date = fromDateKey(selectedDate);
@@ -104,7 +140,7 @@
     if (!matches.length) { const empty = document.createElement('div'); empty.className = 'empty-state'; empty.textContent = 'Nenhum exercício do catálogo encontrado.'; list.appendChild(empty); return; }
     matches.forEach((item) => {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`;
-      button.addEventListener('click', () => pickExercise(item)); list.appendChild(button);
+      button.addEventListener('click', () => pickExercise(item)); bindExercisePreview(button, item); list.appendChild(button);
     });
   }
 
@@ -125,7 +161,7 @@
     const query = normalize(p('student-event-exercise-search-inline')?.value || '');
     const custom = document.createElement('button'); custom.type = 'button'; custom.className = 'student-exercise-result student-custom-exercise-result'; custom.innerHTML = '<strong>＋ Criar exercício personalizado</strong>'; custom.addEventListener('click', () => { list.classList.remove('is-open'); openPrivateExercise(true); }); list.appendChild(custom);
     catalog.filter((item) => !query || normalize(`${item.name} ${item.muscle_group} ${item.equipment}`).includes(query)).slice(0, 20).forEach((item) => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`; button.addEventListener('click', () => addExerciseDraft(item)); list.appendChild(button);
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`; button.addEventListener('click', () => addExerciseDraft(item)); bindExercisePreview(button, item); list.appendChild(button);
     });
     if (!selectedExerciseDrafts.length) { selected.innerHTML = '<small class="student-form-hint">Nenhum exercício selecionado ainda.</small>'; return; }
     selectedExerciseDrafts.forEach((item, index) => { const chip = document.createElement('div'); chip.className = 'student-selected-exercise'; chip.innerHTML = `<span><strong>${text(item.name)}</strong><small>${text(item.muscle_group_primary || item.muscle_group || 'Exercício personalizado')}</small></span>`; const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'icon-button'; remove.setAttribute('aria-label', `Remover ${item.name}`); remove.textContent = '×'; remove.addEventListener('click', () => { selectedExerciseDrafts.splice(index, 1); renderEventExerciseOptions(); }); chip.appendChild(remove); selected.appendChild(chip); });
