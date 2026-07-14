@@ -19,6 +19,8 @@
   font-weight: 900;
 }
 
+.top-nav-links a .nav-icon svg { display: block; width: 25px; height: 25px; }
+
 .top-nav-links a .nav-label { font-size: 10px; font-weight: 750; }
 
 @media (max-width: 620px) {

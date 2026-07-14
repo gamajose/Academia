@@ -3,11 +3,16 @@
 }
 
 .student-top-nav .top-nav-logo {
-  width: 68px;
-  height: 38px;
+  width: 94px;
+  height: 56px;
   object-fit: cover;
   border-radius: 7px;
+  mix-blend-mode: screen;
 }
+
+.student-top-nav .top-nav-brand { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.student-top-nav .top-nav-brand .brand-wordmark { display: none !important; }
+.student-top-nav .top-nav-brand::after { content: 'Área do aluno'; color: #c4d3df; font-size: 10px; font-weight: 750; line-height: 1; }
 
 .student-mobile-nav { display: none; }
 
@@ -41,6 +46,7 @@
 
 .student-page .nav-icon { color: #9bd1ff; }
 .student-page .top-nav-links a.active .nav-icon { color: #fff; }
+.student-page .nav-icon svg { display: block; width: 25px; height: 25px; }
 .student-page .top-nav-links a[data-student-link="complete"] { display: none; }
 .student-module-nav a { min-width: 76px; min-height: 58px; padding: 8px 10px; }
 .student-module-nav a .nav-icon { min-height: 27px; font-size: 27px; line-height: 1; }
@@ -146,17 +152,14 @@
   .student-top-nav { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 14px; gap: 12px; }
   .student-top-nav .top-nav-links { display: none; }
   .student-top-nav .top-nav-brand { min-width: 0; }
-  .student-top-nav .top-nav-logo { width: 58px; height: 34px; }
-  .student-top-nav .top-nav-brand .brand-wordmark { display: grid; min-width: 0; }
-  .student-top-nav .top-nav-brand .brand-wordmark > span { display: block; }
-  .student-top-nav .top-nav-brand .brand-wordmark .brand-academia { display: inline; }
-  .student-top-nav .top-nav-brand .brand-wordmark > span:last-child { color: #b8c9d8; font-size: 10px; }
+  .student-top-nav .top-nav-logo { width: 76px; height: 46px; }
+  .student-top-nav .top-nav-brand::after { font-size: 9px; }
   .student-top-nav .profile-copy { display: none; }
   .student-top-nav .profile-trigger { padding-right: 7px; }
   .student-mobile-nav { position: fixed; inset: auto 0 0; z-index: 1000; display: grid; grid-template-columns: repeat(3, 1fr); min-height: 72px; padding: 7px 12px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #d7e3ef; background: rgba(255, 255, 255, .97); box-shadow: 0 -10px 28px rgba(8, 31, 53, .12); }
   .student-mobile-nav a { display: grid; place-items: center; align-content: center; gap: 3px; min-height: 58px; border-radius: 12px; color: #687b8d; text-decoration: none; }
   .student-mobile-nav a.active { background: #e7f2ff; color: #1478d4; }
-  .student-mobile-nav .nav-icon { font-size: 25px; line-height: 1; }
+  .student-mobile-nav .nav-icon svg { width: 27px; height: 27px; }
   .student-mobile-nav .nav-label { font-size: 10px; font-weight: 850; }
   .student-stat-grid { grid-template-columns: 1fr; }
   .student-goal-list { grid-template-columns: 1fr; }

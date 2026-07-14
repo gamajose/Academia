@@ -64,6 +64,23 @@ function applyNavPermissions(user) {
   });
 }
 
+function adminIconSvg(name) {
+  const paths = {
+    home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/>',
+    members: '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 5.5a3 3 0 0 1 0 5.8M18 14a5 5 0 0 1 3 6"/>',
+    plans: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    membership: '<path d="M5 12h14M12 5v14"/>',
+    spark: '<path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3ZM19 16l.7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"/>',
+    finance: '<path d="M4 19V5M4 19h16M8 16v-4M12 16V7M16 16v-6"/>',
+    alert: '<path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5M12 17h.01"/>',
+    dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11M3 9h3.5v6H3zM17.5 9H21v6h-3.5z"/>',
+    chart: '<path d="M4 19V5M4 19h16M8 15v-3M12 15V8M16 15v-6"/>',
+    access: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+    users: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0M15 20a5 5 0 0 1 6 0"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.plans}</svg>`;
+}
+
 function renderNavigation() {
   loadNavigationStyles();
   document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
@@ -76,9 +93,9 @@ function renderNavigation() {
     ['assessments.html', 'Avaliações'], ['access.html', 'Acesso'], ['users.html', 'Funcionários']
   ];
   const icons = {
-    'painel.html': '⌂', 'alunos.html': '♙', 'planos.html': '▣', 'vinculos.html': '↔',
-    'solicitacoes.html': '✦', 'financeiro.html': 'R$', 'alerts.html': '!',
-    'training.html': '▤', 'assessments.html': '◔', 'access.html': '⌁', 'users.html': '♧'
+    'painel.html': 'home', 'alunos.html': 'members', 'planos.html': 'plans', 'vinculos.html': 'membership',
+    'solicitacoes.html': 'spark', 'financeiro.html': 'finance', 'alerts.html': 'alert',
+    'training.html': 'dumbbell', 'assessments.html': 'chart', 'access.html': 'access', 'users.html': 'users'
   };
 
   const nav = document.createElement('nav');
@@ -88,7 +105,7 @@ function renderNavigation() {
       <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
       <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><small>academia e saúde</small></span>
     </a>
-    <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon" aria-hidden="true">${icons[href] || '•'}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
+    <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
     <div class="profile-menu">
       <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>
