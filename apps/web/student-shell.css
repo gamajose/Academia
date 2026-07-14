@@ -106,10 +106,10 @@
 .student-detail-day-switcher strong { color: #101923; font-size: 18px; font-weight: 600; }
 .student-detail-day-switcher .icon-button { flex: 0 0 auto; width: 36px; height: 36px; border: 1px solid #d7e3ef; background: #fff; color: #1478d4; font-size: 24px; line-height: 1; }
 .student-detail-icon-actions { display: flex; align-items: center; gap: 8px; }
-.student-detail-icon-action { display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0; border: 1px solid #d7e3ef; border-radius: 10px; background: #fff; color: #1478d4; cursor: pointer; }
+.student-detail-icon-action { display: inline-grid; place-items: center; flex: 0 0 40px; width: 40px !important; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; max-height: 40px; aspect-ratio: 1; box-sizing: border-box; padding: 0; border: 1px solid #d7e3ef; border-radius: 10px; background: #fff; color: #1478d4; cursor: pointer; }
 .student-detail-icon-action:hover, .student-detail-icon-action:focus-visible { border-color: #1478d4; background: #f2f8ff; outline: none; box-shadow: 0 0 0 3px rgba(20, 120, 212, .1); }
 .student-detail-icon-action svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.student-detail-icon-action.compact { width: 32px; height: 32px; border-radius: 8px; }
+.student-detail-icon-action.compact { flex-basis: 36px; width: 36px !important; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; max-height: 36px; border-radius: 9px; }
 .student-detail-icon-action.compact svg { width: 16px; height: 16px; }
 .student-detail-icon-action.is-danger { color: #bd1f2d; border-color: #e8b9c0; }
 .student-detail-icon-action.is-danger:hover, .student-detail-icon-action.is-danger:focus-visible { border-color: #bd1f2d; background: #fff4f5; box-shadow: 0 0 0 3px rgba(189, 31, 45, .1); }
@@ -265,5 +265,5 @@
   .student-detail-day-switcher { margin-bottom: 14px; }
   .student-detail-day-switcher strong { font-size: 16px; }
   .student-detail-icon-actions { gap: 6px; }
-  .student-detail-icon-action { width: 34px; height: 34px; }
+  .student-detail-icon-action { flex-basis: 38px; width: 38px !important; min-width: 38px; max-width: 38px; height: 38px; min-height: 38px; max-height: 38px; }
 }
