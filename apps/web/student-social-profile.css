@@ -70,6 +70,7 @@
 .social-profile-page .social-profile-line-chart .chart-point.is-weight { fill: #1478d4; }
 .social-profile-page .social-profile-line-chart .chart-point.is-fat { fill: #c52c70; }
 .social-profile-edit-page .social-profile-settings-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 24px; align-items: start; }
+.social-profile-edit-page .social-profile-settings-content { min-width: 0; }
 .social-profile-edit-page .social-profile-settings-nav { display: grid; gap: 4px; }
 .social-profile-edit-page .social-profile-settings-nav h2 { margin: 0 0 8px; color: #5e7081; font-size: 14px; font-weight: 600; }
 .social-profile-edit-page .social-profile-settings-nav a { padding: 11px 12px; border-radius: 9px; color: #29445c; text-decoration: none; }
