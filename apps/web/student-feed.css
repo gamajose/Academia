@@ -134,6 +134,52 @@
 .social-profile-account-actions .button { width: auto; }
 .student-feed-page .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 
+html[data-student-theme="dark"] body.student-feed-page .social-hero h1,
+html[data-student-theme="dark"] body.student-feed-page .social-feed-heading h2,
+html[data-student-theme="dark"] body.student-feed-page .social-composer-modal-header h3,
+html[data-student-theme="dark"] body.student-feed-page .social-sidebar h2 { color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-feed-page .social-post,
+html[data-student-theme="dark"] body.student-feed-page .social-composer-entry,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-card,
+html[data-student-theme="dark"] body.student-feed-page .social-post-media { border-color: #29445d; background: #122235; color: #dceaf6; }
+html[data-student-theme="dark"] body.student-feed-page .social-composer-trigger { border-color: #34536e; background: #0e1b2a; color: #a9bed1; }
+html[data-student-theme="dark"] body.student-feed-page .social-composer-trigger span,
+html[data-student-theme="dark"] body.student-feed-page .social-author,
+html[data-student-theme="dark"] body.student-feed-page .social-author-copy strong,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-name-link,
+html[data-student-theme="dark"] body.student-feed-page .social-post-caption,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-stats strong,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-view-section h4,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-view-stats strong { color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-feed-page .social-entry-action,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-stats span,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-heading small,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-view-header small,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-view-stats,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-view-stats small,
+html[data-student-theme="dark"] body.student-feed-page .social-comment,
+html[data-student-theme="dark"] body.student-feed-page .social-post-actions button { color: #a9bed1; }
+html[data-student-theme="dark"] body.student-feed-page .social-composer-entry-actions,
+html[data-student-theme="dark"] body.student-feed-page .social-post-actions,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-stats,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-view-stats { border-color: #29445d; }
+html[data-student-theme="dark"] body.student-feed-page .social-entry-action:hover,
+html[data-student-theme="dark"] body.student-feed-page .social-person:hover,
+html[data-student-theme="dark"] body.student-feed-page .social-post-actions button:hover,
+html[data-student-theme="dark"] body.student-feed-page .social-post-actions button.is-liked { background: #183c5c; color: #8fc9ff; }
+html[data-student-theme="dark"] body.student-feed-page .social-comment-body,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-metrics > div,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-workout { border-color: #29445d; background: #102033; color: #dceaf6; }
+html[data-student-theme="dark"] body.student-feed-page .social-comment-body strong,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-metrics small,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-workout small,
+html[data-student-theme="dark"] body.student-feed-page .social-profile-workout span { color: #a9bed1; }
+html[data-student-theme="dark"] body.student-feed-page .social-composer-textarea { background: transparent; color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-feed-page .social-composer-add,
+html[data-student-theme="dark"] body.student-feed-page .social-upload-preview { border-color: #34536e; background: #0e1b2a; color: #a9bed1; }
+html[data-student-theme="dark"] body.student-feed-page .social-composer-add strong { color: #dceaf6; }
+html[data-student-theme="dark"] body.student-feed-page .social-profile-post-tile { background: #183047; color: #a9bed1; }
+
 @media (max-width: 900px) {
   .social-layout { grid-template-columns: 1fr; }
   .social-sidebar { grid-template-columns: 1fr 1fr; align-items: start; }

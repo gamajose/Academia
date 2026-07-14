@@ -92,6 +92,29 @@
 .social-profile-edit-page .social-profile-account-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .social-profile-edit-page .social-profile-account-actions .button { width: auto; }
 
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-identity h1,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-section h2,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-stats strong,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-workout-card strong { color: #e8f0f8; }
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-identity small,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-bio,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-stats span,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-day-controls,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-overview-card small,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-chart-legend,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-chart-column small,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-workout-card small,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-workout-card span,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-empty { color: #a9bed1; }
+html[data-student-theme="dark"] body.social-profile-page .social-profile-page-stats,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-chart-grid,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-exercises li { border-color: #29445d; }
+html[data-student-theme="dark"] body.social-profile-page .social-profile-overview-card,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-workout-card,
+html[data-student-theme="dark"] body.social-profile-page .social-profile-post-tile { border-color: #29445d; background: #102033; }
+html[data-student-theme="dark"] body.social-profile-page .social-profile-exercises li { color: #dceaf6; }
+html[data-student-theme="dark"] body.social-profile-page .social-profile-day-button { border-color: #34536e; background: #122235; color: #8fc9ff; }
+
 @media (max-width: 760px) {
   .social-profile-page .social-profile-page-header { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
   .social-profile-page .social-profile-page-actions { grid-column: 1 / -1; }
