@@ -98,12 +98,12 @@
 
   function renderExerciseResults() {
     const list = p('student-exercise-results'); list.replaceChildren();
-    const action = document.createElement('button'); action.type = 'button'; action.className = 'student-exercise-result student-custom-exercise-result'; action.innerHTML = '<strong>＋ Criar exercício personalizado</strong><small>Fica disponível somente na sua conta</small>'; action.addEventListener('click', () => openPrivateExercise(false)); list.appendChild(action);
+    const action = document.createElement('button'); action.type = 'button'; action.className = 'student-exercise-result student-custom-exercise-result'; action.innerHTML = '<strong>＋ Criar exercício personalizado</strong>'; action.addEventListener('click', () => openPrivateExercise(false)); list.appendChild(action);
     const query = normalize(p('student-exercise-search').value);
     const matches = catalog.filter((item) => !query || normalize(`${item.name} ${item.muscle_group} ${item.equipment}`).includes(query)).slice(0, 50);
     if (!matches.length) { const empty = document.createElement('div'); empty.className = 'empty-state'; empty.textContent = 'Nenhum exercício do catálogo encontrado.'; list.appendChild(empty); return; }
     matches.forEach((item) => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong><small>${text([item.muscle_group_primary || item.muscle_group, item.muscle_group_secondary, item.equipment, item.is_private ? 'Personalizado' : 'Academia'].filter(Boolean).join(' · '))}</small>`;
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`;
       button.addEventListener('click', () => pickExercise(item)); list.appendChild(button);
     });
   }
@@ -113,6 +113,7 @@
     if (!selectedExerciseDrafts.some((draft) => `${draft.is_private ? 'private' : 'public'}:${draft.id}` === key)) {
       selectedExerciseDrafts.push({ ...item, sets: 3, reps: '10-12', rest_seconds: 60, notes: '' });
     }
+    p('student-event-form-exercise-list')?.classList.remove('is-open');
     renderEventExerciseOptions();
   }
 
@@ -122,9 +123,9 @@
     if (!list || !selected) return;
     list.replaceChildren(); selected.replaceChildren();
     const query = normalize(p('student-event-exercise-search-inline')?.value || '');
-    const custom = document.createElement('button'); custom.type = 'button'; custom.className = 'student-exercise-result student-custom-exercise-result'; custom.innerHTML = '<strong>＋ Criar exercício personalizado</strong><small>Adicione um exercício só para a sua conta</small>'; custom.addEventListener('click', () => openPrivateExercise(true)); list.appendChild(custom);
+    const custom = document.createElement('button'); custom.type = 'button'; custom.className = 'student-exercise-result student-custom-exercise-result'; custom.innerHTML = '<strong>＋ Criar exercício personalizado</strong>'; custom.addEventListener('click', () => { list.classList.remove('is-open'); openPrivateExercise(true); }); list.appendChild(custom);
     catalog.filter((item) => !query || normalize(`${item.name} ${item.muscle_group} ${item.equipment}`).includes(query)).slice(0, 20).forEach((item) => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong><small>${text([item.muscle_group_primary || item.muscle_group, item.muscle_group_secondary, item.equipment].filter(Boolean).join(' · '))}</small>`; button.addEventListener('click', () => addExerciseDraft(item)); list.appendChild(button);
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`; button.addEventListener('click', () => addExerciseDraft(item)); list.appendChild(button);
     });
     if (!selectedExerciseDrafts.length) { selected.innerHTML = '<small class="student-form-hint">Nenhum exercício selecionado ainda.</small>'; return; }
     selectedExerciseDrafts.forEach((item, index) => { const chip = document.createElement('div'); chip.className = 'student-selected-exercise'; chip.innerHTML = `<span><strong>${text(item.name)}</strong><small>${text(item.muscle_group_primary || item.muscle_group || 'Exercício personalizado')}</small></span>`; const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'icon-button'; remove.setAttribute('aria-label', `Remover ${item.name}`); remove.textContent = '×'; remove.addEventListener('click', () => { selectedExerciseDrafts.splice(index, 1); renderEventExerciseOptions(); }); chip.appendChild(remove); selected.appendChild(chip); });
@@ -206,7 +207,10 @@
     catch (error) { status('student-portal-status', `Erro: ${error.message}`, true); }
   }
 
-  p('student-day-previous').addEventListener('click', () => moveDay(-1)); p('student-day-next').addEventListener('click', () => moveDay(1)); p('student-new-event-button').addEventListener('click', () => openEventEditor()); p('student-event-exercise-search-inline').addEventListener('input', renderEventExerciseOptions);
+  p('student-day-previous').addEventListener('click', () => moveDay(-1)); p('student-day-next').addEventListener('click', () => moveDay(1)); p('student-new-event-button').addEventListener('click', () => openEventEditor());
+  p('student-event-exercise-search-inline').addEventListener('focus', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); });
+  p('student-event-exercise-search-inline').addEventListener('input', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); });
+  p('student-event-exercise-search-inline').addEventListener('blur', () => setTimeout(() => { if (!p('student-event-form-exercise-list').contains(document.activeElement)) p('student-event-form-exercise-list').classList.remove('is-open'); }, 120));
   p('student-event-form').addEventListener('submit', saveEvent); p('student-event-editor-close').addEventListener('click', closeEventEditor); p('student-event-editor-cancel').addEventListener('click', closeEventEditor); p('student-edit-event-button').addEventListener('click', () => openEventEditor(selectedEvent)); p('student-add-event-exercise-button').addEventListener('click', () => openExercisePicker()); p('student-import-calendar-button').addEventListener('click', importToCalendar); p('student-delete-event-button').addEventListener('click', removeEvent);
   p('student-exercise-search').addEventListener('input', renderExerciseResults); p('student-event-exercise-form').addEventListener('submit', saveEventExercise); p('student-clear-picked-exercise').addEventListener('click', clearPickedExercise); p('student-exercise-picker-close').addEventListener('click', closeExercisePicker); p('student-private-exercise-form').addEventListener('submit', savePrivateExercise); p('student-private-exercise-close').addEventListener('click', closePrivateExercise); p('student-private-exercise-cancel').addEventListener('click', closePrivateExercise); p('student-exercise-close').addEventListener('click', () => p('student-exercise-modal').classList.add('hidden'));
   [p('student-event-editor-modal'), p('student-exercise-picker-modal'), p('student-private-exercise-modal'), p('student-exercise-modal')].forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); }));
