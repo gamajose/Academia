@@ -92,6 +92,8 @@ jobs:
           node --check apps/web/student-reset.js
           node --check apps/web/student-confirm.js
           node --check apps/web/student-portal.js
+          node --check apps/web/student-social-profile.js
+          node --check apps/web/student-social-profile-edit.js
           node --check apps/web/assessments.js
           node --check apps/web/training.js
           node --check apps/web/training-media.js
