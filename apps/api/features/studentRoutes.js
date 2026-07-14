@@ -82,6 +82,7 @@ async function socialProfileDetail(query, user, memberId) {
             COALESCE(sp.weight_unit, 'kg') AS weight_unit,
             COALESCE(sp.distance_unit, 'km') AS distance_unit,
             COALESCE(sp.theme, 'light') AS theme,
+            COALESCE(sp.language, 'pt-BR') AS language,
             (SELECT count(*) FROM student_social_posts p WHERE p.gym_id = $1 AND p.member_id = m.id AND p.is_active = true) AS posts_count,
             (SELECT count(*) FROM student_social_follows f WHERE f.gym_id = $1 AND f.following_member_id = m.id AND f.status = 'accepted') AS followers_count,
             (SELECT count(*) FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = m.id AND f.status = 'accepted') AS following_count,
@@ -479,7 +480,10 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const stats = await query(
       `SELECT
          (SELECT count(*) FROM student_training_events WHERE gym_id = $1 AND member_id = $2 AND status <> 'cancelled') AS scheduled_training_count,
-         (SELECT count(*) FROM student_training_event_exercises e INNER JOIN student_training_events t ON t.id = e.event_id WHERE e.gym_id = $1 AND t.member_id = $2 AND t.status <> 'cancelled') AS planned_exercise_count
+         (SELECT count(*) FROM student_training_event_exercises e INNER JOIN student_training_events t ON t.id = e.event_id WHERE e.gym_id = $1 AND t.member_id = $2 AND t.status <> 'cancelled') AS planned_exercise_count,
+         (SELECT count(*) FROM checkins WHERE gym_id = $1 AND member_id = $2) AS checkins_count,
+         ((SELECT count(*) FROM workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND status = 'completed') +
+          (SELECT count(*) FROM student_workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND status = 'completed')) AS completed_training_count
        `,
       [user.gym_id, memberId]
     );
@@ -544,16 +548,17 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const weightUnit = ['kg', 'lb'].includes(String(input.weight_unit)) ? String(input.weight_unit) : 'kg';
     const distanceUnit = ['km', 'mi'].includes(String(input.distance_unit)) ? String(input.distance_unit) : 'km';
     const theme = validSocialTheme(input.theme) ? String(input.theme) : 'light';
+    const language = ['pt-BR', 'en', 'es'].includes(String(input.language)) ? String(input.language) : 'pt-BR';
     if (!name || !validPhotoSource(photo || 'https://example.com/placeholder') || (website && !validPhotoSource(website))) return send(res, 400, { error: 'perfil_invalido' });
     await query('UPDATE members SET name = $3 WHERE id = $1 AND gym_id = $2', [user.member_id, user.gym_id, name]);
     const result = await query(
-      `INSERT INTO student_social_profiles (gym_id, member_id, bio, website_url, profile_photo_url, is_private, weight_unit, distance_unit, theme)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO student_social_profiles (gym_id, member_id, bio, website_url, profile_photo_url, is_private, weight_unit, distance_unit, theme, language)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        ON CONFLICT (gym_id, member_id) DO UPDATE SET bio = EXCLUDED.bio, website_url = EXCLUDED.website_url,
          profile_photo_url = EXCLUDED.profile_photo_url, is_private = EXCLUDED.is_private, weight_unit = EXCLUDED.weight_unit,
-         distance_unit = EXCLUDED.distance_unit, theme = EXCLUDED.theme, updated_at = now()
-       RETURNING bio, website_url, profile_photo_url, is_private, weight_unit, distance_unit, theme`,
-      [user.gym_id, user.member_id, bio, website, photo, isPrivate, weightUnit, distanceUnit, theme]
+         distance_unit = EXCLUDED.distance_unit, theme = EXCLUDED.theme, language = EXCLUDED.language, updated_at = now()
+       RETURNING bio, website_url, profile_photo_url, is_private, weight_unit, distance_unit, theme, language`,
+      [user.gym_id, user.member_id, bio, website, photo, isPrivate, weightUnit, distanceUnit, theme, language]
     );
     return send(res, 200, { profile: { ...(result.rows[0] || {}), name } });
   }
