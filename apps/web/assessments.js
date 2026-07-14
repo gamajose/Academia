@@ -209,7 +209,7 @@ function openAssessmentEdit(item) {
   preservedAssessmentPhoto = item.photo_url || '';
   setField('assessment-member', item.member_id);
   setField('assessment-date', String(item.assessment_date || '').slice(0, 10));
-  setField('weight-kg', formatInputDecimal(item.weight_kg)); setField('height-cm', formatInputDecimal(item.height_cm)); setField('body-fat', formatInputDecimal(item.body_fat_percent)); setField('muscle-mass', formatInputDecimal(item.muscle_mass_kg)); setField('waist-cm', formatInputDecimal(item.waist_cm)); setField('chest-cm', formatInputDecimal(item.chest_cm)); setField('hip-cm', formatInputDecimal(item.hip_cm)); setField('photo-url', item.photo_url); setField('assessment-notes', item.notes);
+  setField('weight-kg', formatInputDecimal(item.weight_kg)); setField('height-cm', formatInputDecimal(item.height_cm)); setField('body-fat', formatInputDecimal(item.body_fat_percent)); setField('muscle-mass', formatInputDecimal(item.muscle_mass_kg)); setField('waist-cm', formatInputDecimal(item.waist_cm)); setField('chest-cm', formatInputDecimal(item.chest_cm)); setField('hip-cm', formatInputDecimal(item.hip_cm)); setField('biceps-cm', formatInputDecimal(item.biceps_cm)); setField('back-cm', formatInputDecimal(item.back_cm)); setField('photo-url', item.photo_url); setField('assessment-notes', item.notes);
   previewAssessmentPhoto(item.photo_url);
   q('assessment-modal-title').textContent = 'Editar avaliação';
   q('create-assessment-button').textContent = 'Salvar alterações';
@@ -257,6 +257,8 @@ function openAssessmentView(item) {
   q('assessment-view-waist').textContent = formatNumber(item.waist_cm, ' cm');
   q('assessment-view-chest').textContent = formatNumber(item.chest_cm, ' cm');
   q('assessment-view-hip').textContent = formatNumber(item.hip_cm, ' cm');
+  q('assessment-view-biceps').textContent = formatNumber(item.biceps_cm, ' cm');
+  q('assessment-view-back').textContent = formatNumber(item.back_cm, ' cm');
   q('assessment-view-notes').textContent = item.notes || 'Sem observações registradas.';
   const goal = currentGoals.find((candidate) => candidate.member_id === item.member_id && candidate.status !== 'closed');
   q('assessment-view-goal').textContent = goal ? `${goal.goal_type} · alvo ${formatNumber(goal.target_value)} · prazo ${formatDate(goal.target_date)}` : 'Nenhuma meta ativa vinculada.';
@@ -495,6 +497,8 @@ async function createAssessment(event) {
         waist_cm: decimalValue('waist-cm'),
         chest_cm: decimalValue('chest-cm'),
         hip_cm: decimalValue('hip-cm'),
+        biceps_cm: decimalValue('biceps-cm'),
+        back_cm: decimalValue('back-cm'),
         photo_url: await resolveAssessmentPhoto(),
         notes: value('assessment-notes')
       })
@@ -566,7 +570,8 @@ async function loadSummary() {
       `Massa muscular: ${formatNumber(result.current.muscle_mass_kg, ' kg')}`,
       `Variação de peso: ${formatNumber(result.delta?.weight_kg, ' kg')}`,
       `Variação de gordura: ${formatNumber(result.delta?.body_fat_percent, '%')}`,
-      `Variação de cintura: ${formatNumber(result.delta?.waist_cm, ' cm')}`
+      `Variação de cintura: ${formatNumber(result.delta?.waist_cm, ' cm')}`,
+      `Análise inteligente: ${result.analysis?.message || 'Registre uma segunda medição para comparar.'}`
     ];
 
     for (const item of items) {

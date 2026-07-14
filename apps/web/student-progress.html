@@ -1,3 +1,63 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Minha evolução - BlueREC Academia</title><link rel="stylesheet" href="./styles.css" /><link rel="stylesheet" href="./premium-ui.css" /><link rel="stylesheet" href="./blue-theme.css" /><link rel="stylesheet" href="./student-shell.css" /></head>
-<body class="student-page" data-student-page="progress"><nav class="top-nav student-top-nav"><a class="top-nav-brand" href="./student-portal.html"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /><span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></span></a><div class="top-nav-links student-module-nav"><a data-student-link="training" href="./student-portal.html">Meu treino</a><a data-student-link="complete" href="./student-complete.html">Concluir treino</a><a data-student-link="progress" href="./student-progress.html">Minha evolução</a><a data-student-link="goals" href="./student-goals.html">Minhas metas</a><a data-student-link="share" href="./student-share.html">Compartilhar foto</a><a data-student-link="history" href="./student-history.html">Histórico</a></div><div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-profile.html">Meu perfil</a><a href="./student-security.html">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div></nav>
-<main class="app-shell"><section class="hero"><p class="eyebrow">Acompanhamento</p><h1>Minha evolução</h1><p>Veja suas avaliações e acompanhe a sua jornada ao longo do tempo.</p></section><section class="panel"><div class="toolbar"><h3>Resumo mais recente</h3><a class="button secondary" href="./student-share.html">Compartilhar foto</a></div><div class="student-stat-grid" id="student-progress-summary"></div></section><section class="panel"><h3>Histórico de avaliações</h3><ul id="student-progress-list"></ul></section><section class="panel"><h3>Histórico de fotos</h3><div class="student-photo-grid" id="student-photo-grid"></div></section><p class="status-line" id="student-progress-status" aria-live="polite"></p></main><script src="./student-shell.js"></script><script src="./student-progress.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minha evolução - BlueREC Academia</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
+  <link rel="stylesheet" href="./student-shell.css" />
+  <link rel="stylesheet" href="./student-progress.css" />
+</head>
+<body class="student-page" data-student-page="progress">
+  <nav class="top-nav student-top-nav">
+    <a class="top-nav-brand" href="./student-portal.html"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /><span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></span></a>
+    <div class="top-nav-links student-module-nav"><a data-student-link="training" href="./student-portal.html">Meu treino</a><a data-student-link="complete" href="./student-complete.html">Concluir treino</a><a data-student-link="progress" href="./student-progress.html">Minha evolução</a><a data-student-link="goals" href="./student-goals.html">Minhas metas</a><a data-student-link="share" href="./student-share.html">Compartilhar foto</a><a data-student-link="history" href="./student-history.html">Histórico</a></div>
+    <div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-profile.html">Meu perfil</a><a href="./student-security.html">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div>
+  </nav>
+
+  <main class="app-shell">
+    <section class="hero"><p class="eyebrow">Acompanhamento</p><h1>Minha evolução</h1><p>Registre suas medições e acompanhe cada nova etapa da sua jornada.</p></section>
+
+    <section class="panel progress-checkin-panel">
+      <div class="toolbar"><div><h3>Nova medição</h3><p class="section-help">Adicione uma nova avaliação. O histórico anterior permanece salvo.</p></div><span class="progress-reminder" id="student-progress-reminder" hidden></span></div>
+      <form id="student-assessment-form" class="student-assessment-form">
+        <div class="student-assessment-grid">
+          <div class="field"><label for="student-assessment-date">Data</label><input id="student-assessment-date" type="date" /></div>
+          <div class="field"><label for="student-weight">Peso (kg)</label><input id="student-weight" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-height">Altura (cm)</label><input id="student-height" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-fat">Gordura corporal (%)</label><input id="student-fat" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-muscle">Massa muscular (kg)</label><input id="student-muscle" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-waist">Cintura (cm)</label><input id="student-waist" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-chest">Peito (cm)</label><input id="student-chest" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-hip">Quadril (cm)</label><input id="student-hip" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-biceps">Bíceps (cm)</label><input id="student-biceps" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-back">Costas (cm)</label><input id="student-back" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-left-arm">Braço esquerdo (cm)</label><input id="student-left-arm" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-right-arm">Braço direito (cm)</label><input id="student-right-arm" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-left-thigh">Coxa esquerda (cm)</label><input id="student-left-thigh" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-right-thigh">Coxa direita (cm)</label><input id="student-right-thigh" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-heart-rate">Frequência cardíaca (bpm)</label><input id="student-heart-rate" type="number" min="20" max="250" step="1" /></div>
+        </div>
+        <div class="student-assessment-media-grid">
+          <div class="field"><label for="student-assessment-photo">Foto da evolução</label><input id="student-assessment-photo" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><small>JPG, PNG, GIF ou WebP. Limite de 5 MB.</small></div>
+          <div class="field"><label for="student-assessment-photo-url">Ou cole um link de foto</label><input id="student-assessment-photo-url" type="url" placeholder="https://.../foto.jpg" /></div>
+        </div>
+        <div class="student-progress-upload-preview"><img id="student-assessment-photo-preview" alt="Prévia da foto de evolução" hidden /><span id="student-assessment-photo-empty">A prévia aparecerá aqui.</span></div>
+        <div class="field"><label for="student-assessment-notes">Observações</label><textarea id="student-assessment-notes" rows="3" maxlength="5000" placeholder="Como você está se sentindo nesta etapa?"></textarea></div>
+        <div class="form-actions"><button type="submit" id="student-assessment-submit">Salvar nova medição</button></div>
+        <p class="status-line" id="student-assessment-status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="panel"><div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div><a class="button secondary" href="./student-share.html">Compartilhar foto</a></div><div class="student-stat-grid" id="student-progress-summary"></div></section>
+    <section class="panel progress-analysis-panel" id="student-progress-analysis"></section>
+    <section class="panel"><h3>Histórico de avaliações</h3><p class="section-help">Cada lançamento é uma nova medição. Nada é apagado do seu histórico.</p><ul id="student-progress-list"></ul></section>
+    <section class="panel"><h3>Histórico de fotos</h3><div class="student-photo-grid" id="student-photo-grid"></div></section>
+    <p class="status-line" id="student-progress-status" aria-live="polite"></p>
+  </main>
+  <script src="./student-shell.js"></script>
+  <script src="./student-progress.js"></script>
+</body>
+</html>

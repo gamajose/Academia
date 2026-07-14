@@ -1,4 +1,5 @@
 const { recordAudit } = require('../lib/audit');
+const { buildProgressAnalysis } = require('../lib/progressAnalysis');
 
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null;
@@ -60,9 +61,9 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     const result = await query(
       `INSERT INTO member_assessments (
         gym_id, member_id, assessment_date, weight_kg, height_cm, body_fat_percent, muscle_mass_kg,
-        waist_cm, chest_cm, hip_cm, left_arm_cm, right_arm_cm, left_thigh_cm, right_thigh_cm,
+        waist_cm, chest_cm, hip_cm, biceps_cm, back_cm, left_arm_cm, right_arm_cm, left_thigh_cm, right_thigh_cm,
         resting_heart_rate, photo_url, notes, created_by
-      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
       RETURNING *`,
       [
         user.gym_id,
@@ -75,6 +76,8 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
         numberOrNull(input.waist_cm),
         numberOrNull(input.chest_cm),
         numberOrNull(input.hip_cm),
+        numberOrNull(input.biceps_cm),
+        numberOrNull(input.back_cm),
         numberOrNull(input.left_arm_cm),
         numberOrNull(input.right_arm_cm),
         numberOrNull(input.left_thigh_cm),
@@ -107,10 +110,10 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     if (photoUrl.length > 1000 || !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
     const result = await query(
       `UPDATE member_assessments SET assessment_date=COALESCE($3::date,assessment_date),weight_kg=$4,height_cm=$5,body_fat_percent=$6,muscle_mass_kg=$7,
-       waist_cm=$8,chest_cm=$9,hip_cm=$10,left_arm_cm=$11,right_arm_cm=$12,left_thigh_cm=$13,right_thigh_cm=$14,
-       resting_heart_rate=$15,photo_url=$16,notes=$17
+       waist_cm=$8,chest_cm=$9,hip_cm=$10,biceps_cm=$11,back_cm=$12,left_arm_cm=$13,right_arm_cm=$14,left_thigh_cm=$15,right_thigh_cm=$16,
+       resting_heart_rate=$17,photo_url=$18,notes=$19
        WHERE id=$1 AND gym_id=$2 RETURNING *`,
-      [assessmentId, user.gym_id, input.assessment_date || null, numberOrNull(input.weight_kg), numberOrNull(input.height_cm), numberOrNull(input.body_fat_percent), numberOrNull(input.muscle_mass_kg), numberOrNull(input.waist_cm), numberOrNull(input.chest_cm), numberOrNull(input.hip_cm), numberOrNull(input.left_arm_cm), numberOrNull(input.right_arm_cm), numberOrNull(input.left_thigh_cm), numberOrNull(input.right_thigh_cm), intOrNull(input.resting_heart_rate), photoUrl || null, input.notes || null]
+      [assessmentId, user.gym_id, input.assessment_date || null, numberOrNull(input.weight_kg), numberOrNull(input.height_cm), numberOrNull(input.body_fat_percent), numberOrNull(input.muscle_mass_kg), numberOrNull(input.waist_cm), numberOrNull(input.chest_cm), numberOrNull(input.hip_cm), numberOrNull(input.biceps_cm), numberOrNull(input.back_cm), numberOrNull(input.left_arm_cm), numberOrNull(input.right_arm_cm), numberOrNull(input.left_thigh_cm), numberOrNull(input.right_thigh_cm), intOrNull(input.resting_heart_rate), photoUrl || null, input.notes || null]
     );
     await recordAudit(user, 'update', 'member_assessment', assessmentId, { member_id: existing.rows[0].member_id });
     return send(res, 200, result.rows[0]);
@@ -133,7 +136,8 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
         body_fat_percent: delta(current, previous, 'body_fat_percent'),
         muscle_mass_kg: delta(current, previous, 'muscle_mass_kg'),
         waist_cm: delta(current, previous, 'waist_cm')
-      } : null
+      } : null,
+      analysis: buildProgressAnalysis(current, previous)
     });
   }
 

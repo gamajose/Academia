@@ -131,6 +131,8 @@ async function saveAssessment(event) {
         waist_cm: numberValue('alert-assessment-waist'),
         chest_cm: numberValue('alert-assessment-chest'),
         hip_cm: numberValue('alert-assessment-hip'),
+        biceps_cm: numberValue('alert-assessment-biceps'),
+        back_cm: numberValue('alert-assessment-back'),
         photo_url: null,
         notes: g('alert-assessment-notes').value.trim() || null
       })

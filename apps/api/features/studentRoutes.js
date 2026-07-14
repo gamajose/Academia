@@ -2,6 +2,7 @@ const { hashPassword, verifyPassword, signToken, randomToken, hashToken, validat
 const { recordAudit } = require('../lib/audit');
 const { sendTransactionalEmail } = require('../lib/mailer');
 const { pool } = require('../lib/db');
+const { buildProgressAnalysis } = require('../lib/progressAnalysis');
 
 const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo1234';
 const STUDENT_WEEKDAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -54,6 +55,12 @@ function studentInteger(value, fallback, minimum, maximum) {
   const number = Number(value);
   if (!Number.isInteger(number) || number < minimum || number > maximum) return fallback;
   return number;
+}
+
+function studentNumber(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(String(value).trim().replace(',', '.'));
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
 function studentText(value, fallback = '', maximum = 2000) {
@@ -464,7 +471,27 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/progress') {
     const assessments = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
     const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
-    return send(res, 200, { assessments: assessments.rows, goals: goals.rows });
+    return send(res, 200, { assessments: assessments.rows, goals: goals.rows, analysis: buildProgressAnalysis(assessments.rows[0], assessments.rows[1], goals.rows) });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/progress/assessment') {
+    const input = await body(req);
+    const assessmentDate = String(input.assessment_date || '').trim();
+    if (assessmentDate && !/^\d{4}-\d{2}-\d{2}$/.test(assessmentDate)) return send(res, 400, { error: 'data_invalida' });
+    const photoUrl = studentText(input.photo_url, '', 1000);
+    if (photoUrl && !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
+    const result = await query(
+      `INSERT INTO member_assessments (
+        gym_id, member_id, assessment_date, weight_kg, height_cm, body_fat_percent, muscle_mass_kg,
+        waist_cm, chest_cm, hip_cm, biceps_cm, back_cm, left_arm_cm, right_arm_cm, left_thigh_cm, right_thigh_cm,
+        resting_heart_rate, photo_url, notes
+      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+      RETURNING *`,
+      [user.gym_id, user.member_id, assessmentDate || null, studentNumber(input.weight_kg), studentNumber(input.height_cm), studentNumber(input.body_fat_percent), studentNumber(input.muscle_mass_kg), studentNumber(input.waist_cm), studentNumber(input.chest_cm), studentNumber(input.hip_cm), studentNumber(input.biceps_cm), studentNumber(input.back_cm), studentNumber(input.left_arm_cm), studentNumber(input.right_arm_cm), studentNumber(input.left_thigh_cm), studentNumber(input.right_thigh_cm), studentInteger(input.resting_heart_rate, null, 20, 250), photoUrl || null, studentText(input.notes, '', 5000) || null]
+    );
+    const history = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 2', [user.gym_id, user.member_id]);
+    const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
+    return send(res, 201, { assessment: result.rows[0], analysis: buildProgressAnalysis(history.rows[0], history.rows[1], goals.rows) });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/feed') {
