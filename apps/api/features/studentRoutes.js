@@ -657,7 +657,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     let result;
     if (input.id) {
       result = await query(
-        `UPDATE student_training_events SET title = $3, scheduled_date = $4, start_time = $5, end_time = NULLIF($6, ''), notes = $7, updated_at = now()
+        `UPDATE student_training_events SET title = $3, scheduled_date = $4::date, start_time = $5::time, end_time = NULLIF($6::text, '')::time, notes = $7, updated_at = now()
          WHERE id = $1 AND gym_id = $2 AND member_id = $8
          RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
         [input.id, user.gym_id, title, date, start, end, studentText(input.notes, '', 2000) || null, user.member_id]
@@ -665,7 +665,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     } else {
       result = await query(
         `INSERT INTO student_training_events (gym_id, member_id, title, scheduled_date, start_time, end_time, notes)
-         VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7)
+         VALUES ($1, $2, $3, $4::date, $5::time, NULLIF($6::text, '')::time, $7)
          RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
         [user.gym_id, user.member_id, title, date, start, end, studentText(input.notes, '', 2000) || null]
       );
@@ -702,7 +702,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       let result;
       if (eventId) {
         result = await client.query(
-          `UPDATE student_training_events SET title = $3, scheduled_date = $4, start_time = $5, end_time = NULLIF($6, ''), notes = $7, updated_at = now()
+          `UPDATE student_training_events SET title = $3, scheduled_date = $4::date, start_time = $5::time, end_time = NULLIF($6::text, '')::time, notes = $7, updated_at = now()
            WHERE id = $1 AND gym_id = $2 AND member_id = $8
            RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
           [eventId, user.gym_id, title, date, start, end, studentText(input.notes, '', 2000) || null, user.member_id]
@@ -710,7 +710,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       } else {
         result = await client.query(
           `INSERT INTO student_training_events (gym_id, member_id, title, scheduled_date, start_time, end_time, notes)
-           VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7)
+           VALUES ($1, $2, $3, $4::date, $5::time, NULLIF($6::text, '')::time, $7)
            RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
           [user.gym_id, user.member_id, title, date, start, end, studentText(input.notes, '', 2000) || null]
         );
@@ -771,6 +771,8 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
         const code = String(error.code || '');
         const errorName = ['42P01', '42703'].includes(code)
           ? 'estrutura_treino_desatualizada'
+          : code === '42P18'
+            ? 'horario_invalido'
           : ['23503', '22P02'].includes(code)
             ? 'exercicio_invalido'
             : code === '23514'
