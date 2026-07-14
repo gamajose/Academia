@@ -2,6 +2,28 @@
   const p = (id) => document.getElementById(id);
   const esc = (value) => StudentPortal.escapeHtml(value ?? '');
   const initials = (name) => String(name || 'A').trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'A';
+  let selectedDate = toDateKey(new Date());
+  let currentTraining = null;
+
+  function toDateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  function fromDateKey(value) {
+    const [year, month, day] = String(value).slice(0, 10).split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  function weekdayForDate(value) {
+    const day = fromDateKey(value).getDay();
+    return day === 0 ? 7 : day;
+  }
+
+  function updateProfileDayLabel() {
+    const date = fromDateKey(selectedDate);
+    const label = p('social-profile-day-label');
+    if (label) label.textContent = date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
 
   function setStatus(message, error = false) {
     const element = p('social-profile-page-status');
@@ -23,7 +45,7 @@
     }
   }
 
-  function createWorkoutCard(training, includeOpenButton = false) {
+  function createWorkoutCard(training, includeOpenButton = false, dateKey = selectedDate) {
     if (!training?.plan) return null;
 
     const card = document.createElement('div');
@@ -32,28 +54,37 @@
 
     const exercises = document.createElement('ul');
     exercises.className = 'social-profile-exercises';
-    (training.exercises || []).slice(0, 8).forEach((exercise) => {
+    const weekday = weekdayForDate(dateKey);
+    const dayExercises = (training.exercises || []).filter((exercise) => !exercise.weekday || Number(exercise.weekday) === weekday).slice(0, 8);
+    dayExercises.forEach((exercise) => {
       const item = document.createElement('li');
       item.innerHTML = `<span>${esc(exercise.exercise_name || 'Exercício')}</span><small>${esc(exercise.sets || 0)} séries · ${esc(exercise.reps || '-')}</small>`;
       exercises.appendChild(item);
     });
-    if (exercises.children.length) card.appendChild(exercises);
+    if (exercises.children.length) {
+      card.appendChild(exercises);
+    } else {
+      const empty = document.createElement('span');
+      empty.className = 'social-profile-empty';
+      empty.textContent = 'Nenhum exercício programado para este dia.';
+      card.appendChild(empty);
+    }
 
     if (includeOpenButton) {
       const button = document.createElement('button');
       button.className = 'button secondary';
       button.type = 'button';
       button.textContent = 'Abrir meu treino';
-      button.addEventListener('click', () => openTrainingModal(training));
+      button.addEventListener('click', () => openTrainingModal(training, dateKey));
       card.appendChild(button);
     }
     return card;
   }
 
-  function renderWorkout(training) {
+  function renderWorkout(training, dateKey = selectedDate) {
     const host = p('social-profile-workout');
     host.replaceChildren();
-    const card = createWorkoutCard(training, true);
+    const card = createWorkoutCard(training, true, dateKey);
     if (!card) {
       const empty = document.createElement('p');
       empty.className = 'social-profile-empty';
@@ -64,11 +95,11 @@
     host.appendChild(card);
   }
 
-  function openTrainingModal(training) {
+  function openTrainingModal(training, dateKey = selectedDate) {
     const modal = p('social-profile-training-modal');
     const content = p('social-profile-training-modal-content');
     content.replaceChildren();
-    const card = createWorkoutCard(training);
+    const card = createWorkoutCard(training, false, dateKey);
     if (card) content.appendChild(card);
 
     const actions = document.createElement('div');
@@ -121,16 +152,17 @@
     });
   }
 
-  function formatAssessmentDate(value) {
+  function formatAssessmentDate(value, withYear = false) {
     if (!value) return '-';
     const date = new Date(`${value}T12:00:00`);
-    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-BR', withYear ? { day: '2-digit', month: '2-digit', year: 'numeric' } : { day: '2-digit', month: '2-digit' });
   }
 
   function renderChart(assessments) {
     const host = p('social-profile-chart');
     host.replaceChildren();
-    const items = assessments.slice(0, 6).reverse();
+    host.classList.remove('is-line-chart');
+    const items = assessments.filter((item) => formatAssessmentDate(item.assessment_date) !== '-').slice(0, 12).reverse();
     if (!items.length) {
       const empty = document.createElement('p');
       empty.className = 'social-profile-empty';
@@ -139,34 +171,76 @@
       return;
     }
 
-    const weights = items.map((item) => Number(item.weight_kg)).filter(Number.isFinite);
-    const fats = items.map((item) => Number(item.body_fat_percent)).filter(Number.isFinite);
-    const weightMin = Math.min(...weights, 0);
-    const weightMax = Math.max(...weights, 1);
-    const fatMin = Math.min(...fats, 0);
-    const fatMax = Math.max(...fats, 1);
-    items.forEach((item) => {
-      const column = document.createElement('div');
-      column.className = 'social-profile-chart-column';
-      const bars = document.createElement('div');
-      bars.className = 'social-profile-chart-bars';
-      const weight = Number(item.weight_kg);
-      const fat = Number(item.body_fat_percent);
-      const weightBar = document.createElement('span');
-      weightBar.className = 'social-profile-chart-bar';
-      weightBar.style.height = `${Math.max(5, ((weight - weightMin) / Math.max(1, weightMax - weightMin)) * 100)}%`;
-      weightBar.title = Number.isFinite(weight) ? `${weight} kg` : 'Peso não informado';
-      const fatBar = document.createElement('span');
-      fatBar.className = 'social-profile-chart-bar is-fat';
-      fatBar.style.height = `${Math.max(5, ((fat - fatMin) / Math.max(1, fatMax - fatMin)) * 100)}%`;
-      fatBar.title = Number.isFinite(fat) ? `${fat}%` : 'Gordura não informada';
-      bars.append(weightBar, fatBar);
-      column.appendChild(bars);
-      const date = document.createElement('small');
-      date.textContent = formatAssessmentDate(item.assessment_date);
-      column.appendChild(date);
-      host.appendChild(column);
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    const width = 760;
+    const height = 220;
+    const plot = { left: 42, right: 14, top: 16, bottom: 42 };
+    const plotWidth = width - plot.left - plot.right;
+    const plotHeight = height - plot.top - plot.bottom;
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'Gráfico de evolução por data');
+
+    const makeSvg = (name, attributes = {}) => {
+      const element = document.createElementNS(svgNS, name);
+      Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+      return element;
+    };
+    const xFor = (index) => plot.left + (items.length === 1 ? plotWidth / 2 : (index / (items.length - 1)) * plotWidth);
+    const addText = (text, attributes) => {
+      const element = makeSvg('text', attributes);
+      element.textContent = text;
+      svg.appendChild(element);
+    };
+
+    for (let index = 0; index <= 4; index += 1) {
+      const y = plot.top + (index / 4) * plotHeight;
+      svg.appendChild(makeSvg('line', { x1: plot.left, y1: y, x2: width - plot.right, y2: y, class: 'chart-grid-line' }));
+    }
+
+    const series = [
+      { key: 'weight_kg', className: 'is-weight', label: 'Peso' },
+      { key: 'body_fat_percent', className: 'is-fat', label: 'Gordura corporal' }
+    ];
+    series.forEach((definition) => {
+      const values = items.map((item, index) => ({ index, value: Number(item[definition.key]) })).filter((item) => Number.isFinite(item.value));
+      if (!values.length) return;
+      const min = Math.min(...values.map((item) => item.value));
+      const max = Math.max(...values.map((item) => item.value));
+      const spread = Math.max(1, max - min);
+      const points = values.map((item) => `${xFor(item.index)},${plot.top + plotHeight - ((item.value - min) / spread) * plotHeight}`).join(' ');
+      if (values.length > 1) svg.appendChild(makeSvg('polyline', { points, class: `chart-line ${definition.className}` }));
+      values.forEach((item) => {
+        const y = plot.top + plotHeight - ((item.value - min) / spread) * plotHeight;
+        const circle = makeSvg('circle', { cx: xFor(item.index), cy: y, r: 4, class: `chart-point ${definition.className}` });
+        const title = makeSvg('title');
+        title.textContent = `${definition.label}: ${item.value} · ${formatAssessmentDate(items[item.index].assessment_date, true)}`;
+        circle.appendChild(title);
+        svg.appendChild(circle);
+      });
+      addText(`${min}`, { x: 4, y: plot.top + plotHeight + 4, class: 'chart-axis-label' });
+      addText(`${max}`, { x: 4, y: plot.top + 4, class: 'chart-axis-label' });
     });
+
+    const labelStep = items.length > 8 ? Math.ceil(items.length / 8) : 1;
+    items.forEach((item, index) => {
+      if (index % labelStep !== 0 && index !== items.length - 1) return;
+      addText(formatAssessmentDate(item.assessment_date, true), { x: xFor(index), y: height - 12, class: 'chart-date-label', 'text-anchor': 'middle' });
+    });
+    host.classList.add('is-line-chart');
+    const chart = document.createElement('div');
+    chart.className = 'social-profile-line-chart';
+    chart.appendChild(svg);
+    host.appendChild(chart);
+  }
+
+  function changeProfileDay(offset) {
+    const date = fromDateKey(selectedDate);
+    date.setDate(date.getDate() + offset);
+    selectedDate = toDateKey(date);
+    updateProfileDayLabel();
+    renderWorkout(currentTraining, selectedDate);
   }
 
   async function load() {
@@ -205,8 +279,9 @@
         return;
       }
 
-      const training = isOwnProfile ? await StudentPortal.api('/api/student/training/current').catch(() => null) : null;
-      renderWorkout(training);
+      currentTraining = isOwnProfile ? await StudentPortal.api('/api/student/training/current').catch(() => null) : null;
+      updateProfileDayLabel();
+      renderWorkout(currentTraining, selectedDate);
       renderPosts(result.posts || []);
       if (!isOwnProfile) document.querySelectorAll('.social-profile-page-actions a:first-child').forEach((element) => element.remove());
     } catch (error) {
@@ -214,6 +289,8 @@
     }
   }
 
+  p('social-profile-day-previous')?.addEventListener('click', () => changeProfileDay(-1));
+  p('social-profile-day-next')?.addEventListener('click', () => changeProfileDay(1));
   p('social-profile-training-close')?.addEventListener('click', closeTrainingModal);
   p('social-profile-training-modal')?.addEventListener('click', (event) => {
     if (event.target === event.currentTarget) closeTrainingModal();
