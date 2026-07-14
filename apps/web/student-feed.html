@@ -44,23 +44,21 @@
         <h1>Treine junto. Evolua junto.</h1>
         <p>Compartilhe sua rotina com quem também faz parte da academia.</p>
       </div>
-      <a class="button secondary" href="#social-composer">Criar publicação</a>
+      <button class="button secondary" id="social-open-composer" type="button">Criar publicação</button>
     </section>
 
     <div class="social-layout">
       <div class="social-main">
-        <section class="panel social-composer" id="social-composer">
-          <div class="toolbar"><div><h3>Compartilhe com a comunidade</h3><small>Seu post fica visível somente para alunos da BlueREC.</small></div><span class="badge">Academia privada</span></div>
-          <form id="social-post-form">
-            <div class="field"><label for="social-post-caption">O que você treinou hoje?</label><textarea id="social-post-caption" maxlength="2000" placeholder="Conte como foi seu treino, sua evolução ou uma conquista..."></textarea></div>
-            <div class="social-composer-grid">
-              <div class="field"><label for="social-post-file">Foto do celular ou computador</label><input id="social-post-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><small>JPG, PNG, GIF ou WebP. Limite de 5 MB.</small></div>
-              <div class="field"><label for="social-post-url">Ou cole um link de foto, vídeo ou Reels</label><input id="social-post-url" type="url" placeholder="https://..." /><small>Links do YouTube e Instagram também podem ser compartilhados.</small></div>
-            </div>
-            <div class="social-composer-footer"><label class="social-check"><input id="social-post-is-video" type="checkbox" /> <span>Este conteúdo é vídeo ou Reels</span></label><button class="button" id="social-post-submit" type="submit">Publicar</button></div>
-            <div class="social-upload-preview hidden" id="social-upload-preview"><img id="social-upload-preview-image" alt="Prévia da publicação" /><span id="social-upload-preview-empty">Prévia</span></div>
-            <p class="status-line" id="social-post-status" aria-live="polite"></p>
-          </form>
+        <section class="panel social-composer-entry" id="social-composer">
+          <div class="social-composer-entry-row">
+            <div class="social-avatar" data-student-avatar>A</div>
+            <button class="social-composer-trigger" id="social-composer-trigger" type="button">O que você está pensando, <span data-student-name>Aluno</span>?</button>
+          </div>
+          <div class="social-composer-entry-actions" aria-label="Ações de publicação">
+            <button class="social-entry-action is-photo" id="social-entry-photo" type="button"><span class="social-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 2-2 6 6"/></svg></span><span>Foto</span></button>
+            <button class="social-entry-action is-video" id="social-entry-video" type="button"><span class="social-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></span><span>Vídeo</span></button>
+            <button class="social-entry-action is-link" id="social-entry-link" type="button"><span class="social-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 7.9 20l1.1-1.1"/></svg></span><span>Link</span></button>
+          </div>
         </section>
         <div class="social-feed-heading"><h2>Feed da academia</h2><button class="icon-button" id="social-refresh" type="button" aria-label="Atualizar feed" title="Atualizar feed">↻</button></div>
         <section class="social-feed-list" id="social-feed-list" aria-live="polite"><div class="empty-state">Carregando publicações...</div></section>
@@ -74,6 +72,23 @@
       </aside>
     </div>
   </main>
+
+  <div class="modal hidden" id="social-composer-modal" role="dialog" aria-modal="true" aria-labelledby="social-composer-title">
+    <article class="modal-card social-composer-modal-card">
+      <div class="modal-header social-composer-modal-header"><h3 id="social-composer-title">Criar publicação</h3><button class="modal-close" id="social-composer-close" type="button" aria-label="Fechar">×</button></div>
+      <div class="social-composer-identity"><div class="social-avatar" data-student-avatar>A</div><div><strong data-student-name>Aluno</strong><small><span class="social-privacy-dot">●</span> Comunidade BlueREC</small></div></div>
+      <form id="social-post-form">
+        <label class="sr-only" for="social-post-caption">Texto da publicação</label>
+        <textarea class="social-composer-textarea" id="social-post-caption" maxlength="2000" placeholder="No que você está pensando?"></textarea>
+        <div class="social-composer-add"><strong>Adicionar à publicação</strong><div class="social-composer-tools"><button class="social-tool-button is-photo" id="social-modal-photo" type="button" aria-label="Adicionar foto" title="Adicionar foto"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 2-2 6 6"/></svg></button><button class="social-tool-button is-video" id="social-modal-video" type="button" aria-label="Adicionar vídeo ou Reels" title="Adicionar vídeo ou Reels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></button><button class="social-tool-button is-link" id="social-modal-link" type="button" aria-label="Adicionar link" title="Adicionar link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 7.9 20l1.1-1.1"/></svg></button></div></div>
+        <div class="social-hidden-fields"><input id="social-post-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><input id="social-post-url" type="url" placeholder="Cole um link de foto, vídeo ou Reels" /><input id="social-post-is-video" type="checkbox" /></div>
+        <div class="social-link-field hidden" id="social-link-field"><label for="social-post-url-visible">Link da publicação</label><input id="social-post-url-visible" type="url" placeholder="https://youtube.com/... ou https://instagram.com/..." /></div>
+        <div class="social-upload-preview hidden" id="social-upload-preview"><img id="social-upload-preview-image" alt="Prévia da publicação" /><span id="social-upload-preview-empty">Prévia</span></div>
+        <p class="status-line" id="social-post-status" aria-live="polite"></p>
+        <div class="social-composer-footer"><button class="button secondary" id="social-composer-cancel" type="button">Cancelar</button><button class="button" id="social-post-submit" type="submit">Publicar</button></div>
+      </form>
+    </article>
+  </div>
 
   <div class="modal hidden" id="social-profile-modal" role="dialog" aria-modal="true" aria-labelledby="social-profile-modal-title">
     <article class="modal-card social-modal-card"><div class="modal-header"><div><p class="eyebrow">Perfil</p><h3 id="social-profile-modal-title">Perfil do aluno</h3></div><button class="modal-close" id="social-profile-close" type="button" aria-label="Fechar">×</button></div><div id="social-profile-modal-content"></div></article>
