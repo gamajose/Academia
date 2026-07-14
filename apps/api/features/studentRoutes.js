@@ -90,6 +90,51 @@ async function studentCustomDetail(query, user, customPlan) {
   };
 }
 
+async function studentCalendarDetail(query, user, month) {
+  const events = await query(
+    `SELECT id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at
+     FROM student_training_events
+     WHERE gym_id = $1 AND member_id = $2 AND scheduled_date >= $3::date
+       AND scheduled_date < ($3::date + interval '1 month')
+     ORDER BY scheduled_date, start_time, created_at`,
+    [user.gym_id, user.member_id, `${month}-01`]
+  );
+  if (!events.rowCount) return [];
+  const ids = events.rows.map((item) => item.id);
+  const exercises = await query(
+    `SELECT ste.id, ste.event_id, ste.order_index, ste.sets, ste.reps, ste.rest_seconds, ste.notes,
+            ste.exercise_library_id, ste.private_exercise_id,
+            COALESCE(el.name, pe.name) AS exercise_name,
+            COALESCE(el.muscle_group, pe.muscle_group) AS muscle_group,
+            el.muscle_group_primary, el.muscle_group_secondary,
+            COALESCE(el.equipment, pe.equipment) AS equipment,
+            COALESCE(el.video_url, pe.video_url) AS video_url,
+            COALESCE(el.instructions, pe.instructions) AS instructions,
+            (ste.private_exercise_id IS NOT NULL) AS is_private
+     FROM student_training_event_exercises ste
+     LEFT JOIN exercise_library el ON el.id = ste.exercise_library_id
+     LEFT JOIN student_private_exercises pe ON pe.id = ste.private_exercise_id
+     WHERE ste.gym_id = $1 AND ste.event_id = ANY($2::uuid[])
+     ORDER BY ste.event_id, ste.order_index, ste.created_at`,
+    [user.gym_id, ids]
+  );
+  const grouped = new Map(events.rows.map((event) => [String(event.id), []]));
+  exercises.rows.forEach((exercise) => grouped.get(String(exercise.event_id))?.push(exercise));
+  return events.rows.map((event) => ({ ...event, exercises: grouped.get(String(event.id)) || [] }));
+}
+
+function validCalendarDate(value) {
+  const text = String(value || '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+  const [year, month, day] = text.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function validCalendarTime(value) {
+  return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(String(value || ''));
+}
+
 async function handleStudentRoutes(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
 
@@ -353,6 +398,101 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       )
     ]);
     return send(res, 200, { public: publicExercises.rows, private: privateExercises.rows });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/calendar') {
+    const month = String(url.searchParams.get('month') || '').trim() || new Date().toISOString().slice(0, 7);
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return send(res, 400, { error: 'mes_invalido' });
+    return send(res, 200, { month, events: await studentCalendarDetail(query, user, month) });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event') {
+    const input = await body(req);
+    const date = String(input.scheduled_date || '').trim();
+    const start = String(input.start_time || '').trim();
+    const end = String(input.end_time || '').trim();
+    const title = studentText(input.title, '', 160);
+    if (!title || !validCalendarDate(date) || !validCalendarTime(start) || (end && !validCalendarTime(end)) || (end && end <= start)) return send(res, 400, { error: 'sessao_invalida' });
+    let result;
+    if (input.id) {
+      result = await query(
+        `UPDATE student_training_events SET title = $3, scheduled_date = $4, start_time = $5, end_time = NULLIF($6, ''), notes = $7, updated_at = now()
+         WHERE id = $1 AND gym_id = $2 AND member_id = $8
+         RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
+        [input.id, user.gym_id, title, date, start, end, studentText(input.notes, '', 2000) || null, user.member_id]
+      );
+    } else {
+      result = await query(
+        `INSERT INTO student_training_events (gym_id, member_id, title, scheduled_date, start_time, end_time, notes)
+         VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7)
+         RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
+        [user.gym_id, user.member_id, title, date, start, end, studentText(input.notes, '', 2000) || null]
+      );
+    }
+    if (!result.rowCount) return send(res, 404, { error: 'sessao_nao_encontrada' });
+    return send(res, input.id ? 200 : 201, { ...result.rows[0], exercises: [] });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/delete') {
+    const input = await body(req);
+    if (!input.id) return send(res, 400, { error: 'sessao_id_obrigatorio' });
+    const result = await query('DELETE FROM student_training_events WHERE id = $1 AND gym_id = $2 AND member_id = $3 RETURNING id', [input.id, user.gym_id, user.member_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'sessao_nao_encontrada' });
+    return send(res, 200, { status: 'sessao_removida' });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/exercise') {
+    const input = await body(req);
+    if (!input.event_id || (!input.exercise_id && !input.private_exercise_id)) return send(res, 400, { error: 'dados_invalidos' });
+    const event = await query('SELECT id FROM student_training_events WHERE id = $1 AND gym_id = $2 AND member_id = $3 LIMIT 1', [input.event_id, user.gym_id, user.member_id]);
+    if (!event.rowCount) return send(res, 404, { error: 'sessao_nao_encontrada' });
+    let publicId = null;
+    let privateId = null;
+    if (input.private_exercise_id) {
+      const privateExercise = await query('SELECT id FROM student_private_exercises WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND is_active = true LIMIT 1', [input.private_exercise_id, user.gym_id, user.member_id]);
+      if (!privateExercise.rowCount) return send(res, 404, { error: 'exercicio_privado_nao_encontrado' });
+      privateId = privateExercise.rows[0].id;
+    } else {
+      const publicExercise = await query('SELECT id FROM exercise_library WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1', [input.exercise_id, user.gym_id]);
+      if (!publicExercise.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
+      publicId = publicExercise.rows[0].id;
+    }
+    const order = await query('SELECT COALESCE(MAX(order_index), 0) + 1 AS next_order FROM student_training_event_exercises WHERE gym_id = $1 AND event_id = $2', [user.gym_id, input.event_id]);
+    const result = await query(
+      `INSERT INTO student_training_event_exercises
+         (gym_id, event_id, exercise_library_id, private_exercise_id, order_index, sets, reps, rest_seconds, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, event_id, exercise_library_id, private_exercise_id, order_index, sets, reps, rest_seconds, notes`,
+      [user.gym_id, input.event_id, publicId, privateId, Number(order.rows[0]?.next_order || 1), studentInteger(input.sets, 3, 1, 30), studentText(input.reps, '10-12', 60) || '10-12', studentInteger(input.rest_seconds, 60, 0, 3600), studentText(input.notes, '', 2000) || null]
+    );
+    return send(res, 201, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/exercise/update') {
+    const input = await body(req);
+    if (!input.id) return send(res, 400, { error: 'exercicio_id_obrigatorio' });
+    const result = await query(
+      `UPDATE student_training_event_exercises ste SET sets = $3, reps = $4, rest_seconds = $5, notes = $6, updated_at = now()
+       FROM student_training_events se
+       WHERE ste.id = $1 AND ste.event_id = se.id AND ste.gym_id = $2 AND se.member_id = $7
+       RETURNING ste.id, ste.event_id, ste.sets, ste.reps, ste.rest_seconds, ste.notes`,
+      [input.id, user.gym_id, studentInteger(input.sets, 3, 1, 30), studentText(input.reps, '10-12', 60) || '10-12', studentInteger(input.rest_seconds, 60, 0, 3600), studentText(input.notes, '', 2000) || null, user.member_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/exercise/delete') {
+    const input = await body(req);
+    if (!input.id) return send(res, 400, { error: 'exercicio_id_obrigatorio' });
+    const result = await query(
+      `DELETE FROM student_training_event_exercises ste USING student_training_events se
+       WHERE ste.id = $1 AND ste.event_id = se.id AND ste.gym_id = $2 AND se.member_id = $3
+       RETURNING ste.id`,
+      [input.id, user.gym_id, user.member_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
+    return send(res, 200, { status: 'exercicio_removido' });
   }
 
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/custom/plan') {

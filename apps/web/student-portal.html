@@ -44,33 +44,28 @@
       <p>Veja a ficha do dia, os exercícios e as orientações preparadas para você.</p>
     </section>
 
-    <section class="panel">
+    <section class="panel student-calendar-panel">
       <div class="toolbar">
-        <div><h3>Ficha atual</h3><small id="student-auto-sync">Carregando...</small></div>
-        <div class="toolbar-actions">
-          <span class="badge ok" id="student-plan-status">Ativa</span>
-          <button class="button secondary" id="student-customize-button" type="button">Personalizar ficha</button>
-        </div>
+        <div><h3>Calendário de treinos</h3><small id="student-auto-sync">Carregando...</small></div>
+        <div class="toolbar-actions"><button class="button secondary" id="student-calendar-today" type="button">Hoje</button><button class="button" id="student-new-event-button" type="button">Novo treino</button></div>
       </div>
-      <p id="student-portal-meta">Carregando ficha...</p>
-      <div class="student-day-picker" id="student-day-picker" aria-label="Dias da ficha"></div>
+      <div class="student-calendar-toolbar"><button class="icon-button" id="student-calendar-previous" type="button" aria-label="Mês anterior">‹</button><h3 id="student-calendar-month">Mês</h3><button class="icon-button" id="student-calendar-next" type="button" aria-label="Próximo mês">›</button></div>
+      <div class="student-calendar-weekdays" aria-hidden="true"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+      <div class="student-calendar-grid" id="student-calendar-grid" aria-label="Calendário mensal"></div>
       <p class="status-line" id="student-calendar-status" aria-live="polite"></p>
     </section>
 
     <section class="panel">
-      <div class="toolbar">
-        <div><h3 id="student-day-title">Exercícios do dia</h3><small id="student-day-subtitle">Selecione um dia da semana.</small></div>
-        <div class="toolbar-actions">
-          <button class="button secondary" id="student-save-day-button" type="button">Salvar dia</button>
-          <button class="button" id="student-add-exercise-button" type="button">Adicionar exercício</button>
-          <a class="button secondary" href="./student-complete.html">Concluir treino</a>
-        </div>
-      </div>
-      <div class="student-day-editor">
-        <div class="field"><label for="student-day-name">Nome do treino</label><input id="student-day-name" type="text" maxlength="120" placeholder="Ex.: Peito e tríceps" /></div>
-      </div>
-      <ul id="portal-exercise-list"></ul>
+      <div class="toolbar"><div><h3 id="student-selected-date-title">Treinos do dia</h3><small>Escolha uma sessão para ver os exercícios.</small></div><button class="button secondary" id="student-selected-date-new" type="button">Agendar neste dia</button></div>
+      <div class="student-event-list" id="student-event-list"></div>
       <p class="status-line" id="student-portal-status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel hidden" id="student-event-detail-panel">
+      <div class="toolbar"><div><h3 id="student-event-detail-title">Treino</h3><small id="student-event-detail-time"></small></div><div class="toolbar-actions"><button class="button secondary" id="student-edit-event-button" type="button">Editar horário</button><button class="button" id="student-add-event-exercise-button" type="button">Adicionar exercício</button><button class="button danger-outline" id="student-delete-event-button" type="button">Excluir treino</button></div></div>
+      <p id="student-event-detail-notes"></p>
+      <ul id="student-event-exercise-list"></ul>
+      <p class="status-line" id="student-event-detail-status" aria-live="polite"></p>
     </section>
   </main>
   <div class="modal hidden" id="student-exercise-modal" role="dialog" aria-modal="true" aria-labelledby="student-exercise-title">
@@ -79,24 +74,9 @@
       <div class="exercise-view-layout"><div class="exercise-view-media" id="student-exercise-media"><span class="exercise-view-media-empty">Nenhuma demonstração cadastrada.</span></div><div class="exercise-view-copy"><div class="exercise-view-tags"><span><strong>Séries</strong><em id="student-exercise-sets">-</em></span><span><strong>Repetições</strong><em id="student-exercise-reps">-</em></span><span><strong>Descanso</strong><em id="student-exercise-rest">-</em></span><span><strong>Equipamento</strong><em id="student-exercise-equipment">-</em></span></div><div class="exercise-view-muscles"><div class="exercise-view-muscle-chip"><strong>Músculo principal</strong><span id="student-exercise-primary">-</span></div><div class="exercise-view-muscle-chip"><strong>Músculos secundários</strong><span id="student-exercise-secondary">-</span></div></div><div><h4>Como executar</h4><p id="student-exercise-instructions">Nenhuma orientação cadastrada.</p></div></div></div>
     </article>
   </div>
-  <div class="modal hidden" id="student-exercise-editor-modal" role="dialog" aria-modal="true" aria-labelledby="student-exercise-editor-title">
-    <article class="modal-card student-workout-editor-card">
-      <div class="modal-header"><div><h3 id="student-exercise-editor-title">Adicionar exercício</h3><p>Escolha um exercício da academia ou crie um só para você.</p></div><button class="modal-close" id="student-exercise-editor-close" type="button" aria-label="Fechar">×</button></div>
-      <form id="student-exercise-form" class="student-workout-editor-form">
-        <div class="field"><label for="student-exercise-source">Exercício</label><select id="student-exercise-source" required></select></div>
-        <div class="student-private-exercise-fields hidden" id="student-private-exercise-fields">
-          <div class="form-grid"><div class="field"><label for="student-private-name">Nome do exercício</label><input id="student-private-name" maxlength="120" placeholder="Ex.: Mobilidade de ombro" /></div><div class="field"><label for="student-private-muscle">Grupo muscular</label><input id="student-private-muscle" maxlength="120" placeholder="Ex.: Ombros" /></div></div>
-          <div class="form-grid"><div class="field"><label for="student-private-equipment">Equipamento</label><input id="student-private-equipment" maxlength="120" placeholder="Ex.: Elástico" /></div><div class="field"><label for="student-private-video">Vídeo ou GIF pessoal</label><input id="student-private-video" type="url" maxlength="1000" placeholder="https://youtube.com/..." /></div></div>
-          <div class="field"><label for="student-private-instructions">Como executar</label><textarea id="student-private-instructions" maxlength="2000" placeholder="Suas orientações para este exercício"></textarea></div>
-          <small>Este exercício fica privado e só aparece na sua conta.</small>
-        </div>
-        <div class="form-grid three"><div class="field"><label for="student-exercise-sets-input">Séries</label><input id="student-exercise-sets-input" type="number" min="1" max="30" value="3" required /></div><div class="field"><label for="student-exercise-reps-input">Repetições</label><input id="student-exercise-reps-input" maxlength="60" value="10-12" required /></div><div class="field"><label for="student-exercise-rest-input">Descanso (segundos)</label><input id="student-exercise-rest-input" type="number" min="0" max="3600" value="60" required /></div></div>
-        <div class="field"><label for="student-exercise-notes-input">Observações</label><textarea id="student-exercise-notes-input" maxlength="2000" placeholder="Carga, técnica ou observações pessoais"></textarea></div>
-        <p class="status-line" id="student-exercise-editor-status" aria-live="polite"></p>
-        <div class="form-actions"><button class="button secondary" id="student-exercise-editor-cancel" type="button">Cancelar</button><button class="button" type="submit">Salvar exercício</button></div>
-      </form>
-    </article>
-  </div>
+  <div class="modal hidden" id="student-event-editor-modal" role="dialog" aria-modal="true" aria-labelledby="student-event-editor-title"><article class="modal-card student-workout-editor-card"><div class="modal-header"><div><h3 id="student-event-editor-title">Novo treino</h3><p>Escolha o dia e o horário da sessão.</p></div><button class="modal-close" id="student-event-editor-close" type="button" aria-label="Fechar">×</button></div><form id="student-event-form" class="student-workout-editor-form"><div class="field"><label for="student-event-title">Nome do treino</label><input id="student-event-title" maxlength="160" placeholder="Ex.: Peito e tríceps" required /></div><div class="form-grid three"><div class="field"><label for="student-event-date">Data</label><input id="student-event-date" type="date" required /></div><div class="field"><label for="student-event-start">Começa às</label><input id="student-event-start" type="time" required /></div><div class="field"><label for="student-event-end">Termina às</label><input id="student-event-end" type="time" /></div></div><div class="field"><label for="student-event-notes">Observações</label><textarea id="student-event-notes" maxlength="2000" placeholder="Anote o objetivo ou a orientação da sessão"></textarea></div><p class="status-line" id="student-event-editor-status" aria-live="polite"></p><div class="form-actions"><button class="button secondary" id="student-event-editor-cancel" type="button">Cancelar</button><button class="button" type="submit">Salvar treino</button></div></form></article></div>
+  <div class="modal hidden" id="student-exercise-picker-modal" role="dialog" aria-modal="true" aria-labelledby="student-exercise-picker-title"><article class="modal-card student-workout-editor-card"><div class="modal-header"><div><h3 id="student-exercise-picker-title">Adicionar exercício</h3><p>Pesquise no catálogo da academia ou use um exercício seu.</p></div><button class="modal-close" id="student-exercise-picker-close" type="button" aria-label="Fechar">×</button></div><div class="student-exercise-picker"><div class="field"><label for="student-exercise-search">Buscar exercício</label><input id="student-exercise-search" type="search" placeholder="Digite o nome ou músculo" autocomplete="off" /></div><div class="student-exercise-results" id="student-exercise-results"></div><button class="button secondary student-private-action" id="student-new-private-exercise" type="button">Criar exercício pessoal</button><form id="student-event-exercise-form" class="student-workout-editor-form hidden"><h4 id="student-picked-exercise-name">Exercício selecionado</h4><div class="form-grid three"><div class="field"><label for="student-event-exercise-sets">Séries</label><input id="student-event-exercise-sets" type="number" min="1" max="30" value="3" required /></div><div class="field"><label for="student-event-exercise-reps">Repetições</label><input id="student-event-exercise-reps" maxlength="60" value="10-12" required /></div><div class="field"><label for="student-event-exercise-rest">Descanso (segundos)</label><input id="student-event-exercise-rest" type="number" min="0" max="3600" value="60" required /></div></div><div class="field"><label for="student-event-exercise-notes">Observações</label><textarea id="student-event-exercise-notes" maxlength="2000"></textarea></div><p class="status-line" id="student-exercise-picker-status" aria-live="polite"></p><div class="form-actions"><button class="button secondary" id="student-clear-picked-exercise" type="button">Escolher outro</button><button class="button" type="submit">Adicionar ao treino</button></div></form></div></article></div>
+  <div class="modal hidden" id="student-private-exercise-modal" role="dialog" aria-modal="true" aria-labelledby="student-private-exercise-title"><article class="modal-card student-workout-editor-card"><div class="modal-header"><div><h3 id="student-private-exercise-title">Novo exercício pessoal</h3><p>Fica disponível somente na sua conta.</p></div><button class="modal-close" id="student-private-exercise-close" type="button" aria-label="Fechar">×</button></div><form id="student-private-exercise-form" class="student-workout-editor-form"><div class="form-grid"><div class="field"><label for="student-private-name">Nome</label><input id="student-private-name" maxlength="120" placeholder="Ex.: Mobilidade de ombro" required /></div><div class="field"><label for="student-private-muscle">Grupo muscular</label><input id="student-private-muscle" maxlength="120" placeholder="Ex.: Ombros" /></div></div><div class="form-grid"><div class="field"><label for="student-private-equipment">Equipamento</label><input id="student-private-equipment" maxlength="120" placeholder="Ex.: Elástico" /></div><div class="field"><label for="student-private-video">Vídeo ou GIF</label><input id="student-private-video" type="url" maxlength="1000" placeholder="https://youtube.com/..." /></div></div><div class="field"><label for="student-private-instructions">Como executar</label><textarea id="student-private-instructions" maxlength="2000" placeholder="Suas orientações"></textarea></div><p class="status-line" id="student-private-exercise-status" aria-live="polite"></p><div class="form-actions"><button class="button secondary" id="student-private-exercise-cancel" type="button">Cancelar</button><button class="button" type="submit">Salvar e adicionar ao treino</button></div></form></article></div>
   <script src="./student-shell.js"></script>
   <script src="./training-media.js"></script>
   <script src="./student-portal.js"></script>

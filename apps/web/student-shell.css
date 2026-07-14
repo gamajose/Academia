@@ -65,6 +65,40 @@
 
 .student-page .panel h3 { margin: 0; }
 
+.student-calendar-panel { overflow: hidden; }
+.student-calendar-toolbar { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: 12px; margin-top: 4px; }
+.student-calendar-toolbar h3 { text-align: center; text-transform: capitalize; }
+.student-calendar-toolbar .icon-button { width: 42px; height: 42px; border: 1px solid #c9dceb; border-radius: 12px; background: #f7fbff; color: #1478d4; font-size: 26px; line-height: 1; cursor: pointer; }
+.student-calendar-toolbar .icon-button:hover, .student-calendar-toolbar .icon-button:focus-visible { background: #e7f2ff; border-color: #1478d4; }
+.student-calendar-weekdays, .student-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.student-calendar-weekdays { margin-top: 18px; color: #5e7081; font-size: 12px; font-weight: 700; text-align: center; }
+.student-calendar-day { display: flex; min-width: 0; min-height: 96px; flex-direction: column; align-items: flex-start; gap: 5px; padding: 10px; border: 1px solid #d7e3ef; border-radius: 12px; background: #fff; color: #24405a; text-align: left; cursor: pointer; }
+.student-calendar-day:hover, .student-calendar-day:focus-visible { border-color: #1478d4; box-shadow: 0 0 0 3px rgba(20, 120, 212, .12); outline: none; }
+.student-calendar-day strong { font-size: 15px; }
+.student-calendar-day small { color: #1478d4; font-size: 11px; }
+.student-calendar-day.is-empty { min-height: 96px; border-color: transparent; background: transparent; cursor: default; }
+.student-calendar-day.is-empty:hover { box-shadow: none; }
+.student-calendar-day.is-today { border-color: #86bff0; background: #f2f8ff; }
+.student-calendar-day.is-selected { border-color: #1478d4; background: #e7f2ff; box-shadow: inset 0 0 0 1px #1478d4; }
+.student-calendar-event-preview { display: block; width: 100%; overflow: hidden; color: #183b5c; font-size: 11px; font-weight: 700; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.student-event-list { display: grid; gap: 10px; }
+.student-event-card { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; padding: 15px 16px; border: 1px solid #d7e3ef; border-radius: 14px; background: #fff; color: #24405a; text-align: left; cursor: pointer; }
+.student-event-card:hover, .student-event-card:focus-visible { border-color: #1478d4; box-shadow: 0 0 0 3px rgba(20, 120, 212, .1); outline: none; }
+.student-event-card.is-selected { border-color: #1478d4; background: #f2f8ff; box-shadow: inset 4px 0 #1478d4; }
+.student-event-card strong { color: #101923; }
+.student-event-card small { color: #5e7081; }
+.student-event-time { color: #1478d4; font-weight: 700; }
+#student-event-exercise-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 18px 0 0; }
+.student-exercise-picker { display: grid; gap: 14px; }
+.student-exercise-results { display: grid; max-height: 300px; gap: 8px; overflow: auto; padding: 2px; }
+.student-exercise-result { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid #d7e3ef; border-radius: 12px; background: #fff; color: #24405a; text-align: left; cursor: pointer; }
+.student-exercise-result:hover, .student-exercise-result:focus-visible { border-color: #1478d4; background: #f2f8ff; outline: none; }
+.student-exercise-result strong { color: #101923; }
+.student-exercise-result small { color: #5e7081; }
+.student-private-action { width: 100%; }
+.danger-outline { border-color: #e8b9c0; background: #fff; color: #bd1f2d; }
+.danger-outline:hover, .danger-outline:focus-visible { border-color: #bd1f2d; background: #fff4f5; }
+
 .student-day-picker {
   display: flex;
   gap: 10px;
@@ -172,4 +206,15 @@
   .student-stat-grid { grid-template-columns: 1fr; }
   .student-goal-list { grid-template-columns: 1fr; }
   .student-page .app-shell { padding-top: 26px; }
+  .student-calendar-weekdays, .student-calendar-grid { gap: 4px; }
+  .student-calendar-day { min-height: 78px; padding: 7px; border-radius: 9px; }
+  .student-calendar-day.is-empty { min-height: 78px; }
+  .student-calendar-day strong { font-size: 13px; }
+  .student-calendar-day small, .student-calendar-event-preview { font-size: 9px; }
+  .student-event-card { grid-template-columns: 1fr auto; gap: 5px 10px; }
+  .student-event-card .student-event-time { grid-row: span 2; }
+  .student-event-card small { grid-column: 2; }
+  #student-event-detail-panel .toolbar { align-items: flex-start; }
+  #student-event-detail-panel .toolbar-actions { width: 100%; }
+  #student-event-detail-panel .toolbar-actions .button { flex: 1 1 auto; }
 }
