@@ -13,6 +13,8 @@
 .student-top-nav .top-nav-brand { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .student-top-nav .top-nav-brand .brand-wordmark { display: none !important; }
 .student-top-nav .top-nav-brand::after { display: none; }
+.student-top-nav .profile-copy { display: none; }
+.student-top-nav .profile-trigger { padding-right: 7px; }
 
 .student-mobile-nav { display: none; }
 
@@ -43,11 +45,17 @@
 
 .student-page .panel + .panel { margin-top: 24px; }
 .student-page .status-line:empty { display: none; }
+.student-page[data-student-page="training"] .hero,
+.student-page[data-student-page="progress"] .hero,
+.student-page[data-student-page="goals"] .hero,
+.student-page[data-student-page="share"] .hero,
+.student-page[data-student-page="history"] .hero { display: none !important; }
 
 .student-page .nav-icon { color: #9bd1ff; }
 .student-page .top-nav-links a.active .nav-icon { color: #fff; }
 .student-page .nav-icon svg { display: block; width: 36px; height: 36px; }
-.student-page .top-nav-links a[data-student-link="complete"] { display: none; }
+.student-page .top-nav-links a[data-student-link="complete"],
+.student-page .top-nav-links a[data-student-link="share"] { display: none; }
 .student-module-nav a { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 94px; min-height: 78px; padding: 8px 10px; text-align: center; }
 .student-module-nav a .nav-icon { display: grid; place-items: center; min-height: 36px; line-height: 1; }
 .student-module-nav a .nav-label { display: block; font-size: 11px; font-weight: 600; line-height: 1.1; }
@@ -67,6 +75,9 @@
 
 .student-calendar-panel { overflow: hidden; }
 .student-training-day-panel { max-width: 900px; margin-inline: auto; }
+.student-training-workspace { max-width: 900px; margin-inline: auto; }
+.student-training-workspace > .student-detail-day-switcher { margin-top: 24px; padding-top: 24px; border-top: 1px solid #d7e3ef; }
+html[data-student-theme="dark"] body.student-page .student-training-workspace > .student-detail-day-switcher { border-color: #29445d; }
 .student-day-switcher { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 14px; padding: 18px 0 8px; }
 .student-day-switcher > div { display: grid; gap: 3px; text-align: center; text-transform: capitalize; }
 .student-day-switcher span { color: #1478d4; font-size: 13px; font-weight: 700; }
