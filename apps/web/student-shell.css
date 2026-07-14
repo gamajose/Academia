@@ -106,10 +106,11 @@
 .student-exercise-result small { color: #5e7081; }
 .student-custom-exercise-result { border-color: #9bcaf2; background: linear-gradient(135deg, #f1f8ff, #e6f3ff); }
 .student-custom-exercise-result strong { color: #1478d4; }
-.student-event-form-exercise-list { display: none; position: relative; z-index: 3; gap: 7px; max-height: 220px; overflow-y: auto; margin-top: 8px; padding: 6px; border: 1px solid #c9dceb; border-radius: 12px; background: #fff; box-shadow: 0 14px 28px rgba(8, 31, 53, .14); }
+.student-event-form-exercise-list { display: none; position: relative; z-index: 3; gap: 2px; max-height: 180px; overflow-y: auto; margin-top: 5px; padding: 3px; border: 1px solid #c9dceb; border-radius: 8px; background: #fff; box-shadow: 0 8px 18px rgba(8, 31, 53, .12); }
 .student-event-form-exercise-list.is-open { display: grid; }
-.student-event-form-exercise-list .student-exercise-result { min-height: 44px; padding: 11px 12px; text-align: left; }
-.student-event-form-exercise-list .student-exercise-result strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.student-event-form-exercise-list .student-exercise-result { min-height: 32px; padding: 6px 9px; border: 0; border-radius: 5px; text-align: left; }
+.student-event-form-exercise-list .student-exercise-result strong { overflow: hidden; color: #29445c; font-size: 13px; font-weight: 500; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+.student-event-form-exercise-list .student-exercise-result:hover, .student-event-form-exercise-list .student-exercise-result:focus-visible { background: #f1f7fc; box-shadow: none; }
 .student-event-form-selected { display: grid; gap: 7px; margin-top: 10px; }
 .student-selected-exercise { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid #b9dcff; border-radius: 10px; background: #f2f8ff; }
 .student-selected-exercise span { display: grid; gap: 2px; }
