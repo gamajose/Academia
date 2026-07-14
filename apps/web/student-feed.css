@@ -42,6 +42,12 @@
 .social-composer-modal-card .social-upload-preview img, .social-composer-modal-card .social-upload-preview video { max-height: 240px; }
 .social-composer-modal-card .social-composer-footer { justify-content: flex-end; padding-top: 2px; }
 .social-composer-modal-card .social-composer-footer .button { min-width: 110px; }
+.social-camera-card { width: min(620px, 94vw); padding: 24px; }
+.social-camera-stage { position: relative; display: grid; min-height: 300px; place-items: center; overflow: hidden; border-radius: 14px; background: #0b1724; color: #c5d7e8; }
+.social-camera-stage video { display: block; width: 100%; max-height: 440px; object-fit: cover; }
+.social-camera-stage span { position: absolute; padding: 12px; text-align: center; }
+.social-camera-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.social-camera-actions .button { width: auto; min-width: 120px; }
 .social-composer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .social-composer-footer { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
 .social-composer-footer .button { width: auto; min-width: 120px; }

@@ -89,6 +89,16 @@
     </article>
   </div>
 
+  <div class="modal hidden" id="social-camera-modal" role="dialog" aria-modal="true" aria-labelledby="social-camera-title">
+    <article class="modal-card social-camera-card">
+      <div class="modal-header"><div><p class="eyebrow">Câmera</p><h3 id="social-camera-title">Gravar vídeo</h3></div><button class="modal-close" id="social-camera-close" type="button" aria-label="Fechar câmera">×</button></div>
+      <div class="social-camera-stage"><video id="social-camera-preview" autoplay muted playsinline></video><span id="social-camera-empty">A câmera aparecerá aqui.</span></div>
+      <p class="status-line" id="social-camera-status" aria-live="polite">Solicitando acesso à câmera...</p>
+      <input class="social-hidden-fields" id="social-camera-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" />
+      <div class="social-camera-actions"><button class="button secondary" id="social-camera-file-button" type="button">Usar vídeo salvo</button><button class="button secondary" id="social-camera-cancel" type="button">Cancelar</button><button class="button" id="social-camera-start" type="button" disabled>Iniciar gravação</button><button class="button hidden" id="social-camera-stop" type="button">Parar gravação</button><button class="button hidden" id="social-camera-use" type="button">Usar este vídeo</button></div>
+    </article>
+  </div>
+
   <div class="modal hidden" id="social-profile-modal" role="dialog" aria-modal="true" aria-labelledby="social-profile-modal-title">
     <article class="modal-card social-modal-card"><div class="modal-header"><div><p class="eyebrow">Perfil</p><h3 id="social-profile-modal-title">Perfil do aluno</h3></div><button class="modal-close" id="social-profile-close" type="button" aria-label="Fechar">×</button></div><div id="social-profile-modal-content"></div></article>
   </div>
