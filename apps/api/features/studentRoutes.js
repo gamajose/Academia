@@ -827,12 +827,30 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/exercise/update') {
     const input = await body(req);
     if (!input.id) return send(res, 400, { error: 'exercicio_id_obrigatorio' });
+    const changesExercise = Object.prototype.hasOwnProperty.call(input, 'exercise_id') || Object.prototype.hasOwnProperty.call(input, 'private_exercise_id');
+    let publicId = null;
+    let privateId = null;
+    if (changesExercise) {
+      if (Boolean(input.exercise_id) === Boolean(input.private_exercise_id)) return send(res, 400, { error: 'exercicio_invalido' });
+      if (input.private_exercise_id) {
+        const privateExercise = await query('SELECT id FROM student_private_exercises WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND is_active = true LIMIT 1', [input.private_exercise_id, user.gym_id, user.member_id]);
+        if (!privateExercise.rowCount) return send(res, 404, { error: 'exercicio_privado_nao_encontrado' });
+        privateId = privateExercise.rows[0].id;
+      } else {
+        const publicExercise = await query('SELECT id FROM exercise_library WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1', [input.exercise_id, user.gym_id]);
+        if (!publicExercise.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
+        publicId = publicExercise.rows[0].id;
+      }
+    }
     const result = await query(
-      `UPDATE student_training_event_exercises ste SET sets = $3, reps = $4, rest_seconds = $5, notes = $6, updated_at = now()
+      `UPDATE student_training_event_exercises ste SET
+         exercise_library_id = CASE WHEN $3 THEN $4 ELSE ste.exercise_library_id END,
+         private_exercise_id = CASE WHEN $3 THEN $5 ELSE ste.private_exercise_id END,
+         sets = $6, reps = $7, rest_seconds = $8, notes = $9, updated_at = now()
        FROM student_training_events se
-       WHERE ste.id = $1 AND ste.event_id = se.id AND ste.gym_id = $2 AND se.member_id = $7
-       RETURNING ste.id, ste.event_id, ste.sets, ste.reps, ste.rest_seconds, ste.notes`,
-      [input.id, user.gym_id, studentInteger(input.sets, 3, 1, 30), studentText(input.reps, '10-12', 60) || '10-12', studentInteger(input.rest_seconds, 60, 0, 3600), studentText(input.notes, '', 2000) || null, user.member_id]
+       WHERE ste.id = $1 AND ste.event_id = se.id AND ste.gym_id = $2 AND se.member_id = $10
+       RETURNING ste.id, ste.event_id, ste.exercise_library_id, ste.private_exercise_id, ste.sets, ste.reps, ste.rest_seconds, ste.notes`,
+      [input.id, user.gym_id, changesExercise, publicId, privateId, studentInteger(input.sets, 3, 1, 30), studentText(input.reps, '10-12', 60) || '10-12', studentInteger(input.rest_seconds, 60, 0, 3600), studentText(input.notes, '', 2000) || null, user.member_id]
     );
     if (!result.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
     return send(res, 200, result.rows[0]);

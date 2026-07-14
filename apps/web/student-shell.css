@@ -115,7 +115,8 @@
 .student-detail-icon-action.is-danger:hover, .student-detail-icon-action.is-danger:focus-visible { border-color: #bd1f2d; background: #fff4f5; box-shadow: 0 0 0 3px rgba(189, 31, 45, .1); }
 #student-event-exercise-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 18px 0 0; }
 .student-exercise-picker { display: grid; gap: 14px; }
-.student-exercise-results { display: grid; max-height: 300px; gap: 8px; overflow: auto; padding: 2px; }
+.student-exercise-results { display: none; max-height: 300px; gap: 8px; overflow: auto; padding: 2px; }
+.student-exercise-results.is-open { display: grid; }
 .student-exercise-result { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid #d7e3ef; border-radius: 12px; background: #fff; color: #24405a; text-align: left; cursor: pointer; }
 .student-exercise-result:hover, .student-exercise-result:focus-visible { border-color: #1478d4; background: #f2f8ff; outline: none; }
 .student-exercise-result strong { color: #101923; }
@@ -182,6 +183,10 @@
 .student-workout-editor-form { display: grid; gap: 16px; }
 .student-workout-editor-form > small { color: #5e7081; }
 .student-workout-editor-form .form-actions { margin-top: 0; }
+.student-picked-exercise-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-picked-exercise-header h4 { margin: 0; color: #101923; font-size: 16px; font-weight: 600; }
+.student-picked-exercise-header .icon-button { flex: 0 0 32px; width: 32px; min-width: 32px; height: 32px; min-height: 32px; margin: 0; border: 1px solid #e8b9c0; border-radius: 8px; background: #fff; color: #bd1f2d; font-size: 20px; line-height: 1; }
+.student-picked-exercise-header .icon-button:hover, .student-picked-exercise-header .icon-button:focus-visible { border-color: #bd1f2d; background: #fff4f5; outline: none; }
 
 .student-stat-grid {
   display: grid;
