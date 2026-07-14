@@ -40,7 +40,7 @@
 .social-profile-page .social-profile-content-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); grid-auto-rows: 1fr; gap: 18px; align-items: stretch; }
 .social-profile-page .social-profile-content-grid > .social-profile-section { align-self: start; height: 380px; min-height: 380px; }
 .social-profile-page .social-profile-content-grid > .social-profile-section:nth-child(2) { position: relative; top: -24px; }
-.social-profile-page .social-profile-publications-section { position: relative; top: -8px; }
+.social-profile-page .social-profile-publications-section { position: relative; top: -16px; }
 .social-profile-page .social-profile-workout-card { display: grid; gap: 10px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 12px; background: #f7fbff; }
 .social-profile-page .social-profile-workout-card strong { color: #101923; font-size: 17px; }
 .social-profile-page .social-profile-workout-card small, .social-profile-page .social-profile-workout-card span { color: #5e7081; }
@@ -74,9 +74,16 @@
 .social-profile-edit-page .social-profile-settings-nav h2 { margin: 0 0 8px; color: #5e7081; font-size: 14px; font-weight: 600; }
 .social-profile-edit-page .social-profile-settings-nav a { padding: 11px 12px; border-radius: 9px; color: #29445c; text-decoration: none; }
 .social-profile-edit-page .social-profile-settings-nav a:hover, .social-profile-edit-page .social-profile-settings-nav a.is-active { background: #eaf4ff; color: #1478d4; }
-.social-profile-edit-page .social-profile-edit-form { display: grid; gap: 16px; }
+.social-profile-edit-page .social-profile-edit-hero { max-width: none; margin-bottom: 18px; }
+.social-profile-edit-page .social-profile-edit-hero h1 { margin: 0; font-size: 34px; line-height: 1.1; }
+.social-profile-edit-page .social-profile-edit-form { position: relative; top: -24px; display: grid; gap: 16px; }
 .social-profile-edit-page .social-profile-edit-photo { display: flex; align-items: center; gap: 14px; }
 .social-profile-edit-page .social-profile-edit-photo .social-avatar { flex: 0 0 72px; width: 72px; height: 72px; font-size: 24px; }
+.social-profile-edit-page .social-profile-edit-photo .social-avatar { cursor: pointer; }
+.social-profile-edit-page .social-profile-edit-photo .social-avatar:focus-visible { outline: 3px solid rgba(20,120,212,.35); outline-offset: 3px; }
+.social-profile-edit-page .social-profile-edit-photo small { display: block; margin-top: 4px; color: #5e7081; }
+.social-profile-edit-page .social-profile-privacy-field { display: grid; gap: 4px; }
+.social-profile-edit-page .social-profile-privacy-field small { color: #5e7081; }
 .social-profile-edit-page .social-profile-account-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .social-profile-edit-page .social-profile-account-actions .button { width: auto; }
 
@@ -92,6 +99,7 @@
   .social-profile-page .social-profile-publications-section { top: 0; }
   .social-profile-page .social-profile-chart-grid { gap: 5px; padding-inline: 2px; }
   .social-profile-edit-page .social-profile-settings-layout { grid-template-columns: 1fr; }
+  .social-profile-edit-page .social-profile-edit-form { top: 0; }
   .social-profile-edit-page .social-profile-settings-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .social-profile-edit-page .social-profile-settings-nav h2 { grid-column: 1 / -1; }
   .social-profile-edit-page .social-profile-account-actions, .social-profile-edit-page .social-profile-account-actions .button { width: 100%; }
