@@ -111,7 +111,7 @@
 .student-event-form-exercise-list .student-exercise-result { min-height: 32px; padding: 6px 9px; border: 0; border-radius: 5px; text-align: left; }
 .student-event-form-exercise-list .student-exercise-result strong { overflow: hidden; color: #29445c; font-size: 13px; font-weight: 500; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .student-event-form-exercise-list .student-exercise-result:hover, .student-event-form-exercise-list .student-exercise-result:focus-visible { background: #f1f7fc; box-shadow: none; }
-.student-exercise-hover-preview { position: fixed; z-index: 2100; width: min(260px, calc(100vw - 24px)); padding: 8px; border: 1px solid #c9dceb; border-radius: 10px; background: #fff; box-shadow: 0 14px 32px rgba(8, 31, 53, .22); pointer-events: none; }
+.student-exercise-hover-preview { position: fixed; z-index: 11000; width: min(260px, calc(100vw - 24px)); padding: 8px; border: 1px solid #c9dceb; border-radius: 10px; background: #fff; box-shadow: 0 14px 32px rgba(8, 31, 53, .22); pointer-events: none; }
 .student-exercise-hover-preview strong { display: block; margin: 1px 3px 7px; color: #29445c; font-size: 12px; font-weight: 600; }
 .student-exercise-hover-media { overflow: hidden; border-radius: 7px; background: #eef5fb; }
 .student-exercise-hover-media img, .student-exercise-hover-media video, .student-exercise-hover-media iframe { display: block; width: 100%; max-height: 150px; aspect-ratio: 16 / 9; border: 0; object-fit: cover; }
