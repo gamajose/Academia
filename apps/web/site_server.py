@@ -14,7 +14,7 @@ STUDENT_HTML = {
     'student-portal.html', 'student-complete.html', 'student-progress.html',
     'student-goals.html', 'student-share.html', 'student-history.html',
     'student-profile.html', 'student-security.html', 'student-change-password.html',
-    'visitor-portal.html'
+    'student-feed.html', 'visitor-portal.html'
 }
 ADMIN_ROLES = {'owner', 'admin', 'staff'}
 NO_CACHE_SUFFIXES = ('.html', '.js', '.css')
