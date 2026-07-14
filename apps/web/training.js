@@ -201,6 +201,8 @@ function renderAll() {
       const media = document.createElement('div');
       media.className = 'video-preview-slot';
       window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+      const thumbnailVideo = media.querySelector('video');
+      if (thumbnailVideo) thumbnailVideo.controls = false;
       row.appendChild(media);
     }
     if (canManageTrainingLevels()) {
