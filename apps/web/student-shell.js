@@ -39,7 +39,7 @@
       ['community', './student-feed.html', 'users', 'Comunidade'],
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
       ['progress', './student-progress.html', 'chart', 'Evolução'],
-      ['profile', './student-profile.html', 'profile', 'Perfil']
+      ['profile', './student-social-profile.html', 'profile', 'Perfil']
     ];
     items.forEach(([key, href, iconText, label]) => {
       const link = document.createElement('a');
@@ -112,6 +112,9 @@
     setActiveLink();
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
+    document.querySelectorAll('.profile-dropdown a').forEach((link) => {
+      if (link.textContent.trim() === 'Meu perfil') link.href = './student-social-profile.html';
+    });
     if (trigger && dropdown) {
       trigger.addEventListener('click', (event) => {
         event.stopPropagation();

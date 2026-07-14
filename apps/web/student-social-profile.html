@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Perfil - BlueREC Academia</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
+  <link rel="stylesheet" href="./student-shell.css" />
+  <link rel="stylesheet" href="./student-feed.css" />
+  <link rel="stylesheet" href="./student-social-profile.css" />
+</head>
+<body class="student-page social-profile-page" data-student-page="profile">
+  <nav class="top-nav student-top-nav">
+    <a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /></a>
+    <div class="top-nav-links student-module-nav" aria-label="Navegação do aluno">
+      <a data-student-link="training" href="./student-portal.html">Meu treino</a>
+      <a data-student-link="progress" href="./student-progress.html">Minha evolução</a>
+      <a data-student-link="goals" href="./student-goals.html">Minhas metas</a>
+      <a data-student-link="share" href="./student-share.html">Compartilhar foto</a>
+      <a data-student-link="history" href="./student-history.html">Histórico</a>
+    </div>
+    <div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-social-profile.html">Meu perfil</a><a href="./student-security.html">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div>
+  </nav>
+
+  <main class="app-shell">
+    <section class="hero social-profile-page-hero">
+      <div class="social-profile-page-header panel">
+        <div class="social-avatar" id="social-profile-page-avatar">A</div>
+        <div class="social-profile-page-identity"><p class="eyebrow">Perfil do aluno</p><h1 id="social-profile-page-name">Aluno</h1><small id="social-profile-page-visibility">Perfil público</small></div>
+        <div class="social-profile-page-actions"><a class="button secondary" href="./student-social-profile-edit.html">Editar perfil</a><a class="button secondary" href="./student-feed.html">Comunidade</a></div>
+        <p class="social-profile-page-bio" id="social-profile-page-bio">Complete seu perfil para compartilhar sua jornada.</p>
+        <a class="social-profile-page-link" id="social-profile-page-link" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
+        <div class="social-profile-page-stats"><span><strong id="social-profile-page-posts">0</strong><small>publicações</small></span><span><strong id="social-profile-page-followers">0</strong><small>seguidores</small></span><span><strong id="social-profile-page-following">0</strong><small>seguindo</small></span></div>
+      </div>
+    </section>
+
+    <section class="panel social-profile-section"><h2>Estatísticas</h2><div class="social-profile-overview-grid"><div class="social-profile-overview-card"><strong id="social-profile-completed">0</strong><small>treinos concluídos</small></div><div class="social-profile-overview-card"><strong id="social-profile-exercises">0</strong><small>exercícios planejados</small></div><div class="social-profile-overview-card"><strong id="social-profile-checkins">0</strong><small>check-ins</small></div><div class="social-profile-overview-card"><strong id="social-profile-scheduled">0</strong><small>treinos agendados</small></div></div></section>
+
+    <section class="panel social-profile-section"><h2>Evolução recente</h2><div class="social-profile-chart-legend"><span><i></i>Peso</span><span><i></i>Gordura corporal</span></div><div class="social-profile-chart-grid" id="social-profile-chart"><p class="social-profile-empty">Carregando histórico...</p></div></section>
+
+    <div class="social-profile-content-grid">
+      <section class="panel social-profile-section"><h2>Ficha atual</h2><div id="social-profile-workout"><p class="social-profile-empty">Carregando sua ficha...</p></div></section>
+      <section class="panel social-profile-section"><h2>Publicações</h2><div class="social-profile-post-grid" id="social-profile-posts"><p class="social-profile-empty">Carregando publicações...</p></div></section>
+    </div>
+    <p class="status-line" id="social-profile-page-status" aria-live="polite"></p>
+  </main>
+
+  <script src="./student-shell.js"></script>
+  <script src="./student-social-profile.js"></script>
+</body>
+</html>
