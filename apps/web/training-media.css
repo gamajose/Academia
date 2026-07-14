@@ -76,11 +76,11 @@
 .exercise-view-tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .exercise-view-muscles { display: grid; gap: 10px; }
 .exercise-view-muscle-chip { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid #dbe8f4; border-radius: 10px; background: #f5faff; }
-.exercise-view-muscle-chip strong { color: var(--muted, #68716b); font-size: 12px; }
-.exercise-view-muscle-chip span { color: var(--text, #171717); font-weight: 800; }
+.exercise-view-muscle-chip strong { color: var(--muted, #68716b); font-size: 12px; font-weight: 500; }
+.exercise-view-muscle-chip span { color: #3d5870; font-weight: 500; }
 .exercise-view-tags span { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid var(--line, #e0d8cc); border-radius: 10px; background: #fbfdff; }
-.exercise-view-tags strong { color: var(--muted, #68716b); font-size: 12px; }
-.exercise-view-tags em { color: var(--text, #171717); font-style: normal; font-weight: 800; }
+.exercise-view-tags strong { color: #687b8d; font-size: 12px; font-weight: 500; }
+.exercise-view-tags em { color: #3d5870; font-style: normal; font-weight: 500; }
 .training-levels-panel { margin-bottom: 18px; }
 .training-actions-panel { gap: 18px; margin-bottom: 24px; }
 .training-actions-panel h2 { margin: 0 0 6px; }
