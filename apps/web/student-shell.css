@@ -67,7 +67,7 @@
 
 .student-day-picker {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
   padding-bottom: 3px;
   scrollbar-width: thin;
@@ -75,17 +75,31 @@
 
 .student-day-picker button {
   flex: 0 0 auto;
-  min-width: 84px;
+  display: grid;
+  gap: 3px;
+  min-width: 104px;
+  min-height: 66px;
+  padding: 10px 12px;
   background: #fff;
   color: #24405a;
   border: 1px solid #d7e3ef;
 }
+
+.student-day-picker button strong { font-size: 14px; }
+.student-day-picker button small { color: currentColor; font-size: 11px; opacity: .78; }
 
 .student-day-picker button.active {
   background: #1478d4;
   border-color: #1478d4;
   color: #fff;
 }
+
+.student-day-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 14px; background: #f8fbff; }
+.student-workout-exercise-row { align-items: center; }
+.student-workout-editor-card { width: min(760px, 96vw); }
+.student-workout-editor-form { display: grid; gap: 16px; }
+.student-workout-editor-form > small { color: #5e7081; }
+.student-workout-editor-form .form-actions { margin-top: 0; }
 
 .student-stat-grid {
   display: grid;

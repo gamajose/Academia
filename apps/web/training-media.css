@@ -20,6 +20,7 @@
   background: #101814;
 }
 .exercise-video-preview[hidden] { display: none; }
+.exercise-youtube-preview { display: block; width: 100%; min-height: 240px; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; background: #101814; }
 .exercise-gif-preview {
   display: block;
   width: 100%;
