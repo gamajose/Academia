@@ -97,6 +97,12 @@
 .social-profile-stats strong { color: #101923; font-size: 18px; }
 .social-profile-card > .button { width: 100%; }
 .social-people-list { display: grid; gap: 8px; }
+.social-people-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.social-people-toolbar h3 { margin: 0; }
+.social-search-toggle { display: grid; place-items: center; width: 34px; min-width: 34px; height: 34px; min-height: 34px; padding: 7px; margin: 0; border: 1px solid #d7e3ef; border-radius: 50%; background: #fff; color: #1478d4; }
+.social-search-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+.social-search-toggle:hover, .social-search-toggle:focus-visible { border-color: #9bcaf2; background: #eef7ff; outline: none; }
+.social-people-search-wrap { margin-top: 12px; }
 .social-person { display: flex; align-items: center; gap: 9px; padding: 8px; border-radius: 10px; }
 .social-person:hover { background: #f2f8ff; }
 .social-person-info { display: grid; flex: 1; min-width: 0; gap: 3px; }
@@ -143,6 +149,9 @@ html[data-student-theme="dark"] body.student-feed-page .social-composer-entry,
 html[data-student-theme="dark"] body.student-feed-page .social-profile-card,
 html[data-student-theme="dark"] body.student-feed-page .social-post-media { border-color: #29445d; background: #122235; color: #dceaf6; }
 html[data-student-theme="dark"] body.student-feed-page .social-composer-trigger { border-color: #34536e; background: #0e1b2a; color: #a9bed1; }
+html[data-student-theme="dark"] body.student-feed-page .social-search-toggle { border-color: #34536e; background: #122235; color: #8fc9ff; }
+html[data-student-theme="dark"] body.student-feed-page .social-search-toggle:hover,
+html[data-student-theme="dark"] body.student-feed-page .social-search-toggle:focus-visible { border-color: #5b91bd; background: #183c5c; }
 html[data-student-theme="dark"] body.student-feed-page .social-composer-trigger span,
 html[data-student-theme="dark"] body.student-feed-page .social-author,
 html[data-student-theme="dark"] body.student-feed-page .social-author-copy strong,

@@ -27,7 +27,6 @@
     <div class="profile-menu">
       <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false" aria-haspopup="menu">
         <span class="profile-avatar" data-student-avatar>A</span>
-        <span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span>
       </button>
       <div class="profile-dropdown hidden" id="student-profile-dropdown" role="menu">
         <a href="./student-profile.html">Meu perfil</a>
@@ -57,7 +56,7 @@
 
       <aside class="social-sidebar">
         <section class="panel social-profile-card" id="social-my-profile-card"><div class="social-profile-heading"><button class="social-avatar social-profile-link" id="social-my-avatar" type="button" aria-label="Ver meu perfil">A</button><div><button class="social-profile-name-link" id="social-my-name" type="button">Aluno</button><small id="social-my-bio">Complete seu perfil</small></div></div><div class="social-profile-stats"><span><strong id="social-my-posts">0</strong>posts</span><span><strong id="social-my-followers">0</strong>seguidores</span><span><strong id="social-my-following">0</strong>seguindo</span></div><button class="button secondary" id="social-view-profile" type="button">Ver perfil</button></section>
-        <section class="panel social-people-panel"><div class="toolbar"><h3>Pessoas da academia</h3></div><div class="field"><label class="sr-only" for="social-people-search">Buscar pessoas</label><input id="social-people-search" type="search" placeholder="Buscar por nome" /></div><div class="social-people-list" id="social-people-list"><div class="empty-state">Carregando pessoas...</div></div></section>
+        <section class="panel social-people-panel"><div class="toolbar social-people-toolbar"><h3>Pessoas da academia</h3><button class="icon-button social-search-toggle" id="social-people-search-toggle" type="button" aria-expanded="false" aria-controls="social-people-search-wrap" aria-label="Buscar pessoas" title="Buscar pessoas"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5"/></svg></button></div><div class="field social-people-search-wrap hidden" id="social-people-search-wrap"><label class="sr-only" for="social-people-search">Buscar pessoas</label><input id="social-people-search" type="search" placeholder="Buscar por nome" /></div><div class="social-people-list" id="social-people-list"><div class="empty-state">Carregando pessoas...</div></div></section>
         <section class="panel social-requests-panel hidden" id="social-requests-panel"><div class="toolbar"><h3>Solicitações</h3><span class="badge" id="social-request-count">0</span></div><div class="social-people-list" id="social-request-list"></div></section>
         <p class="status-line" id="social-page-status" aria-live="polite"></p>
       </aside>
