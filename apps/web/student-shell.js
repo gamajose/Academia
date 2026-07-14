@@ -16,6 +16,52 @@
   }
   const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
   const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
+  const translations = {
+    en: {
+      'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Compartilhar': 'Share', 'Histórico': 'History', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
+      'Editar perfil': 'Edit profile', 'Conta': 'Account', 'Dados da conta': 'Account details', 'Segurança': 'Security', 'Preferências': 'Preferences', 'Idioma': 'Language', 'Tema': 'Theme', 'Exportar dados': 'Export data', 'Foto visível no seu perfil': 'Profile photo', 'Nome': 'Name', 'Bio': 'Bio', 'Link': 'Link', 'Deixar meu perfil privado': 'Make my profile private', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'On a private profile, only approved followers can see your posts.', 'Salvar alterações': 'Save changes', 'Cancelar': 'Cancel', 'Dados pessoais': 'Personal details', 'Contato': 'Contact', 'Endereço': 'Address', 'Sobre você': 'About you', 'Nome completo': 'Full name', 'Data de nascimento': 'Date of birth', 'CPF': 'Tax ID', 'RG': 'ID document', 'E-mail': 'Email', 'Telefone': 'Phone', 'Rua': 'Street', 'Número': 'Number', 'Bairro': 'Neighborhood', 'Cidade': 'City', 'Estado': 'State', 'Objetivo': 'Goal', 'Alergias e restrições': 'Allergies and restrictions', 'Observações': 'Notes', 'Salvar preferências': 'Save preferences', 'Salvar idioma': 'Save language', 'Salvar tema': 'Save theme', 'O idioma escolhido será aplicado à interface do aluno.': 'The selected language will be applied to the student interface.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'The appearance is applied immediately and kept on future screens.', 'Trocar senha': 'Change password', 'Senha atual': 'Current password', 'Nova senha': 'New password', 'Confirmar nova senha': 'Confirm new password', 'Atualizar senha': 'Update password', 'Português': 'Portuguese', 'Inglês': 'English', 'Espanhol': 'Spanish', 'Español': 'Spanish', 'Claro': 'Light', 'Escuro': 'Dark', 'Automático': 'System'
+    },
+    es: {
+      'Comunidade': 'Comunidad', 'Treino': 'Entrenamiento', 'Evolução': 'Progreso', 'Metas': 'Metas', 'Compartilhar': 'Compartir', 'Histórico': 'Historial', 'Perfil': 'Perfil', 'Minha conta': 'Mi cuenta', 'Meu perfil': 'Mi perfil', 'Sair': 'Cerrar sesión',
+      'Editar perfil': 'Editar perfil', 'Conta': 'Cuenta', 'Dados da conta': 'Datos de la cuenta', 'Segurança': 'Seguridad', 'Preferências': 'Preferencias', 'Idioma': 'Idioma', 'Tema': 'Tema', 'Exportar dados': 'Exportar datos', 'Foto visível no seu perfil': 'Foto visible en tu perfil', 'Nome': 'Nombre', 'Bio': 'Biografía', 'Link': 'Enlace', 'Deixar meu perfil privado': 'Hacer mi perfil privado', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'En un perfil privado, solo los seguidores aprobados ven tus publicaciones.', 'Salvar alterações': 'Guardar cambios', 'Cancelar': 'Cancelar', 'Dados pessoais': 'Datos personales', 'Contato': 'Contacto', 'Endereço': 'Dirección', 'Sobre você': 'Sobre ti', 'Nome completo': 'Nombre completo', 'Data de nascimento': 'Fecha de nacimiento', 'CPF': 'Documento fiscal', 'RG': 'Documento de identidad', 'E-mail': 'Correo electrónico', 'Telefone': 'Teléfono', 'Rua': 'Calle', 'Número': 'Número', 'Bairro': 'Barrio', 'Cidade': 'Ciudad', 'Estado': 'Estado', 'Objetivo': 'Objetivo', 'Alergias e restrições': 'Alergias y restricciones', 'Observações': 'Observaciones', 'Salvar preferências': 'Guardar preferencias', 'Salvar idioma': 'Guardar idioma', 'Salvar tema': 'Guardar tema', 'O idioma escolhido será aplicado à interface do aluno.': 'El idioma elegido se aplicará a la interfaz del alumno.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'La apariencia se aplica inmediatamente y se mantiene en las próximas pantallas.', 'Trocar senha': 'Cambiar contraseña', 'Senha atual': 'Contraseña actual', 'Nova senha': 'Nueva contraseña', 'Confirmar nova senha': 'Confirmar nueva contraseña', 'Atualizar senha': 'Actualizar contraseña', 'Português': 'Portugués', 'Inglês': 'Inglés', 'Espanhol': 'Español', 'Español': 'Español', 'Claro': 'Claro', 'Escuro': 'Oscuro', 'Automático': 'Sistema'
+    }
+  };
+  const validThemes = ['light', 'dark', 'system'];
+
+  function getLocale() { return ['pt-BR', 'en', 'es'].includes(localStorage.getItem('studentLanguage')) ? localStorage.getItem('studentLanguage') : 'pt-BR'; }
+
+  function translatePage() {
+    const locale = getLocale();
+    document.documentElement.lang = locale;
+    const dictionary = translations[locale === 'pt-BR' ? '' : locale] || {};
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!node.nodeValue.trim() || node.parentElement?.matches('script,style,textarea,input')) continue;
+      const original = node.nodeValue.trim();
+      const source = Object.keys(translations.en).find((key) => translations.en[key] === original) || Object.keys(translations.es).find((key) => translations.es[key] === original) || original;
+      const translated = dictionary[source] || source;
+      const leading = node.nodeValue.match(/^\s*/)?.[0] || '';
+      const trailing = node.nodeValue.match(/\s*$/)?.[0] || '';
+      node.nodeValue = `${leading}${translated}${trailing}`;
+    }
+  }
+
+  function setLocale(locale) {
+    const next = ['pt-BR', 'en', 'es'].includes(locale) ? locale : 'pt-BR';
+    localStorage.setItem('studentLanguage', next);
+    translatePage();
+  }
+
+  function applyTheme(theme) {
+    const preference = validThemes.includes(theme) ? theme : 'light';
+    const effective = preference === 'system' ? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference;
+    document.documentElement.dataset.studentTheme = effective;
+    document.documentElement.dataset.studentThemePreference = preference;
+    localStorage.setItem('studentTheme', preference);
+  }
+
+  applyTheme(localStorage.getItem('studentTheme') || 'light');
 
   function iconSvg(name) {
     const paths = {
@@ -45,7 +91,7 @@
       const link = document.createElement('a');
       link.href = href;
       link.dataset.mobileStudentLink = key;
-      link.innerHTML = `<span class="nav-icon">${iconSvg(iconText)}</span><span class="nav-label">${label}</span>`;
+      link.innerHTML = `<span class="nav-icon">${iconSvg(iconText)}</span><span class="nav-label">${translations[getLocale()]?.[label] || label}</span>`;
       nav.appendChild(link);
     });
     document.body.appendChild(nav);
@@ -78,7 +124,7 @@
       const community = document.createElement('a');
       community.dataset.studentLink = 'community';
       community.href = './student-feed.html';
-      community.textContent = 'Comunidade';
+      community.textContent = translations[getLocale()]?.Comunidade || 'Comunidade';
       desktopNav.insertBefore(community, desktopNav.firstElementChild);
     }
     const current = document.body.dataset.studentPage || 'training';
@@ -92,10 +138,10 @@
         icon.innerHTML = iconSvg(navigationIcons[key]);
         const label = document.createElement('span');
         label.className = 'nav-label';
-        label.textContent = navigationLabels[key] || link.textContent.trim();
+        label.textContent = translations[getLocale()]?.[navigationLabels[key]] || navigationLabels[key] || link.textContent.trim();
         link.replaceChildren(icon, label);
       } else if (link.querySelector('.nav-label') && navigationLabels[key]) {
-        link.querySelector('.nav-label').textContent = navigationLabels[key];
+        link.querySelector('.nav-label').textContent = translations[getLocale()]?.[navigationLabels[key]] || navigationLabels[key];
       }
     });
     const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'community' ? 'community' : 'training';
@@ -110,10 +156,12 @@
     }
     if (!localStorage.getItem('studentToken')) localStorage.setItem('studentToken', token);
     setActiveLink();
+    translatePage();
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
     document.querySelectorAll('.profile-dropdown a').forEach((link) => {
-      if (link.textContent.trim() === 'Meu perfil') link.href = './student-social-profile.html';
+      if (['Meu perfil', 'My profile', 'Mi perfil'].includes(link.textContent.trim())) link.href = './student-social-profile.html';
+      if (['Segurança', 'Security', 'Seguridad'].includes(link.textContent.trim())) link.href = './student-social-profile-edit.html#social-security';
     });
     if (trigger && dropdown) {
       trigger.addEventListener('click', (event) => {
@@ -139,5 +187,5 @@
     }
   }
 
-  window.StudentPortal = { api, apiBase, getToken, escapeHtml, init, logout };
+  window.StudentPortal = { api, apiBase, getToken, escapeHtml, init, logout, getLocale, setLocale, applyTheme };
 }());

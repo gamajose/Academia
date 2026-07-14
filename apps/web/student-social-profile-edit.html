@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./styles.css" /><link rel="stylesheet" href="./premium-ui.css" /><link rel="stylesheet" href="./blue-theme.css" /><link rel="stylesheet" href="./student-shell.css" /><link rel="stylesheet" href="./student-feed.css" /><link rel="stylesheet" href="./student-social-profile.css" />
 </head>
 <body class="student-page social-profile-edit-page" data-student-page="profile">
-  <nav class="top-nav student-top-nav"><a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /></a><div class="top-nav-links student-module-nav"><a data-student-link="training" href="./student-portal.html">Meu treino</a><a data-student-link="progress" href="./student-progress.html">Minha evolução</a><a data-student-link="goals" href="./student-goals.html">Minhas metas</a><a data-student-link="share" href="./student-share.html">Compartilhar foto</a><a data-student-link="history" href="./student-history.html">Histórico</a></div><div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-social-profile.html">Meu perfil</a><a href="./student-security.html">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div></nav>
+  <nav class="top-nav student-top-nav"><a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /></a><div class="top-nav-links student-module-nav"><a data-student-link="training" href="./student-portal.html">Meu treino</a><a data-student-link="progress" href="./student-progress.html">Minha evolução</a><a data-student-link="goals" href="./student-goals.html">Minhas metas</a><a data-student-link="share" href="./student-share.html">Compartilhar foto</a><a data-student-link="history" href="./student-history.html">Histórico</a></div><div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-social-profile.html">Meu perfil</a><a href="./student-social-profile-edit.html#social-security">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div></nav>
   <main class="app-shell">
     <section class="hero social-profile-edit-hero"><h1>Editar perfil</h1></section>
     <div class="social-profile-settings-layout">
@@ -15,10 +15,10 @@
         <h2>Conta</h2>
         <a class="is-active" data-settings-view="profile" href="#social-profile">Perfil</a>
         <a data-settings-view="account" href="#social-account">Dados da conta</a>
-        <a href="./student-security.html">Segurança</a>
+        <a data-settings-view="security" href="#social-security">Segurança</a>
         <h2>Preferências</h2>
-        <a data-settings-view="preferences" href="#social-preferences">Idioma</a>
-        <a data-settings-view="preferences" href="#social-preferences">Tema</a>
+        <a data-settings-view="language" href="#social-language">Idioma</a>
+        <a data-settings-view="theme" href="#social-theme">Tema</a>
         <a id="social-export-data" href="#social-profile-export">Exportar dados</a>
       </aside>
       <div class="social-profile-settings-content">
@@ -38,9 +38,17 @@
           <section class="form-section"><h2>Sobre você</h2><div class="field"><label for="profile-objective">Objetivo</label><textarea id="profile-objective" maxlength="5000" placeholder="Conte o que você quer alcançar."></textarea></div><div class="field"><label for="profile-allergies">Alergias e restrições</label><textarea id="profile-allergies" maxlength="5000"></textarea></div><div class="field"><label for="profile-notes">Observações</label><textarea id="profile-notes" maxlength="5000"></textarea></div></section>
           <div class="form-actions"><button type="submit" id="student-profile-save">Salvar alterações</button></div><p class="status-line" id="student-profile-status" aria-live="polite"></p>
         </form>
-        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-preferences-form" data-settings-view-panel="preferences" hidden>
-          <section class="form-section"><h2>Preferências</h2><div class="form-grid"><div class="field"><label for="social-profile-language">Idioma</label><select id="social-profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div><div class="field"><label for="social-profile-theme">Tema</label><select id="social-profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div></div></section>
-          <p class="status-line" id="social-preferences-status" aria-live="polite"></p><div class="form-actions"><button class="button" type="submit">Salvar preferências</button></div>
+        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-language-form" data-settings-view-panel="language" hidden>
+          <section class="form-section"><h2>Idioma</h2><div class="field"><label for="social-profile-language">Idioma</label><select id="social-profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select><small>O idioma escolhido será aplicado à interface do aluno.</small></div></section>
+          <p class="status-line" id="social-language-status" aria-live="polite"></p><div class="form-actions"><button class="button" type="submit">Salvar idioma</button></div>
+        </form>
+        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-theme-form" data-settings-view-panel="theme" hidden>
+          <section class="form-section"><h2>Tema</h2><div class="field"><label for="social-profile-theme">Tema</label><select id="social-profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select><small>A aparência será aplicada imediatamente e mantida nas próximas telas.</small></div></section>
+          <p class="status-line" id="social-theme-status" aria-live="polite"></p><div class="form-actions"><button class="button" type="submit">Salvar tema</button></div>
+        </form>
+        <form class="panel social-profile-edit-form social-profile-security-form" id="student-security-form" data-settings-view-panel="security" hidden>
+          <section class="form-section"><h2>Trocar senha</h2><div class="field"><label for="current-password">Senha atual</label><input id="current-password" type="password" autocomplete="current-password" required /></div><div class="field"><label for="new-password">Nova senha</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required /><small>Use 8 caracteres, 1 letra maiúscula e 1 número.</small></div><div class="field"><label for="password-confirmation">Confirmar nova senha</label><input id="password-confirmation" type="password" autocomplete="new-password" minlength="8" required /></div></section>
+          <p class="status-line" id="student-security-status" aria-live="polite"></p><div class="form-actions"><button class="button" id="student-security-button" type="submit">Atualizar senha</button></div>
         </form>
       </div>
     </div>

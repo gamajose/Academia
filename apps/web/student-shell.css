@@ -244,6 +244,28 @@
 
 .student-page .profile-trigger > span[aria-hidden] { display: none; }
 
+html[data-student-theme="dark"] body.student-page { background: #0b1724; color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-page .panel,
+html[data-student-theme="dark"] body.student-page .cards article,
+html[data-student-theme="dark"] body.student-page .quick-card,
+html[data-student-theme="dark"] body.student-page .student-photo-card { border-color: #29445d; background: #122235; color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-page input,
+html[data-student-theme="dark"] body.student-page select,
+html[data-student-theme="dark"] body.student-page textarea { border-color: #34536e; background: #0e1b2a; color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-page .form-section,
+html[data-student-theme="dark"] body.student-page .student-stat { border-color: #29445d; background: #102033; }
+html[data-student-theme="dark"] body.student-page .field label,
+html[data-student-theme="dark"] body.student-page .student-stat strong { color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-page .field small,
+html[data-student-theme="dark"] body.student-page .hero p,
+html[data-student-theme="dark"] body.student-page .student-stat span,
+html[data-student-theme="dark"] body.student-page .student-photo-card figcaption { color: #a9bed1; }
+html[data-student-theme="dark"] body.student-page .student-mobile-nav { border-color: #29445d; background: rgba(13, 29, 45, .97); }
+html[data-student-theme="dark"] body.student-page .student-mobile-nav a { color: #a9bed1; }
+html[data-student-theme="dark"] body.student-page .student-mobile-nav a.active { background: #183c5c; color: #8fc9ff; }
+html[data-student-theme="dark"] body.student-page .secondary,
+html[data-student-theme="dark"] body.student-page .button.secondary { border-color: #34536e; background: #122235; color: #e8f0f8; }
+
 @media (max-width: 760px) {
   .student-page { padding-bottom: 82px; }
   .student-top-nav { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 14px; gap: 12px; }

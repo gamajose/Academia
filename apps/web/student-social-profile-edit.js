@@ -43,9 +43,7 @@
         showView(link.dataset.settingsView);
       });
     });
-    const initialView = window.location.hash === '#social-account'
-      ? 'account'
-      : window.location.hash === '#social-preferences' ? 'preferences' : 'profile';
+    const initialView = { '#social-account': 'account', '#social-language': 'language', '#social-theme': 'theme', '#social-security': 'security' }[window.location.hash] || 'profile';
     showView(initialView);
   }
 
@@ -91,7 +89,7 @@
     setAvatar(result.profile);
     localStorage.setItem('studentName', result.profile.name);
     document.querySelectorAll('[data-student-name]').forEach((element) => { element.textContent = result.profile.name; });
-    setStatus(statusId === 'social-preferences-status' ? 'Preferências salvas.' : 'Perfil atualizado.', false, statusId);
+    setStatus(statusId === 'social-language-status' ? 'Idioma salvo.' : statusId === 'social-theme-status' ? 'Tema salvo.' : 'Perfil atualizado.', false, statusId);
     return result;
   }
 
@@ -110,6 +108,8 @@
       p('social-profile-private').checked = Boolean(profile.is_private);
       p('social-profile-language').value = profile.language || 'pt-BR';
       p('social-profile-theme').value = profile.theme || 'light';
+      StudentPortal.setLocale(profile.language || 'pt-BR');
+      StudentPortal.applyTheme(profile.theme || 'light');
       fillAccount(account);
       setAvatar(profile);
     } catch (error) {
@@ -130,15 +130,41 @@
     }
   }
 
-  async function savePreferences(event) {
+  async function savePreference(event, statusId, preference) {
     event.preventDefault();
     const button = event.target.querySelector('button[type="submit"]');
     try {
-      await persistSocialProfile(button, 'social-preferences-status');
+      if (preference === 'language') StudentPortal.setLocale(p('social-profile-language').value);
+      if (preference === 'theme') StudentPortal.applyTheme(p('social-profile-theme').value);
+      await persistSocialProfile(button, statusId);
     } catch (error) {
-      setStatus(`Não foi possível salvar as preferências: ${error.message}`, true, 'social-preferences-status');
+      setStatus(`Não foi possível salvar: ${error.message}`, true, statusId);
     } finally {
       button.disabled = false;
+    }
+  }
+
+  async function saveSecurity(event) {
+    event.preventDefault();
+    const button = p('student-security-button');
+    const status = p('student-security-status');
+    const current = p('current-password').value;
+    const next = p('new-password').value;
+    const confirmation = p('password-confirmation').value;
+    if (next !== confirmation) { status.textContent = 'As novas senhas não conferem.'; return; }
+    try {
+      button.disabled = true;
+      button.textContent = 'Salvando...';
+      await StudentPortal.api('/api/student/change-password', { method: 'POST', body: JSON.stringify({ current_password: current, new_password: next, password_confirmation: confirmation }) });
+      localStorage.setItem('studentMustChangePassword', 'false');
+      p('student-security-form').reset();
+      status.textContent = 'Senha atualizada com sucesso.';
+    } catch (error) {
+      const messages = { senha_atual_invalida: 'A senha atual não confere.', senha_muito_curta: 'Use 8 caracteres, 1 letra maiúscula e 1 número.', senhas_nao_conferem: 'As novas senhas não conferem.' };
+      status.textContent = messages[error.message] || `Erro: ${error.message}`;
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Atualizar senha';
     }
   }
 
@@ -192,8 +218,12 @@
   setupViewNavigation();
   p('social-profile-form').addEventListener('submit', saveProfile);
   p('student-profile-form').addEventListener('submit', saveAccount);
-  p('social-preferences-form').addEventListener('submit', savePreferences);
+  p('social-language-form').addEventListener('submit', (event) => savePreference(event, 'social-language-status', 'language'));
+  p('social-theme-form').addEventListener('submit', (event) => savePreference(event, 'social-theme-status', 'theme'));
+  p('student-security-form').addEventListener('submit', saveSecurity);
   p('social-export-data')?.addEventListener('click', (event) => { event.preventDefault(); exportData(); });
+  p('social-profile-language').addEventListener('change', (event) => StudentPortal.setLocale(event.target.value));
+  p('social-profile-theme').addEventListener('change', (event) => StudentPortal.applyTheme(event.target.value));
   p('social-profile-photo-file').addEventListener('change', (event) => {
     const file = event.target.files?.[0];
     if (photoPreview) URL.revokeObjectURL(photoPreview);
