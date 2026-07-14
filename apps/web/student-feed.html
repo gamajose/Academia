@@ -44,7 +44,6 @@
         <h1>Treine junto. Evolua junto.</h1>
         <p>Compartilhe sua rotina com quem também faz parte da academia.</p>
       </div>
-      <button class="button secondary" id="social-open-composer" type="button">Criar publicação</button>
     </section>
 
     <div class="social-layout">
@@ -81,9 +80,9 @@
         <label class="sr-only" for="social-post-caption">Texto da publicação</label>
         <textarea class="social-composer-textarea" id="social-post-caption" maxlength="2000" placeholder="No que você está pensando?"></textarea>
         <div class="social-composer-add"><strong>Adicionar à publicação</strong><div class="social-composer-tools"><button class="social-tool-button is-photo" id="social-modal-photo" type="button" aria-label="Adicionar foto" title="Adicionar foto"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 2-2 6 6"/></svg></button><button class="social-tool-button is-video" id="social-modal-video" type="button" aria-label="Adicionar vídeo ou Reels" title="Adicionar vídeo ou Reels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></button><button class="social-tool-button is-link" id="social-modal-link" type="button" aria-label="Adicionar link" title="Adicionar link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 7.9 20l1.1-1.1"/></svg></button></div></div>
-        <div class="social-hidden-fields"><input id="social-post-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><input id="social-post-url" type="url" placeholder="Cole um link de foto, vídeo ou Reels" /><input id="social-post-is-video" type="checkbox" /></div>
-        <div class="social-link-field hidden" id="social-link-field"><label for="social-post-url-visible">Link da publicação</label><input id="social-post-url-visible" type="url" placeholder="https://youtube.com/... ou https://instagram.com/..." /></div>
-        <div class="social-upload-preview hidden" id="social-upload-preview"><img id="social-upload-preview-image" alt="Prévia da publicação" /><span id="social-upload-preview-empty">Prévia</span></div>
+        <div class="social-hidden-fields"><input id="social-post-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" capture="environment" /><input id="social-post-video-file" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" capture="environment" /><input id="social-post-url" type="url" placeholder="Cole um link de foto, vídeo ou Reels" /><input id="social-post-is-video" type="checkbox" /></div>
+        <div class="social-link-field hidden" id="social-link-field"><label for="social-post-url-visible">Link do YouTube ou Instagram</label><input id="social-post-url-visible" type="url" placeholder="https://youtube.com/... ou https://instagram.com/..." /></div>
+        <div class="social-upload-preview hidden" id="social-upload-preview"><img id="social-upload-preview-image" alt="Prévia da publicação" /><video id="social-upload-preview-video" controls muted playsinline></video><span id="social-upload-preview-empty">Prévia</span></div>
         <p class="status-line" id="social-post-status" aria-live="polite"></p>
         <div class="social-composer-footer"><button class="button secondary" id="social-composer-cancel" type="button">Cancelar</button><button class="button" id="social-post-submit" type="submit">Publicar</button></div>
       </form>

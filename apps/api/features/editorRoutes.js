@@ -129,11 +129,13 @@ function handleMediaUpload(req, res, helpers, mediaType) {
 }
 
 async function handleEditorRoutes(req, res, user, url, helpers) {
-  if (req.method !== 'POST' || !['/api/editor/images', '/api/training/videos'].includes(url.pathname)) return false;
-  const allowedRoles = url.pathname === '/api/training/videos' ? ['owner', 'admin', 'staff'] : ['owner', 'admin', 'student'];
+  if (req.method !== 'POST' || !['/api/editor/images', '/api/editor/videos', '/api/training/videos'].includes(url.pathname)) return false;
+  const isTrainingVideo = url.pathname === '/api/training/videos';
+  const isSocialVideo = url.pathname === '/api/editor/videos';
+  const allowedRoles = isTrainingVideo ? ['owner', 'admin', 'staff'] : ['owner', 'admin', 'student'];
   if (!user || !allowedRoles.includes(user.role)) return helpers.send(res, 403, { error: 'sem_permissao' });
   if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('multipart/form-data')) return helpers.send(res, 415, { error: 'multipart_obrigatorio' });
-  return handleMediaUpload(req, res, helpers, url.pathname === '/api/training/videos' ? 'training' : 'image');
+  return handleMediaUpload(req, res, helpers, isTrainingVideo ? 'training' : (isSocialVideo ? 'video' : 'image'));
 }
 
 module.exports = { handleEditorRoutes, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, signatureMatches, videoSignatureMatches, trainingMediaSignatureMatches };
