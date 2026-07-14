@@ -1,7 +1,18 @@
 (function () {
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
+  function getCookie(name) {
+    const entry = document.cookie.split('; ').find((value) => value.startsWith(`${name}=`));
+    if (!entry) return '';
+    const value = entry.slice(name.length + 1);
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  }
+
   function getToken() {
-    return localStorage.getItem('studentToken') || localStorage.getItem('academiaStudentToken') || '';
+    return localStorage.getItem('studentToken') || localStorage.getItem('academiaStudentToken') || getCookie('academiaStudentAuth') || '';
   }
   const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history' };
   const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico' };
@@ -55,7 +66,7 @@
   }
 
   function logout() {
-    ['studentToken', 'studentName', 'studentAccountType', 'studentMustChangePassword'].forEach((key) => localStorage.removeItem(key));
+    ['studentToken', 'academiaStudentToken', 'studentName', 'studentAccountType', 'studentMustChangePassword'].forEach((key) => localStorage.removeItem(key));
     document.cookie = 'academiaStudentAuth=; Path=/; Max-Age=0; SameSite=Lax';
     window.location.href = './student-login.html';
   }
@@ -92,10 +103,12 @@
   }
 
   async function init() {
-    if (!getToken()) {
+    const token = getToken();
+    if (!token) {
       window.location.href = './student-login.html';
       return null;
     }
+    if (!localStorage.getItem('studentToken')) localStorage.setItem('studentToken', token);
     setActiveLink();
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
