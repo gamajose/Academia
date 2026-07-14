@@ -1,6 +1,7 @@
 const { hashPassword, verifyPassword, signToken, randomToken, hashToken, validatePassword } = require('../lib/security');
 const { recordAudit } = require('../lib/audit');
 const { sendTransactionalEmail } = require('../lib/mailer');
+const { pool } = require('../lib/db');
 
 const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo1234';
 const STUDENT_WEEKDAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -671,6 +672,102 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     }
     if (!result.rowCount) return send(res, 404, { error: 'sessao_nao_encontrada' });
     return send(res, input.id ? 200 : 201, { ...result.rows[0], exercises: [] });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/save') {
+    const input = await body(req);
+    const date = String(input.scheduled_date || '').trim();
+    const start = String(input.start_time || '').trim();
+    const end = String(input.end_time || '').trim();
+    const title = studentText(input.title, '', 160);
+    const eventId = String(input.id || '').trim();
+    const exercises = Array.isArray(input.exercises) ? input.exercises.slice(0, 50) : [];
+    if (eventId && !isUuid(eventId)) return send(res, 400, { error: 'sessao_id_invalido' });
+    if (!title || !validCalendarDate(date) || !validCalendarTime(start) || (end && !validCalendarTime(end)) || (end && end <= start)) {
+      return send(res, 400, { error: 'sessao_invalida' });
+    }
+    for (const exercise of exercises) {
+      const publicId = String(exercise?.exercise_id || '').trim();
+      const privateId = String(exercise?.private_exercise_id || '').trim();
+      if ((publicId && privateId) || (!publicId && !privateId) || !isUuid(publicId || privateId)) {
+        return send(res, 400, { error: 'exercicio_invalido' });
+      }
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      let result;
+      if (eventId) {
+        result = await client.query(
+          `UPDATE student_training_events SET title = $3, scheduled_date = $4, start_time = $5, end_time = NULLIF($6, ''), notes = $7, updated_at = now()
+           WHERE id = $1 AND gym_id = $2 AND member_id = $8
+           RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
+          [eventId, user.gym_id, title, date, start, end, studentText(input.notes, '', 2000) || null, user.member_id]
+        );
+      } else {
+        result = await client.query(
+          `INSERT INTO student_training_events (gym_id, member_id, title, scheduled_date, start_time, end_time, notes)
+           VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''), $7)
+           RETURNING id, title, scheduled_date, start_time, end_time, notes, status, created_at, updated_at`,
+          [user.gym_id, user.member_id, title, date, start, end, studentText(input.notes, '', 2000) || null]
+        );
+      }
+      if (!result.rowCount) {
+        const error = new Error('sessao_nao_encontrada');
+        error.statusCode = 404;
+        throw error;
+      }
+
+      const savedEventId = result.rows[0].id;
+      if (input.replace_exercises === true || !eventId) {
+        await client.query('DELETE FROM student_training_event_exercises WHERE gym_id = $1 AND event_id = $2', [user.gym_id, savedEventId]);
+      }
+
+      for (const [index, exercise] of exercises.entries()) {
+        const publicId = String(exercise.exercise_id || '').trim();
+        const privateId = String(exercise.private_exercise_id || '').trim();
+        let publicExerciseId = null;
+        let privateExerciseId = null;
+        if (privateId) {
+          const privateExercise = await client.query(
+            'SELECT id FROM student_private_exercises WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND is_active = true LIMIT 1',
+            [privateId, user.gym_id, user.member_id]
+          );
+          if (!privateExercise.rowCount) {
+            const error = new Error('exercicio_privado_nao_encontrado');
+            error.statusCode = 404;
+            throw error;
+          }
+          privateExerciseId = privateExercise.rows[0].id;
+        } else {
+          const publicExercise = await client.query(
+            'SELECT id FROM exercise_library WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1',
+            [publicId, user.gym_id]
+          );
+          if (!publicExercise.rowCount) {
+            const error = new Error('exercicio_nao_encontrado');
+            error.statusCode = 404;
+            throw error;
+          }
+          publicExerciseId = publicExercise.rows[0].id;
+        }
+        await client.query(
+          `INSERT INTO student_training_event_exercises
+             (gym_id, event_id, exercise_library_id, private_exercise_id, order_index, sets, reps, rest_seconds, notes)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [user.gym_id, savedEventId, publicExerciseId, privateExerciseId, index + 1, studentInteger(exercise.sets, 3, 1, 30), studentText(exercise.reps, '10-12', 60) || '10-12', studentInteger(exercise.rest_seconds, 60, 0, 3600), studentText(exercise.notes, '', 2000) || null]
+        );
+      }
+
+      await client.query('COMMIT');
+      return send(res, eventId ? 200 : 201, { ...result.rows[0], exercises });
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/calendar/event/delete') {
