@@ -244,7 +244,7 @@
   }
 
   async function loadCalendar() {
-    try { const result = await StudentPortal.api(`/api/student/training/calendar?month=${encodeURIComponent(currentMonth())}`); events = result.events || []; if (selectedEvent) selectedEvent = events.find((event) => event.id === selectedEvent.id) || null; renderSelectedDate(); renderEventDetail(); status('student-calendar-status', ''); }
+    try { const previousEventId = selectedEvent?.id; const result = await StudentPortal.api(`/api/student/training/calendar?month=${encodeURIComponent(currentMonth())}`); events = result.events || []; const dayEvents = eventForDate(selectedDate); selectedEvent = dayEvents.find((event) => event.id === previousEventId) || dayEvents[0] || null; renderSelectedDate(); renderEventDetail(); status('student-calendar-status', ''); }
     catch (error) { status('student-portal-status', `Não foi possível carregar seus treinos: ${error.message}`, true); }
   }
 
