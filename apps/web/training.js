@@ -6,6 +6,8 @@ let exercises = [];
 let plans = [];
 let days = [];
 let trainingLevels = [];
+let editingExerciseId = null;
+let editingOriginalVideoUrl = '';
 
 const t = (id) => document.getElementById(id);
 
@@ -177,6 +179,7 @@ function renderAll() {
   for (const item of exercises) {
     const row = document.createElement('li');
     row.className = 'entity-card';
+    if (item.is_active === false) row.classList.add('is-inactive');
     row.tabIndex = 0;
     row.setAttribute('role', 'button');
     row.setAttribute('aria-label', `Ver como fazer ${item.name}`);
@@ -190,7 +193,8 @@ function renderAll() {
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
     const primaryMuscle = item.muscle_group_primary || item.muscle_group || 'Músculo não informado';
     const secondaryMuscles = item.muscle_group_secondary ? ` · ${item.muscle_group_secondary}` : '';
-    detail.textContent = `${primaryMuscle}${secondaryMuscles} · ${level?.name || item.level}`;
+    const status = item.is_active === false ? ' · Inativo' : '';
+    detail.textContent = `${primaryMuscle}${secondaryMuscles} · ${level?.name || item.level}${status}`;
     main.append(name, detail);
     row.appendChild(main);
     if (item.video_url && window.AcademiaTrainingMedia) {
@@ -198,6 +202,30 @@ function renderAll() {
       media.className = 'video-preview-slot';
       window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
       row.appendChild(media);
+    }
+    if (canManageTrainingLevels()) {
+      const actions = document.createElement('div');
+      actions.className = 'entity-actions';
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'mini-button secondary';
+      edit.textContent = 'Editar';
+      edit.title = `Editar ${item.name}`;
+      edit.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openExerciseForm(item);
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'mini-button secondary danger';
+      remove.textContent = item.is_active === false ? 'Ativar' : 'Excluir';
+      remove.title = item.is_active === false ? `Ativar ${item.name}` : `Excluir ${item.name}`;
+      remove.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        await toggleExercise(item, remove);
+      });
+      actions.append(edit, remove);
+      row.appendChild(actions);
     }
     exerciseList.appendChild(row);
   }
@@ -285,6 +313,59 @@ function openExerciseDetails(item) {
   openTrainingModal('exercise-view-modal');
 }
 
+function openExerciseForm(item = null) {
+  editingExerciseId = item?.id || null;
+  editingOriginalVideoUrl = item?.video_url || '';
+  t('exercise-title').textContent = item ? 'Editar exercício' : 'Novo exercício';
+  t('create-exercise-button').textContent = item ? 'Salvar alterações' : 'Cadastrar exercício';
+  t('exercise-name').value = item?.name || '';
+  t('exercise-group').value = item?.muscle_group_primary || item?.muscle_group || '';
+  t('exercise-secondary-muscles').value = item?.muscle_group_secondary || '';
+  t('exercise-equipment').value = item?.equipment || '';
+  t('exercise-level').value = item?.level || '';
+  t('exercise-instructions').value = item?.instructions || '';
+  t('exercise-active').checked = item ? item.is_active !== false : true;
+  t('exercise-video-file').value = '';
+  t('exercise-video-url').value = item?.video_url || '';
+  t('exercise-video-source').value = item?.video_url && !item.video_url.startsWith('/uploads/') ? 'link' : 'upload';
+  setVideoSourceMode();
+  if (item?.video_url) previewVideoLink(item.video_url);
+  openTrainingModal('exercise-modal');
+}
+
+async function toggleExercise(item, button) {
+  const action = item.is_active === false ? 'ativar' : 'excluir';
+  if (!window.confirm(`${action === 'excluir' ? 'Excluir' : 'Ativar'} o exercício "${item.name}"?`)) return;
+  button.disabled = true;
+  try {
+    if (action === 'ativar') {
+      await api('/api/training/exercises/update', {
+        method: 'POST',
+        body: JSON.stringify({
+          id: item.id,
+          name: item.name,
+          muscle_group_primary: item.muscle_group_primary || item.muscle_group,
+          muscle_group_secondary: item.muscle_group_secondary || '',
+          equipment: item.equipment || '',
+          level: item.level,
+          instructions: item.instructions || '',
+          video_url: item.video_url || '',
+          is_active: true
+        })
+      });
+      setTrainingStatus('Exercício ativado.');
+    } else {
+      await api('/api/training/exercises', { method: 'DELETE', body: JSON.stringify({ id: item.id }) });
+      setTrainingStatus('Exercício excluído do catálogo.');
+    }
+    await loadBase();
+  } catch (error) {
+    setTrainingStatus(`Erro: ${error.message}`);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function createTrainingLevel(event) {
   event.preventDefault();
   const input = t('training-level-name');
@@ -365,30 +446,34 @@ function previewVideoLink(value) {
     setVideoStatus('Cole um link de GIF ou vídeo para visualizar.');
     return;
   }
-  try {
-    const parsed = new URL(url);
-    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('protocolo');
-  } catch (_) {
-    clearVideoPreview();
-    setVideoStatus('Use um link iniciado por http:// ou https://.');
-    return;
+  const isLocalUpload = url.startsWith('/uploads/');
+  if (!isLocalUpload) {
+    try {
+      const parsed = new URL(url);
+      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('protocolo');
+    } catch (_) {
+      clearVideoPreview();
+      setVideoStatus('Use um link iniciado por http:// ou https://.');
+      return;
+    }
   }
+  const previewUrl = isLocalUpload ? `${TRAINING_API_BASE_URL}${url}` : url;
   if (window.AcademiaTrainingMedia?.isDirectGifUrl(url)) {
     clearVideoPreview();
     const image = t('exercise-media-preview');
-    image.src = url;
+    image.src = previewUrl;
     image.hidden = false;
-    setVideoStatus('GIF direto detectado. A demonstração será repetida em loop.');
+    setVideoStatus(isLocalUpload ? 'Demonstração atual mantida. Escolha outro arquivo para substituir.' : 'GIF direto detectado. A demonstração será repetida em loop.');
   } else if (window.AcademiaTrainingMedia?.isDirectVideoUrl(url)) {
     clearVideoPreview();
     const preview = t('exercise-video-preview');
-    preview.src = url;
+    preview.src = previewUrl;
     preview.hidden = false;
     preview.play().catch(() => {});
-    setVideoStatus('Vídeo direto detectado. A demonstração será reproduzida em loop.');
+    setVideoStatus(isLocalUpload ? 'Demonstração atual mantida. Escolha outro arquivo para substituir.' : 'Vídeo direto detectado. A demonstração será reproduzida em loop.');
   } else {
     clearVideoPreview();
-    setVideoStatus('Link salvo. Páginas de vídeo serão abertas em outra guia.');
+    setVideoStatus(isLocalUpload ? 'Demonstração atual mantida. Escolha outro arquivo para substituir.' : 'Link salvo. Páginas de vídeo serão abertas em outra guia.');
   }
 }
 
@@ -412,7 +497,7 @@ async function createExercise() {
   button.disabled = true;
   try {
     const source = t('exercise-video-source').value;
-    let videoUrl = '';
+    let videoUrl = editingOriginalVideoUrl;
     if (source === 'upload') {
       const file = t('exercise-video-file').files[0];
       if (file && !previewSelectedFile(file)) return;
@@ -427,24 +512,32 @@ async function createExercise() {
         if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('link_video_invalido');
       }
     }
-    await api('/api/training/exercises', {
+    const payload = {
+      name: t('exercise-name').value.trim(),
+      muscle_group: t('exercise-group').value.trim(),
+      muscle_group_primary: t('exercise-group').value.trim(),
+      muscle_group_secondary: t('exercise-secondary-muscles').value.trim(),
+      equipment: t('exercise-equipment').value.trim(),
+      level: t('exercise-level').value,
+      instructions: t('exercise-instructions').value.trim(),
+      video_url: videoUrl || null,
+      is_active: t('exercise-active').checked
+    };
+    const path = editingExerciseId ? '/api/training/exercises/update' : '/api/training/exercises';
+    await api(path, {
       method: 'POST',
-      body: JSON.stringify({
-        name: t('exercise-name').value.trim(),
-        muscle_group: t('exercise-group').value.trim(),
-        muscle_group_primary: t('exercise-group').value.trim(),
-        muscle_group_secondary: t('exercise-secondary-muscles').value.trim(),
-        equipment: t('exercise-equipment').value.trim(),
-        level: t('exercise-level').value,
-        instructions: t('exercise-instructions').value.trim(),
-        video_url: videoUrl || null
-      })
+      body: JSON.stringify(editingExerciseId ? { id: editingExerciseId, ...payload } : payload)
     });
-    setTrainingStatus('Exercício criado.');
+    setTrainingStatus(editingExerciseId ? 'Exercício atualizado.' : 'Exercício criado.');
+    editingExerciseId = null;
+    editingOriginalVideoUrl = '';
+    t('exercise-title').textContent = 'Novo exercício';
+    t('create-exercise-button').textContent = 'Cadastrar exercício';
     t('exercise-video-file').value = '';
     t('exercise-video-url').value = '';
     setVideoSourceMode();
     await loadBase();
+    closeTrainingModal('exercise-modal');
   } catch (error) {
     setTrainingStatus(`Erro: ${error.message}`);
   } finally {
@@ -575,13 +668,13 @@ function closeTrainingModal(id) {
 
 [
   ['open-training-levels-button', 'training-levels-modal'],
-  ['open-exercise-button', 'exercise-modal'],
   ['open-profile-button', 'profile-modal'],
   ['open-plan-button', 'plan-modal'],
   ['open-day-button', 'day-modal'],
   ['open-workout-exercise-button', 'workout-exercise-modal'],
   ['open-review-button', 'review-modal']
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => openTrainingModal(modalId)));
+t('open-exercise-button')?.addEventListener('click', () => openExerciseForm());
 
 [
   ['close-training-levels-modal', 'training-levels-modal'],

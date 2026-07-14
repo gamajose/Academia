@@ -186,6 +186,7 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/training/exercises') {
+    if (!canManageTrainingLevels(user)) return send(res, 403, { error: 'sem_permissao' });
     const input = await body(req);
     const primaryMuscle = String(input.muscle_group_primary || input.muscle_group || '').trim();
     const secondaryMuscle = String(input.muscle_group_secondary || '').trim();
@@ -196,6 +197,45 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $3, $4, $5, $6, $7, $8) RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, primaryMuscle, secondaryMuscle || null, input.equipment || null, level, input.instructions || null, videoUrl || null]);
     await recordAudit(user, 'create', 'exercise', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 201, result.rows[0]);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/exercises/update') {
+    if (!canManageTrainingLevels(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    const primaryMuscle = String(input.muscle_group_primary || input.muscle_group || '').trim();
+    const secondaryMuscle = String(input.muscle_group_secondary || '').trim();
+    const name = String(input.name || '').trim();
+    if (!input.id || name.length < 2 || name.length > 160 || !primaryMuscle) return send(res, 400, { error: 'dados_invalidos' });
+    const videoUrl = String(input.video_url || '').trim();
+    if (videoUrl.length > 1000 || !validVideoSource(videoUrl)) return send(res, 400, { error: 'video_invalido' });
+    const level = await resolveTrainingLevel(query, user.gym_id, input.level);
+    const result = await query(
+      `UPDATE exercise_library
+       SET name = $3, muscle_group = $4, muscle_group_primary = $4, muscle_group_secondary = NULLIF($5, ''),
+           equipment = NULLIF($6, ''), level = $7, instructions = NULLIF($8, ''), video_url = NULLIF($9, ''),
+           is_active = $10
+       WHERE id = $1 AND gym_id = $2
+       RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active`,
+      [input.id, user.gym_id, name, primaryMuscle, secondaryMuscle, String(input.equipment || '').trim(), level, String(input.instructions || '').trim(), videoUrl, input.is_active !== false]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
+    await recordAudit(user, 'update', 'exercise', result.rows[0].id, { name: result.rows[0].name, is_active: result.rows[0].is_active });
+    return send(res, 200, result.rows[0]);
+  }
+
+  if (req.method === 'DELETE' && url.pathname === '/api/training/exercises') {
+    if (!canManageTrainingLevels(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    if (!input.id) return send(res, 400, { error: 'exercicio_id_obrigatorio' });
+    const result = await query(
+      `UPDATE exercise_library SET is_active = false
+       WHERE id = $1 AND gym_id = $2
+       RETURNING id, name`,
+      [input.id, user.gym_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
+    await recordAudit(user, 'deactivate', 'exercise', result.rows[0].id, { name: result.rows[0].name });
+    return send(res, 200, { status: 'exercicio_desativado', ...result.rows[0] });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/training/profile') {
