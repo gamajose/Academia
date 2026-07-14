@@ -80,6 +80,10 @@
 .social-profile-edit-page .social-profile-edit-photo { display: flex; align-items: center; gap: 14px; }
 .social-profile-edit-page .social-profile-edit-photo .social-avatar { flex: 0 0 72px; width: 72px; height: 72px; font-size: 24px; }
 .social-profile-edit-page .social-profile-edit-photo .social-avatar { cursor: pointer; }
+.social-profile-edit-page .social-profile-edit-photo .social-avatar { position: relative; overflow: visible; }
+.social-profile-edit-page .social-profile-edit-photo .social-avatar img { border-radius: 50%; }
+.social-profile-edit-page .social-profile-edit-photo .social-avatar::after { content: attr(data-tooltip); position: absolute; left: 50%; top: calc(100% + 8px); z-index: 3; padding: 6px 9px; border-radius: 7px; background: #102b43; color: #fff; font-size: 11px; font-weight: 700; line-height: 1; opacity: 0; pointer-events: none; transform: translate(-50%, -4px); transition: opacity .15s ease, transform .15s ease; white-space: nowrap; }
+.social-profile-edit-page .social-profile-edit-photo .social-avatar:hover::after, .social-profile-edit-page .social-profile-edit-photo .social-avatar:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
 .social-profile-edit-page .social-profile-edit-photo .social-avatar:focus-visible { outline: 3px solid rgba(20,120,212,.35); outline-offset: 3px; }
 .social-profile-edit-page .social-profile-edit-photo small { display: block; margin-top: 4px; color: #5e7081; }
 .social-profile-edit-page .social-profile-privacy-field { display: grid; gap: 4px; }
