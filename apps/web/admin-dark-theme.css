@@ -439,6 +439,18 @@ html[data-admin-shell="true"] .entity-page-size select {
   font-size: 12px !important;
 }
 
+html[data-admin-shell="true"] .signup-page-size select {
+  width: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  padding: 2px 14px 2px 6px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+}
+
 html[data-admin-shell="true"] .entity-page-summary {
   display: inline-flex !important;
   align-items: center !important;
