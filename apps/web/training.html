@@ -25,9 +25,7 @@
       </div>
       <div class="training-actions-grid">
         <button id="open-training-levels-button" type="button">Níveis de treino</button>
-        <button id="open-exercise-button" type="button">Novo exercício</button>
         <button id="open-profile-button" type="button">Perfil de treino do aluno</button>
-        <button id="open-plan-button" type="button">Nova ficha</button>
         <button id="open-day-button" type="button">Montar dia da ficha</button>
         <button id="open-workout-exercise-button" type="button">Adicionar exercício da ficha</button>
         <button id="open-review-button" type="button">Análise inteligente</button>
@@ -36,8 +34,14 @@
     </section>
 
     <section class="grid lists-grid">
-      <article class="panel"><h3>Exercícios cadastrados</h3><ul id="exercise-list"></ul></article>
-      <article class="panel"><h3>Fichas</h3><ul id="plan-list"></ul></article>
+      <article class="panel">
+        <div class="toolbar"><h3>Exercícios cadastrados</h3><button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício">+</button></div>
+        <ul id="exercise-list"></ul>
+      </article>
+      <article class="panel">
+        <div class="toolbar"><h3>Fichas</h3><button class="icon-button" id="open-plan-button" type="button" aria-label="Adicionar ficha" title="Adicionar ficha">+</button></div>
+        <ul id="plan-list"></ul>
+      </article>
     </section>
   </main>
 
