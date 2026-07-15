@@ -8,6 +8,8 @@ let days = [];
 let trainingLevels = [];
 let editingExerciseId = null;
 let editingOriginalVideoUrl = '';
+let planDayDrafts = new Map();
+let activePlanWeekday = null;
 
 const t = (id) => document.getElementById(id);
 
@@ -567,16 +569,132 @@ async function saveProfile() {
   setTrainingStatus('Perfil de treino salvo.');
 }
 
+const planWeekdayNames = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+
+function selectedPlanDays() {
+  return [...document.querySelectorAll('input[name="plan-day"]:checked')].map((input) => Number(input.value));
+}
+
+function emptyPlanDayExercise() {
+  return { exercise_id: '', sets: '3', reps: '10-12', rest_seconds: '60', load_hint: '' };
+}
+
+function ensurePlanDayDraft(weekday) {
+  if (!planDayDrafts.has(weekday)) planDayDrafts.set(weekday, [emptyPlanDayExercise()]);
+  return planDayDrafts.get(weekday);
+}
+
+function resetPlanBuilder() {
+  planDayDrafts = new Map();
+  activePlanWeekday = null;
+  document.querySelectorAll('input[name="plan-day"]').forEach((input) => { input.checked = false; });
+  t('plan-day-builder')?.classList.add('hidden');
+  t('plan-day-exercise-list')?.replaceChildren();
+  if (t('plan-day-builder-status')) t('plan-day-builder-status').textContent = '';
+}
+
+function renderPlanDayBuilder() {
+  const builder = t('plan-day-builder');
+  const list = t('plan-day-exercise-list');
+  if (!builder || !list) return;
+  const weekdays = selectedPlanDays();
+  if (!weekdays.length) {
+    builder.classList.add('hidden');
+    list.replaceChildren();
+    activePlanWeekday = null;
+    return;
+  }
+  if (!weekdays.includes(activePlanWeekday)) activePlanWeekday = weekdays[0];
+  const draft = ensurePlanDayDraft(activePlanWeekday);
+  builder.classList.remove('hidden');
+  t('plan-day-builder-title').textContent = `Exercícios de ${planWeekdayNames[activePlanWeekday - 1]}`;
+  list.replaceChildren();
+
+  if (!draft.length) {
+    const empty = document.createElement('p');
+    empty.className = 'section-help';
+    empty.textContent = 'Nenhum exercício adicionado neste dia.';
+    list.appendChild(empty);
+  }
+
+  draft.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'plan-day-exercise-row';
+    const exerciseField = document.createElement('label');
+    exerciseField.className = 'field';
+    const exerciseLabel = document.createElement('span');
+    exerciseLabel.textContent = 'Exercício';
+    const exerciseSelect = document.createElement('select');
+    exerciseSelect.required = true;
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = 'Selecione o exercício';
+    exerciseSelect.appendChild(emptyOption);
+    for (const exercise of exercises) {
+      const option = document.createElement('option');
+      option.value = exercise.id;
+      option.textContent = exercise.name;
+      option.selected = exercise.id === item.exercise_id;
+      exerciseSelect.appendChild(option);
+    }
+    exerciseSelect.addEventListener('change', () => { item.exercise_id = exerciseSelect.value; });
+    exerciseField.append(exerciseLabel, exerciseSelect);
+
+    const makeInput = (label, key, type = 'text') => {
+      const field = document.createElement('label');
+      field.className = 'field';
+      const caption = document.createElement('span');
+      caption.textContent = label;
+      const input = document.createElement('input');
+      input.type = type;
+      input.value = item[key] ?? '';
+      if (type === 'number') input.min = '0';
+      input.addEventListener('input', () => { item[key] = input.value; });
+      field.append(caption, input);
+      return field;
+    };
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'icon-button remove-plan-day-exercise';
+    remove.setAttribute('aria-label', 'Remover exercício do dia');
+    remove.title = 'Remover exercício';
+    remove.textContent = '×';
+    remove.addEventListener('click', () => {
+      draft.splice(index, 1);
+      renderPlanDayBuilder();
+    });
+    row.append(exerciseField, makeInput('Séries', 'sets', 'number'), makeInput('Repetições', 'reps'), makeInput('Descanso (s)', 'rest_seconds', 'number'), remove);
+    list.appendChild(row);
+  });
+  t('plan-day-builder-status').textContent = `${draft.length} exercício(s) configurado(s) para este dia.`;
+}
+
+function addPlanDayExercise() {
+  const weekdays = selectedPlanDays();
+  if (!weekdays.length) return;
+  if (!weekdays.includes(activePlanWeekday)) activePlanWeekday = weekdays[0];
+  ensurePlanDayDraft(activePlanWeekday).push(emptyPlanDayExercise());
+  renderPlanDayBuilder();
+}
+
 async function createPlan() {
   const memberId = t('plan-member').value;
   const member = members.find((item) => item.id === memberId);
-  const selectedDays = [...document.querySelectorAll('input[name="plan-day"]:checked')].map((input) => Number(input.value));
+  const selectedDays = selectedPlanDays();
   if (!memberId || !member) {
     t('plan-status').textContent = 'Selecione um aluno para criar a ficha.';
     return;
   }
   if (!selectedDays.length) {
     t('plan-status').textContent = 'Selecione pelo menos um dia da ficha.';
+    return;
+  }
+  const incompleteDay = selectedDays.find((weekday) => !planDayDrafts.get(weekday)?.length || planDayDrafts.get(weekday).some((item) => !item.exercise_id));
+  if (incompleteDay) {
+    t('plan-status').textContent = `Selecione os exercícios de ${planWeekdayNames[incompleteDay - 1]}.`;
+    activePlanWeekday = incompleteDay;
+    renderPlanDayBuilder();
     return;
   }
   const button = t('create-plan-button');
@@ -593,16 +711,30 @@ async function createPlan() {
         starts_at: t('plan-start').value || null
       })
     });
-    const weekdayNames = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
     for (const weekday of selectedDays) {
-      await api('/api/training/plans/day', {
+      const day = await api('/api/training/plans/day', {
         method: 'POST',
-        body: JSON.stringify({ plan_id: plan.id, weekday, title: weekdayNames[weekday - 1] })
+        body: JSON.stringify({ plan_id: plan.id, weekday, title: planWeekdayNames[weekday - 1] })
       });
+      for (const [index, item] of planDayDrafts.get(weekday).entries()) {
+        await api('/api/training/plans/exercise', {
+          method: 'POST',
+          body: JSON.stringify({
+            workout_day_id: day.id,
+            exercise_id: item.exercise_id,
+            order_index: index + 1,
+            sets: Number(item.sets || 3),
+            reps: item.reps || '10-12',
+            rest_seconds: Number(item.rest_seconds || 60),
+            load_hint: item.load_hint || ''
+          })
+        });
+      }
     }
     t('plan-status').textContent = 'Ficha criada com os dias selecionados.';
     setTrainingStatus('Ficha criada.');
     await loadBase();
+    resetPlanBuilder();
     closeTrainingModal('plan-modal');
   } catch (error) {
     t('plan-status').textContent = `Erro: ${error.message}`;
@@ -679,6 +811,14 @@ t('exercise-video-file').addEventListener('change', (event) => previewSelectedFi
 t('exercise-video-url').addEventListener('input', (event) => previewVideoLink(event.target.value));
 t('save-profile-button').addEventListener('click', saveProfile);
 t('create-plan-button').addEventListener('click', createPlan);
+t('add-plan-day-exercise')?.addEventListener('click', addPlanDayExercise);
+t('open-plan-button')?.addEventListener('click', resetPlanBuilder);
+document.querySelectorAll('input[name="plan-day"]').forEach((input) => {
+  input.addEventListener('change', () => {
+    activePlanWeekday = Number(input.value);
+    renderPlanDayBuilder();
+  });
+});
 t('create-day-button').addEventListener('click', createDay);
 t('add-workout-exercise-button').addEventListener('click', addWorkoutExercise);
 t('review-plan-button').addEventListener('click', reviewPlan);

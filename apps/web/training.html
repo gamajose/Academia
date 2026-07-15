@@ -19,13 +19,8 @@
     <section class="panel training-actions-panel">
       <div>
         <h2>Gestão de treinos</h2>
-        <p>Escolha uma ação para abrir o formulário correspondente. Os cadastros ficam separados das listas para facilitar a consulta.</p>
       </div>
-      <div class="training-actions-grid">
-        <button id="open-training-levels-button" type="button">Níveis de treino</button>
-        <button id="open-profile-button" type="button">Perfil de treino do aluno</button>
-        <button id="open-day-button" type="button">Montar dia da ficha</button>
-        <button id="open-workout-exercise-button" type="button">Adicionar exercício da ficha</button>
+      <div class="training-actions-grid single-action">
         <button id="open-review-button" type="button">Análise inteligente</button>
       </div>
       <p class="status-line" id="training-status"></p>
@@ -94,7 +89,25 @@
   </div>
 
   <div class="modal hidden" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-title" aria-hidden="true">
-    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Planejamento</p><h3 id="plan-title">Nova ficha</h3><p>A ficha será identificada pelo nome do aluno.</p></div><button type="button" id="close-plan-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><label class="field"><span>Aluno</span><select id="plan-member"></select></label><div class="plan-level-picker"><label class="field"><span>Nível de treino</span><select id="plan-level"><option value="">Carregando níveis...</option></select></label><button class="icon-button" id="open-plan-levels-button" type="button" aria-label="Cadastrar novo nível de treino" title="Cadastrar novo nível">+</button></div><label class="field"><span>Objetivo da ficha</span><input id="plan-goal" placeholder="Ex.: ganhar força, mobilidade ou condicionamento" /></label><fieldset class="training-week-field"><legend>Dias da ficha</legend><p class="section-help">Escolha os dias em que o aluno fará esta ficha.</p><div class="training-week-calendar" id="plan-days-picker" role="group" aria-label="Dias da ficha"><label class="training-day-option"><input type="checkbox" name="plan-day" value="1" /><span>Seg</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="2" /><span>Ter</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="3" /><span>Qua</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="4" /><span>Qui</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="5" /><span>Sex</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="6" /><span>Sáb</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="7" /><span>Dom</span></label></div></fieldset><label class="field"><span>Data de início</span><input id="plan-start" type="date" /></label><p class="status-line" id="plan-status" aria-live="polite"></p><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="plan-modal">Cancelar</button><button id="create-plan-button" type="button">Criar ficha</button></div></section>
+    <section class="modal-card training-modal-card plan-modal-card">
+      <div class="modal-header"><div><p class="eyebrow">Planejamento</p><h3 id="plan-title">Nova ficha</h3><p>A ficha será identificada pelo nome do aluno.</p></div><button type="button" id="close-plan-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <label class="field"><span>Aluno</span><select id="plan-member"></select></label>
+      <div class="plan-level-picker"><label class="field"><span>Nível de treino</span><select id="plan-level"><option value="">Carregando níveis...</option></select></label><button class="icon-button" id="open-plan-levels-button" type="button" aria-label="Cadastrar novo nível de treino" title="Cadastrar novo nível">+</button></div>
+      <label class="field"><span>Objetivo da ficha</span><input id="plan-goal" placeholder="Ex.: ganhar força, mobilidade ou condicionamento" /></label>
+      <fieldset class="training-week-field">
+        <legend>Dias da ficha</legend>
+        <p class="section-help">Escolha um dia para montar seus exercícios. Você pode configurar vários dias na mesma ficha.</p>
+        <div class="training-week-calendar" id="plan-days-picker" role="group" aria-label="Dias da ficha"><label class="training-day-option"><input type="checkbox" name="plan-day" value="1" /><span>Seg</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="2" /><span>Ter</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="3" /><span>Qua</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="4" /><span>Qui</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="5" /><span>Sex</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="6" /><span>Sáb</span></label><label class="training-day-option"><input type="checkbox" name="plan-day" value="7" /><span>Dom</span></label></div>
+      </fieldset>
+      <section id="plan-day-builder" class="plan-day-builder hidden" aria-live="polite">
+        <div class="plan-day-builder-header"><div><h4 id="plan-day-builder-title">Exercícios do dia</h4><p class="section-help">Selecione os exercícios que serão feitos neste dia.</p></div><button class="icon-button" id="add-plan-day-exercise" type="button" aria-label="Adicionar exercício ao dia" title="Adicionar exercício">+</button></div>
+        <div id="plan-day-exercise-list" class="plan-day-exercise-list"></div>
+        <p id="plan-day-builder-status" class="section-help"></p>
+      </section>
+      <label class="field"><span>Data de início</span><input id="plan-start" type="date" /></label>
+      <p class="status-line" id="plan-status" aria-live="polite"></p>
+      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="plan-modal">Cancelar</button><button id="create-plan-button" type="button">Criar ficha</button></div>
+    </section>
   </div>
 
   <div class="modal hidden" id="day-modal" role="dialog" aria-modal="true" aria-labelledby="day-title-heading" aria-hidden="true">
