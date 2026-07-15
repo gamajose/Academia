@@ -13,7 +13,7 @@
 .student-access-code-block span, .student-access-code-block small { color: #5e7081; font-size: 13px; }
 .student-access-code-block strong { color: #1478d4; font-size: 30px; letter-spacing: .12em; }
 .student-access-refresh { align-self: center; }
-.student-access-offline-card { align-content: start; }
+.student-access-offline-card { align-content: start; margin-top: -10px; }
 .student-access-offline-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .student-access-offline-values > div { display: grid; gap: 5px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 12px; background: #f8fbff; }
 .student-access-offline-values span { color: #5e7081; font-size: 13px; }
@@ -27,4 +27,4 @@ html[data-student-theme="dark"] body.student-access-page .student-access-code-bl
 html[data-student-theme="dark"] body.student-access-page .student-access-offline-values span { color: #a9bed1; }
 html[data-student-theme="dark"] body.student-access-page .student-access-offline-values strong { color: #e8f0f8; }
 html[data-student-theme="dark"] body.student-access-page .student-access-note { border-color: #29445d; }
-@media (max-width: 760px) { .student-access-grid { grid-template-columns: 1fr; } .student-access-qr-frame { min-height: 230px; } }
+@media (max-width: 760px) { .student-access-grid { grid-template-columns: 1fr; } .student-access-qr-frame { min-height: 230px; } .student-access-offline-card { margin-top: 0; } }
