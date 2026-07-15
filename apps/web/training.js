@@ -45,6 +45,10 @@ function fillSelect(id, rows, label, empty) {
   }
 }
 
+function planDisplayName(plan) {
+  return plan.name && plan.name !== plan.member_name ? `${plan.member_name} - ${plan.name}` : plan.member_name;
+}
+
 const defaultTrainingLevels = [
   { slug: 'frango', name: 'Frango', is_active: true },
   { slug: 'intermediario', name: 'Intermediario', is_active: true },
@@ -81,10 +85,12 @@ function renderTrainingLevels() {
   if (!canManageTrainingLevels()) {
     panel.hidden = true;
     t('open-training-levels-button')?.setAttribute('hidden', 'hidden');
+    t('open-plan-levels-button')?.setAttribute('hidden', 'hidden');
     return;
   }
   panel.hidden = false;
   t('open-training-levels-button')?.removeAttribute('hidden');
+  t('open-plan-levels-button')?.removeAttribute('hidden');
   list.innerHTML = '';
   for (const level of trainingLevels) {
     const item = document.createElement('li');
@@ -170,8 +176,8 @@ function renderAll() {
   fillSelect('profile-member', members, (m) => m.name, 'Selecione o aluno');
   fillSelect('plan-member', members, (m) => m.name, 'Selecione o aluno');
   fillSelect('exercise-select', exercises, (e) => `${e.name} - ${e.muscle_group_primary || e.muscle_group}`, 'Selecione o exercicio');
-  fillSelect('day-plan', plans, (p) => `${p.member_name} - ${p.name}`, 'Selecione a ficha');
-  fillSelect('review-plan', plans, (p) => `${p.member_name} - ${p.name} (${p.age_days || 0} dias)`, 'Selecione a ficha');
+  fillSelect('day-plan', plans, (p) => planDisplayName(p), 'Selecione a ficha');
+  fillSelect('review-plan', plans, (p) => `${planDisplayName(p)} (${p.age_days || 0} dias)`, 'Selecione a ficha');
   renderTrainingLevels();
 
   const exerciseList = t('exercise-list');
@@ -247,7 +253,7 @@ function renderAll() {
     button.textContent = 'Visualizar';
     button.addEventListener('click', (event) => { event.stopPropagation(); openPlanDetails(item); });
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
-    row.append(`${item.member_name} - ${item.name} - ${level?.name || item.level} - ${item.age_days || 0} dias `, button);
+    row.append(`${planDisplayName(item)} - ${level?.name || item.level} - ${item.age_days || 0} dias `, button);
     planList.appendChild(row);
   }
 }
@@ -562,18 +568,47 @@ async function saveProfile() {
 }
 
 async function createPlan() {
-  await api('/api/training/plans', {
-    method: 'POST',
-    body: JSON.stringify({
-      member_id: t('plan-member').value,
-      name: t('plan-name').value.trim(),
-      level: t('plan-level').value,
-      goal: t('plan-goal').value.trim(),
-      starts_at: t('plan-start').value || null
-    })
-  });
-  setTrainingStatus('Ficha criada.');
-  await loadBase();
+  const memberId = t('plan-member').value;
+  const member = members.find((item) => item.id === memberId);
+  const selectedDays = [...document.querySelectorAll('input[name="plan-day"]:checked')].map((input) => Number(input.value));
+  if (!memberId || !member) {
+    t('plan-status').textContent = 'Selecione um aluno para criar a ficha.';
+    return;
+  }
+  if (!selectedDays.length) {
+    t('plan-status').textContent = 'Selecione pelo menos um dia da ficha.';
+    return;
+  }
+  const button = t('create-plan-button');
+  button.disabled = true;
+  t('plan-status').textContent = 'Salvando ficha e dias...';
+  try {
+    const plan = await api('/api/training/plans', {
+      method: 'POST',
+      body: JSON.stringify({
+        member_id: memberId,
+        name: member.name,
+        level: t('plan-level').value,
+        goal: t('plan-goal').value.trim(),
+        starts_at: t('plan-start').value || null
+      })
+    });
+    const weekdayNames = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+    for (const weekday of selectedDays) {
+      await api('/api/training/plans/day', {
+        method: 'POST',
+        body: JSON.stringify({ plan_id: plan.id, weekday, title: weekdayNames[weekday - 1] })
+      });
+    }
+    t('plan-status').textContent = 'Ficha criada com os dias selecionados.';
+    setTrainingStatus('Ficha criada.');
+    await loadBase();
+    closeTrainingModal('plan-modal');
+  } catch (error) {
+    t('plan-status').textContent = `Erro: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function createDay() {
@@ -677,6 +712,7 @@ function closeTrainingModal(id) {
   ['open-review-button', 'review-modal']
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => openTrainingModal(modalId)));
 t('open-exercise-button')?.addEventListener('click', () => openExerciseForm());
+t('open-plan-levels-button')?.addEventListener('click', () => openTrainingModal('training-levels-modal'));
 
 [
   ['close-training-levels-modal', 'training-levels-modal'],

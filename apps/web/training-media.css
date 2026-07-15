@@ -89,6 +89,20 @@
 .training-actions-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .training-actions-grid button { min-height: 46px; padding: 10px 14px; }
 .training-modal-card { width: min(720px, 94vw); display: grid; gap: 14px; }
+.training-modal-card .field { display: grid; gap: 7px; }
+.training-modal-card .field > span { color: var(--muted, #68716b); font-size: 13px; font-weight: 600; }
+.plan-level-picker { display: grid; grid-template-columns: minmax(0, 1fr) 38px; gap: 10px; align-items: end; }
+.plan-level-picker .icon-button { width: 38px; height: 38px; padding: 0; border-radius: 9px; }
+.training-week-field { display: grid; gap: 8px; min-inline-size: 0; border: 0; padding: 0; margin: 0; }
+.training-week-field legend { padding: 0; color: var(--muted, #68716b); font-size: 13px; font-weight: 600; }
+.training-week-field .section-help { margin: 0; }
+.training-week-calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.training-day-option { position: relative; cursor: pointer; }
+.training-day-option input { position: absolute; inline-size: 1px; block-size: 1px; opacity: 0; pointer-events: none; }
+.training-day-option span { display: grid; place-items: center; min-block-size: 40px; border: 1px solid var(--line, #e0d8cc); border-radius: 9px; color: var(--muted, #68716b); font-size: 13px; font-weight: 500; background: var(--surface, #fff); transition: background .15s ease, border-color .15s ease, color .15s ease; }
+.training-day-option input:checked + span { border-color: var(--accent, #1677d2); color: var(--accent, #1677d2); background: color-mix(in srgb, var(--accent, #1677d2) 12%, transparent); }
+.training-day-option input:focus-visible + span { outline: 2px solid var(--accent, #1677d2); outline-offset: 2px; }
+#training-levels-modal { z-index: 10001; }
 .training-modal-card .modal-header { margin-bottom: 2px; }
 .training-modal-card .modal-header p { margin: 4px 0 0; }
 .training-modal-card .form-actions { margin-top: 4px; }
@@ -107,6 +121,7 @@
   .exercise-video-preview { width: 100%; }
   .training-level-form, .training-level-row { grid-template-columns: 1fr; align-items: stretch; }
   .training-level-row button { justify-self: start; }
+  .training-week-calendar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
