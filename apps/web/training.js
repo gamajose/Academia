@@ -8,6 +8,7 @@ let days = [];
 let trainingLevels = [];
 let editingExerciseId = null;
 let editingOriginalVideoUrl = '';
+let editingPlanId = null;
 let planDayDrafts = new Map();
 let activePlanWeekday = null;
 
@@ -250,12 +251,39 @@ function renderAll() {
     row.setAttribute('aria-label', `Visualizar ficha de ${item.member_name}`);
     row.addEventListener('click', () => openPlanDetails(item));
     row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlanDetails(item); } });
-    const button = document.createElement('button');
-    button.className = 'mini-button';
-    button.textContent = 'Visualizar';
-    button.addEventListener('click', (event) => { event.stopPropagation(); openPlanDetails(item); });
+    const main = document.createElement('div');
+    main.className = 'entity-main';
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
-    row.append(`${planDisplayName(item)} - ${level?.name || item.level} - ${item.age_days || 0} dias `, button);
+    const name = document.createElement('strong');
+    name.textContent = planDisplayName(item);
+    const detail = document.createElement('span');
+    detail.textContent = `${level?.name || item.level} · ${item.age_days || 0} dias`;
+    main.append(name, detail);
+    row.appendChild(main);
+    if (canManageTrainingLevels()) {
+      const actions = document.createElement('div');
+      actions.className = 'entity-actions';
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'mini-button secondary';
+      edit.textContent = 'Editar';
+      edit.title = `Editar ficha de ${item.member_name}`;
+      edit.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openPlanForm(item);
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'mini-button secondary danger';
+      remove.textContent = 'Excluir';
+      remove.title = `Excluir ficha de ${item.member_name}`;
+      remove.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        await deletePlan(item, remove);
+      });
+      actions.append(edit, remove);
+      row.appendChild(actions);
+    }
     planList.appendChild(row);
   }
 }
@@ -592,12 +620,98 @@ function configuredPlanDays() {
 }
 
 function resetPlanBuilder() {
+  editingPlanId = null;
   planDayDrafts = new Map();
   activePlanWeekday = null;
   document.querySelectorAll('input[name="plan-day"]').forEach((input) => { input.checked = false; });
+  if (t('plan-title')) t('plan-title').textContent = 'Nova ficha';
+  if (t('create-plan-button')) t('create-plan-button').textContent = 'Criar ficha';
+  if (t('plan-member')) {
+    t('plan-member').value = '';
+    t('plan-member').disabled = false;
+  }
+  if (t('plan-level')) t('plan-level').value = '';
+  if (t('plan-goal')) t('plan-goal').value = '';
+  if (t('plan-start')) t('plan-start').value = '';
+  if (t('plan-status')) t('plan-status').textContent = '';
   t('plan-day-builder')?.classList.add('hidden');
   t('plan-day-exercise-list')?.replaceChildren();
   if (t('plan-day-builder-status')) t('plan-day-builder-status').textContent = '';
+}
+
+async function openPlanForm(item) {
+  if (!item) {
+    resetPlanBuilder();
+    openTrainingModal('plan-modal');
+    return;
+  }
+  try {
+    const detail = await api(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.id)}`);
+    editingPlanId = item.id;
+    t('plan-title').textContent = 'Editar ficha';
+    t('create-plan-button').textContent = 'Salvar alterações';
+    t('plan-member').value = detail.plan?.member_id || item.member_id || '';
+    t('plan-member').disabled = false;
+    t('plan-level').value = detail.plan?.level || item.level || '';
+    t('plan-goal').value = detail.plan?.goal || item.goal || '';
+    t('plan-start').value = String(detail.plan?.starts_at || item.starts_at || '').slice(0, 10);
+    planDayDrafts = new Map();
+    const exercisesByDay = new Map();
+    for (const exercise of detail.exercises || []) {
+      if (!exercisesByDay.has(exercise.workout_day_id)) exercisesByDay.set(exercise.workout_day_id, []);
+      exercisesByDay.get(exercise.workout_day_id).push({
+        exercise_id: exercise.exercise_id,
+        sets: String(exercise.sets ?? 3),
+        reps: exercise.reps || '10-12',
+        rest_seconds: String(exercise.rest_seconds ?? 60),
+        load_hint: exercise.load_hint || ''
+      });
+    }
+    for (const day of detail.days || []) {
+      planDayDrafts.set(Number(day.weekday), exercisesByDay.get(day.id) || []);
+    }
+    document.querySelectorAll('input[name="plan-day"]').forEach((input) => { input.checked = false; });
+    const firstDay = [...planDayDrafts.keys()].sort((a, b) => a - b)[0];
+    if (firstDay) {
+      const activeInput = document.querySelector(`input[name="plan-day"][value="${firstDay}"]`);
+      if (activeInput) activeInput.checked = true;
+      activePlanWeekday = firstDay;
+    } else {
+      activePlanWeekday = null;
+    }
+    renderPlanDayBuilder();
+    openTrainingModal('plan-modal');
+  } catch (error) {
+    setTrainingStatus(`Erro ao abrir a ficha: ${error.message}`);
+  }
+}
+
+function planDaysPayload(selectedDays) {
+  return selectedDays.map((weekday) => ({
+    weekday,
+    title: planWeekdayNames[weekday - 1],
+    exercises: (planDayDrafts.get(weekday) || []).map((item) => ({
+      exercise_id: item.exercise_id,
+      sets: Number(item.sets || 3),
+      reps: item.reps || '10-12',
+      rest_seconds: Number(item.rest_seconds || 60),
+      load_hint: item.load_hint || ''
+    }))
+  }));
+}
+
+async function deletePlan(item, button) {
+  if (!window.confirm(`Excluir a ficha de ${item.member_name}? Ela será desativada e mantida no histórico.`)) return;
+  button.disabled = true;
+  try {
+    await api('/api/training/plans', { method: 'DELETE', body: JSON.stringify({ plan_id: item.id }) });
+    setTrainingStatus('Ficha excluída.');
+    await loadBase();
+  } catch (error) {
+    setTrainingStatus(`Erro ao excluir ficha: ${error.message}`);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function renderPlanDayBuilder() {
@@ -688,7 +802,7 @@ function addPlanDayExercise() {
 async function createPlan() {
   const memberId = t('plan-member').value;
   const member = members.find((item) => item.id === memberId);
-  const selectedDays = configuredPlanDays();
+  const selectedDays = editingPlanId ? [...planDayDrafts.keys()].sort((a, b) => a - b) : configuredPlanDays();
   if (!memberId || !member) {
     t('plan-status').textContent = 'Selecione um aluno para criar a ficha.';
     return;
@@ -697,7 +811,11 @@ async function createPlan() {
     t('plan-status').textContent = 'Adicione pelo menos um exercício em um dia da ficha.';
     return;
   }
-  const incompleteDay = selectedDays.find((weekday) => !planDayDrafts.get(weekday)?.length || planDayDrafts.get(weekday).some((item) => !item.exercise_id));
+  const incompleteDay = selectedDays.find((weekday) => planDayDrafts.get(weekday)?.some((item) => !item.exercise_id));
+  if (!editingPlanId && selectedDays.some((weekday) => !planDayDrafts.get(weekday)?.length)) {
+    t('plan-status').textContent = 'Adicione pelo menos um exercício em cada dia configurado.';
+    return;
+  }
   if (incompleteDay) {
     t('plan-status').textContent = `Selecione os exercícios de ${planWeekdayNames[incompleteDay - 1]}.`;
     activePlanWeekday = incompleteDay;
@@ -708,6 +826,26 @@ async function createPlan() {
   button.disabled = true;
   t('plan-status').textContent = 'Salvando ficha e dias...';
   try {
+    if (editingPlanId) {
+      await api('/api/training/plans/update', {
+        method: 'POST',
+        body: JSON.stringify({
+          plan_id: editingPlanId,
+          member_id: memberId,
+          name: member.name,
+          level: t('plan-level').value,
+          goal: t('plan-goal').value.trim(),
+          starts_at: t('plan-start').value || null,
+          days: planDaysPayload(selectedDays)
+        })
+      });
+      t('plan-status').textContent = 'Ficha atualizada.';
+      setTrainingStatus('Ficha atualizada.');
+      await loadBase();
+      resetPlanBuilder();
+      closeTrainingModal('plan-modal');
+      return;
+    }
     const plan = await api('/api/training/plans', {
       method: 'POST',
       body: JSON.stringify({
@@ -819,7 +957,7 @@ t('exercise-video-url').addEventListener('input', (event) => previewVideoLink(ev
 t('save-profile-button').addEventListener('click', saveProfile);
 t('create-plan-button').addEventListener('click', createPlan);
 t('add-plan-day-exercise')?.addEventListener('click', addPlanDayExercise);
-t('open-plan-button')?.addEventListener('click', resetPlanBuilder);
+t('open-plan-button')?.addEventListener('click', () => openPlanForm());
 document.querySelectorAll('input[name="plan-day"]').forEach((input) => {
   input.addEventListener('change', () => {
     activePlanWeekday = Number(input.value);
