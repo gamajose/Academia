@@ -1,7 +1,7 @@
 #link-modal .membership-modal-card {
   width: min(760px, 96vw);
-  max-height: 92vh;
-  padding: 32px;
+  max-height: 95vh;
+  padding: 36px;
 }
 
 .membership-filter-panel { display: grid; gap: 14px; margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
@@ -77,9 +77,9 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 0;
-  padding-top: 24px;
-  border-top: 1px solid #e7dfd4;
+  margin-top: 20px;
+  padding-top: 0;
+  border-top: 0;
 }
 
 #link-modal .membership-form-actions button {
@@ -94,7 +94,7 @@
 
   #link-modal .membership-modal-card {
     width: 100%;
-    padding: 22px;
+    padding: 24px;
   }
 
   #link-modal .membership-form-section {
