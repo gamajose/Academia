@@ -344,6 +344,6 @@ html[data-student-theme="dark"] body.student-page .modal-card .modal-close { bor
   .student-event-calendar-icon svg { width: 17px; height: 17px; }
   .student-detail-day-switcher { margin-bottom: 14px; }
   .student-detail-day-switcher strong { font-size: 16px; }
-  .student-detail-icon-actions { gap: 6px; }
+  .student-detail-icon-actions { display: flex; flex-direction: row !important; flex-wrap: nowrap; align-self: flex-end; width: max-content; gap: 6px; }
   .student-detail-icon-action { flex-basis: 38px; width: 38px !important; min-width: 38px; max-width: 38px; height: 38px; min-height: 38px; max-height: 38px; }
 }
