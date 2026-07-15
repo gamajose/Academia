@@ -1,0 +1,279 @@
+/* Shared dark surface layer for the authenticated administration shell. */
+html[data-admin-theme="dark"][data-admin-shell="true"] {
+  --bg: #091522;
+  --card: #122235;
+  --surface: #0e1b2a;
+  --muted: #a9bed1;
+  --text: #e8f0f8;
+  --line: #29445d;
+  --accent: #2d9cff;
+  --accent-dark: #1478d4;
+  --shadow: 0 18px 48px rgba(0, 0, 0, .2);
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] body {
+  background: linear-gradient(180deg, #091522 0%, #0d1d2d 100%) !important;
+  color: var(--text) !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .app-shell,
+html[data-admin-theme="dark"][data-admin-shell="true"] main,
+html[data-admin-theme="dark"][data-admin-shell="true"] .page-shell {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .health-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .login-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .cards article,
+html[data-admin-theme="dark"][data-admin-shell="true"] .quick-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-summary article,
+html[data-admin-theme="dark"][data-admin-shell="true"] .dashboard-summary-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .alert-summary-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-metrics article,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-member-row,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-decision-row,
+html[data-admin-theme="dark"][data-admin-shell="true"] .entity-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .workflow-list > li,
+html[data-admin-theme="dark"][data-admin-shell="true"] .summary-results li,
+html[data-admin-theme="dark"][data-admin-shell="true"] .lists-grid .panel > ul > li,
+html[data-admin-theme="dark"][data-admin-shell="true"] .alert-highlight,
+html[data-admin-theme="dark"][data-admin-shell="true"] .alert-empty,
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-identity,
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-grid > div,
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-history,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .form-section,
+html[data-admin-theme="dark"][data-admin-shell="true"] .training-level-list > li,
+html[data-admin-theme="dark"][data-admin-shell="true"] .plan-view-day,
+html[data-admin-theme="dark"][data-admin-shell="true"] .plan-view-exercises li,
+html[data-admin-theme="dark"][data-admin-shell="true"] .video-source-fields,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-profile-form,
+html[data-admin-theme="dark"][data-admin-shell="true"] .permission-option,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-profile-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .rules-note {
+  background: #122235 !important;
+  border-color: #29445d !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow);
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-filter-panel,
+html[data-admin-theme="dark"][data-admin-shell="true"] .video-source-fields,
+html[data-admin-theme="dark"][data-admin-shell="true"] .rules-note {
+  background: #102238 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .form-section,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card section,
+html[data-admin-theme="dark"][data-admin-shell="true"] .employee-modal-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .permissions-modal-card {
+  background: #122235 !important;
+  border-color: #29445d !important;
+  color: var(--text) !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .modal-header,
+html[data-admin-theme="dark"][data-admin-shell="true"] .employee-modal-card .modal-header,
+html[data-admin-theme="dark"][data-admin-shell="true"] .employee-form-actions,
+html[data-admin-theme="dark"][data-admin-shell="true"] .permissions-modal-header {
+  background: rgba(18, 34, 53, .97) !important;
+  border-color: #29445d !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] input,
+html[data-admin-theme="dark"][data-admin-shell="true"] select,
+html[data-admin-theme="dark"][data-admin-shell="true"] textarea,
+html[data-admin-theme="dark"][data-admin-shell="true"] .rich-editor,
+html[data-admin-theme="dark"][data-admin-shell="true"] .rich-editor-quill {
+  background: #0e1b2a !important;
+  border-color: #34536e !important;
+  color: #e8f0f8 !important;
+  caret-color: #e8f0f8;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] input::placeholder,
+html[data-admin-theme="dark"][data-admin-shell="true"] textarea::placeholder {
+  color: #7f9ab4 !important;
+  opacity: 1;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] label,
+html[data-admin-theme="dark"][data-admin-shell="true"] legend,
+html[data-admin-theme="dark"][data-admin-shell="true"] th,
+html[data-admin-theme="dark"][data-admin-shell="true"] h1,
+html[data-admin-theme="dark"][data-admin-shell="true"] h2,
+html[data-admin-theme="dark"][data-admin-shell="true"] h3,
+html[data-admin-theme="dark"][data-admin-shell="true"] h4,
+html[data-admin-theme="dark"][data-admin-shell="true"] strong,
+html[data-admin-theme="dark"][data-admin-shell="true"] .entity-main strong,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-member-main strong,
+html[data-admin-theme="dark"][data-admin-shell="true"] .access-decision-row strong,
+html[data-admin-theme="dark"][data-admin-shell="true"] .alert-highlight-copy strong {
+  color: #e8f0f8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] p,
+html[data-admin-theme="dark"][data-admin-shell="true"] small,
+html[data-admin-theme="dark"][data-admin-shell="true"] .section-help,
+html[data-admin-theme="dark"][data-admin-shell="true"] .field small,
+html[data-admin-theme="dark"][data-admin-shell="true"] .entity-main span,
+html[data-admin-theme="dark"][data-admin-shell="true"] .alert-highlight-copy span,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-date-cell strong,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-filter-actions span,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-filter-actions span {
+  color: #a9bed1 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] a,
+html[data-admin-theme="dark"][data-admin-shell="true"] .quick-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .dashboard-summary-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-member-name,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-table td:first-child,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-table td:nth-child(2),
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-grid p {
+  color: #e8f0f8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .secondary,
+html[data-admin-theme="dark"][data-admin-shell="true"] .icon-button,
+html[data-admin-theme="dark"][data-admin-shell="true"] .mini-button.secondary,
+html[data-admin-theme="dark"][data-admin-shell="true"] .export-icon-button {
+  background: #102238 !important;
+  border-color: #34536e !important;
+  color: #e8f0f8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] table,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-table,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-table {
+  color: #e8f0f8;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] th,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-table th,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-table th {
+  background: #183047 !important;
+  color: #e8f0f8 !important;
+  border-color: #29445d !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] td,
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-table td,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-table td {
+  color: #d7e6f3 !important;
+  border-color: #29445d !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-table tbody tr,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-table tbody tr,
+html[data-admin-theme="dark"][data-admin-shell="true"] table tbody tr {
+  background: transparent !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .finance-row-action:hover,
+html[data-admin-theme="dark"][data-admin-shell="true"] .membership-row-action:hover {
+  background: #183047 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-info.objective,
+html[data-admin-theme="dark"][data-admin-shell="true"] .training-history,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-history,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-photo-upload-preview,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-view-photo-wrap,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-view-metrics > div,
+html[data-admin-theme="dark"][data-admin-shell="true"] .assessment-view-note,
+html[data-admin-theme="dark"][data-admin-shell="true"] .goal-view-grid > div,
+html[data-admin-theme="dark"][data-admin-shell="true"] .exercise-view-tags span,
+html[data-admin-theme="dark"][data-admin-shell="true"] .exercise-view-muscle-chip {
+  background: #102238 !important;
+  border-color: #34536e !important;
+  color: #e8f0f8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-info.allergies { background: #332b19 !important; border-color: #806b36 !important; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-info.medical { background: #102b28 !important; border-color: #2c685e !important; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .student-view-info.notes { background: #321e2d !important; border-color: #754565 !important; }
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-phone-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .offline-access-card {
+  background: #122235 !important;
+  border-color: #34536e !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-phone-card {
+  background: radial-gradient(circle at top right, rgba(45, 156, 255, .12), transparent 36%), #122235 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-qr-frame {
+  background: #f8fafc !important;
+  border-color: #34536e !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-qr-empty {
+  background: #183047 !important;
+  color: #a9bed1 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .offline-credential-values > div {
+  background: #0e1b2a !important;
+  border-color: #34536e !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-phone-card > p,
+html[data-admin-theme="dark"][data-admin-shell="true"] .offline-access-card > p,
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-label,
+html[data-admin-theme="dark"][data-admin-shell="true"] .offline-credential-values span {
+  color: #a9bed1 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .credential-security-note {
+  background: #332b19 !important;
+  color: #f5d98b !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .rich-editor-quill .ql-toolbar,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-editor-header {
+  background: #183047 !important;
+  border-color: #34536e !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .rich-editor-quill .ql-toolbar .ql-stroke { stroke: #d7e6f3; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .rich-editor-quill .ql-toolbar .ql-fill { fill: #d7e6f3; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .rich-editor-quill .ql-editor { color: #e8f0f8; }
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-toolbar,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-toolbar__overflow,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-toolbar__primary,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-menubar {
+  background: #183047 !important;
+  border-color: #34536e !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-tbtn,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-mbtn,
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-mbtn__select-label {
+  color: #d7e6f3 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-edit-area__iframe {
+  background: #fff !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .top-nav {
+  background: rgba(8, 26, 43, .98) !important;
+}
+
+@media (max-width: 760px) {
+  html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card {
+    background: #122235 !important;
+  }
+}

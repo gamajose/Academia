@@ -20,6 +20,7 @@ function loadNavigationStyles() {
   loadStyle('./blue-theme.css');
   loadStyle('./admin-nav-icons.css');
   loadStyle('./admin-profile.css');
+  loadStyle('./admin-dark-theme.css?v=20260715-0900');
 }
 
 function applyAdminPreferences(preferences = {}) {
@@ -138,6 +139,8 @@ function renderNavigation() {
   document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
 
   const current = pageName(window.location.pathname) || 'painel.html';
+  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
+  if (adminPages.includes(current)) document.documentElement.dataset.adminShell = 'true';
   const pages = [
     ['painel.html', 'Painel', 'painel'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
     ['vinculos.html', 'Matrículas', 'matriculas'], ['solicitacoes.html', 'Pré-matrículas', 'pre'],
