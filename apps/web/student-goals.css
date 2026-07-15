@@ -1,4 +1,5 @@
 .student-goals-shell {
+  width: min(900px, calc(100% - 48px));
   padding-top: 32px;
 }
 
@@ -9,7 +10,7 @@
 }
 
 .student-goals-panel.is-single-goal {
-  width: min(680px, 100%);
+  width: 100%;
 }
 
 .student-goals-toolbar {
@@ -296,6 +297,10 @@ html[data-student-theme="dark"] body.student-page .student-goal-form .secondary-
 }
 
 @media (max-width: 680px) {
+  .student-goals-shell {
+    width: min(100% - 28px, 900px);
+  }
+
   .student-goals-toolbar {
     align-items: stretch;
     flex-direction: column;
