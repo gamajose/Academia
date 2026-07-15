@@ -167,14 +167,9 @@ async function openStudentView(item) {
 function render() {
   const list = $('students-list');
   const term = val('student-search').toLowerCase();
-  const statusFilter = $('student-filter-status')?.value || '';
-  const financeFilter = $('student-filter-finance')?.value || '';
   list.innerHTML = '';
   const filtered = rows.filter((item) => {
-    const pending = Number(item.pending_amount_cents || 0);
-    return `${item.name} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`.toLowerCase().includes(term)
-      && (!statusFilter || item.status === statusFilter)
-      && (!financeFilter || (financeFilter === 'pending' ? pending > 0 : pending === 0));
+    return `${item.name} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`.toLowerCase().includes(term);
   });
 
   for (const item of filtered) {
@@ -192,12 +187,11 @@ function render() {
     main.innerHTML = `
       <strong>${item.name}</strong>
       <span>${item.email || 'Sem e-mail'} · ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
-      <span>${item.plan_name || 'Sem plano'} · <span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}</span>
-      <span class="student-card-statuses"><span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
+      <span class="student-card-tags"><span>${item.plan_name || 'Sem plano'}</span><span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}<span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
     const whatsapp = whatsappLink(item.phone);
-    if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); main.appendChild(whatsapp); }
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
+    if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); actions.appendChild(whatsapp); }
     actions.appendChild(button('▦', (event) => { event?.stopPropagation?.(); openCredentialPreview(item); }, 'icon-button'));
     actions.lastElementChild.title = 'Abrir QR Code e credencial'; actions.lastElementChild.setAttribute('aria-label', 'Abrir QR Code e credencial');
     actions.appendChild(button('✎', (event) => { event?.stopPropagation?.(); openModal(item); }, 'icon-button'));
@@ -214,7 +208,7 @@ function render() {
     li.textContent = 'Nenhum aluno encontrado.';
     list.appendChild(li);
   }
-  $('student-filter-count').textContent = `${filtered.length} de ${rows.length} aluno(s)`;
+  $('student-count').textContent = `${filtered.length} de ${rows.length} aluno(s)`;
 }
 
 async function load() {
@@ -535,14 +529,16 @@ async function resetOfflinePin() {
 }
 
 $('new-student-button').onclick = () => openModal();
+$('student-search-toggle').onclick = () => {
+  const wrapper = $('student-search-wrap');
+  const isHidden = wrapper.classList.toggle('hidden');
+  if (!isHidden) $('student-search').focus();
+};
 $('close-student-modal').onclick = closeModal;
 $('close-student-view-modal').onclick = closeStudentViewModal;
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
 $('student-search').oninput = render;
-$('student-filter-status').onchange = render;
-$('student-filter-finance').onchange = render;
-$('student-clear-filters').onclick = () => { $('student-search').value = ''; $('student-filter-status').value = ''; $('student-filter-finance').value = ''; render(); };
 $('student-cpf').addEventListener('input', (event) => { event.target.value = formatCpf(event.target.value); });
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });
