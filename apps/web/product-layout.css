@@ -112,8 +112,11 @@
 .student-count { display: block; color: var(--muted); font-size: 13px; font-weight: 500; }
 .student-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
 .entity-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; color: var(--muted); font-size: 13px; }
+.entity-page-summary { display: inline-flex; align-items: center; gap: 14px; }
 .entity-page-buttons { display: flex; align-items: center; gap: 6px; }
 .entity-page-buttons .icon-button { margin: 0; }
+.entity-page-size { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.entity-page-size select { width: 54px; min-width: 54px; height: 30px; padding: 3px 17px 3px 8px; border-radius: 7px; font-size: 12px; }
 .student-page-size { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .student-page-size select { width: auto; min-width: 54px; height: 30px; padding: 4px 22px 4px 8px; border-radius: 7px; font-size: 12px; }
 .student-page-buttons { display: flex; gap: 6px; flex-wrap: wrap; }

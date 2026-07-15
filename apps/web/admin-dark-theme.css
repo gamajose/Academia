@@ -385,6 +385,75 @@ html[data-admin-shell="true"] .workspace-actions {
   gap: 8px !important;
 }
 
+html[data-admin-shell="true"] .modal-close {
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  flex: 0 0 36px !important;
+  padding: 0 !important;
+  margin: 0 0 0 auto !important;
+  border-radius: 8px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  line-height: 1 !important;
+}
+
+html[data-admin-shell="true"] .modal-header > .modal-close,
+html[data-admin-shell="true"] .toolbar > .modal-close {
+  align-self: flex-start !important;
+}
+
+html[data-admin-shell="true"] .student-page-size select,
+html[data-admin-shell="true"] .signup-page-size select,
+html[data-admin-shell="true"] .entity-page-size select {
+  width: 54px !important;
+  min-width: 54px !important;
+  max-width: 54px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  max-height: 30px !important;
+  padding: 3px 17px 3px 8px !important;
+  border-radius: 7px !important;
+  font-size: 12px !important;
+}
+
+html[data-admin-shell="true"] .entity-page-summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+html[data-admin-shell="true"] .finance-filter-actions,
+html[data-admin-shell="true"] .assessment-filter-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+html[data-admin-shell="true"] .finance-filter-actions .export-icon-button,
+html[data-admin-shell="true"] .assessment-filter-actions .export-icon-button {
+  position: relative !important;
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+
+html[data-admin-shell="true"] .access-filter-modal-card .toolbar,
+html[data-admin-shell="true"] .finance-filter-modal-card .toolbar,
+html[data-admin-shell="true"] .assessment-filter-modal-card .toolbar {
+  align-items: flex-start !important;
+}
+
 html[data-admin-shell="true"] .permissions-modal-toolbar > .icon-button {
   width: 36px !important;
   min-width: 36px !important;

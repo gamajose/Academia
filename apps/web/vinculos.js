@@ -8,7 +8,7 @@ let plans = [];
 let editingLinkId = '';
 let linkFilterPlaceholder = null;
 let currentPage = 1;
-const pageSize = 10;
+let pageSize = 10;
 
 async function call(path, options = {}) {
   const response = await fetch(`${VAPI}${path}`, {
@@ -118,19 +118,37 @@ function renderPagination(total, pageCount) {
   const container = v('link-pagination');
   if (!container) return;
   container.innerHTML = '';
-  if (total <= pageSize) return;
+  if (!total) return;
+  const size = document.createElement('label');
+  size.className = 'entity-page-size';
+  size.append('Por página');
+  const select = document.createElement('select');
+  for (const optionValue of [10, 15, 20, 50, 100]) {
+    const option = document.createElement('option');
+    option.value = String(optionValue);
+    option.textContent = String(optionValue);
+    option.selected = optionValue === pageSize;
+    select.appendChild(option);
+  }
+  select.addEventListener('change', () => { pageSize = Number(select.value) || 10; currentPage = 1; render(); });
+  size.appendChild(select);
   const info = document.createElement('span');
   info.textContent = `Página ${currentPage} de ${pageCount}`;
+  const summary = document.createElement('div');
+  summary.className = 'entity-page-summary';
+  summary.append(size, info);
   const controls = document.createElement('div');
   controls.className = 'entity-page-buttons';
-  for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
-    const button = document.createElement('button');
-    button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
-    button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
-    button.onclick = () => { currentPage = page; render(); };
-    controls.appendChild(button);
+  if (pageCount > 1) {
+    for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
+      button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
+      button.onclick = () => { currentPage = page; render(); };
+      controls.appendChild(button);
+    }
   }
-  container.append(info, controls);
+  container.append(summary, controls);
 }
 
 async function load() {

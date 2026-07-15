@@ -666,7 +666,6 @@ function bindAssessmentEvents() {
   q('photo-url')?.addEventListener('input', (event) => { if (!q('assessment-photo-file')?.files?.length) previewAssessmentPhoto(event.target.value.trim()); });
   q('load-summary-button')?.addEventListener('click', loadSummary);
   q('apply-assessment-filters')?.addEventListener('click', () => { renderAssessments(filterAssessments(currentAssessments)); renderGoals(filterGoals(currentGoals)); });
-  q('clear-assessment-filters')?.addEventListener('click', () => { ['assessment-filter-member', 'assessment-filter-from', 'assessment-filter-to'].forEach((id) => { if (q(id)) q(id).value = ''; }); renderAssessments(currentAssessments); renderGoals(currentGoals); });
   q('download-assessments-csv')?.addEventListener('click', () => downloadAssessmentExport('csv').catch((error) => setAssessmentStatus(`Erro ao exportar CSV: ${error.message}`)));
   q('download-assessments-pdf')?.addEventListener('click', () => downloadAssessmentExport('pdf').catch((error) => setAssessmentStatus(`Erro ao exportar PDF: ${error.message}`)));
 

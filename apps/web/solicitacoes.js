@@ -102,7 +102,7 @@ function renderPagination(total, totalPages) {
   size.className = 'signup-page-size';
   size.append('Por página');
   const select = document.createElement('select');
-  for (const optionValue of [10, 25, 50, 100]) {
+  for (const optionValue of [10, 15, 20, 50, 100]) {
     const option = document.createElement('option');
     option.value = optionValue;
     option.textContent = optionValue;

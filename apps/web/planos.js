@@ -4,7 +4,7 @@ const TOKEN = localStorage.getItem('academiaToken') || '';
 const $ = (id) => document.getElementById(id);
 let rows = [];
 let currentPage = 1;
-const pageSize = 10;
+let pageSize = 10;
 
 async function req(path, options = {}) {
   const response = await fetch(`${API}${path}`, {
@@ -85,19 +85,37 @@ function renderPagination(pageCount) {
   const container = $('plans-pagination');
   if (!container) return;
   container.innerHTML = '';
-  if (rows.length <= pageSize) return;
+  if (!rows.length) return;
+  const size = document.createElement('label');
+  size.className = 'entity-page-size';
+  size.append('Por página');
+  const select = document.createElement('select');
+  for (const optionValue of [10, 15, 20, 50, 100]) {
+    const option = document.createElement('option');
+    option.value = String(optionValue);
+    option.textContent = String(optionValue);
+    option.selected = optionValue === pageSize;
+    select.appendChild(option);
+  }
+  select.addEventListener('change', () => { pageSize = Number(select.value) || 10; currentPage = 1; render(); });
+  size.appendChild(select);
   const info = document.createElement('span');
   info.textContent = `Página ${currentPage} de ${pageCount}`;
+  const summary = document.createElement('div');
+  summary.className = 'entity-page-summary';
+  summary.append(size, info);
   const controls = document.createElement('div');
   controls.className = 'entity-page-buttons';
-  for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
-    const button = document.createElement('button');
-    button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
-    button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
-    button.onclick = () => { currentPage = page; render(); };
-    controls.appendChild(button);
+  if (pageCount > 1) {
+    for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
+      button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
+      button.onclick = () => { currentPage = page; render(); };
+      controls.appendChild(button);
+    }
   }
-  container.append(info, controls);
+  container.append(summary, controls);
 }
 
 function durationToUi(days) {

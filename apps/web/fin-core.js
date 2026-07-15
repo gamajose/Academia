@@ -5,7 +5,7 @@ const f = (id) => document.getElementById(id);
 let rows = [];
 let financeFilterPlaceholder = null;
 let currentPage = 1;
-const pageSize = 10;
+let pageSize = 10;
 
 async function rq(path, options = {}) {
   const response = await fetch(`${FAPI}${path}`, {
@@ -157,19 +157,37 @@ function renderPagination(total, pageCount) {
   const container = f('finance-pagination');
   if (!container) return;
   container.innerHTML = '';
-  if (total <= pageSize) return;
+  if (!total) return;
+  const size = document.createElement('label');
+  size.className = 'entity-page-size';
+  size.append('Por página');
+  const select = document.createElement('select');
+  for (const optionValue of [10, 15, 20, 50, 100]) {
+    const option = document.createElement('option');
+    option.value = String(optionValue);
+    option.textContent = String(optionValue);
+    option.selected = optionValue === pageSize;
+    select.appendChild(option);
+  }
+  select.addEventListener('change', () => { pageSize = Number(select.value) || 10; currentPage = 1; draw(); });
+  size.appendChild(select);
   const info = document.createElement('span');
   info.textContent = `Página ${currentPage} de ${pageCount}`;
+  const summary = document.createElement('div');
+  summary.className = 'entity-page-summary';
+  summary.append(size, info);
   const controls = document.createElement('div');
   controls.className = 'entity-page-buttons';
-  for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
-    const button = document.createElement('button');
-    button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
-    button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
-    button.onclick = () => { currentPage = page; draw(); };
-    controls.appendChild(button);
+  if (pageCount > 1) {
+    for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
+      button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
+      button.onclick = () => { currentPage = page; draw(); };
+      controls.appendChild(button);
+    }
   }
-  container.append(info, controls);
+  container.append(summary, controls);
 }
 
 async function load() {
@@ -282,10 +300,6 @@ async function downloadExport(format) {
 
 f('load-button')?.addEventListener('click', load);
 f('finance-apply-filters')?.addEventListener('click', draw);
-f('finance-clear-filters')?.addEventListener('click', () => {
-  ['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => { if (f(id)) f(id).value = ''; });
-  currentPage = 1; draw();
-});
 ['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => f(id)?.addEventListener('change', draw));
 f('finance-filter-member')?.addEventListener('input', draw);
 function openFinanceFilters() {
