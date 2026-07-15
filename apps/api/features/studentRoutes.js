@@ -163,7 +163,7 @@ async function socialPosts(query, user, memberId = null) {
 
 async function studentCustomDetail(query, user, customPlan) {
   const days = await query(
-    'SELECT id, plan_id, weekday, title, notes FROM student_workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday',
+    'SELECT id, plan_id, weekday, title, notes, start_time, end_time FROM student_workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday',
     [user.gym_id, customPlan.id]
   );
   const exercises = await query(
@@ -958,12 +958,13 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
 
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/training/custom/plan') {
     const input = await body(req);
+    const hasWeeklyDays = Array.isArray(input.days);
     const existing = await query(
       `SELECT id, member_id, name, goal, status, created_at, updated_at
        FROM student_workout_plans WHERE gym_id = $1 AND member_id = $2 AND status = 'active' LIMIT 1`,
       [user.gym_id, user.member_id]
     );
-    if (existing.rowCount) return send(res, 200, await studentCustomDetail(query, user, existing.rows[0]));
+    if (existing.rowCount && !hasWeeklyDays) return send(res, 200, await studentCustomDetail(query, user, existing.rows[0]));
 
     const basePlan = await query(
       `SELECT id, name, goal FROM workout_plans
@@ -971,13 +972,80 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
        ORDER BY starts_at DESC, created_at DESC LIMIT 1`,
       [user.gym_id, user.member_id]
     );
-    const custom = await query(
-      `INSERT INTO student_workout_plans (gym_id, member_id, name, goal)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, member_id, name, goal, status, created_at, updated_at`,
-      [user.gym_id, user.member_id, studentText(input.name, basePlan.rows[0]?.name || 'Minha ficha', 160), studentText(input.goal, basePlan.rows[0]?.goal || '', 500) || null]
-    );
-    const customPlan = custom.rows[0];
+    let customPlan = existing.rows[0];
+    let createdNewPlan = false;
+    if (!customPlan) {
+      const custom = await query(
+        `INSERT INTO student_workout_plans (gym_id, member_id, name, goal)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, member_id, name, goal, status, created_at, updated_at`,
+        [user.gym_id, user.member_id, studentText(input.name, basePlan.rows[0]?.name || 'Minha ficha', 160), studentText(input.goal, basePlan.rows[0]?.goal || '', 500) || null]
+      );
+      customPlan = custom.rows[0];
+      createdNewPlan = true;
+    }
+
+    if (hasWeeklyDays) {
+      const updated = await query(
+        `UPDATE student_workout_plans
+         SET name = $3, goal = $4, updated_at = now()
+         WHERE id = $1 AND gym_id = $2 AND member_id = $5 AND status = 'active'
+         RETURNING id, member_id, name, goal, status, created_at, updated_at`,
+        [customPlan.id, user.gym_id, studentText(input.name, customPlan.name || 'Minha ficha', 160), studentText(input.goal, customPlan.goal || '', 500) || null, user.member_id]
+      );
+      if (updated.rowCount) customPlan = updated.rows[0];
+
+      for (const dayInput of input.days) {
+        const weekday = studentInteger(dayInput?.weekday, null, 1, 7);
+        if (!weekday) continue;
+        const startTime = validCalendarTime(dayInput?.start_time || input.start_time) ? String(dayInput?.start_time || input.start_time) : '18:00';
+        const requestedEnd = dayInput?.end_time || input.end_time;
+        const endTime = validCalendarTime(requestedEnd) && String(requestedEnd) > startTime ? String(requestedEnd) : null;
+        const day = await query(
+          `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes, start_time, end_time)
+           VALUES ($1, $2, $3, $4, $5, $6::time, $7::time)
+           ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, updated_at = now()
+           RETURNING id, weekday, start_time, end_time`,
+          [user.gym_id, customPlan.id, weekday, studentText(dayInput.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(dayInput.notes, '', 2000) || null, startTime, endTime]
+        );
+        if (!day.rowCount) continue;
+        const planDayId = day.rows[0].id;
+        await query('DELETE FROM student_workout_exercises WHERE gym_id = $1 AND plan_day_id = $2', [user.gym_id, planDayId]);
+        const exercises = Array.isArray(dayInput.exercises) ? dayInput.exercises : [];
+        let order = 1;
+        for (const exercise of exercises) {
+          let publicId = null;
+          let privateId = null;
+          if (exercise?.private_exercise_id) {
+            const privateExercise = await query(
+              'SELECT id FROM student_private_exercises WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND is_active = true LIMIT 1',
+              [exercise.private_exercise_id, user.gym_id, user.member_id]
+            );
+            if (!privateExercise.rowCount) continue;
+            privateId = privateExercise.rows[0].id;
+          } else if (exercise?.exercise_id) {
+            const publicExercise = await query(
+              'SELECT id FROM exercise_library WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1',
+              [exercise.exercise_id, user.gym_id]
+            );
+            if (!publicExercise.rowCount) continue;
+            publicId = publicExercise.rows[0].id;
+          } else {
+            continue;
+          }
+          await query(
+            `INSERT INTO student_workout_exercises
+               (gym_id, plan_day_id, exercise_library_id, private_exercise_id, order_index, sets, reps, rest_seconds, notes)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [user.gym_id, planDayId, publicId, privateId, order, studentInteger(exercise.sets, 3, 1, 30), studentText(exercise.reps, '10-12', 60) || '10-12', studentInteger(exercise.rest_seconds, 60, 0, 3600), studentText(exercise.notes, '', 2000) || null]
+          );
+          order += 1;
+        }
+      }
+      await recordAudit(user, createdNewPlan ? 'create' : 'update', 'student_workout_plan', customPlan.id, { member_id: user.member_id, weekly: true });
+      return send(res, createdNewPlan ? 201 : 200, await studentCustomDetail(query, user, customPlan));
+    }
+
     for (let weekday = 1; weekday <= 7; weekday += 1) {
       await query(
         `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title)
@@ -1023,11 +1091,11 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     const ownsPlan = await query("SELECT id FROM student_workout_plans WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND status = 'active' LIMIT 1", [input.plan_id, user.gym_id, user.member_id]);
     if (!ownsPlan.rowCount) return send(res, 404, { error: 'ficha_personalizada_nao_encontrada' });
     const result = await query(
-      `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, updated_at = now()
-       RETURNING id, plan_id, weekday, title, notes`,
-      [user.gym_id, input.plan_id, weekday, studentText(input.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(input.notes, '', 2000) || null]
+      `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes, start_time, end_time)
+       VALUES ($1, $2, $3, $4, $5, $6::time, $7::time)
+       ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, updated_at = now()
+       RETURNING id, plan_id, weekday, title, notes, start_time, end_time`,
+      [user.gym_id, input.plan_id, weekday, studentText(input.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(input.notes, '', 2000) || null, validCalendarTime(input.start_time) ? String(input.start_time) : '18:00', validCalendarTime(input.end_time) && String(input.end_time) > (validCalendarTime(input.start_time) ? String(input.start_time) : '18:00') ? String(input.end_time) : null]
     );
     return send(res, 200, result.rows[0]);
   }

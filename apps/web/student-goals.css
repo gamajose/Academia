@@ -42,6 +42,41 @@
   font-weight: 500;
 }
 
+.student-goal-new {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+.student-goal-new svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.student-goal-form { position: relative; }
+.student-goal-modal-eyebrow,
+.student-goal-modal-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .student-goal-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -307,7 +342,12 @@ html[data-student-theme="dark"] body.student-page .student-goal-form .secondary-
   }
 
   .student-goal-new {
-    width: max-content;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    align-self: flex-start;
   }
 
   .student-goal-list,

@@ -184,6 +184,36 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
   color: #fff;
 }
 
+.student-new-event-button,
+.student-goal-new {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+.student-new-event-button svg,
+.student-goal-new svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.student-exercise-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .student-day-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 14px; background: #f8fbff; }
 .student-workout-exercise-row { align-items: center; cursor: pointer; }
 .student-workout-exercise-row:hover, .student-workout-exercise-row:focus-visible { border-color: #1478d4; box-shadow: 0 0 0 3px rgba(20, 120, 212, .1); outline: none; }
@@ -191,7 +221,7 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 .student-exercise-inline-media:empty { display: none; }
 .student-exercise-inline-media img, .student-exercise-inline-media video, .student-exercise-inline-media iframe { width: min(220px, 100%); max-height: 150px; border: 1px solid #d7e3ef; border-radius: 10px; object-fit: cover; }
 .student-form-hint { margin: 0; color: #5e7081; font-size: 13px; line-height: 1.45; }
-.student-workout-editor-card { width: min(760px, 96vw); }
+.student-workout-editor-card { width: min(820px, 96vw); max-height: min(92vh, 900px); overflow-y: auto; }
 .student-workout-editor-form { display: grid; gap: 16px; }
 .student-workout-editor-form > small { color: #5e7081; }
 .student-workout-editor-form .form-actions { margin-top: 0; }

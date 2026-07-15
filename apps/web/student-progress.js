@@ -98,13 +98,19 @@
       const photoUrl = file ? await uploadPhoto(file) : '';
       const fields = { assessment_date: p('student-assessment-date').value || null, weight_kg: p('student-weight').value, height_cm: p('student-height').value, body_fat_percent: p('student-fat').value, waist_cm: p('student-waist').value, chest_cm: p('student-chest').value, hip_cm: p('student-hip').value, biceps_cm: p('student-biceps').value, thigh_cm: p('student-thigh').value, photo_url: photoUrl, notes: p('student-assessment-notes').value.trim() };
       await StudentPortal.api('/api/student/progress/assessment', { method: 'POST', body: JSON.stringify(fields) });
-      p('student-assessment-form').reset(); p('student-assessment-date').value = localDate(); preview(''); setFormStatus('Nova medição adicionada ao histórico.'); await load();
+      p('student-assessment-form').reset(); p('student-assessment-date').value = localDate(); preview(''); closeAssessmentModal(); setStatus('Nova medição adicionada ao histórico.'); await load();
     } catch (error) { setFormStatus(`Erro: ${error.message}`, true); } finally { button.disabled = false; }
   }
 
+  function closeAssessmentModal() { p('student-assessment-modal').classList.add('hidden'); }
+
   p('student-assessment-date').value = localDate();
   p('student-assessment-photo').addEventListener('change', (event) => { const file = event.target.files?.[0]; if (file) preview(URL.createObjectURL(file)); });
-  p('open-student-assessment').addEventListener('click', () => { const form = p('student-assessment-form'); form.hidden = !form.hidden; if (!form.hidden) p('student-assessment-date').focus(); });
+  p('open-student-assessment').addEventListener('click', () => { p('student-assessment-modal').classList.remove('hidden'); setFormStatus(''); setTimeout(() => p('student-assessment-date').focus(), 0); });
+  p('student-assessment-close').addEventListener('click', closeAssessmentModal);
+  p('student-assessment-cancel').addEventListener('click', closeAssessmentModal);
+  p('student-assessment-modal').addEventListener('click', (event) => { if (event.target === p('student-assessment-modal')) closeAssessmentModal(); });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !p('student-assessment-modal').classList.contains('hidden')) closeAssessmentModal(); });
   p('student-assessment-form').addEventListener('submit', saveAssessment);
   load();
 }());

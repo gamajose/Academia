@@ -10,6 +10,8 @@
   let privateExerciseDraftMode = false;
   let exercisePreviewTimer = null;
   let exercisePreviewNode = null;
+  let activeWeekday = weekdayForDate(selectedDate);
+  let weeklyExerciseDrafts = new Map();
 
   function toDateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -30,6 +32,38 @@
   function status(id, message, error = false) { const element = p(id); if (!element) return; element.textContent = message || ''; element.classList.toggle('error', error); }
   function eventForDate(dateKey) { return events.filter((event) => String(event.scheduled_date).slice(0, 10) === dateKey); }
   function currentMonth() { return selectedDate.slice(0, 7); }
+  function weekdayForDate(dateKey) { const day = fromDateKey(dateKey).getDay(); return day === 0 ? 7 : day; }
+  function dateForWeekday(dateKey, weekday) { const date = fromDateKey(dateKey); const current = weekdayForDate(dateKey); date.setDate(date.getDate() + Number(weekday) - current); return toDateKey(date); }
+  function weekdayLabel(weekday) { return ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'][Number(weekday) - 1] || 'Dia'; }
+  function catalogValues(selector) {
+    return [...new Set(catalog.flatMap((item) => String(item[selector] || '').split(',').map((value) => value.trim()).filter(Boolean)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+  function populateMuscleFilters() {
+    [['student-event-muscle-primary', 'Músculo primário', catalogValues('muscle_group_primary')], ['student-event-muscle-secondary', 'Músculo secundário', catalogValues('muscle_group_secondary')], ['student-picker-muscle-primary', 'Músculo primário', catalogValues('muscle_group_primary')], ['student-picker-muscle-secondary', 'Músculo secundário', catalogValues('muscle_group_secondary')]].forEach(([id, label, values]) => {
+      const select = p(id); if (!select) return;
+      const current = select.value; select.replaceChildren(new Option(`Todos os ${label.toLowerCase().replace('músculo ', '')}`, ''));
+      values.forEach((value) => select.appendChild(new Option(value, value)));
+      if (values.includes(current)) select.value = current;
+    });
+  }
+  function filteredCatalog(query, primary, secondary) {
+    const normalizedQuery = normalize(query);
+    return catalog.filter((item) => {
+      const searchable = normalize(`${item.name || ''} ${item.muscle_group || ''} ${item.muscle_group_primary || ''} ${item.muscle_group_secondary || ''} ${item.equipment || ''}`);
+      const primaryMatch = !primary || String(item.muscle_group_primary || '').split(',').map((value) => normalize(value.trim())).includes(normalize(primary));
+      const secondaryMatch = !secondary || String(item.muscle_group_secondary || '').split(',').map((value) => normalize(value.trim())).includes(normalize(secondary));
+      return (!normalizedQuery || searchable.includes(normalizedQuery)) && primaryMatch && secondaryMatch;
+    });
+  }
+  function renderWeekdayPicker() {
+    document.querySelectorAll('#student-weekday-picker [data-weekday]').forEach((button) => {
+      const weekday = Number(button.dataset.weekday); button.classList.toggle('active', weekday === activeWeekday); button.setAttribute('aria-selected', String(weekday === activeWeekday));
+      const count = weeklyExerciseDrafts.get(weekday)?.length || 0; const countNode = button.querySelector('small'); if (countNode) countNode.textContent = count ? `${count} exercício${count === 1 ? '' : 's'}` : 'Sem exercícios';
+    });
+    const label = p('student-active-weekday-label'); if (label) label.textContent = `Exercícios de ${weekdayLabel(activeWeekday)}`;
+  }
+  function syncActiveWeekday() { weeklyExerciseDrafts.set(activeWeekday, selectedExerciseDrafts.map((draft) => ({ ...draft }))); renderWeekdayPicker(); }
+  function selectWeekday(weekday) { syncActiveWeekday(); activeWeekday = Number(weekday); selectedExerciseDrafts = (weeklyExerciseDrafts.get(activeWeekday) || []).map((draft) => ({ ...draft })); renderWeekdayPicker(); renderEventExerciseOptions(); }
 
   function hideExercisePreview() {
     if (exercisePreviewTimer) { clearTimeout(exercisePreviewTimer); exercisePreviewTimer = null; }
@@ -68,14 +102,8 @@
   function renderSelectedDate() {
     const list = p('student-event-list');
     list.replaceChildren();
-    const dayEvents = eventForDate(selectedDate);
-    if (!dayEvents.length) {
-      const empty = document.createElement('div');
-      empty.className = 'empty-state student-day-empty';
-      empty.innerHTML = '<strong>Nenhum treino para este dia.</strong><span>Crie uma sessão para organizar seu horário e seus exercícios.</span>';
-      list.appendChild(empty);
-      return;
-    }
+    const dayEvents = eventForDate(selectedDate).filter((event) => !event.is_weekly || event.exercises?.length);
+    if (!dayEvents.length) return;
     dayEvents.forEach((event) => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -97,28 +125,28 @@
 
   function renderEventDetail() {
     const panel = p('student-event-detail-panel');
-    panel.classList.remove('hidden');
-    const date = fromDateKey(selectedDate);
-    p('student-selected-date-weekday').textContent = date.toLocaleDateString('pt-BR', { weekday: 'long' });
-    p('student-selected-date-title').textContent = date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+    const weekday = weekdayForDate(selectedDate);
+    p('student-selected-date-weekday').textContent = 'Ficha semanal';
+    p('student-selected-date-title').textContent = weekdayLabel(weekday);
     const actions = p('student-event-detail-actions');
     const list = p('student-event-exercise-list');
     list.replaceChildren();
     if (!selectedEvent) {
+      panel.classList.add('hidden');
       actions.classList.add('hidden');
       p('student-event-detail-title').textContent = 'Treino do dia';
-      p('student-event-detail-time').textContent = 'Nenhum treino selecionado';
-      p('student-event-detail-notes').textContent = 'Selecione um treino acima ou crie um novo para este dia.';
-      const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhum treino agendado para este dia.'; list.appendChild(empty);
+      p('student-event-detail-time').textContent = '';
+      p('student-event-detail-notes').textContent = '';
       return;
     }
+    panel.classList.remove('hidden');
     actions.classList.remove('hidden');
+    p('student-add-event-exercise-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
+    p('student-delete-event-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
     p('student-event-detail-title').textContent = selectedEvent.title;
-    p('student-event-detail-time').textContent = `${dateLabel(String(selectedEvent.scheduled_date).slice(0, 10))} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
+    p('student-event-detail-time').textContent = `${weekdayLabel(weekday)} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
     p('student-event-detail-notes').textContent = selectedEvent.notes || 'Sem observações para este treino.';
-    if (!selectedEvent.exercises.length) {
-      const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhum exercício adicionado a este treino.'; list.appendChild(empty); return;
-    }
+    if (!selectedEvent.exercises.length) return;
     selectedEvent.exercises.forEach((item) => {
       const row = document.createElement('li'); row.className = 'entity-card student-workout-exercise-row';
       const main = document.createElement('div'); main.className = 'entity-main';
@@ -147,8 +175,8 @@
   function renderExerciseResults() {
     const list = p('student-exercise-results'); list.replaceChildren();
     const action = document.createElement('button'); action.type = 'button'; action.className = 'student-exercise-result student-custom-exercise-result'; action.innerHTML = '<strong>＋ Criar exercício personalizado</strong>'; action.addEventListener('click', () => openPrivateExercise(false)); list.appendChild(action);
-    const query = normalize(p('student-exercise-search').value);
-    const matches = catalog.filter((item) => !query || normalize(`${item.name} ${item.muscle_group} ${item.equipment}`).includes(query)).slice(0, 50);
+    const query = p('student-exercise-search').value;
+    const matches = filteredCatalog(query, p('student-picker-muscle-primary')?.value, p('student-picker-muscle-secondary')?.value);
     if (!matches.length) { const empty = document.createElement('div'); empty.className = 'empty-state'; empty.textContent = 'Nenhum exercício do catálogo encontrado.'; list.appendChild(empty); return; }
     matches.forEach((item) => {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`;
@@ -170,9 +198,11 @@
     const selected = p('student-event-form-selected-exercises');
     if (!list || !selected) return;
     list.replaceChildren(); selected.replaceChildren();
-    const query = normalize(p('student-event-exercise-search-inline')?.value || '');
+    const query = p('student-event-exercise-search-inline')?.value || '';
+    const primary = p('student-event-muscle-primary')?.value || '';
+    const secondary = p('student-event-muscle-secondary')?.value || '';
     const custom = document.createElement('button'); custom.type = 'button'; custom.className = 'student-exercise-result student-custom-exercise-result'; custom.innerHTML = '<strong>＋ Criar exercício personalizado</strong>'; custom.addEventListener('click', () => { list.classList.remove('is-open'); openPrivateExercise(true); }); list.appendChild(custom);
-    catalog.filter((item) => !query || normalize(`${item.name} ${item.muscle_group} ${item.equipment}`).includes(query)).slice(0, 20).forEach((item) => {
+    filteredCatalog(query, primary, secondary).forEach((item) => {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'student-exercise-result'; button.innerHTML = `<strong>${text(item.name)}</strong>`; button.addEventListener('click', () => addExerciseDraft(item)); bindExercisePreview(button, item); list.appendChild(button);
     });
     if (!selectedExerciseDrafts.length) { selected.innerHTML = '<small class="student-form-hint">Nenhum exercício selecionado ainda.</small>'; return; }
@@ -184,11 +214,29 @@
   }
 
   function clearPickedExercise(resetEditing = false) { pickedExercise = null; if (resetEditing) editingExerciseId = null; p('student-event-exercise-form').classList.add('hidden'); p('student-exercise-search').disabled = false; p('student-exercise-results').classList.remove('is-open'); renderExerciseResults(); }
-  function openExercisePicker(item = null) { if (!selectedEvent) { status('student-event-detail-status', 'Escolha um treino antes de adicionar exercícios.', true); return; } editingExerciseId = item?.id || null; p('student-exercise-picker-title').textContent = editingExerciseId ? 'Editar exercício do treino' : 'Exercícios do treino'; p('student-exercise-search').value = ''; p('student-exercise-search').disabled = false; p('student-exercise-results').classList.remove('is-open'); p('student-event-exercise-form').classList.add('hidden'); p('student-exercise-picker-modal').classList.remove('hidden'); renderExerciseResults(); if (item) pickExercise(item); }
+  function openExercisePicker(item = null) { if (!selectedEvent) { status('student-event-detail-status', 'Escolha um treino antes de adicionar exercícios.', true); return; } editingExerciseId = item?.id || null; p('student-exercise-picker-title').textContent = editingExerciseId ? 'Editar exercício do treino' : 'Exercícios do treino'; p('student-exercise-search').value = ''; p('student-exercise-search').disabled = false; p('student-exercise-results').classList.add('is-open'); p('student-event-exercise-form').classList.add('hidden'); p('student-exercise-picker-modal').classList.remove('hidden'); renderExerciseResults(); if (item) pickExercise(item); }
   function closeExercisePicker() { p('student-exercise-picker-modal').classList.add('hidden'); clearPickedExercise(true); }
 
   function openEventEditor(event = null) {
-    p('student-event-editor-title').textContent = event ? 'Editar treino' : 'Novo treino'; p('student-event-form').dataset.id = event?.id || ''; p('student-event-title').value = event?.title || 'Treino'; p('student-event-date').value = String(event?.scheduled_date || selectedDate).slice(0, 10); p('student-event-start').value = timeLabel(event?.start_time) || '18:00'; p('student-event-end').value = timeLabel(event?.end_time) || '19:00'; p('student-event-notes').value = event?.notes || ''; p('student-event-exercise-search-inline').value = ''; selectedExerciseDrafts = []; privateExerciseDraftMode = false; renderEventExerciseOptions(); status('student-event-editor-status', ''); p('student-event-editor-modal').classList.remove('hidden');
+    p('student-event-editor-title').textContent = event ? 'Editar ficha' : 'Nova ficha';
+    p('student-event-form').dataset.id = event?.id || '';
+    p('student-event-title').value = event?.title || '';
+    p('student-event-start').value = timeLabel(event?.start_time) || '18:00';
+    p('student-event-end').value = timeLabel(event?.end_time) || '19:00';
+    p('student-event-notes').value = event?.notes || '';
+    p('student-event-exercise-search-inline').value = '';
+    p('student-event-muscle-primary').value = '';
+    p('student-event-muscle-secondary').value = '';
+    activeWeekday = event ? Number(event.weekday || weekdayForDate(String(event.scheduled_date).slice(0, 10))) : weekdayForDate(selectedDate);
+    weeklyExerciseDrafts = new Map();
+    if (event?.is_weekly) {
+      events.filter((item) => item.is_weekly).forEach((dayEvent) => weeklyExerciseDrafts.set(Number(dayEvent.weekday), (dayEvent.exercises || []).map((item) => ({ ...item, id: item.exercise_id || item.private_exercise_id || item.id, name: item.exercise_name, is_private: Boolean(item.is_private || item.private_exercise_id), sets: item.sets || 3, reps: item.reps || '10-12', rest_seconds: item.rest_seconds ?? 60, notes: item.notes || '' }))));
+    } else if (event) {
+      weeklyExerciseDrafts.set(activeWeekday, (event.exercises || []).map((item) => ({ ...item, id: item.exercise_id || item.private_exercise_id || item.id, name: item.exercise_name, is_private: Boolean(item.is_private || item.private_exercise_id), sets: item.sets || 3, reps: item.reps || '10-12', rest_seconds: item.rest_seconds ?? 60, notes: item.notes || '' })));
+    }
+    selectedExerciseDrafts = (weeklyExerciseDrafts.get(activeWeekday) || []).map((draft) => ({ ...draft }));
+    privateExerciseDraftMode = false;
+    renderWeekdayPicker(); renderEventExerciseOptions(); status('student-event-editor-status', ''); p('student-event-editor-modal').classList.remove('hidden');
   }
   function closeEventEditor() { p('student-event-editor-modal').classList.add('hidden'); }
   function openPrivateExercise(draftMode = false) { privateExerciseDraftMode = draftMode; if (!draftMode) closeExercisePicker(); p('student-private-exercise-form').reset(); status('student-private-exercise-status', ''); p('student-private-exercise-modal').classList.remove('hidden'); }
@@ -196,8 +244,25 @@
 
   async function saveEvent(event) {
     event.preventDefault();
-    const payload = { id: p('student-event-form').dataset.id || undefined, title: p('student-event-title').value, scheduled_date: p('student-event-date').value, start_time: p('student-event-start').value, end_time: p('student-event-end').value, notes: p('student-event-notes').value, replace_exercises: !p('student-event-form').dataset.id, exercises: selectedExerciseDrafts.map((draft) => ({ exercise_id: draft.is_private ? undefined : draft.id, private_exercise_id: draft.is_private ? draft.id : undefined, sets: draft.sets, reps: draft.reps, rest_seconds: draft.rest_seconds, notes: draft.notes })) };
-    try { const result = await StudentPortal.api('/api/student/training/calendar/event/save', { method: 'POST', body: JSON.stringify(payload) }); selectedDate = payload.scheduled_date; selectedEvent = result; closeEventEditor(); await loadCalendar(); selectedEvent = events.find((item) => item.id === result.id) || null; renderEventDetail(); }
+    syncActiveWeekday();
+    const title = p('student-event-title').value.trim();
+    const days = [...weeklyExerciseDrafts.entries()].filter(([, drafts]) => drafts.length);
+    if (!title) { status('student-event-editor-status', 'Informe o nome da ficha.', true); return; }
+    if (!days.length) { status('student-event-editor-status', 'Adicione pelo menos um exercício em um dia da ficha.', true); return; }
+    const exercisePayload = (drafts) => drafts.map((draft) => ({ exercise_id: draft.is_private ? undefined : draft.id, private_exercise_id: draft.is_private ? draft.id : undefined, sets: draft.sets, reps: draft.reps, rest_seconds: draft.rest_seconds, notes: draft.notes }));
+    try {
+      const payload = {
+        name: title,
+        goal: p('student-event-notes').value,
+        days: Array.from({ length: 7 }, (_, index) => {
+          const weekday = index + 1;
+          return { weekday, title: weekdayLabel(weekday), start_time: p('student-event-start').value, end_time: p('student-event-end').value || null, notes: p('student-event-notes').value, exercises: exercisePayload(weeklyExerciseDrafts.get(weekday) || []) };
+        }),
+      };
+      await StudentPortal.api('/api/student/training/custom/plan', { method: 'POST', body: JSON.stringify(payload) });
+      selectedDate = dateForWeekday(selectedDate, activeWeekday);
+      closeEventEditor(); await loadCalendar(); selectedEvent = eventForDate(selectedDate).find((item) => !item.is_weekly || item.exercises?.length) || null; renderSelectedDate(); renderEventDetail();
+    }
     catch (error) { status('student-event-editor-status', `Não foi possível salvar: ${error.message}`, true); }
   }
 
@@ -243,15 +308,41 @@
     const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = `${normalize(selectedEvent.title).replace(/\s+/g, '-') || 'treino'}.ics`; link.click(); URL.revokeObjectURL(url); status('student-event-detail-status', 'Arquivo de agenda gerado. Abra-o no calendário do celular para importar o treino.');
   }
 
+  function weeklyDetailToEvents(detail) {
+    const plan = detail?.plan || {};
+    return (detail?.days || []).map((day) => ({
+      id: day.id,
+      plan_id: plan.id,
+      weekday: Number(day.weekday),
+      title: plan.name || 'Minha ficha',
+      scheduled_date: dateForWeekday(selectedDate, Number(day.weekday)),
+      start_time: timeLabel(day.start_time) || '18:00',
+      end_time: timeLabel(day.end_time) || '19:00',
+      notes: day.notes || plan.goal || '',
+      is_weekly: true,
+      editable: plan.editable !== false,
+      exercises: (detail.exercises || []).filter((item) => Number(item.weekday) === Number(day.weekday)).map((item) => ({ ...item, id: item.id, exercise_id: item.exercise_library_id, private_exercise_id: item.private_exercise_id, is_private: Boolean(item.is_private || item.private_exercise_id) })),
+    }));
+  }
+
   async function loadCalendar() {
-    try { const previousEventId = selectedEvent?.id; const result = await StudentPortal.api(`/api/student/training/calendar?month=${encodeURIComponent(currentMonth())}`); events = result.events || []; const dayEvents = eventForDate(selectedDate); selectedEvent = dayEvents.find((event) => event.id === previousEventId) || dayEvents[0] || null; renderSelectedDate(); renderEventDetail(); status('student-calendar-status', ''); }
-    catch (error) { status('student-portal-status', `Não foi possível carregar seus treinos: ${error.message}`, true); }
+    try {
+      const previousEventId = selectedEvent?.id;
+      try {
+        const current = await StudentPortal.api('/api/student/training/current');
+        events = weeklyDetailToEvents(current);
+      } catch (currentError) {
+        const result = await StudentPortal.api(`/api/student/training/calendar?month=${encodeURIComponent(currentMonth())}`);
+        events = result.events || [];
+      }
+      const dayEvents = eventForDate(selectedDate).filter((event) => !event.is_weekly || event.exercises?.length); selectedEvent = dayEvents.find((event) => event.id === previousEventId) || dayEvents[0] || null; renderSelectedDate(); renderEventDetail(); status('student-calendar-status', '');
+    } catch (error) { status('student-portal-status', `Não foi possível carregar seus treinos: ${error.message}`, true); }
   }
 
   async function moveDay(offset) { const date = fromDateKey(selectedDate); date.setDate(date.getDate() + offset); selectedDate = toDateKey(date); selectedEvent = null; await loadCalendar(); }
 
   async function load() {
-    try { await StudentPortal.init(); const me = await StudentPortal.api('/api/student/me'); p('student-portal-title').textContent = `Meu treino, ${(me.name || 'Aluno').split(' ')[0]}`; const result = await StudentPortal.api('/api/student/training/catalog'); catalog = [...(result.public || []).map((item) => ({ ...item, is_private: false })), ...(result.private || []).map((item) => ({ ...item, is_private: true }))]; await loadCalendar(); }
+    try { await StudentPortal.init(); const me = await StudentPortal.api('/api/student/me'); p('student-portal-title').textContent = `Meu treino, ${(me.name || 'Aluno').split(' ')[0]}`; const result = await StudentPortal.api('/api/student/training/catalog'); catalog = [...(result.public || []).map((item) => ({ ...item, is_private: false })), ...(result.private || []).map((item) => ({ ...item, is_private: true }))]; populateMuscleFilters(); await loadCalendar(); }
     catch (error) { status('student-portal-status', `Erro: ${error.message}`, true); }
   }
 
@@ -259,6 +350,9 @@
   p('student-event-exercise-search-inline').addEventListener('focus', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); });
   p('student-event-exercise-search-inline').addEventListener('input', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); });
   p('student-event-exercise-search-inline').addEventListener('blur', () => setTimeout(() => { if (!p('student-event-form-exercise-list').contains(document.activeElement)) p('student-event-form-exercise-list').classList.remove('is-open'); }, 120));
+  ['student-event-muscle-primary', 'student-event-muscle-secondary'].forEach((id) => p(id).addEventListener('change', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); }));
+  ['student-picker-muscle-primary', 'student-picker-muscle-secondary'].forEach((id) => p(id).addEventListener('change', () => { p('student-exercise-results').classList.add('is-open'); renderExerciseResults(); }));
+  document.querySelectorAll('#student-weekday-picker [data-weekday]').forEach((button) => button.addEventListener('click', () => selectWeekday(button.dataset.weekday)));
   p('student-event-form').addEventListener('submit', saveEvent); p('student-event-editor-close').addEventListener('click', closeEventEditor); p('student-event-editor-cancel').addEventListener('click', closeEventEditor); p('student-edit-event-button').addEventListener('click', () => openEventEditor(selectedEvent)); p('student-add-event-exercise-button').addEventListener('click', () => openExercisePicker()); p('student-import-calendar-button').addEventListener('click', importToCalendar); p('student-delete-event-button').addEventListener('click', removeEvent);
   p('student-exercise-search').addEventListener('focus', () => { p('student-exercise-results').classList.add('is-open'); renderExerciseResults(); }); p('student-exercise-search').addEventListener('input', () => { p('student-exercise-results').classList.add('is-open'); renderExerciseResults(); }); p('student-exercise-search').addEventListener('blur', () => setTimeout(() => { if (!p('student-exercise-results').contains(document.activeElement)) p('student-exercise-results').classList.remove('is-open'); }, 120)); p('student-event-exercise-form').addEventListener('submit', saveEventExercise); p('student-clear-picked-exercise').addEventListener('click', () => clearPickedExercise(false)); p('student-exercise-picker-close').addEventListener('click', closeExercisePicker); p('student-private-exercise-form').addEventListener('submit', savePrivateExercise); p('student-private-exercise-close').addEventListener('click', closePrivateExercise); p('student-private-exercise-cancel').addEventListener('click', closePrivateExercise); p('student-exercise-close').addEventListener('click', () => p('student-exercise-modal').classList.add('hidden'));
   [p('student-event-editor-modal'), p('student-exercise-picker-modal'), p('student-private-exercise-modal'), p('student-exercise-modal')].forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); }));

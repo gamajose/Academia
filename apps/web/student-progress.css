@@ -3,6 +3,7 @@
 }
 
 .student-assessment-form { display: grid; gap: 16px; }
+.student-assessment-modal-card { width: min(780px, 96vw); max-height: min(90vh, 900px); overflow-y: auto; }
 .student-assessment-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .student-assessment-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .student-assessment-form[hidden] { display: none; }

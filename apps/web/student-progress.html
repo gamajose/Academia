@@ -22,7 +22,12 @@
 
     <section class="panel progress-checkin-panel">
       <div class="toolbar"><div><h3>Evolução</h3><p class="section-help">Registre uma nova medição quando estiver pronto.</p></div><span class="progress-reminder" id="student-progress-reminder" hidden></span><button class="secondary" id="open-student-assessment" type="button">Nova medição</button></div>
-      <form id="student-assessment-form" class="student-assessment-form" hidden>
+    </section>
+
+    <div class="modal hidden" id="student-assessment-modal" role="dialog" aria-modal="true" aria-labelledby="student-assessment-modal-title">
+      <article class="modal-card student-assessment-modal-card">
+        <div class="modal-header"><div><h3 id="student-assessment-modal-title">Nova medição</h3><p>Registre seus dados e acompanhe sua evolução.</p></div><button class="modal-close" id="student-assessment-close" type="button" aria-label="Fechar">×</button></div>
+        <form id="student-assessment-form" class="student-assessment-form">
         <div class="student-assessment-grid">
           <div class="field"><label for="student-assessment-date">Data</label><input id="student-assessment-date" type="date" /></div>
           <div class="field"><label for="student-weight">Peso (kg)</label><input id="student-weight" type="number" min="0" step="0.01" /></div>
@@ -37,10 +42,11 @@
         <div class="field"><label for="student-assessment-photo">Foto da evolução</label><input id="student-assessment-photo" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /><small>JPG, PNG, GIF ou WebP. Limite de 5 MB.</small></div>
         <div class="student-progress-upload-preview"><img id="student-assessment-photo-preview" alt="Prévia da foto de evolução" hidden /><span id="student-assessment-photo-empty">A prévia aparecerá aqui.</span></div>
         <div class="field"><label for="student-assessment-notes">Observações</label><textarea id="student-assessment-notes" rows="3" maxlength="5000" placeholder="Como você está se sentindo nesta etapa?"></textarea></div>
-        <div class="form-actions"><button type="submit" id="student-assessment-submit">Salvar nova medição</button></div>
-        <p class="status-line" id="student-assessment-status" aria-live="polite"></p>
-      </form>
-    </section>
+          <div class="form-actions"><button class="secondary" type="button" id="student-assessment-cancel">Cancelar</button><button type="submit" id="student-assessment-submit">Salvar</button></div>
+          <p class="status-line" id="student-assessment-status" aria-live="polite"></p>
+        </form>
+      </article>
+    </div>
 
     <section class="panel"><div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div></div><div class="student-stat-grid progress-summary-grid" id="student-progress-summary"></div></section>
     <section class="panel progress-analysis-panel" id="student-progress-analysis"></section>

@@ -44,7 +44,7 @@
           <h1 id="student-goals-title">Minhas metas</h1>
           <p>Defina um objetivo, acompanhe o prazo e comece outro quando concluir.</p>
         </div>
-        <button class="primary-button student-goal-new" id="student-goal-new" type="button">+ Nova meta</button>
+        <button class="primary-button student-goal-new icon-button" id="student-goal-new" type="button" aria-label="Nova meta" title="Nova meta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
       </div>
       <ul id="student-goal-list" class="student-goal-list" aria-live="polite"></ul>
       <p class="status-line" id="student-goals-status" aria-live="polite"></p>
@@ -54,8 +54,8 @@
   <div class="modal hidden" id="student-goal-modal" role="dialog" aria-modal="true" aria-labelledby="student-goal-modal-title">
     <div class="modal-card student-goal-form">
       <button class="modal-close" id="student-goal-close" type="button" aria-label="Fechar">&times;</button>
-      <p class="eyebrow">Objetivo pessoal</p>
-      <h2 id="student-goal-modal-title">Nova meta</h2>
+      <p class="eyebrow student-goal-modal-eyebrow">Objetivo pessoal</p>
+      <h2 id="student-goal-modal-title" class="student-goal-modal-heading">Nova meta</h2>
       <p class="modal-description">Registre o que você quer alcançar e acompanhe sua evolução.</p>
       <form id="student-goal-form">
         <input id="student-goal-id" type="hidden" />
@@ -84,7 +84,7 @@
         <p class="form-error" id="student-goal-form-error" role="alert"></p>
         <div class="modal-actions">
           <button class="secondary-button" id="student-goal-cancel" type="button">Cancelar</button>
-          <button class="primary-button" id="student-goal-save" type="submit">Salvar meta</button>
+          <button class="primary-button" id="student-goal-save" type="submit">Salvar</button>
         </div>
       </form>
     </div>

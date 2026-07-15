@@ -37,7 +37,7 @@
     document.getElementById('student-goal-status').value = goal?.status === 'completed' ? 'completed' : 'active';
     document.getElementById('student-goal-notes').value = goal?.notes || '';
     modalTitle.textContent = goal ? 'Editar meta' : 'Nova meta';
-    saveButton.textContent = goal ? 'Salvar alterações' : 'Salvar meta';
+    saveButton.textContent = 'Salvar';
     modal.classList.remove('hidden');
     document.getElementById('student-goal-type').focus();
   }
