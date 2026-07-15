@@ -85,6 +85,7 @@
 .training-actions-panel { gap: 18px; margin-bottom: 24px; }
 .training-actions-panel h2 { margin: 0 0 6px; }
 .training-actions-panel p { margin: 0; }
+.lists-grid .toolbar .icon-button { flex: 0 0 34px; width: 34px !important; min-width: 34px; height: 34px; margin: 0; padding: 0; border-radius: 9px; }
 .training-actions-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .training-actions-grid button { min-height: 46px; padding: 10px 14px; }
 .training-modal-card { width: min(720px, 94vw); display: grid; gap: 14px; }
