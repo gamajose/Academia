@@ -13,7 +13,7 @@
 .student-access-code-block span, .student-access-code-block small { color: #5e7081; font-size: 13px; }
 .student-access-code-block strong { color: #1478d4; font-size: 30px; letter-spacing: .12em; }
 .student-access-refresh { align-self: center; }
-.student-access-offline-card { align-content: start; margin-top: -10px; }
+.student-access-offline-card { align-content: start; margin-top: -24px; }
 .student-access-offline-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .student-access-offline-values > div { display: grid; gap: 5px; padding: 16px; border: 1px solid #d7e3ef; border-radius: 12px; background: #f8fbff; }
 .student-access-offline-values span { color: #5e7081; font-size: 13px; }

@@ -50,8 +50,7 @@ jobs:
           rm -f \
             "$WEB_DIR/permissions.html" \
             "$WEB_DIR/permissions.js" \
-            "$WEB_DIR/student-accounts.html" \
-            "$WEB_DIR/student-access.js"
+            "$WEB_DIR/student-accounts.html"
 
           cd "$API_DIR"
 
@@ -76,6 +75,7 @@ jobs:
           node --check "$WEB_DIR/matricula-publica.js"
           node --check "$WEB_DIR/payment-return.js"
           node --check "$WEB_DIR/student-login.js"
+          node --check "$WEB_DIR/student-access.js"
           node --check "$WEB_DIR/student-reset.js"
           node --check "$WEB_DIR/student-confirm.js"
           python3 - <<'PY'

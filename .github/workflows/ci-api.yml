@@ -88,6 +88,7 @@ jobs:
           node --check apps/web/planos.js
           node --check apps/web/rich-editor.js
           node --check apps/web/student-login.js
+          node --check apps/web/student-access.js
           node --check apps/web/matricula-publica.js
           node --check apps/web/student-reset.js
           node --check apps/web/student-confirm.js
@@ -135,7 +136,7 @@ jobs:
           test ! -e apps/web/permissions.html
           test ! -e apps/web/permissions.js
           test ! -e apps/web/student-accounts.html
-          test ! -e apps/web/student-access.js
+          test -f apps/web/student-access.js
           grep -q '/api/student/access/credential' apps/mobile/lib/student_home_page.dart
           grep -q '/api/student/access/offline-credential' apps/mobile/lib/student_home_page.dart
           grep -q 'studentOfflineRegistrationNumber' apps/mobile/lib/student_home_page.dart
