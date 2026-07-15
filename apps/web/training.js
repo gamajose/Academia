@@ -580,8 +580,15 @@ function emptyPlanDayExercise() {
 }
 
 function ensurePlanDayDraft(weekday) {
-  if (!planDayDrafts.has(weekday)) planDayDrafts.set(weekday, [emptyPlanDayExercise()]);
+  if (!planDayDrafts.has(weekday)) planDayDrafts.set(weekday, []);
   return planDayDrafts.get(weekday);
+}
+
+function configuredPlanDays() {
+  return [...planDayDrafts.entries()]
+    .filter(([, draft]) => draft.length > 0)
+    .map(([weekday]) => weekday)
+    .sort((a, b) => a - b);
 }
 
 function resetPlanBuilder() {
@@ -681,13 +688,13 @@ function addPlanDayExercise() {
 async function createPlan() {
   const memberId = t('plan-member').value;
   const member = members.find((item) => item.id === memberId);
-  const selectedDays = selectedPlanDays();
+  const selectedDays = configuredPlanDays();
   if (!memberId || !member) {
     t('plan-status').textContent = 'Selecione um aluno para criar a ficha.';
     return;
   }
   if (!selectedDays.length) {
-    t('plan-status').textContent = 'Selecione pelo menos um dia da ficha.';
+    t('plan-status').textContent = 'Adicione pelo menos um exercício em um dia da ficha.';
     return;
   }
   const incompleteDay = selectedDays.find((weekday) => !planDayDrafts.get(weekday)?.length || planDayDrafts.get(weekday).some((item) => !item.exercise_id));
