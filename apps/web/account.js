@@ -99,6 +99,10 @@ async function loadProfile() {
     account('gym-profile-panel').hidden = !canManageGym;
     await loadGym(canManageGym);
     setAccountStatus('');
+    if (new URLSearchParams(window.location.search).get('view') === 'preferences') {
+      account('preferences-modal').classList.remove('hidden');
+      account('preferences-modal').setAttribute('aria-hidden', 'false');
+    }
   } catch (error) { setAccountStatus(`Erro: ${error.message}`); }
 }
 
@@ -151,12 +155,6 @@ async function saveGym() {
 account('profile-form').addEventListener('submit', saveProfile);
 account('save-gym-button').addEventListener('click', saveGym);
 account('save-preferences-button').addEventListener('click', savePreferences);
-account('open-preferences-button').addEventListener('click', () => {
-  const modal = account('preferences-modal');
-  modal.classList.remove('hidden');
-  modal.setAttribute('aria-hidden', 'false');
-  account('profile-language').focus();
-});
 function closePreferences() {
   const modal = account('preferences-modal');
   modal.classList.add('hidden');

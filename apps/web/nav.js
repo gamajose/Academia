@@ -40,9 +40,9 @@ function applyAdminPreferences(preferences = {}) {
 }
 
 const adminNavLabels = {
-  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acesso', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', sair: 'Sair' },
-  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', sair: 'Sign out' },
-  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Acceso', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', sair: 'Salir' }
+  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acesso', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', sair: 'Sair' },
+  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', sair: 'Sign out' },
+  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Acceso', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', sair: 'Salir' }
 };
 
 function applyAdminLanguage(language = 'pt-BR') {
@@ -54,6 +54,7 @@ function applyAdminLanguage(language = 'pt-BR') {
   const profileLinks = document.querySelectorAll('#profile-dropdown a');
   if (profileLinks[0]) profileLinks[0].textContent = labels.perfil;
   if (profileLinks[1]) profileLinks[1].textContent = labels.seguranca;
+  if (profileLinks[2]) profileLinks[2].textContent = labels.preferencias;
   const logout = document.getElementById('profile-logout');
   if (logout) logout.textContent = labels.sair;
 }
@@ -165,6 +166,7 @@ function renderNavigation() {
       <div class="profile-dropdown hidden" id="profile-dropdown">
         <a href="${pageUrl('account.html')}">Perfil</a>
         <a href="${pageUrl('security.html')}">Segurança</a>
+        <a id="profile-preferences" href="${pageUrl('account.html')}&view=preferences">Preferências</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
       </div>
     </div>`;
