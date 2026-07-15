@@ -6,6 +6,7 @@
   <title>Meu perfil - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
+  <link rel="stylesheet" href="./admin-profile.css" />
 </head>
 <body>
   <main class="app-shell">
@@ -18,6 +19,11 @@
     <section class="grid profile-page-grid">
       <form class="panel" id="profile-form">
         <div class="toolbar"><div><h3>Dados pessoais</h3><small>Esses dados identificam você no sistema.</small></div><span class="badge" id="profile-access-badge">Carregando</span></div>
+        <div class="profile-identity">
+          <button class="profile-identity-avatar" id="profile-photo-button" type="button" aria-label="Alterar foto do perfil" title="Alterar foto do perfil">J</button>
+          <input id="profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+          <small>Foto do perfil. Passe o mouse ou toque no avatar para alterar.</small>
+        </div>
         <div class="form-grid">
           <div class="field"><label for="profile-name">Nome completo *</label><input id="profile-name" autocomplete="name" required /></div>
           <div class="field"><label for="profile-email">E-mail *</label><input id="profile-email" type="email" autocomplete="email" required /></div>
@@ -55,6 +61,16 @@
           <div class="field"><label for="gym-address">Endereço da academia</label><input id="gym-address" /></div>
           <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
           <div class="form-actions"><button id="save-gym-button" type="button">Salvar dados da academia</button></div>
+        </section>
+        <section class="panel profile-preferences-card">
+          <div><h3>Preferências</h3><small>Personalize a interface da sua conta administrativa.</small></div>
+          <div class="profile-preferences-grid">
+            <div class="field"><label for="profile-language">Idioma</label><select id="profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
+            <div class="field"><label for="profile-theme">Tema</label><select id="profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div>
+            <div class="field"><label for="profile-accent">Cor de destaque</label><select id="profile-accent"><option value="blue">Azul</option><option value="cyan">Ciano</option><option value="violet">Violeta</option><option value="green">Verde</option></select></div>
+          </div>
+          <div class="form-actions"><button id="save-preferences-button" type="button">Salvar preferências</button></div>
+          <p class="status-line" id="preferences-status"></p>
         </section>
       </div>
     </section>

@@ -19,6 +19,57 @@ function loadNavigationStyles() {
   loadStyle('./premium-ui.css');
   loadStyle('./blue-theme.css');
   loadStyle('./admin-nav-icons.css');
+  loadStyle('./admin-profile.css');
+}
+
+function applyAdminPreferences(preferences = {}) {
+  const saved = {
+    language: preferences.language || localStorage.getItem('adminLanguage') || 'pt-BR',
+    theme: preferences.theme || localStorage.getItem('adminTheme') || 'light',
+    accent: preferences.accent || localStorage.getItem('adminAccent') || 'blue'
+  };
+  document.documentElement.dataset.adminTheme = saved.theme === 'system'
+    ? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : saved.theme;
+  document.documentElement.dataset.adminAccent = saved.accent;
+  document.documentElement.lang = saved.language;
+  localStorage.setItem('adminLanguage', saved.language);
+  localStorage.setItem('adminTheme', saved.theme);
+  localStorage.setItem('adminAccent', saved.accent);
+  applyAdminLanguage(saved.language);
+}
+
+const adminNavLabels = {
+  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acesso', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', sair: 'Sair' },
+  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', sair: 'Sign out' },
+  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Acceso', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', sair: 'Salir' }
+};
+
+function applyAdminLanguage(language = 'pt-BR') {
+  const labels = adminNavLabels[language] || adminNavLabels['pt-BR'];
+  document.querySelectorAll('.top-nav-links a[data-nav-key]').forEach((link) => {
+    const label = link.querySelector('.nav-label');
+    if (label && labels[link.dataset.navKey]) label.textContent = labels[link.dataset.navKey];
+  });
+  const profileLinks = document.querySelectorAll('#profile-dropdown a');
+  if (profileLinks[0]) profileLinks[0].textContent = labels.perfil;
+  if (profileLinks[1]) profileLinks[1].textContent = labels.seguranca;
+  const logout = document.getElementById('profile-logout');
+  if (logout) logout.textContent = labels.sair;
+}
+
+function renderAvatar(host, name, photoUrl = '') {
+  if (!host) return;
+  host.replaceChildren();
+  if (photoUrl) {
+    const image = document.createElement('img');
+    image.src = photoUrl;
+    image.alt = '';
+    image.onerror = () => { host.textContent = name.trim().charAt(0).toUpperCase() || 'U'; };
+    host.appendChild(image);
+    return;
+  }
+  host.textContent = name.trim().charAt(0).toUpperCase() || 'U';
 }
 
 function clearSession() {
@@ -87,10 +138,10 @@ function renderNavigation() {
 
   const current = pageName(window.location.pathname) || 'painel.html';
   const pages = [
-    ['painel.html', 'Painel'], ['alunos.html', 'Alunos'], ['planos.html', 'Planos'],
-    ['vinculos.html', 'Matrículas'], ['solicitacoes.html', 'Pré-matrículas'],
-    ['financeiro.html', 'Financeiro'], ['alerts.html', 'Alertas'], ['training.html', 'Treinos'],
-    ['assessments.html', 'Avaliações'], ['access.html', 'Acesso'], ['users.html', 'Funcionários']
+    ['painel.html', 'Painel', 'painel'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
+    ['vinculos.html', 'Matrículas', 'matriculas'], ['solicitacoes.html', 'Pré-matrículas', 'pre'],
+    ['financeiro.html', 'Financeiro', 'financeiro'], ['alerts.html', 'Alertas', 'alertas'], ['training.html', 'Treinos', 'treinos'],
+    ['assessments.html', 'Avaliações', 'avaliacoes'], ['access.html', 'Acesso', 'acesso'], ['users.html', 'Funcionários', 'funcionarios']
   ];
   const icons = {
     'painel.html': 'home', 'alunos.html': 'members', 'planos.html': 'plans', 'vinculos.html': 'membership',
@@ -105,9 +156,9 @@ function renderNavigation() {
       <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
       <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><small>academia e saúde</small></span>
     </a>
-    <div class="top-nav-links">${pages.map(([href, label]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
+    <div class="top-nav-links">${pages.map(([href, label, key]) => `<a data-page="${href}" data-nav-key="${key}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
     <div class="profile-menu">
-      <button class="profile-trigger" id="profile-trigger" type="button" aria-expanded="false">
+      <button class="profile-trigger" id="profile-trigger" type="button" aria-label="Abrir perfil" title="Abrir perfil" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>
         <span class="profile-copy"><strong id="profile-name">Meu perfil</strong><span id="profile-role">Perfil</span></span>
       </button>
@@ -149,7 +200,9 @@ async function loadProfile() {
     const name = user.name || 'Meu perfil';
     document.getElementById('profile-name').textContent = name;
     document.getElementById('profile-role').textContent = roleLabel(user.role, user.access_profile, user.access_profile_name);
-    document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
+    renderAvatar(document.getElementById('profile-avatar'), name, user.profile_photo_url);
+    applyAdminPreferences(user.profile_preferences);
+    document.getElementById('profile-trigger')?.setAttribute('title', name);
     const accountName = document.getElementById('account-name');
     const accountRole = document.getElementById('account-role');
     if (accountName) accountName.textContent = name;
@@ -162,7 +215,8 @@ async function loadProfile() {
     const name = localStorage.getItem('academiaUserName') || 'Meu perfil';
     document.getElementById('profile-name').textContent = name;
     document.getElementById('profile-role').textContent = roleLabel(role, accessProfile, accessProfileName);
-    document.getElementById('profile-avatar').textContent = name.trim().charAt(0).toUpperCase() || 'U';
+    renderAvatar(document.getElementById('profile-avatar'), name);
+    document.getElementById('profile-trigger')?.setAttribute('title', name);
     const accountName = document.getElementById('account-name');
     const accountRole = document.getElementById('account-role');
     if (accountName) accountName.textContent = name;
@@ -201,6 +255,7 @@ function upgradeModals() {
 }
 
 loadNavigationStyles();
+applyAdminPreferences();
 requireSession();
 renderNavigation();
 upgradeModals();

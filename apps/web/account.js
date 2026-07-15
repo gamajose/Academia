@@ -18,6 +18,25 @@ function setAccountStatus(text) { account('profile-status').textContent = text; 
 function value(id) { return account(id).value.trim(); }
 function fill(id, text) { account(id).value = text || ''; }
 
+function renderProfilePhoto(url, name) {
+  const host = account('profile-photo-button');
+  host.replaceChildren();
+  host.dataset.photoUrl = url || '';
+  if (url) {
+    const image = document.createElement('img');
+    image.src = url;
+    image.alt = '';
+    image.onerror = () => { host.textContent = String(name || 'J').trim().charAt(0).toUpperCase() || 'J'; };
+    host.appendChild(image);
+  } else host.textContent = String(name || 'J').trim().charAt(0).toUpperCase() || 'J';
+}
+
+function renderPreferences(preferences = {}) {
+  fill('profile-language', preferences.language || localStorage.getItem('adminLanguage') || 'pt-BR');
+  fill('profile-theme', preferences.theme || localStorage.getItem('adminTheme') || 'light');
+  fill('profile-accent', preferences.accent || localStorage.getItem('adminAccent') || 'blue');
+}
+
 function roleText(profile, role) {
   if (role === 'owner') return 'Proprietário · acesso total';
   if (role === 'admin') return 'Administrador · gestão da academia';
@@ -34,12 +53,25 @@ function renderProfile(user) {
   fill('profile-rg', user.rg);
   fill('profile-birth', user.birth_date ? String(user.birth_date).slice(0, 10) : '');
   fill('profile-job-title', user.job_title || roleText(user.access_profile, user.role));
+  renderProfilePhoto(user.profile_photo_url, user.name);
+  renderPreferences(user.profile_preferences);
   account('profile-access-badge').textContent = user.access_profile_name || roleText(user.access_profile, user.role);
   const address = user.address_details || {};
   for (const [id, key] of [['profile-postal-code', 'postal_code'], ['profile-street', 'street'], ['profile-address-number', 'number'], ['profile-address-complement', 'complement'], ['profile-neighborhood', 'neighborhood'], ['profile-city', 'city'], ['profile-state', 'state'], ['profile-country', 'country']]) fill(id, address[key]);
   const phone = digits(user.phone);
   const whatsapp = account('profile-whatsapp');
   if (phone) { whatsapp.href = `https://wa.me/${phone}`; whatsapp.classList.remove('hidden'); }
+}
+
+async function uploadProfilePhoto(file) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Escolha JPG, PNG ou WebP.');
+  if (file.size > 5 * 1024 * 1024) throw new Error('A foto não pode ultrapassar 5 MB.');
+  const form = new FormData();
+  form.append('file', file, file.name);
+  const response = await fetch(`${ACCOUNT_API}/api/editor/images`, { method: 'POST', headers: { Authorization: `Bearer ${ACCOUNT_TOKEN}` }, body: form });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a foto.');
+  return data.location || '';
 }
 
 async function loadProfile() {
@@ -65,14 +97,31 @@ async function loadGym(canManageGym) {
 async function saveProfile(event) {
   event.preventDefault();
   try {
+    let photoUrl = account('profile-photo-button').dataset.photoUrl || '';
+    const file = account('profile-photo-file').files?.[0];
+    if (file) photoUrl = await uploadProfilePhoto(file);
     await accountApi('/api/me/profile', { method: 'POST', body: JSON.stringify({
       name: value('profile-name'), email: value('profile-email'), phone: value('profile-phone'),
       cpf: value('profile-cpf'), rg: value('profile-rg'), birth_date: value('profile-birth'),
+      profile_photo_url: photoUrl,
       address_details: { postal_code: value('profile-postal-code'), street: value('profile-street'), number: value('profile-address-number'), complement: value('profile-address-complement'), neighborhood: value('profile-neighborhood'), city: value('profile-city'), state: value('profile-state'), country: value('profile-country') }
     }) });
     localStorage.setItem('academiaUserName', value('profile-name'));
     setAccountStatus('Perfil salvo com sucesso.');
   } catch (error) { setAccountStatus(`Erro ao salvar perfil: ${error.message}`); }
+}
+
+async function savePreferences() {
+  const status = account('preferences-status');
+  try {
+    const preferences = { language: value('profile-language'), theme: value('profile-theme'), accent: value('profile-accent') };
+    await accountApi('/api/me/preferences', { method: 'POST', body: JSON.stringify(preferences) });
+    localStorage.setItem('adminLanguage', preferences.language);
+    localStorage.setItem('adminTheme', preferences.theme);
+    localStorage.setItem('adminAccent', preferences.accent);
+    if (typeof applyAdminPreferences === 'function') applyAdminPreferences(preferences);
+    status.textContent = 'Preferências salvas.';
+  } catch (error) { status.textContent = `Erro ao salvar preferências: ${error.message}`; }
 }
 
 async function saveGym() {
@@ -84,5 +133,12 @@ async function saveGym() {
 
 account('profile-form').addEventListener('submit', saveProfile);
 account('save-gym-button').addEventListener('click', saveGym);
+account('save-preferences-button').addEventListener('click', savePreferences);
+account('profile-photo-button').addEventListener('click', () => account('profile-photo-file').click());
+account('profile-photo-file').addEventListener('change', (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  renderProfilePhoto(URL.createObjectURL(file), value('profile-name'));
+});
 account('profile-phone').addEventListener('input', (event) => { event.target.value = event.target.value; });
 loadProfile();
