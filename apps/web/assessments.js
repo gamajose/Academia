@@ -356,8 +356,10 @@ function renderAssessments(rows) {
       thumb.className = 'assessment-photo-thumb'; thumb.src = item.photo_url; thumb.alt = ''; thumb.loading = 'lazy';
       actions.appendChild(thumb);
     }
-    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'icon-button'; edit.textContent = '✎'; edit.title = 'Editar avaliação'; edit.setAttribute('aria-label', 'Editar avaliação'); edit.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentEdit(item); });
-    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'icon-button danger'; remove.textContent = '🗑'; remove.title = 'Excluir avaliação'; remove.setAttribute('aria-label', 'Excluir avaliação'); remove.addEventListener('click', (event) => { event.stopPropagation(); deleteAssessment(item); });
+    const edit = window.AcademiaIcons.button('edit', 'Editar avaliação');
+    edit.addEventListener('click', (event) => { event.stopPropagation(); openAssessmentEdit(item); });
+    const remove = window.AcademiaIcons.button('trash', 'Excluir avaliação', 'danger');
+    remove.addEventListener('click', (event) => { event.stopPropagation(); deleteAssessment(item); });
     actions.append(edit, remove);
     row.append(main, actions);
     list.appendChild(row);
@@ -397,8 +399,10 @@ function renderGoals(rows) {
     main.append(title, target, status);
     const actions = document.createElement('div');
     actions.className = 'workflow-record-actions';
-    const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'icon-button'; edit.textContent = '✎'; edit.title = 'Editar meta'; edit.setAttribute('aria-label', 'Editar meta'); edit.addEventListener('click', (event) => { event.stopPropagation(); openGoalEdit(item); });
-    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'icon-button danger'; remove.textContent = '🗑'; remove.title = 'Excluir meta'; remove.setAttribute('aria-label', 'Excluir meta'); remove.addEventListener('click', (event) => { event.stopPropagation(); deleteGoal(item); });
+    const edit = window.AcademiaIcons.button('edit', 'Editar meta');
+    edit.addEventListener('click', (event) => { event.stopPropagation(); openGoalEdit(item); });
+    const remove = window.AcademiaIcons.button('trash', 'Excluir meta', 'danger');
+    remove.addEventListener('click', (event) => { event.stopPropagation(); deleteGoal(item); });
     actions.append(edit, remove);
     row.append(main, actions);
     list.appendChild(row);

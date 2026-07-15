@@ -64,8 +64,8 @@ function render() {
       <span>${plainText(plan.description || '').slice(0, 110) || 'Sem descrição'} · <span class="badge ${plan.is_active ? 'ok' : 'bad'}">${plan.is_active ? 'Ativo' : 'Inativo'}</span></span>`;
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
-    const edit = button('✎', (event) => { event.stopPropagation(); openPlan(plan); }, 'icon-button');
-    edit.title = 'Editar plano'; edit.setAttribute('aria-label', 'Editar plano');
+    const edit = window.AcademiaIcons.button('edit', 'Editar plano');
+    edit.addEventListener('click', (event) => { event.stopPropagation(); openPlan(plan); });
     const toggleButton = button(plan.is_active ? '⊘' : '●', (event) => { event.stopPropagation(); toggle(plan); }, 'icon-button');
     toggleButton.title = plan.is_active ? 'Desativar plano' : 'Ativar plano'; toggleButton.setAttribute('aria-label', toggleButton.title);
     actions.append(edit, toggleButton);

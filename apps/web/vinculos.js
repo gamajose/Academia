@@ -100,10 +100,9 @@ function render() {
     tr.addEventListener('click', () => openModal(item));
     tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
     const actions = tr.lastElementChild;
-    actions.appendChild(mini('✎', (event) => { event.stopPropagation(); openModal(item); }));
-    actions.lastElementChild.className = 'icon-button';
-    actions.lastElementChild.title = 'Editar matrícula';
-    actions.lastElementChild.setAttribute('aria-label', 'Editar matrícula');
+    const editButton = window.AcademiaIcons.button('edit', 'Editar matrícula');
+    editButton.addEventListener('click', (event) => { event.stopPropagation(); openModal(item); });
+    actions.appendChild(editButton);
     actions.appendChild(mini(status === 'active' ? '⊘' : '●', (event) => { event.stopPropagation(); if (status === 'active') return cancelLink(item); }, status !== 'active'));
     actions.lastElementChild.className = 'icon-button';
     actions.lastElementChild.title = status === 'active' ? 'Cancelar matrícula' : 'Matrícula encerrada';

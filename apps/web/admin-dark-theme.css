@@ -304,10 +304,10 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-co
   align-items: center;
   justify-content: center;
   width: 34px;
-  height: 38px;
+  height: 34px;
   padding: 0 !important;
-  border: 0 !important;
-  border-radius: 8px;
+  border: 1px solid #34536e !important;
+  border-radius: 9px;
   background: transparent !important;
   color: #4ade80 !important;
   text-decoration: none !important;
@@ -321,9 +321,13 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-co
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-contact svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 @media (max-width: 760px) {

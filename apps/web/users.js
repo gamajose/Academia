@@ -196,13 +196,7 @@ function renderUsers(rows) {
     const actions = document.createElement('td');
     actions.className = 'employee-row-actions';
 
-    const edit = document.createElement('button');
-    edit.className = 'mini-button secondary';
-    edit.type = 'button';
-    edit.textContent = '✎';
-    edit.title = 'Editar funcionário';
-    edit.setAttribute('aria-label', 'Editar funcionário');
-    edit.className = 'icon-button';
+    const edit = window.AcademiaIcons.button('edit', 'Editar funcionário');
     edit.addEventListener('click', () => editUser(user));
     actions.appendChild(edit);
 
@@ -327,13 +321,7 @@ function renderPermissionProfiles() {
     const actions = document.createElement('div');
     actions.className = 'access-profile-actions';
 
-    const edit = document.createElement('button');
-    edit.className = 'mini-button secondary';
-    edit.type = 'button';
-    edit.textContent = '✎';
-    edit.className = 'icon-button';
-    edit.title = 'Editar perfil de acesso';
-    edit.setAttribute('aria-label', 'Editar perfil de acesso');
+    const edit = window.AcademiaIcons.button('edit', 'Editar perfil de acesso');
     edit.addEventListener('click', () => openPermissionsEditor(profile));
     actions.appendChild(edit);
 
@@ -347,13 +335,7 @@ function renderPermissionProfiles() {
     toggle.addEventListener('click', () => toggleAccessProfile(profile));
     actions.appendChild(toggle);
 
-    const remove = document.createElement('button');
-    remove.className = 'mini-button secondary';
-    remove.type = 'button';
-    remove.textContent = '🗑';
-    remove.className = 'icon-button danger';
-    remove.title = 'Excluir perfil de acesso';
-    remove.setAttribute('aria-label', 'Excluir perfil de acesso');
+    const remove = window.AcademiaIcons.button('trash', 'Excluir perfil de acesso', 'danger');
     remove.addEventListener('click', () => deleteAccessProfile(profile));
     actions.appendChild(remove);
 

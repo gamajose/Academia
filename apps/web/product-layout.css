@@ -178,9 +178,9 @@
 .student-info-chip.has-content { background: #dbeafe; color: #1d4ed8; }
 .student-info-chip.has-history { background: #fce7f3; color: #be185d; }
 .student-info-chip.empty-content { background: #f3f4f6; color: #6b7280; }
-.contact-link.whatsapp-contact { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 38px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #25d366; text-decoration: none; }
+.contact-link.whatsapp-contact { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: #25d366; text-decoration: none; }
 .contact-link.whatsapp-contact:hover, .contact-link.whatsapp-contact:focus-visible { background: rgba(37, 211, 102, .10); color: #1ebe5d; outline: none; }
-.contact-link.whatsapp-contact svg { width: 22px; height: 22px; fill: currentColor; }
+.contact-link.whatsapp-contact svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .finance-member-name { color: #1f2937; font-weight: 700; }
 .finance-row-action, .membership-row-action { cursor: pointer; }
 .finance-row-action:hover, .finance-row-action:focus-visible, .membership-row-action:hover, .membership-row-action:focus-visible { background: #f8fbff; outline: 2px solid rgba(20, 120, 212, .18); outline-offset: -2px; }

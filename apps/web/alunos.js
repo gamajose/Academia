@@ -66,14 +66,10 @@ function whatsappLink(phone) {
   const number = digits(phone);
   if (!number) return null;
   const international = (number.length <= 11 ? '55' : '') + number;
-  const link = document.createElement('a');
+  const link = window.AcademiaIcons?.link('whatsapp', 'Abrir conversa no WhatsApp', 'contact-link whatsapp-contact') || document.createElement('a');
   link.href = 'https://wa.me/' + international;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.className = 'contact-link icon-button whatsapp-contact';
-  link.setAttribute('aria-label', 'Abrir conversa no WhatsApp');
-  link.title = 'Abrir conversa no WhatsApp';
-  link.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.52 3.48A11.86 11.86 0 0 0 12.08 0C5.54 0 .22 5.32.22 11.86c0 2.09.55 4.14 1.59 5.94L.12 24l6.34-1.66a11.83 11.83 0 0 0 5.62 1.43h.01c6.54 0 11.86-5.32 11.86-11.86 0-3.17-1.23-6.15-3.43-8.43Zm-8.44 18.25h-.01a9.84 9.84 0 0 1-5.01-1.37l-.36-.21-3.76.99 1-3.67-.23-.38a9.85 9.85 0 1 1 8.37 4.64Zm5.4-7.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.03 1.01-1.03 2.47s1.06 2.86 1.21 3.06c.15.2 2.08 3.18 5.04 4.46.7.3 1.25.48 1.68.61.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35Z"/></svg>';
   return link;
 }
 
@@ -198,10 +194,12 @@ function render() {
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
     if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); actions.appendChild(whatsapp); }
-    actions.appendChild(button('▦', (event) => { event?.stopPropagation?.(); openCredentialPreview(item); }, 'icon-button'));
-    actions.lastElementChild.title = 'Abrir QR Code e credencial'; actions.lastElementChild.setAttribute('aria-label', 'Abrir QR Code e credencial');
-    actions.appendChild(button('✎', (event) => { event?.stopPropagation?.(); openModal(item); }, 'icon-button'));
-    actions.lastElementChild.title = 'Editar cadastro'; actions.lastElementChild.setAttribute('aria-label', 'Editar cadastro');
+    const credentialButton = window.AcademiaIcons.button('qr', 'Abrir QR Code e credencial');
+    credentialButton.addEventListener('click', (event) => { event.stopPropagation(); openCredentialPreview(item); });
+    actions.appendChild(credentialButton);
+    const editButton = window.AcademiaIcons.button('edit', 'Editar cadastro');
+    editButton.addEventListener('click', (event) => { event.stopPropagation(); openModal(item); });
+    actions.appendChild(editButton);
     actions.appendChild(button(item.status === 'active' ? '⊘' : '●', (event) => { event?.stopPropagation?.(); toggle(item); }, 'icon-button'));
     actions.lastElementChild.title = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno'; actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);
     li.append(main, actions);
