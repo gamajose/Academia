@@ -7,28 +7,24 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
+  <link rel="stylesheet" href="./pre-enrollments.css" />
 </head>
 <body>
   <main class="app-shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Administração</p>
-        <h1>Pré-matrículas</h1>
-        <p>Acompanhe pagamentos reconhecidos automaticamente pelos provedores e a confirmação de cadastro dos alunos.</p>
-      </div>
-    </section>
-
-    <section class="panel">
+    <section class="panel pre-enrollment-panel" id="received-signups-panel">
       <div class="toolbar">
-        <h2>Solicitações recebidas</h2>
-        <button id="reload-signups">Recarregar dados</button>
+        <div class="pre-enrollment-heading">
+          <h2>Solicitações recebidas</h2>
+          <span class="signup-count" id="signup-count">0</span>
+        </div>
+        <button class="secondary" id="reload-signups">Atualizar</button>
       </div>
       <input id="signup-search" placeholder="Buscar por nome, plano, status ou código" />
       <p class="status-line" id="signup-status"></p>
       <ul id="signup-list"></ul>
     </section>
 
-    <section class="panel">
+    <section class="panel pre-enrollment-panel pre-enrollment-validation-panel">
       <h3>Validar código apresentado na recepção</h3>
       <input id="check-code" placeholder="Código apresentado pelo aluno" />
         <button id="check-code-button">Validar código</button>

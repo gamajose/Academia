@@ -20,7 +20,7 @@ function loadNavigationStyles() {
   loadStyle('./blue-theme.css');
   loadStyle('./admin-nav-icons.css');
   loadStyle('./admin-profile.css');
-  loadStyle('./admin-dark-theme.css?v=20260715-0900');
+  loadStyle('./admin-dark-theme.css?v=20260715-1015');
 }
 
 function applyAdminPreferences(preferences = {}) {

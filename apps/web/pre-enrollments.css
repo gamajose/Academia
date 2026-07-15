@@ -1,0 +1,43 @@
+.pre-enrollment-panel { gap: 18px; }
+.pre-enrollment-heading { display: flex; align-items: center; gap: 10px; }
+.pre-enrollment-heading h2 { margin: 0; }
+.signup-count { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; font-size: 12px; font-weight: 800; }
+.signup-card { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.signup-card-content { display: grid; gap: 6px; min-width: 0; }
+.signup-card-content strong { color: var(--text); font-size: 15px; }
+.signup-card-content span { color: var(--muted); font-size: 13px; }
+.signup-card-content small { color: var(--muted); font-size: 12px; }
+.signup-card-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.signup-card-actions .mini-button { margin: 0; }
+.pre-enrollment-validation-panel { margin-top: 24px; }
+
+html[data-admin-theme="dark"] .pre-enrollment-panel {
+  background: #122235 !important;
+  border-color: #29445d !important;
+  color: #e8f0f8 !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .2);
+}
+html[data-admin-theme="dark"] .signup-card {
+  background: #0e1b2a !important;
+  border-color: #29445d !important;
+}
+html[data-admin-theme="dark"] .signup-card-content strong { color: #e8f0f8 !important; }
+html[data-admin-theme="dark"] .signup-card-content span,
+html[data-admin-theme="dark"] .signup-card-content small { color: #a9bed1 !important; }
+html[data-admin-theme="dark"] .signup-count { background: #1d3f61; color: #8ecbff; }
+html[data-admin-theme="dark"] .modal-card {
+  background: #122235 !important;
+  border-color: #29445d !important;
+  color: #e8f0f8 !important;
+}
+html[data-admin-theme="dark"] .modal-card .secondary,
+html[data-admin-theme="dark"] .modal-card .modal-close {
+  background: #102238 !important;
+  border-color: #34536e !important;
+  color: #e8f0f8 !important;
+}
+
+@media (max-width: 680px) {
+  .signup-card { align-items: stretch; flex-direction: column; }
+  .signup-card-actions { justify-content: flex-start; }
+}

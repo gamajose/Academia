@@ -1,5 +1,5 @@
 async function handleOnlineSignupRoutes(req, res, user, url, helpers) {
-  const { send, query } = helpers;
+  const { send, body, query } = helpers;
 
   if (req.method === 'GET' && url.pathname === '/api/signups') {
     const result = await query(
@@ -16,6 +16,20 @@ async function handleOnlineSignupRoutes(req, res, user, url, helpers) {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/signups/approve') return send(res, 410, { error: 'aprovacao_manual_desativada' });
+
+  if (req.method === 'POST' && url.pathname === '/api/signups/cancel') {
+    const input = await body(req);
+    if (!input.enrollment_id) return send(res, 400, { error: 'id_obrigatorio' });
+    const result = await query(
+      `UPDATE public_enrollments
+       SET status = 'cancelled'
+       WHERE id = $1 AND gym_id = $2 AND status <> 'confirmed'
+       RETURNING id, status, created_at` ,
+      [input.enrollment_id, user.gym_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'solicitacao_nao_pode_ser_negada' });
+    return send(res, 200, result.rows[0]);
+  }
 
   if (req.method === 'GET' && url.pathname === '/api/signups/check') {
     const code = url.searchParams.get('code') || '';
