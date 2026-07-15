@@ -300,21 +300,29 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .student-info-chip.has-hi
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-contact {
-  display: inline-grid !important;
-  place-items: center;
-  width: 38px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
   height: 38px;
   padding: 0 !important;
-  border: 1px solid #2c685e !important;
-  border-radius: 9px;
-  background: #102b28 !important;
-  color: #58d68d !important;
+  border: 0 !important;
+  border-radius: 8px;
+  background: transparent !important;
+  color: #4ade80 !important;
   text-decoration: none !important;
 }
 
+html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-contact:hover,
+html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-contact:focus-visible {
+  background: rgba(74, 222, 128, .10) !important;
+  color: #86efac !important;
+  outline: none;
+}
+
 html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-contact svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   fill: currentColor;
 }
 
