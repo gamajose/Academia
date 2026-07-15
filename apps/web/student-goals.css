@@ -59,6 +59,16 @@
   border: 1px solid #c5ddf3;
   border-radius: 12px;
   background: #f8fcff;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.student-goal-card:hover,
+.student-goal-card:focus-visible {
+  border-color: #1478d4;
+  box-shadow: 0 5px 18px rgba(20, 120, 212, .12);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .student-goal-card.is-completed {

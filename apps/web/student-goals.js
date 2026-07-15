@@ -55,6 +55,10 @@
       goalsById.set(String(goal.id), goal);
       const row = document.createElement('li');
       row.className = `student-goal-card${goal.status === 'completed' ? ' is-completed' : ''}`;
+      row.dataset.goalId = goal.id;
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-label', `Editar meta ${goal.goal_type || ''}`.trim());
       row.innerHTML = `
         <div class="entity-main">
           <strong>${StudentPortal.escapeHtml(goal.goal_type || 'Meta')}</strong>
@@ -131,11 +135,19 @@
   form.addEventListener('submit', save);
   list.addEventListener('click', (event) => {
     const button = event.target.closest('[data-goal-action]');
-    if (!button) return;
-    const goal = goalsById.get(button.dataset.goalId);
+    const card = event.target.closest('.student-goal-card');
+    const goal = goalsById.get(button?.dataset.goalId || card?.dataset.goalId);
     if (!goal) return;
-    if (button.dataset.goalAction === 'edit') openModal(goal);
-    if (button.dataset.goalAction === 'delete') remove(goal.id);
+    if (button?.dataset.goalAction === 'edit' || !button) openModal(goal);
+    if (button?.dataset.goalAction === 'delete') remove(goal.id);
+  });
+  list.addEventListener('keydown', (event) => {
+    if (!['Enter', ' '].includes(event.key) || event.target.closest('button')) return;
+    const card = event.target.closest('.student-goal-card');
+    const goal = goalsById.get(card?.dataset.goalId);
+    if (!goal) return;
+    event.preventDefault();
+    openModal(goal);
   });
 
   load();
