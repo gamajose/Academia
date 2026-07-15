@@ -14,6 +14,18 @@ let activePlanWeekday = null;
 
 const t = (id) => document.getElementById(id);
 
+function trainingActionIcon(type, label, className = '') {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `icon-button action-icon-button ${className}`.trim();
+  button.setAttribute('aria-label', label);
+  button.title = label;
+  button.innerHTML = type === 'edit'
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6v14H5V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>';
+  return button;
+}
+
 function setTrainingStatus(text) {
   t('training-status').textContent = text;
 }
@@ -114,11 +126,7 @@ function renderTrainingLevels() {
     save.type = 'submit';
     save.className = 'mini-button';
     save.textContent = 'Salvar';
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'mini-button secondary';
-    remove.textContent = 'Excluir';
-    remove.title = 'Excluir este nível';
+    const remove = trainingActionIcon('delete', 'Excluir este nível', 'danger');
     remove.addEventListener('click', async () => {
       if (!window.confirm(`Excluir o nível "${level.name}"?`)) return;
       remove.disabled = true;
@@ -217,20 +225,20 @@ function renderAll() {
     if (canManageTrainingLevels()) {
       const actions = document.createElement('div');
       actions.className = 'entity-actions';
-      const edit = document.createElement('button');
-      edit.type = 'button';
-      edit.className = 'mini-button secondary';
-      edit.textContent = 'Editar';
-      edit.title = `Editar ${item.name}`;
+      const edit = trainingActionIcon('edit', `Editar ${item.name}`);
       edit.addEventListener('click', (event) => {
         event.stopPropagation();
         openExerciseForm(item);
       });
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'mini-button secondary danger';
-      remove.textContent = item.is_active === false ? 'Ativar' : 'Excluir';
-      remove.title = item.is_active === false ? `Ativar ${item.name}` : `Excluir ${item.name}`;
+      const remove = item.is_active === false
+        ? document.createElement('button')
+        : trainingActionIcon('delete', `Excluir ${item.name}`, 'danger');
+      if (item.is_active === false) {
+        remove.type = 'button';
+        remove.className = 'mini-button secondary';
+        remove.textContent = 'Ativar';
+        remove.title = `Ativar ${item.name}`;
+      }
       remove.addEventListener('click', async (event) => {
         event.stopPropagation();
         await toggleExercise(item, remove);
@@ -263,20 +271,12 @@ function renderAll() {
     if (canManageTrainingLevels()) {
       const actions = document.createElement('div');
       actions.className = 'entity-actions';
-      const edit = document.createElement('button');
-      edit.type = 'button';
-      edit.className = 'mini-button secondary';
-      edit.textContent = 'Editar';
-      edit.title = `Editar ficha de ${item.member_name}`;
+      const edit = trainingActionIcon('edit', `Editar ficha de ${item.member_name}`);
       edit.addEventListener('click', (event) => {
         event.stopPropagation();
         openPlanForm(item);
       });
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'mini-button secondary danger';
-      remove.textContent = 'Excluir';
-      remove.title = `Excluir ficha de ${item.member_name}`;
+      const remove = trainingActionIcon('delete', `Excluir ficha de ${item.member_name}`, 'danger');
       remove.addEventListener('click', async (event) => {
         event.stopPropagation();
         await deletePlan(item, remove);
