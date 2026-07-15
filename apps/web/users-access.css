@@ -21,6 +21,8 @@ body.modal-open { overflow: hidden; }
 .employee-list-toolbar .toolbar-actions { justify-content: flex-end; }
 .employee-list-toolbar .icon-button, #new-user-button, #new-access-profile-button { flex: 0 0 36px; width: 36px !important; min-width: 36px !important; height: 36px; margin: 0; padding: 0; border-radius: 8px; }
 .field-label-with-action { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.employee-access-profile-row { display: grid; grid-template-columns: minmax(0, 1fr) 36px; align-items: center; gap: 10px; }
+.employee-access-profile-row .icon-button { align-self: center; width: 36px !important; min-width: 36px !important; height: 36px !important; margin: 0 !important; padding: 0 !important; border-radius: 8px !important; }
 .employee-list-panel table { min-width: 980px; }
 .employee-list-panel table th { color: #5b625e; border-bottom: 1px solid var(--line); }
 .employee-list-panel table td { color: var(--text); border-bottom: 1px solid #ebe4da; vertical-align: middle; }

@@ -79,7 +79,13 @@
         <h4>Perfil de acesso</h4>
         <div class="form-grid">
           <input id="user-role" type="hidden" value="staff" />
-          <div class="field"><div class="field-label-with-action"><label for="user-access-profile">Perfil de acesso *</label><button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Novo perfil de acesso" title="Novo perfil de acesso">+</button></div><select id="user-access-profile" required></select><small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small></div>
+          <div class="field">
+            <div class="employee-access-profile-row">
+              <select id="user-access-profile" aria-label="Perfil de acesso" required></select>
+              <button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Novo perfil de acesso" title="Novo perfil de acesso">+</button>
+            </div>
+            <small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small>
+          </div>
         </div>
         <p class="section-help" id="permission-help">Use o botão + para criar um perfil sem sair do cadastro.</p>
       </section>
