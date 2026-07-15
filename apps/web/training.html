@@ -10,20 +10,15 @@
 </head>
 <body>
   <main class="app-shell">
-    <section class="hero">
-      <div>
+    <section class="hero training-hero">
+      <div class="training-hero-title-row">
         <h1>Ficha semanal e exercícios</h1>
+        <button id="open-review-button" class="training-ai-button" type="button" title="Análise com IA" aria-label="Análise com IA">
+          <span class="training-ai-icon" aria-hidden="true">✦</span>
+          <span>Análise com IA</span>
+        </button>
       </div>
-    </section>
-
-    <section class="panel training-actions-panel">
-      <div>
-        <h2>Gestão de treinos</h2>
-      </div>
-      <div class="training-actions-grid single-action">
-        <button id="open-review-button" type="button">Análise inteligente</button>
-      </div>
-      <p class="status-line" id="training-status"></p>
+      <p class="status-line training-status" id="training-status"></p>
     </section>
 
     <section class="grid lists-grid">
