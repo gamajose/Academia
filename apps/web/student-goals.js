@@ -50,6 +50,7 @@
   function render(goals) {
     goalsById.clear();
     list.innerHTML = '';
+    document.querySelector('.student-goals-panel')?.classList.toggle('is-single-goal', goals.length <= 1);
     goals.forEach((goal) => {
       goalsById.set(String(goal.id), goal);
       const row = document.createElement('li');

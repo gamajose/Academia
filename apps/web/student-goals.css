@@ -8,6 +8,10 @@
   gap: 16px;
 }
 
+.student-goals-panel.is-single-goal {
+  width: min(680px, 100%);
+}
+
 .student-goals-toolbar {
   display: flex;
   align-items: center;
@@ -38,7 +42,7 @@
 
 .student-goal-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 12px;
   list-style: none;
   padding: 0;
@@ -105,11 +109,13 @@
 .student-goal-action {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
+  width: 32px !important;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 !important;
   border: 1px solid #c9dceb;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #fff;
   color: #1478d4;
   cursor: pointer;
