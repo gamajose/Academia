@@ -41,6 +41,8 @@ body.modal-open { overflow: hidden; }
 .employee-form-actions { position: sticky; bottom: -28px; z-index: 3; margin: 4px -28px -28px; padding: 18px 28px 24px; border-top: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
 
 .permissions-modal-card { width: min(1040px, 96vw); display: grid; gap: 18px; max-height: min(88vh, 920px); overflow: auto; }
+.access-profile-form { width: min(900px, 94vw); max-height: min(88vh, 900px); overflow: auto; }
+#access-profile-modal { z-index: 10001; }
 #permissions-manager-modal { z-index: 10000; }
 .permissions-modal-header { position: sticky; top: -28px; z-index: 5; margin: -28px -28px 0; padding: 24px 28px 18px; border-bottom: 1px solid #ebe4da; background: rgba(255,255,255,.98); backdrop-filter: blur(12px); }
 .permissions-modal-toolbar { align-items: flex-start; }

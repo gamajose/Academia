@@ -3,6 +3,8 @@ const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
 const TOKEN = localStorage.getItem('academiaToken') || '';
 const $ = (id) => document.getElementById(id);
 let rows = [];
+let currentPage = 1;
+const pageSize = 10;
 
 async function req(path, options = {}) {
   const response = await fetch(`${API}${path}`, {
@@ -44,7 +46,10 @@ function plainText(html) {
 function render() {
   const list = $('plans-page-list');
   list.innerHTML = '';
-  for (const plan of rows) {
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  currentPage = Math.min(currentPage, pageCount);
+  const pageRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  for (const plan of pageRows) {
     const li = document.createElement('li');
     li.className = 'entity-card';
     li.setAttribute('role', 'button');
@@ -73,6 +78,26 @@ function render() {
     item.textContent = 'Nenhum plano encontrado.';
     list.appendChild(item);
   }
+  renderPagination(pageCount);
+}
+
+function renderPagination(pageCount) {
+  const container = $('plans-pagination');
+  if (!container) return;
+  container.innerHTML = '';
+  if (rows.length <= pageSize) return;
+  const info = document.createElement('span');
+  info.textContent = `Página ${currentPage} de ${pageCount}`;
+  const controls = document.createElement('div');
+  controls.className = 'entity-page-buttons';
+  for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
+    button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
+    button.onclick = () => { currentPage = page; render(); };
+    controls.appendChild(button);
+  }
+  container.append(info, controls);
 }
 
 function durationToUi(days) {
@@ -115,6 +140,7 @@ async function load() {
   try {
     const result = await req('/api/plans/detail');
     rows = result.data || [];
+    currentPage = 1;
     render();
     $('plans-status').textContent = `${rows.length} plano(s) carregado(s).`;
   } catch (error) {

@@ -279,7 +279,7 @@ function renderPermissionInputs(selected = {}) {
 
 function readPermissions() {
   return Object.fromEntries(
-    [...document.querySelectorAll('#permissions-manager-modal [data-permission]')]
+    [...document.querySelectorAll('#access-profile-form [data-permission]')]
       .map((input) => [input.dataset.permission, input.checked])
   );
 }
@@ -374,23 +374,29 @@ async function loadAccessProfiles({ renderManager = false } = {}) {
 
 function openPermissionsEditor(profile = null) {
   const form = get('access-profile-form');
-  if (!form) return;
+  const modal = get('access-profile-modal');
+  if (!form || !modal) return;
   form.classList.remove('hidden');
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
   get('access-profile-id').value = profile?.id || '';
   get('access-profile-name').value = profile?.name || '';
   get('save-access-profile-button').textContent = profile ? 'Salvar alterações' : 'Salvar perfil';
   renderPermissionInputs(profile?.permissions || {});
+  syncModalState();
   requestAnimationFrame(() => get('access-profile-name')?.focus());
 }
 
 function closePermissionsEditor() {
   const form = get('access-profile-form');
   if (!form) return;
-  form.classList.add('hidden');
+  get('access-profile-modal')?.classList.add('hidden');
+  get('access-profile-modal')?.setAttribute('aria-hidden', 'true');
   form.reset();
   get('access-profile-id').value = '';
   get('save-access-profile-button').textContent = 'Salvar perfil';
   renderPermissionInputs();
+  syncModalState();
 }
 
 async function openPermissionsModal() {
@@ -673,15 +679,16 @@ function bindEvents() {
   });
 
   get('manage-permissions-button')?.addEventListener('click', () => void openPermissionsModal());
-  get('new-inline-profile-button')?.addEventListener('click', async () => {
-    await openPermissionsModal();
-    openPermissionsEditor();
-  });
+  get('new-inline-profile-button')?.addEventListener('click', () => void openPermissionsModal());
   get('close-permissions-modal')?.addEventListener('click', closePermissionsModal);
   get('permissions-manager-modal')?.addEventListener('click', (event) => {
     if (event.target === get('permissions-manager-modal')) closePermissionsModal();
   });
   get('new-access-profile-button')?.addEventListener('click', () => openPermissionsEditor());
+  get('close-access-profile-modal')?.addEventListener('click', closePermissionsEditor);
+  get('access-profile-modal')?.addEventListener('click', (event) => {
+    if (event.target === get('access-profile-modal')) closePermissionsEditor();
+  });
   get('cancel-access-profile-button')?.addEventListener('click', closePermissionsEditor);
   get('access-profile-form')?.addEventListener('submit', saveAccessProfile);
 }

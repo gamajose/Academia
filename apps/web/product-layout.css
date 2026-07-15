@@ -111,6 +111,9 @@
 .student-search-wrap { margin-top: 18px; }
 .student-count { display: block; color: var(--muted); font-size: 13px; font-weight: 500; }
 .student-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.entity-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; color: var(--muted); font-size: 13px; }
+.entity-page-buttons { display: flex; align-items: center; gap: 6px; }
+.entity-page-buttons .icon-button { margin: 0; }
 .student-page-size { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .student-page-size select { width: auto; min-width: 54px; height: 30px; padding: 4px 22px 4px 8px; border-radius: 7px; font-size: 12px; }
 .student-page-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -139,6 +142,10 @@
 .workspace-actions .icon-button svg, .toolbar > .icon-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .student-view-identity p { line-height: 1.35; }
 @media (max-width: 620px) { .student-filter-grid { grid-template-columns: 1fr; } .student-filter-actions { flex-direction: column; align-items: stretch; } .student-filter-actions span { margin-left: 0; } .student-pagination { align-items: flex-start; flex-direction: column; } }
+.entity-page-buttons .icon-button { width: 34px; min-width: 34px; height: 34px; padding: 0; }
+.membership-filter-modal-card .membership-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.membership-filter-modal-card .membership-filter-grid .field:first-child { grid-column: 1 / -1; }
+@media (max-width: 620px) { .entity-pagination { align-items: flex-start; flex-direction: column; } .membership-filter-modal-card .membership-filter-grid { grid-template-columns: 1fr; } .membership-filter-modal-card .membership-filter-grid .field:first-child { grid-column: auto; } }
 .student-view-modal-card { width: min(900px, 96vw); }
 .student-view-identity { display: flex; align-items: center; gap: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
 .student-view-avatar { width: 76px; height: 76px; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; border-radius: 50%; background: #eaf3ff; color: var(--accent); font-size: 12px; font-weight: 800; }

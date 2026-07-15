@@ -124,27 +124,38 @@
         <button id="new-access-profile-button" class="icon-button" type="button" aria-label="Novo perfil" title="Novo perfil">+</button>
       </div>
 
-      <form id="access-profile-form" class="access-profile-form hidden">
-        <input id="access-profile-id" type="hidden" />
-        <div class="field profile-name-field">
-          <label for="access-profile-name">Nome do perfil *</label>
-          <input id="access-profile-name" maxlength="60" placeholder="Ex.: Atendimento, Coordenação ou Caixa" required />
-          <small>Esse nome aparecerá no cadastro e no perfil do funcionário.</small>
-        </div>
-        <fieldset class="permissions-fieldset">
-          <legend>Permissões do perfil</legend>
-          <p class="section-help">Marque os módulos que este perfil poderá visualizar e operar.</p>
-          <div id="permissions-grid" class="permissions-grid"><span class="permissions-loading">Carregando módulos...</span></div>
-        </fieldset>
-        <div class="form-actions">
-          <button class="secondary" id="cancel-access-profile-button" type="button">Cancelar</button>
-          <button id="save-access-profile-button" type="submit">Salvar perfil</button>
-        </div>
-      </form>
-
       <div id="access-profile-list" class="access-profile-list"></div>
       <p class="status-line" id="access-profiles-status" aria-live="polite"></p>
     </section>
+  </div>
+
+  <div class="modal hidden" id="access-profile-modal" role="dialog" aria-modal="true" aria-labelledby="access-profile-modal-title" aria-hidden="true">
+    <form id="access-profile-form" class="modal-card access-profile-form">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Permissões</p>
+          <h3 id="access-profile-modal-title">Novo perfil de acesso</h3>
+          <p>Defina exatamente os módulos que este perfil poderá visualizar e operar.</p>
+        </div>
+        <button type="button" id="close-access-profile-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <input id="access-profile-id" type="hidden" />
+      <div class="field profile-name-field">
+        <label for="access-profile-name">Nome do perfil *</label>
+        <input id="access-profile-name" maxlength="60" placeholder="Ex.: Atendimento, Coordenação ou Caixa" required />
+        <small>Esse nome aparecerá no cadastro e no perfil do funcionário.</small>
+      </div>
+      <fieldset class="permissions-fieldset">
+        <legend>Permissões do perfil</legend>
+        <p class="section-help">Marque os módulos que este perfil poderá visualizar e operar.</p>
+        <div id="permissions-grid" class="permissions-grid"><span class="permissions-loading">Carregando módulos...</span></div>
+      </fieldset>
+      <div class="form-actions">
+        <button class="secondary" id="cancel-access-profile-button" type="button">Cancelar</button>
+        <button id="save-access-profile-button" type="submit">Salvar perfil</button>
+      </div>
+      <p class="status-line" id="access-profile-form-status" aria-live="polite"></p>
+    </form>
   </div>
 
   <script src="./nav.js?v=20260712-2310"></script>

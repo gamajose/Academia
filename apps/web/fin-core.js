@@ -4,6 +4,8 @@ const FT = localStorage.getItem('academiaToken') || '';
 const f = (id) => document.getElementById(id);
 let rows = [];
 let financeFilterPlaceholder = null;
+let currentPage = 1;
+const pageSize = 10;
 
 async function rq(path, options = {}) {
   const response = await fetch(`${FAPI}${path}`, {
@@ -96,6 +98,9 @@ function draw() {
   const list = f('financial-list');
   list.innerHTML = '';
   const visibleRows = filterRows();
+  const pageCount = Math.max(1, Math.ceil(visibleRows.length / pageSize));
+  currentPage = Math.min(currentPage, pageCount);
+  const pageRows = visibleRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const totals = visibleRows.reduce((acc, item) => {
     const amount = Number(item.amount_cents || 0);
@@ -117,7 +122,7 @@ function draw() {
   f('pending-count').textContent = totals.pendingCount;
   f('paid-count').textContent = totals.paidCount;
 
-  for (const item of visibleRows) {
+  for (const item of pageRows) {
     const tr = document.createElement('tr');
     tr.className = 'finance-row-action';
     tr.tabIndex = 0;
@@ -145,13 +150,33 @@ function draw() {
   } else if (!visibleRows.length) {
     list.innerHTML = '<tr><td colspan="6">Nenhum lançamento corresponde aos filtros.</td></tr>';
   }
-  f('finance-filter-count').textContent = `${visibleRows.length} de ${rows.length} lançamento(s)`;
+  renderPagination(visibleRows.length, pageCount);
+}
+
+function renderPagination(total, pageCount) {
+  const container = f('finance-pagination');
+  if (!container) return;
+  container.innerHTML = '';
+  if (total <= pageSize) return;
+  const info = document.createElement('span');
+  info.textContent = `Página ${currentPage} de ${pageCount}`;
+  const controls = document.createElement('div');
+  controls.className = 'entity-page-buttons';
+  for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
+    button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
+    button.onclick = () => { currentPage = page; draw(); };
+    controls.appendChild(button);
+  }
+  container.append(info, controls);
 }
 
 async function load() {
   try {
     const result = await rq('/api/reports/finance-advanced');
     rows = result.data || [];
+    currentPage = 1;
     draw();
     f('reports-status').textContent = '';
   } catch (error) {
@@ -259,7 +284,7 @@ f('load-button')?.addEventListener('click', load);
 f('finance-apply-filters')?.addEventListener('click', draw);
 f('finance-clear-filters')?.addEventListener('click', () => {
   ['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => { if (f(id)) f(id).value = ''; });
-  draw();
+  currentPage = 1; draw();
 });
 ['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => f(id)?.addEventListener('change', draw));
 f('finance-filter-member')?.addEventListener('input', draw);

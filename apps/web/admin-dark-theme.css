@@ -323,3 +323,112 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .contact-link.whatsapp-co
     background: #122235 !important;
   }
 }
+
+/* Keep compact controls and modal-only filters consistent after theme overrides. */
+html[data-admin-shell="true"] .panel > .finance-filter-panel,
+html[data-admin-shell="true"] .panel > .assessment-filter-panel,
+html[data-admin-shell="true"] .panel > .membership-filter-panel {
+  display: none !important;
+}
+
+html[data-admin-shell="true"] .icon-button,
+html[data-admin-shell="true"] .toolbar > .icon-button,
+html[data-admin-shell="true"] .toolbar-actions > .icon-button,
+html[data-admin-shell="true"] .compact-toolbar-actions > .icon-button,
+html[data-admin-shell="true"] .workspace-actions > .icon-button,
+html[data-admin-shell="true"] .panel-header-title > .icon-button,
+html[data-admin-shell="true"] .field-label-with-action > .icon-button,
+html[data-admin-shell="true"] .entity-page-buttons > .icon-button {
+  display: inline-grid !important;
+  place-items: center !important;
+  flex: 0 0 36px !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  line-height: 1 !important;
+}
+
+html[data-admin-shell="true"] .icon-button svg,
+html[data-admin-shell="true"] .workspace-actions .icon-button svg,
+html[data-admin-shell="true"] .toolbar > .icon-button svg,
+html[data-admin-shell="true"] .compact-toolbar-actions svg {
+  display: block !important;
+  width: 19px !important;
+  height: 19px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+html[data-admin-shell="true"] .toolbar,
+html[data-admin-shell="true"] .workspace-toolbar,
+html[data-admin-shell="true"] .permissions-modal-toolbar,
+html[data-admin-shell="true"] .panel-header-title {
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+html[data-admin-shell="true"] .toolbar-actions,
+html[data-admin-shell="true"] .compact-toolbar-actions,
+html[data-admin-shell="true"] .workspace-actions {
+  width: auto !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+html[data-admin-shell="true"] .permissions-modal-toolbar > .icon-button {
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  flex: 0 0 36px !important;
+}
+
+html[data-admin-shell="true"] .entity-pagination {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  min-height: 36px !important;
+}
+
+html[data-admin-shell="true"] .entity-page-buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+html[data-admin-shell="true"] .membership-filter-modal-card .membership-filter-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+html[data-admin-shell="true"] .membership-filter-modal-card .membership-filter-grid .field:first-child {
+  grid-column: 1 / -1 !important;
+}
+
+html[data-admin-shell="true"] #access-profile-modal {
+  z-index: 10001 !important;
+}
+
+html[data-admin-shell="true"] #access-profile-modal .access-profile-form {
+  display: grid !important;
+  gap: 18px !important;
+  width: min(900px, 94vw) !important;
+  max-height: min(88vh, 900px) !important;
+  overflow: auto !important;
+  background: #122235 !important;
+}
+
+@media (max-width: 620px) {
+  html[data-admin-shell="true"] .entity-pagination { align-items: flex-start !important; flex-direction: column !important; }
+  html[data-admin-shell="true"] .membership-filter-modal-card .membership-filter-grid { grid-template-columns: 1fr !important; }
+  html[data-admin-shell="true"] .membership-filter-modal-card .membership-filter-grid .field:first-child { grid-column: auto !important; }
+}

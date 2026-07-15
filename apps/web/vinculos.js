@@ -7,6 +7,8 @@ let members = [];
 let plans = [];
 let editingLinkId = '';
 let linkFilterPlaceholder = null;
+let currentPage = 1;
+const pageSize = 10;
 
 async function call(path, options = {}) {
   const response = await fetch(`${VAPI}${path}`, {
@@ -85,7 +87,9 @@ function render() {
       && (!from || startsAt >= from)
       && (!to || endsAt <= to);
   });
-  for (const item of data) {
+  const pageCount = Math.max(1, Math.ceil(data.length / pageSize));
+  currentPage = Math.min(currentPage, pageCount);
+  for (const item of data.slice((currentPage - 1) * pageSize, currentPage * pageSize)) {
     const status = membershipStatus(item);
     const tr = document.createElement('tr');
     tr.className = 'membership-row-action';
@@ -107,7 +111,26 @@ function render() {
     list.appendChild(tr);
   }
   if (!list.children.length) list.innerHTML = '<tr><td colspan="7">Nenhuma matrícula corresponde aos filtros.</td></tr>';
-  v('link-filter-count').textContent = `${data.length} de ${links.length} matrícula(s)`;
+  renderPagination(data.length, pageCount);
+}
+
+function renderPagination(total, pageCount) {
+  const container = v('link-pagination');
+  if (!container) return;
+  container.innerHTML = '';
+  if (total <= pageSize) return;
+  const info = document.createElement('span');
+  info.textContent = `Página ${currentPage} de ${pageCount}`;
+  const controls = document.createElement('div');
+  controls.className = 'entity-page-buttons';
+  for (const [label, page, disabled] of [['‹', currentPage - 1, currentPage === 1], ['›', currentPage + 1, currentPage === pageCount]]) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'icon-button'; button.textContent = label; button.disabled = disabled;
+    button.setAttribute('aria-label', page < currentPage ? 'Página anterior' : 'Próxima página');
+    button.onclick = () => { currentPage = page; render(); };
+    controls.appendChild(button);
+  }
+  container.append(info, controls);
 }
 
 async function load() {
@@ -118,6 +141,7 @@ async function load() {
       call('/api/plans')
     ]);
     links = linkResult.data || [];
+    currentPage = 1;
     members = (memberResult.data || []).filter((m) => m.status === 'active');
     plans = (planResult.data || []).filter((p) => p.is_active);
     opt(v('link-member'), members, (m) => m.name);
@@ -212,7 +236,6 @@ v('link-filter-modal').onclick = (event) => { if (event.target === v('link-filte
 v('close-link-modal').onclick = closeModal;
 v('cancel-link-button').onclick = closeModal;
 v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });
-v('link-search').oninput = render;
-['link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => v(id).addEventListener('change', render));
-v('link-clear-filters').onclick = () => { ['link-search', 'link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => { v(id).value = ''; }); render(); };
+v('link-search').oninput = () => { currentPage = 1; render(); };
+['link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => v(id).addEventListener('change', () => { currentPage = 1; render(); }));
 load();
