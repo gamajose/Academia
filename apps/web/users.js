@@ -246,10 +246,10 @@ function updateProfileHelp() {
   get('user-role').value = profile?.role_key || 'staff';
   get('user-role-preview').textContent = profile
     ? 'As permissões deste funcionário são definidas pelo perfil selecionado.'
-    : 'Cadastre um perfil pelo botão Gerenciar permissões antes de criar o funcionário.';
+    : 'Cadastre um perfil pelo botão Permissões antes de criar o funcionário.';
   get('permission-help').textContent = profile
-    ? `Perfil selecionado: ${profile.name}. Para alterar os módulos, use o botão Gerenciar permissões.`
-    : 'Cadastre um perfil pelo botão Gerenciar permissões antes de criar o funcionário.';
+    ? `Perfil selecionado: ${profile.name}. Para alterar os módulos, use o botão Permissões.`
+    : 'Cadastre um perfil pelo botão Permissões antes de criar o funcionário.';
 }
 
 function renderPermissionInputs(selected = {}) {
@@ -522,7 +522,7 @@ function resetForm() {
   get('user-country').value = 'Brasil';
   setFormStatus('');
   get('employee-form-title').textContent = 'Cadastrar funcionário';
-  get('save-user-button').textContent = 'Cadastrar funcionário';
+  get('save-user-button').textContent = 'Salvar';
   get('user-password').required = true;
   get('user-password-field').querySelector('label').textContent = 'Senha inicial *';
   renderProfileSelect(accessProfiles.find((profile) => profile.is_active)?.slug || '');
@@ -630,7 +630,7 @@ async function saveUser(event) {
     setFormStatus(friendly(error));
   } finally {
     saveButton.disabled = false;
-    saveButton.textContent = isEditing ? 'Salvar alterações' : 'Cadastrar funcionário';
+    saveButton.textContent = isEditing ? 'Salvar alterações' : 'Salvar';
   }
 }
 
@@ -673,6 +673,10 @@ function bindEvents() {
   });
 
   get('manage-permissions-button')?.addEventListener('click', () => void openPermissionsModal());
+  get('new-inline-profile-button')?.addEventListener('click', async () => {
+    await openPermissionsModal();
+    openPermissionsEditor();
+  });
   get('close-permissions-modal')?.addEventListener('click', closePermissionsModal);
   get('permissions-manager-modal')?.addEventListener('click', (event) => {
     if (event.target === get('permissions-manager-modal')) closePermissionsModal();

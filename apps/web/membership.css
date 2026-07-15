@@ -24,6 +24,7 @@
 .membership-status.active { background: #dcfce7; color: #166534; }
 .membership-status.expired { background: #fee2e2; color: #991b1b; }
 .membership-status.cancelled { background: #e5e7eb; color: #4b5563; }
+.membership-filter-modal-card .membership-filter-actions { margin-top: 18px; }
 @media (max-width: 980px) { .membership-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .membership-filter-grid { grid-template-columns: 1fr; } .membership-filter-actions { align-items: stretch; flex-direction: column; } .membership-filter-actions span { margin-left: 0; } }
 

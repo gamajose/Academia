@@ -79,9 +79,9 @@
         <h4>Perfil de acesso</h4>
         <div class="form-grid">
           <input id="user-role" type="hidden" value="staff" />
-          <div class="field"><label for="user-access-profile">Perfil de acesso *</label><select id="user-access-profile" required></select><small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small></div>
+          <div class="field"><div class="field-label-with-action"><label for="user-access-profile">Perfil de acesso *</label><button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Novo perfil de acesso" title="Novo perfil de acesso">+</button></div><select id="user-access-profile" required></select><small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small></div>
         </div>
-        <p class="section-help" id="permission-help">Consulte e edite as permissões pelo botão Gerenciar permissões.</p>
+        <p class="section-help" id="permission-help">Use o botão + para criar um perfil sem sair do cadastro.</p>
       </section>
 
       <section class="form-section">
@@ -101,7 +101,7 @@
       <p class="status-line employee-form-status" id="user-form-status" aria-live="polite"></p>
       <div class="form-actions employee-form-actions">
         <button class="secondary" type="button" id="cancel-user-button">Cancelar</button>
-        <button id="save-user-button" type="submit">Cadastrar funcionário</button>
+        <button id="save-user-button" type="submit">Salvar</button>
       </div>
     </form>
   </div>
@@ -121,7 +121,7 @@
           <h4>Perfis de acesso</h4>
           <p class="section-help">O perfil escolhido no cadastro do funcionário determina o acesso dele.</p>
         </div>
-        <button id="new-access-profile-button" type="button">Novo perfil</button>
+        <button id="new-access-profile-button" class="icon-button" type="button" aria-label="Novo perfil" title="Novo perfil">+</button>
       </div>
 
       <form id="access-profile-form" class="access-profile-form hidden">

@@ -8,7 +8,7 @@
 .alert-summary-card.training strong { color: #1478d4; }
 .alert-summary-card.total strong { color: #172554; }
 .lists-grid { gap: 24px; margin-bottom: 24px; }
-.lists-grid .panel { min-height: 220px; }
+.lists-grid .panel { min-height: 0; }
 .lists-grid .panel > h3 { margin: 0; }
 .lists-grid .panel > ul { display: grid; gap: 9px; list-style: none; padding: 0; margin: 0; }
 .lists-grid .panel > ul > li { padding: 12px 14px; border: 1px solid #e7dfd4; border-radius: 12px; background: #fff; color: #3d4540; }

@@ -13,16 +13,17 @@
   <main class="app-shell">
     <section class="hero">
       <div>
-        <p class="eyebrow">Administração</p>
         <h1>Matrículas</h1>
-        <p>Gerencie o vínculo entre aluno e plano, validade, status e cancelamentos.</p>
       </div>
     </section>
 
     <section class="panel">
       <div class="toolbar">
-        <div><h2>Lista de matrículas</h2><small>Consulte plano, situação, contratação e vencimento.</small></div>
-        <button id="new-link-button">Nova matrícula</button>
+        <div><h2>Lista de matrículas</h2></div>
+        <div class="toolbar-actions compact-toolbar-actions">
+          <button id="new-link-button" class="icon-button" type="button" aria-label="Nova matrícula" title="Nova matrícula">+</button>
+          <button id="link-filter-toggle" class="icon-button" type="button" aria-label="Pesquisar matrículas" title="Pesquisar matrículas"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
+        </div>
       </div>
       <div class="membership-filter-panel">
         <div class="membership-filter-grid">
@@ -38,6 +39,13 @@
       <div class="table-wrap"><table class="membership-table"><thead><tr><th>Aluno</th><th>Plano</th><th>Valor</th><th>Situação</th><th>Contratação</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="link-list"></tbody></table></div>
     </section>
   </main>
+
+  <div class="modal hidden" id="link-filter-modal" role="dialog" aria-modal="true" aria-labelledby="link-filter-title">
+    <div class="modal-card membership-filter-modal-card">
+      <div class="toolbar"><h3 id="link-filter-title">Pesquisar matrículas</h3><button class="secondary modal-close" id="close-link-filter-modal" type="button" aria-label="Fechar" title="Fechar">×</button></div>
+      <div id="link-filter-modal-body"></div>
+    </div>
+  </div>
 
   <div class="modal hidden" id="link-modal" role="dialog" aria-modal="true" aria-labelledby="link-modal-title">
     <form class="modal-card membership-modal-card" id="link-form">

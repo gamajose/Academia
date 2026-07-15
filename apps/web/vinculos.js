@@ -6,6 +6,7 @@ let links = [];
 let members = [];
 let plans = [];
 let editingLinkId = '';
+let linkFilterPlaceholder = null;
 
 async function call(path, options = {}) {
   const response = await fetch(`${VAPI}${path}`, {
@@ -180,7 +181,34 @@ async function cancelLink(item) {
   await load();
 }
 
+function openLinkFilters() {
+  const panel = document.querySelector('.membership-filter-panel');
+  const body = v('link-filter-modal-body');
+  const modal = v('link-filter-modal');
+  if (!panel || !body || !modal) return;
+  linkFilterPlaceholder = document.createComment('link-filter-placeholder');
+  panel.parentElement.insertBefore(linkFilterPlaceholder, panel);
+  body.appendChild(panel);
+  modal.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+  setTimeout(() => v('link-search')?.focus(), 40);
+}
+
+function closeLinkFilters() {
+  const panel = document.querySelector('#link-filter-modal .membership-filter-panel');
+  if (panel && linkFilterPlaceholder?.parentElement) {
+    linkFilterPlaceholder.parentElement.insertBefore(panel, linkFilterPlaceholder.nextSibling);
+  }
+  linkFilterPlaceholder?.remove();
+  linkFilterPlaceholder = null;
+  v('link-filter-modal')?.classList.add('hidden');
+  if (v('link-modal')?.classList.contains('hidden')) document.body.classList.remove('modal-open');
+}
+
 v('new-link-button').onclick = openModal;
+v('link-filter-toggle').onclick = openLinkFilters;
+v('close-link-filter-modal').onclick = closeLinkFilters;
+v('link-filter-modal').onclick = (event) => { if (event.target === v('link-filter-modal')) closeLinkFilters(); };
 v('close-link-modal').onclick = closeModal;
 v('cancel-link-button').onclick = closeModal;
 v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });

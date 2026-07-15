@@ -4,6 +4,8 @@ const STOKEN = localStorage.getItem('academiaToken') || '';
 const s = (id) => document.getElementById(id);
 let rows = [];
 let signupRefreshTimer = null;
+let currentPage = 1;
+let pageSize = 10;
 
 async function call(path, options = {}) {
   const response = await fetch(`${SAPI}${path}`, {
@@ -49,14 +51,18 @@ function render() {
   const list = s('signup-list');
   const term = (s('signup-search').value || '').toLowerCase();
   list.innerHTML = '';
-  const pendingRows = rows.filter((item) => item.status === 'pending' && item.payment_status !== 'failed');
-  const filtered = pendingRows.filter((item) => `${item.name} ${item.plan_name || ''} ${item.status} ${item.enrollment_code || ''}`.toLowerCase().includes(term));
+  const filtered = rows.filter((item) => `${item.name} ${item.plan_name || ''} ${item.status} ${item.payment_status || ''} ${item.enrollment_code || ''}`.toLowerCase().includes(term));
   s('signup-count').textContent = `${filtered.length}`;
-  for (const item of filtered) {
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  currentPage = Math.min(currentPage, totalPages);
+  const visibleRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  for (const item of visibleRows) {
     const li = document.createElement('li');
     li.className = 'signup-card';
     const emailStatus = item.email ? (item.email_confirmed_at ? 'E-mail confirmado' : 'Aguardando e-mail') : 'Sem e-mail';
-    const paymentStatus = item.payment_status === 'paid' ? 'Pagamento confirmado' : 'Pagamento pendente';
+    const paymentStatus = item.payment_status === 'paid'
+      ? 'Pagamento confirmado'
+      : item.payment_status === 'failed' ? 'Pagamento falhou' : 'Pagamento pendente';
     const content = document.createElement('div');
     content.className = 'signup-card-content';
     const title = document.createElement('strong');
@@ -68,13 +74,13 @@ function render() {
     meta.textContent = `${statusLabel} · ${emailStatus} · Solicitação recebida em ${dateTime(item.created_at)} · Código ${item.enrollment_code || '-'}`;
     content.append(title, details, meta);
     const paymentTag = document.createElement('span');
-    paymentTag.className = `signup-payment-tag ${item.payment_status === 'paid' ? 'paid' : 'pending'}`;
+    paymentTag.className = `signup-payment-tag ${item.payment_status === 'paid' ? 'paid' : item.payment_status === 'failed' ? 'failed' : 'pending'}`;
     paymentTag.textContent = paymentStatus;
     content.appendChild(paymentTag);
     const actions = document.createElement('div');
     actions.className = 'signup-card-actions';
     actions.appendChild(button('Ver código/QR', () => showQr(item), item.status !== 'confirmed'));
-    if (item.status !== 'confirmed' && item.status !== 'cancelled') actions.appendChild(button('Negar', () => deny(item)));
+    if (item.status === 'pending') actions.appendChild(button('Negar', () => deny(item)));
     li.append(content, actions);
     list.appendChild(li);
   }
@@ -83,12 +89,49 @@ function render() {
     li.textContent = 'Nenhuma solicitação encontrada.';
     list.appendChild(li);
   }
+  renderPagination(filtered.length, totalPages);
+}
+
+function renderPagination(total, totalPages) {
+  const container = s('signup-pagination');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!total) return;
+
+  const size = document.createElement('label');
+  size.className = 'signup-page-size';
+  size.append('Por página');
+  const select = document.createElement('select');
+  for (const optionValue of [10, 25, 50, 100]) {
+    const option = document.createElement('option');
+    option.value = optionValue;
+    option.textContent = optionValue;
+    option.selected = optionValue === pageSize;
+    select.appendChild(option);
+  }
+  select.addEventListener('change', () => {
+    pageSize = Number(select.value) || 10;
+    currentPage = 1;
+    render();
+  });
+  size.appendChild(select);
+
+  const pages = document.createElement('div');
+  pages.className = 'signup-page-buttons';
+  for (let page = 1; page <= totalPages; page += 1) {
+    const pageButton = button(String(page), () => { currentPage = page; render(); });
+    pageButton.classList.toggle('current', page === currentPage);
+    pageButton.setAttribute('aria-label', `Página ${page}`);
+    pages.appendChild(pageButton);
+  }
+  container.append(size, pages);
 }
 
 async function load() {
   try {
     const result = await call('/api/signups');
     rows = result.data || [];
+    currentPage = Math.min(currentPage, Math.max(1, Math.ceil(rows.length / pageSize)));
     render();
     s('signup-status').textContent = '';
   } catch (error) {
@@ -129,7 +172,7 @@ s('signup-search-toggle').onclick = () => {
   const isHidden = wrap.classList.toggle('hidden');
   if (!isHidden) s('signup-search').focus();
 };
-s('signup-search').oninput = render;
+s('signup-search').oninput = () => { currentPage = 1; render(); };
 s('check-code-button').onclick = checkCode;
 s('close-qr-modal').onclick = closeQr;
 load();

@@ -13,19 +13,17 @@
   <main class="app-shell">
     <section class="hero">
       <div>
-        <p class="eyebrow">Controle de entrada</p>
         <h1>Acesso e catraca</h1>
-        <p>Consulte o status financeiro do aluno e gere a credencial que será lida na catraca.</p>
       </div>
     </section>
 
     <section class="panel access-overview-panel">
-      <div class="access-overview-copy"><h2>Credenciais dos alunos</h2><p>O QR Code é temporário e se renova automaticamente. A matrícula e o PIN continuam disponíveis para uso offline.</p></div>
+      <div class="access-overview-copy"><h2>Credenciais dos alunos</h2></div>
       <div class="access-metrics"><article><span>Alunos cadastrados</span><strong id="access-member-count">0</strong></article><article><span>Entradas recentes</span><strong id="access-decision-count">0</strong></article><article><span>Última atualização</span><strong id="access-last-update">--:--</strong></article></div>
     </section>
 
     <section class="panel access-members-panel">
-      <div class="toolbar"><div><h2>Alunos</h2><p>Selecione um aluno para ver o QR Code, o código temporário e a matrícula offline.</p></div><button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar alunos" title="Pesquisar alunos"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
+      <div class="toolbar"><div><h2>Alunos</h2></div><button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar alunos" title="Pesquisar alunos"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
       <div class="access-member-filters"><input id="access-member-search" type="search" placeholder="Buscar aluno por nome, e-mail ou telefone" /><select id="access-member-filter" aria-label="Filtrar acesso"><option value="">Todos os alunos</option><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="blocked">Acesso bloqueado</option><option value="pending">Acesso pendente</option></select></div>
       <p class="status-line" id="access-status" aria-live="polite"></p>
       <ul class="access-member-list" id="access-member-list"></ul>
