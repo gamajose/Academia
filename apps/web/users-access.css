@@ -27,7 +27,20 @@ body.modal-open { overflow: hidden; }
 .employee-list-panel table th { color: #5b625e; border-bottom: 1px solid var(--line); }
 .employee-list-panel table td { color: var(--text); border-bottom: 1px solid #ebe4da; vertical-align: middle; }
 .employee-list-panel table td:first-child { color: var(--text); }
-.employee-row-actions { white-space: nowrap; }
+.employee-row-actions {
+  white-space: nowrap;
+  vertical-align: middle !important;
+}
+
+.employee-row-actions .icon-button {
+  display: inline-grid;
+  place-items: center;
+  margin: 0 0 0 8px;
+}
+
+.employee-row-actions .icon-button:first-child {
+  margin-left: 0;
+}
 .employee-empty-row { padding: 28px 12px !important; text-align: center !important; color: var(--muted) !important; font-weight: 700 !important; }
 .last-seen-cell { white-space: nowrap; color: var(--muted) !important; font-size: 13px; }
 .status-column, .status-cell { width: 76px; text-align: center !important; }
