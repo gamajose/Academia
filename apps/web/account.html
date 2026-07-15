@@ -14,6 +14,11 @@
       <p class="eyebrow">Perfil</p>
       <h1>Meu perfil</h1>
       <p>Atualize seus dados pessoais e veja o nível de acesso definido para sua função.</p>
+      <nav class="account-tabs" aria-label="Seções da conta">
+        <a class="account-tab active" href="./account.html">Perfil</a>
+        <a class="account-tab" href="./security.html">Segurança</a>
+        <button class="account-tab" id="open-preferences-button" type="button">Preferências</button>
+      </nav>
     </section>
 
     <section class="grid profile-page-grid">
@@ -62,19 +67,34 @@
           <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
           <div class="form-actions"><button id="save-gym-button" type="button">Salvar dados da academia</button></div>
         </section>
-        <section class="panel profile-preferences-card">
-          <div><h3>Preferências</h3><small>Personalize a interface da sua conta administrativa.</small></div>
-          <div class="profile-preferences-grid">
-            <div class="field"><label for="profile-language">Idioma</label><select id="profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
-            <div class="field"><label for="profile-theme">Tema</label><select id="profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div>
-            <div class="field"><label for="profile-accent">Cor de destaque</label><select id="profile-accent"><option value="blue">Azul</option><option value="cyan">Ciano</option><option value="violet">Violeta</option><option value="green">Verde</option></select></div>
-          </div>
-          <div class="form-actions"><button id="save-preferences-button" type="button">Salvar preferências</button></div>
-          <p class="status-line" id="preferences-status"></p>
-        </section>
       </div>
     </section>
   </main>
+  <div class="modal hidden" id="preferences-modal" role="dialog" aria-modal="true" aria-labelledby="preferences-title">
+    <div class="modal-card preferences-modal-card">
+      <div class="modal-header">
+        <div><h3 id="preferences-title">Preferências</h3><p>Escolha como o sistema aparece para você.</p></div>
+        <button class="modal-close" id="close-preferences-button" type="button" aria-label="Fechar">×</button>
+      </div>
+      <div class="preferences-modal-grid">
+        <div class="field"><label for="profile-language">Idioma</label><select id="profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
+        <div class="field"><label for="profile-theme">Tema</label><select id="profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div>
+      </div>
+      <fieldset class="accent-picker">
+        <legend>Cor de destaque</legend>
+        <div class="accent-options" role="radiogroup" aria-label="Escolha a cor de destaque">
+          <label class="accent-option"><input type="radio" name="profile-accent" value="blue"><span class="accent-swatch accent-blue"></span><span>Azul</span></label>
+          <label class="accent-option"><input type="radio" name="profile-accent" value="cyan"><span class="accent-swatch accent-cyan"></span><span>Ciano</span></label>
+          <label class="accent-option"><input type="radio" name="profile-accent" value="violet"><span class="accent-swatch accent-violet"></span><span>Violeta</span></label>
+          <label class="accent-option"><input type="radio" name="profile-accent" value="green"><span class="accent-swatch accent-green"></span><span>Verde</span></label>
+          <label class="accent-option"><input type="radio" name="profile-accent" value="orange"><span class="accent-swatch accent-orange"></span><span>Laranja</span></label>
+          <label class="accent-option"><input type="radio" name="profile-accent" value="rose"><span class="accent-swatch accent-rose"></span><span>Rosa</span></label>
+        </div>
+      </fieldset>
+      <div class="form-actions preferences-modal-actions"><button class="secondary" id="cancel-preferences-button" type="button">Cancelar</button><button id="save-preferences-button" type="button">Salvar preferências</button></div>
+      <p class="status-line" id="preferences-status"></p>
+    </div>
+  </div>
   <script src="./nav.js"></script>
   <script src="./account.js"></script>
 </body>

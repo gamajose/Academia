@@ -34,7 +34,22 @@ function renderProfilePhoto(url, name) {
 function renderPreferences(preferences = {}) {
   fill('profile-language', preferences.language || localStorage.getItem('adminLanguage') || 'pt-BR');
   fill('profile-theme', preferences.theme || localStorage.getItem('adminTheme') || 'light');
-  fill('profile-accent', preferences.accent || localStorage.getItem('adminAccent') || 'blue');
+  const accent = preferences.accent || localStorage.getItem('adminAccent') || 'blue';
+  const accentInput = document.querySelector(`input[name="profile-accent"][value="${accent}"]`);
+  if (accentInput) accentInput.checked = true;
+}
+
+function selectedAccent() {
+  return document.querySelector('input[name="profile-accent"]:checked')?.value || 'blue';
+}
+
+function previewPreferences() {
+  if (typeof applyAdminPreferences !== 'function') return;
+  applyAdminPreferences({
+    language: value('profile-language'),
+    theme: value('profile-theme'),
+    accent: selectedAccent()
+  });
 }
 
 function roleText(profile, role) {
@@ -114,13 +129,15 @@ async function saveProfile(event) {
 async function savePreferences() {
   const status = account('preferences-status');
   try {
-    const preferences = { language: value('profile-language'), theme: value('profile-theme'), accent: value('profile-accent') };
+    const preferences = { language: value('profile-language'), theme: value('profile-theme'), accent: selectedAccent() };
     await accountApi('/api/me/preferences', { method: 'POST', body: JSON.stringify(preferences) });
     localStorage.setItem('adminLanguage', preferences.language);
     localStorage.setItem('adminTheme', preferences.theme);
     localStorage.setItem('adminAccent', preferences.accent);
     if (typeof applyAdminPreferences === 'function') applyAdminPreferences(preferences);
     status.textContent = 'Preferências salvas.';
+    setAccountStatus('Preferências salvas.');
+    closePreferences();
   } catch (error) { status.textContent = `Erro ao salvar preferências: ${error.message}`; }
 }
 
@@ -134,6 +151,25 @@ async function saveGym() {
 account('profile-form').addEventListener('submit', saveProfile);
 account('save-gym-button').addEventListener('click', saveGym);
 account('save-preferences-button').addEventListener('click', savePreferences);
+account('open-preferences-button').addEventListener('click', () => {
+  const modal = account('preferences-modal');
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  account('profile-language').focus();
+});
+function closePreferences() {
+  const modal = account('preferences-modal');
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+}
+account('close-preferences-button').addEventListener('click', closePreferences);
+account('cancel-preferences-button').addEventListener('click', closePreferences);
+account('preferences-modal').addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) closePreferences();
+});
+account('profile-language').addEventListener('change', previewPreferences);
+account('profile-theme').addEventListener('change', previewPreferences);
+document.querySelectorAll('input[name="profile-accent"]').forEach((input) => input.addEventListener('change', previewPreferences));
 account('profile-photo-button').addEventListener('click', () => account('profile-photo-file').click());
 account('profile-photo-file').addEventListener('change', (event) => {
   const file = event.target.files?.[0];

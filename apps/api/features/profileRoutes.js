@@ -18,7 +18,7 @@ function profileData(row) {
 function profilePreferences(input = {}) {
   const allowedLanguages = ['pt-BR', 'en', 'es'];
   const allowedThemes = ['light', 'dark', 'system'];
-  const allowedAccents = ['blue', 'cyan', 'violet', 'green'];
+  const allowedAccents = ['blue', 'cyan', 'violet', 'green', 'orange', 'rose'];
   return {
     language: allowedLanguages.includes(String(input.language)) ? String(input.language) : 'pt-BR',
     theme: allowedThemes.includes(String(input.theme)) ? String(input.theme) : 'light',
