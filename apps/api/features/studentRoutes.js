@@ -176,7 +176,7 @@ async function studentCustomDetail(query, user, customPlan) {
             COALESCE(el.muscle_group_secondary, pe.muscle_group_secondary) AS muscle_group_secondary,
             COALESCE(el.equipment, pe.equipment) AS equipment,
             COALESCE(el.video_url, pe.video_url) AS video_url,
-            pe.image_url AS image_url,
+            COALESCE(el.image_url, pe.image_url) AS image_url,
             COALESCE(el.instructions, pe.instructions) AS instructions,
             (swe.private_exercise_id IS NOT NULL) AS is_private
      FROM student_workout_exercises swe
@@ -213,7 +213,7 @@ async function studentCalendarDetail(query, user, month) {
             el.muscle_group_primary, el.muscle_group_secondary,
             COALESCE(el.equipment, pe.equipment) AS equipment,
             COALESCE(el.video_url, pe.video_url) AS video_url,
-            pe.image_url AS image_url,
+            COALESCE(el.image_url, pe.image_url) AS image_url,
             COALESCE(el.instructions, pe.instructions) AS instructions,
             (ste.private_exercise_id IS NOT NULL) AS is_private
      FROM student_training_event_exercises ste
@@ -713,7 +713,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/catalog') {
     const [publicExercises, privateExercises] = await Promise.all([
       query(
-        `SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url
+        `SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, image_url
          FROM exercise_library WHERE gym_id = $1 AND is_active = true
          ORDER BY muscle_group_primary NULLS LAST, muscle_group, name`,
         [user.gym_id]
@@ -1122,7 +1122,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     );
     if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
     const exercises = await query(
-      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.name AS exercise_name, e.muscle_group, e.muscle_group_primary, e.muscle_group_secondary, e.equipment, e.video_url, e.instructions
+      `SELECT we.id, we.sets, we.reps, we.rest_seconds, we.load_hint, we.notes, wd.id AS workout_day_id, wd.weekday, wd.title AS day_title, e.name AS exercise_name, e.muscle_group, e.muscle_group_primary, e.muscle_group_secondary, e.equipment, e.video_url, e.image_url, e.instructions
        FROM workout_exercises we
        INNER JOIN workout_days wd ON wd.id = we.workout_day_id
        INNER JOIN exercise_library e ON e.id = we.exercise_id

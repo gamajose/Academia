@@ -66,6 +66,19 @@ function planDisplayName(plan) {
   return plan.name && plan.name !== plan.member_name ? `${plan.member_name} - ${plan.name}` : plan.member_name;
 }
 
+function appendExerciseImage(container, url, alt = 'Demonstração do exercício') {
+  if (!container || !url) return false;
+  const image = document.createElement('img');
+  image.className = 'exercise-image-preview';
+  image.alt = alt;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  image.src = url;
+  image.addEventListener('error', () => image.remove(), { once: true });
+  container.appendChild(image);
+  return true;
+}
+
 const defaultTrainingLevels = [
   { slug: 'frango', name: 'Frango', is_active: true },
   { slug: 'intermediario', name: 'Intermediario', is_active: true },
@@ -223,6 +236,11 @@ function renderAll() {
       const thumbnailVideo = media.querySelector('video');
       if (thumbnailVideo) thumbnailVideo.controls = false;
       row.appendChild(media);
+    } else if (item.image_url) {
+      const media = document.createElement('div');
+      media.className = 'video-preview-slot';
+      appendExerciseImage(media, item.image_url, `Demonstração de ${item.name}`);
+      row.appendChild(media);
     }
     if (canManageTrainingLevels()) {
       const actions = document.createElement('div');
@@ -344,10 +362,12 @@ function openExerciseDetails(item) {
   media.replaceChildren();
   if (item.video_url && window.AcademiaTrainingMedia) {
     window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
+  } else if (item.image_url) {
+    appendExerciseImage(media, item.image_url, `Demonstração de ${item.name}`);
   } else {
     const empty = document.createElement('span');
     empty.className = 'exercise-view-media-empty';
-    empty.textContent = 'Nenhum vídeo cadastrado para este exercício.';
+    empty.textContent = 'Nenhuma demonstração cadastrada para este exercício.';
     media.appendChild(empty);
   }
   openTrainingModal('exercise-view-modal');
@@ -390,6 +410,7 @@ async function toggleExercise(item, button) {
           level: item.level,
           instructions: item.instructions || '',
           video_url: item.video_url || '',
+          image_url: item.image_url || '',
           is_active: true
         })
       });
@@ -561,6 +582,7 @@ async function createExercise() {
       level: t('exercise-level').value,
       instructions: t('exercise-instructions').value.trim(),
       video_url: videoUrl || null,
+      image_url: editingExerciseId ? (exercises.find((exercise) => exercise.id === editingExerciseId)?.image_url || '') : '',
       is_active: t('exercise-active').checked
     };
     const path = editingExerciseId ? '/api/training/exercises/update' : '/api/training/exercises';

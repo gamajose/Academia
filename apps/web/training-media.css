@@ -39,6 +39,7 @@
 .entity-main span { color: var(--muted, #68716b); font-size: 13px; }
 .entity-card .video-preview-slot { flex: 0 0 84px; width: 84px; height: 84px; display: block; margin: 0; overflow: hidden; border: 1px solid var(--line, #d7e3ef); border-radius: 10px; background: #101814; }
 .entity-card .video-preview-slot .exercise-video-preview, .entity-card .video-preview-slot .exercise-gif-preview, .entity-card .video-preview-slot .exercise-youtube-preview { width: 100%; height: 100%; min-height: 0; max-height: none; aspect-ratio: 1; object-fit: cover; border-radius: 0; }
+.entity-card .video-preview-slot .exercise-image-preview { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 0; }
 .entity-actions { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
 .entity-actions .mini-button { margin: 0; }
 .entity-actions .action-icon-button { width: 34px; min-width: 34px; height: 34px; margin: 0; padding: 0; }
@@ -70,6 +71,7 @@
 .exercise-view-layout { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1fr); gap: 22px; }
 .exercise-view-media { min-height: 250px; display: grid; place-items: center; padding: 12px; border: 1px solid var(--line, #e0d8cc); border-radius: 14px; background: #101814; }
 .exercise-view-media .exercise-video-preview, .exercise-view-media .exercise-gif-preview { width: 100%; max-height: 360px; }
+.exercise-view-media .exercise-image-preview { display: block; width: 100%; max-height: 360px; object-fit: contain; border-radius: 12px; }
 .exercise-view-media .mini-button { margin: 0; background: #fff; color: #171717; }
 .exercise-view-media-empty { color: #d7e4df; font-size: 13px; text-align: center; }
 .exercise-view-copy { display: grid; gap: 18px; align-content: start; }

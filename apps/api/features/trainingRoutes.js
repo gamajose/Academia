@@ -181,7 +181,7 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
   }
 
   if (req.method === 'GET' && url.pathname === '/api/training/exercises') {
-    const result = await query('SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active, created_at FROM exercise_library WHERE gym_id = $1 ORDER BY muscle_group_primary NULLS LAST, muscle_group, name', [user.gym_id]);
+    const result = await query('SELECT id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, image_url, is_active, created_at FROM exercise_library WHERE gym_id = $1 ORDER BY muscle_group_primary NULLS LAST, muscle_group, name', [user.gym_id]);
     return send(res, 200, { data: result.rows });
   }
 
@@ -194,7 +194,9 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     const videoUrl = String(input.video_url || '').trim();
     if (videoUrl.length > 1000 || !validVideoSource(videoUrl)) return send(res, 400, { error: 'video_invalido' });
     const level = await resolveTrainingLevel(query, user.gym_id, input.level);
-    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url) VALUES ($1, $2, $3, $3, $4, $5, $6, $7, $8) RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active', [user.gym_id, input.name, primaryMuscle, secondaryMuscle || null, input.equipment || null, level, input.instructions || null, videoUrl || null]);
+    const imageUrl = String(input.image_url || '').trim();
+    if (imageUrl.length > 1000) return send(res, 400, { error: 'imagem_invalida' });
+    const result = await query('INSERT INTO exercise_library (gym_id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, image_url) VALUES ($1, $2, $3, $3, $4, $5, $6, $7, $8, NULLIF($9, \'\')) RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, image_url, is_active', [user.gym_id, input.name, primaryMuscle, secondaryMuscle || null, input.equipment || null, level, input.instructions || null, videoUrl || null, imageUrl]);
     await recordAudit(user, 'create', 'exercise', result.rows[0].id, { name: result.rows[0].name });
     return send(res, 201, result.rows[0]);
   }
@@ -212,11 +214,11 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
     const result = await query(
       `UPDATE exercise_library
        SET name = $3, muscle_group = $4, muscle_group_primary = $4, muscle_group_secondary = NULLIF($5, ''),
-           equipment = NULLIF($6, ''), level = $7, instructions = NULLIF($8, ''), video_url = NULLIF($9, ''),
-           is_active = $10
+           equipment = NULLIF($6, ''), level = $7, instructions = NULLIF($8, ''), video_url = NULLIF($9, ''), image_url = COALESCE(NULLIF($10, ''), image_url),
+           is_active = $11
        WHERE id = $1 AND gym_id = $2
-       RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, is_active`,
-      [input.id, user.gym_id, name, primaryMuscle, secondaryMuscle, String(input.equipment || '').trim(), level, String(input.instructions || '').trim(), videoUrl, input.is_active !== false]
+       RETURNING id, name, muscle_group, muscle_group_primary, muscle_group_secondary, equipment, level, instructions, video_url, image_url, is_active`,
+      [input.id, user.gym_id, name, primaryMuscle, secondaryMuscle, String(input.equipment || '').trim(), level, String(input.instructions || '').trim(), videoUrl, String(input.image_url || '').trim(), input.is_active !== false]
     );
     if (!result.rowCount) return send(res, 404, { error: 'exercicio_nao_encontrado' });
     await recordAudit(user, 'update', 'exercise', result.rows[0].id, { name: result.rows[0].name, is_active: result.rows[0].is_active });
