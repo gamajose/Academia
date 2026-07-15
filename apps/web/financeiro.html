@@ -11,7 +11,7 @@
 <body>
   <main class="app-shell">
     <section class="hero">
-      <div><p class="eyebrow">Administração</p><h1>Financeiro</h1><p>Dashboard de recebimentos, pendências, atrasos e ações vinculadas ao aluno.</p></div>
+      <div><h1>Financeiro</h1></div>
     </section>
     <section class="cards finance-summary">
       <article class="finance-pending"><span>Pendente</span><strong id="pending-amount">R$ 0,00</strong></article>
@@ -21,7 +21,7 @@
       <article class="finance-paid-count"><span>Pagos</span><strong id="paid-count">0</strong></article>
     </section>
     <section class="panel">
-      <div class="toolbar"><h2>Lançamentos financeiros</h2></div>
+      <div class="toolbar"><h2>Lançamentos financeiros</h2><button class="icon-button" id="finance-filter-toggle" type="button" aria-label="Pesquisar lançamentos" title="Pesquisar lançamentos"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
       <div class="finance-filter-panel">
         <div class="finance-filter-grid">
           <div class="field"><label for="finance-filter-member">Aluno</label><input id="finance-filter-member" type="search" placeholder="Nome, e-mail ou telefone" /></div>
@@ -32,9 +32,9 @@
           <div class="field"><label for="finance-filter-from">Vencimento a partir de</label><input id="finance-filter-from" type="date" /></div>
           <div class="field"><label for="finance-filter-to">Vencimento até</label><input id="finance-filter-to" type="date" /></div>
         </div>
-        <div class="finance-filter-actions"><button class="secondary" id="finance-clear-filters" type="button">Limpar filtros</button><button id="finance-apply-filters" type="button">Filtrar</button><span id="finance-filter-count" aria-live="polite"></span><button class="secondary" id="finance-download-csv" type="button">Baixar CSV</button><button class="secondary" id="finance-download-pdf" type="button">Baixar PDF</button></div>
+        <div class="finance-filter-actions"><button class="secondary" id="finance-clear-filters" type="button">Limpar filtros</button><button id="finance-apply-filters" type="button">Filtrar</button><span id="finance-filter-count" aria-live="polite"></span><button class="secondary export-icon-button" id="finance-download-csv" type="button" data-filetype="CSV" aria-label="Baixar CSV" title="Baixar CSV"></button><button class="secondary export-icon-button" id="finance-download-pdf" type="button" data-filetype="PDF" aria-label="Baixar PDF" title="Baixar PDF"></button></div>
       </div>
-      <p class="status-line" id="reports-status">Carregando...</p>
+      <p class="status-line" id="reports-status" aria-live="polite"></p>
       <div class="table-wrap"><table class="finance-table"><thead><tr><th>Aluno</th><th>Valor</th><th>Status</th><th>Vencimento / recebimento</th><th>Forma de pagamento</th><th>Ações</th></tr></thead><tbody id="financial-list"></tbody></table></div>
     </section>
   </main>
@@ -49,6 +49,13 @@
       </div>
       <div class="field"><label for="finance-notes">Observações</label><textarea id="finance-notes" placeholder="Ex.: pagamento confirmado na recepção."></textarea></div>
       <button id="finance-adjust-button">Aplicar ajuste</button>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="finance-filter-modal" role="dialog" aria-modal="true" aria-labelledby="finance-filter-title">
+    <div class="modal-card finance-filter-modal-card">
+      <div class="toolbar"><h3 id="finance-filter-title">Pesquisar lançamentos</h3><button class="secondary modal-close" id="close-finance-filter-modal" type="button" aria-label="Fechar" title="Fechar">×</button></div>
+      <div id="finance-filter-modal-body"></div>
     </div>
   </div>
 

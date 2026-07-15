@@ -110,10 +110,26 @@
 .student-toolbar-actions .icon-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .student-search-wrap { margin-top: 18px; }
 .student-count { display: block; color: var(--muted); font-size: 13px; font-weight: 500; }
+.student-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.student-page-size { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.student-page-size select { width: auto; min-width: 72px; padding: 8px 28px 8px 10px; }
+.student-page-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.student-page-buttons .mini-button { min-width: 34px; margin: 0; padding: 7px 9px; }
+.student-page-buttons .mini-button.current { border-color: var(--accent); background: var(--accent); color: #fff; }
 .student-card-tags { display: flex !important; align-items: center; gap: 7px; flex-wrap: wrap; }
 .student-card-tags .badge, .student-card-tags .student-info-chip { font-weight: 500 !important; }
+.finance-filter-modal-card { max-width: 760px; }
+.finance-filter-modal-card .finance-filter-panel, .assessment-filter-modal-card .assessment-filter-panel { display: grid; margin: 0; padding: 0; border: 0; background: transparent; }
+.finance-filter-modal-card .finance-filter-actions, .assessment-filter-modal-card .assessment-filter-actions { margin-top: 18px; }
+.panel > .finance-filter-panel { display: none; }
+.panel > .assessment-filter-panel { display: none; }
+.assessment-filter-modal-card { max-width: 680px; }
+.panel-header-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panel-header-title h3 { margin: 0; }
+.panel-header-title .icon-button { margin-left: auto; }
+.workspace-actions .icon-button svg, .toolbar > .icon-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .student-view-identity p { line-height: 1.35; }
-@media (max-width: 620px) { .student-filter-grid { grid-template-columns: 1fr; } .student-filter-actions { flex-direction: column; align-items: stretch; } .student-filter-actions span { margin-left: 0; } }
+@media (max-width: 620px) { .student-filter-grid { grid-template-columns: 1fr; } .student-filter-actions { flex-direction: column; align-items: stretch; } .student-filter-actions span { margin-left: 0; } .student-pagination { align-items: flex-start; flex-direction: column; } }
 .student-view-modal-card { width: min(900px, 96vw); }
 .student-view-identity { display: flex; align-items: center; gap: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
 .student-view-avatar { width: 76px; height: 76px; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; border-radius: 50%; background: #eaf3ff; color: var(--accent); font-size: 12px; font-weight: 800; }

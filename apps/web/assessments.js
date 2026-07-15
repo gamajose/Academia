@@ -10,6 +10,7 @@ let lastAssessmentsSignature = '';
 let lastGoalsSignature = '';
 let currentAssessments = [];
 let currentGoals = [];
+let assessmentFilterPlaceholder = null;
 let editingAssessmentId = '';
 let editingGoalId = '';
 let preservedAssessmentPhoto = '';
@@ -631,6 +632,24 @@ function bindAssessmentEvents() {
   q('open-assessment-modal')?.addEventListener('click', openAssessmentModal);
   q('open-goal-modal')?.addEventListener('click', openGoalModal);
   q('open-summary-modal')?.addEventListener('click', openSummaryModal);
+  q('assessment-filter-toggle')?.addEventListener('click', () => {
+    const panel = document.querySelector('.assessment-filter-panel');
+    const body = q('assessment-filter-modal-body');
+    if (!panel || !body) return;
+    assessmentFilterPlaceholder = document.createComment('assessment-filter-placeholder');
+    panel.parentElement.insertBefore(assessmentFilterPlaceholder, panel);
+    body.appendChild(panel);
+    q('assessment-filter-modal').classList.remove('hidden');
+  });
+  const closeAssessmentFilters = () => {
+    const panel = document.querySelector('#assessment-filter-modal .assessment-filter-panel');
+    if (panel && assessmentFilterPlaceholder?.parentElement) assessmentFilterPlaceholder.parentElement.insertBefore(panel, assessmentFilterPlaceholder.nextSibling);
+    assessmentFilterPlaceholder?.remove();
+    assessmentFilterPlaceholder = null;
+    q('assessment-filter-modal')?.classList.add('hidden');
+  };
+  q('close-assessment-filter-modal')?.addEventListener('click', closeAssessmentFilters);
+  q('assessment-filter-modal')?.addEventListener('click', (event) => { if (event.target === q('assessment-filter-modal')) closeAssessmentFilters(); });
 
   q('assessment-form')?.addEventListener('submit', createAssessment);
   q('goal-form')?.addEventListener('submit', createGoal);

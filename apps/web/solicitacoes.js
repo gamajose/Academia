@@ -3,6 +3,7 @@ const SAPI = localStorage.getItem('apiBaseUrl') || `http://${SH}:3004`;
 const STOKEN = localStorage.getItem('academiaToken') || '';
 const s = (id) => document.getElementById(id);
 let rows = [];
+let signupRefreshTimer = null;
 
 async function call(path, options = {}) {
   const response = await fetch(`${SAPI}${path}`, {
@@ -48,13 +49,14 @@ function render() {
   const list = s('signup-list');
   const term = (s('signup-search').value || '').toLowerCase();
   list.innerHTML = '';
-  const filtered = rows.filter((item) => `${item.name} ${item.plan_name || ''} ${item.status} ${item.enrollment_code || ''}`.toLowerCase().includes(term));
+  const pendingRows = rows.filter((item) => item.status === 'pending' && item.payment_status !== 'failed');
+  const filtered = pendingRows.filter((item) => `${item.name} ${item.plan_name || ''} ${item.status} ${item.enrollment_code || ''}`.toLowerCase().includes(term));
   s('signup-count').textContent = `${filtered.length}`;
   for (const item of filtered) {
     const li = document.createElement('li');
     li.className = 'signup-card';
-    const emailStatus = item.email ? (item.email_confirmed_at ? 'e-mail confirmado' : 'aguardando e-mail') : 'sem e-mail';
-    const paymentStatus = item.payment_status === 'paid' ? 'pagamento confirmado' : `pagamento ${item.payment_status || 'pendente'}`;
+    const emailStatus = item.email ? (item.email_confirmed_at ? 'E-mail confirmado' : 'Aguardando e-mail') : 'Sem e-mail';
+    const paymentStatus = item.payment_status === 'paid' ? 'Pagamento confirmado' : 'Pagamento pendente';
     const content = document.createElement('div');
     content.className = 'signup-card-content';
     const title = document.createElement('strong');
@@ -62,9 +64,13 @@ function render() {
     const details = document.createElement('span');
     details.textContent = `${item.plan_name || 'Sem plano'} · ${money(item.price_cents)} · ${paymentStatus}`;
     const meta = document.createElement('small');
-    const statusLabel = item.status === 'confirmed' ? 'confirmada' : item.status === 'cancelled' ? 'negada' : 'aguardando confirmação';
+    const statusLabel = item.status === 'confirmed' ? 'Confirmada' : item.status === 'cancelled' ? 'Negada' : 'Aguardando confirmação';
     meta.textContent = `${statusLabel} · ${emailStatus} · Solicitação recebida em ${dateTime(item.created_at)} · Código ${item.enrollment_code || '-'}`;
     content.append(title, details, meta);
+    const paymentTag = document.createElement('span');
+    paymentTag.className = `signup-payment-tag ${item.payment_status === 'paid' ? 'paid' : 'pending'}`;
+    paymentTag.textContent = paymentStatus;
+    content.appendChild(paymentTag);
     const actions = document.createElement('div');
     actions.className = 'signup-card-actions';
     actions.appendChild(button('Ver código/QR', () => showQr(item), item.status !== 'confirmed'));
@@ -90,6 +96,12 @@ async function load() {
   }
 }
 
+function startRealtime() {
+  if (signupRefreshTimer) window.clearInterval(signupRefreshTimer);
+  signupRefreshTimer = window.setInterval(() => { if (document.visibilityState === 'visible') void load(); }, 30000);
+  window.addEventListener('pagehide', () => window.clearInterval(signupRefreshTimer), { once: true });
+}
+
 function showQr(item) {
   const code = item.enrollment_code || '';
   s('qr-name').textContent = `${item.name} | ${item.plan_name || 'sem plano'} | ${money(item.price_cents)}`;
@@ -112,8 +124,13 @@ async function checkCode() {
   }
 }
 
-s('reload-signups').onclick = load;
+s('signup-search-toggle').onclick = () => {
+  const wrap = document.querySelector('.signup-search-wrap');
+  const isHidden = wrap.classList.toggle('hidden');
+  if (!isHidden) s('signup-search').focus();
+};
 s('signup-search').oninput = render;
 s('check-code-button').onclick = checkCode;
 s('close-qr-modal').onclick = closeQr;
 load();
+startRealtime();

@@ -10,6 +10,11 @@
 .signup-card-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .signup-card-actions .mini-button { margin: 0; }
 .pre-enrollment-validation-panel { margin-top: 24px; }
+.signup-search-wrap { margin-top: 4px; }
+.pre-enrollment-heading + .icon-button { margin-left: auto; }
+.signup-payment-tag { align-self: flex-start; width: fit-content; padding: 4px 8px; border-radius: 999px; font-size: 12px !important; font-weight: 600; }
+.signup-payment-tag.paid { background: #dcfce7; color: #166534 !important; }
+.signup-payment-tag.pending { background: #fef3c7; color: #92400e !important; }
 
 html[data-admin-theme="dark"] .pre-enrollment-panel {
   background: #122235 !important;
@@ -25,6 +30,8 @@ html[data-admin-theme="dark"] .signup-card-content strong { color: #e8f0f8 !impo
 html[data-admin-theme="dark"] .signup-card-content span,
 html[data-admin-theme="dark"] .signup-card-content small { color: #a9bed1 !important; }
 html[data-admin-theme="dark"] .signup-count { background: #1d3f61; color: #8ecbff; }
+html[data-admin-theme="dark"] .signup-payment-tag.paid { background: #16452c; color: #9af1bd !important; }
+html[data-admin-theme="dark"] .signup-payment-tag.pending { background: #5b431b; color: #f8d98a !important; }
 html[data-admin-theme="dark"] .modal-card {
   background: #122235 !important;
   border-color: #29445d !important;

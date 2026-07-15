@@ -28,6 +28,11 @@ function statusLabel(item) {
   return item.status || 'Pendente';
 }
 
+function accessReasonLabel(reason) {
+  const labels = { member_inactive: 'Aluno inativo', membership_inactive: 'Matrícula inativa', membership_expired: 'Matrícula vencida', payment_overdue: 'Pagamento em atraso', membership_grace_expired: 'Prazo de tolerância encerrado' };
+  return labels[reason] || reason || 'Motivo não informado';
+}
+
 function accessDecisionLabel(item) {
   return item.allowed ? 'Entrada liberada' : 'Entrada bloqueada';
 }
@@ -38,7 +43,11 @@ function renderMembers() {
   const filter = accessEl('access-member-filter').value;
   list.innerHTML = '';
   const rows = accessMembers.filter((member) => `${member.name} ${member.email || ''} ${member.phone || ''}`.toLowerCase().includes(term)
-    && (!filter || (filter === 'active' ? member.status === 'active' : member.status !== 'active')));
+    && (!filter
+      || (filter === 'active' && member.status === 'active')
+      || (filter === 'inactive' && member.status !== 'active')
+      || (filter === 'blocked' && member.access_status === 'blocked')
+      || (filter === 'pending' && !member.access_status)));
   accessEl('access-member-count').textContent = String(accessMembers.length);
   if (!rows.length) {
     const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = term ? 'Nenhum aluno encontrado.' : 'Nenhum aluno cadastrado.'; list.appendChild(empty); return;
@@ -51,6 +60,7 @@ function renderMembers() {
     const name = document.createElement('strong'); name.textContent = member.name;
     const contact = document.createElement('span'); contact.textContent = [member.email, member.phone].filter(Boolean).join(' · ') || 'Sem contato informado';
     info.append(name, contact);
+    if (member.access_status === 'blocked') { const reason = document.createElement('small'); reason.textContent = `Motivo: ${accessReasonLabel(member.access_reason)}`; info.appendChild(reason); }
     const meta = document.createElement('div'); meta.className = 'access-member-meta';
     const badge = document.createElement('span'); badge.className = `badge ${member.status === 'active' ? 'ok' : 'bad'}`; badge.textContent = statusLabel(member);
     const button = document.createElement('button'); button.type = 'button'; button.className = 'icon-button'; button.textContent = '▦'; button.title = 'Abrir QR Code e credencial'; button.setAttribute('aria-label', 'Abrir QR Code e credencial'); button.addEventListener('click', (event) => { event.stopPropagation(); openCredential(member); });
@@ -115,6 +125,25 @@ async function resetPin() { if (!accessMemberId || !window.confirm('Gerar um nov
 
 async function loadPage() { try { const [members, decisions] = await Promise.all([accessApi('/api/access/members'), accessApi('/api/access/decisions/recent')]); accessMembers = members.data || []; renderMembers(); renderDecisions(decisions.data || []); accessEl('access-last-update').textContent = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date()); setStatus(''); } catch (error) { setStatus(`Erro ao carregar acesso: ${error.message}`); } }
 
+let accessFilterPlaceholder = null;
+accessEl('access-filter-toggle')?.addEventListener('click', () => {
+  const panel = document.querySelector('.access-member-filters');
+  const body = accessEl('access-filter-modal-body');
+  if (!panel || !body) return;
+  accessFilterPlaceholder = document.createComment('access-filter-placeholder');
+  panel.parentElement.insertBefore(accessFilterPlaceholder, panel);
+  body.appendChild(panel);
+  accessEl('access-filter-modal').classList.remove('hidden');
+  accessEl('access-member-search').focus();
+});
+function closeAccessFilters() {
+  const panel = document.querySelector('#access-filter-modal .access-member-filters');
+  if (panel && accessFilterPlaceholder?.parentElement) accessFilterPlaceholder.parentElement.insertBefore(panel, accessFilterPlaceholder.nextSibling);
+  accessFilterPlaceholder?.remove(); accessFilterPlaceholder = null;
+  accessEl('access-filter-modal')?.classList.add('hidden');
+}
+accessEl('close-access-filter-modal')?.addEventListener('click', closeAccessFilters);
+accessEl('access-filter-modal')?.addEventListener('click', (event) => { if (event.target === accessEl('access-filter-modal')) closeAccessFilters(); });
 accessEl('access-member-search').addEventListener('input', renderMembers);
 accessEl('access-member-filter').addEventListener('change', renderMembers);
 accessEl('close-access-credential').addEventListener('click', closeCredential);

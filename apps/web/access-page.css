@@ -7,6 +7,10 @@
 .access-metrics strong { display: block; margin-top: 7px; font-size: 26px; }
 .access-members-panel, .access-decisions-panel { gap: 16px; margin-bottom: 24px; }
 .access-member-filters { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 10px; }
+.access-members-panel > .access-member-filters { display: none; }
+.access-filter-modal-card .access-member-filters { display: grid; margin: 0; }
+.access-filter-modal-card { max-width: 680px; }
+.access-member-main small { color: #c24141; font-size: 12px; }
 .access-member-list, .access-decision-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 0; }
 .access-member-row, .access-decision-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .access-member-row[role="button"] { cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }

@@ -25,8 +25,8 @@
     </section>
 
     <section class="panel access-members-panel">
-      <div class="toolbar"><div><h2>Alunos</h2><p>Selecione um aluno para ver o QR Code, o código temporário e a matrícula offline.</p></div></div>
-      <div class="access-member-filters"><input id="access-member-search" type="search" placeholder="Buscar aluno por nome, e-mail ou telefone" /><select id="access-member-filter" aria-label="Filtrar situação do aluno"><option value="">Todos os alunos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></div>
+      <div class="toolbar"><div><h2>Alunos</h2><p>Selecione um aluno para ver o QR Code, o código temporário e a matrícula offline.</p></div><button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar alunos" title="Pesquisar alunos"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
+      <div class="access-member-filters"><input id="access-member-search" type="search" placeholder="Buscar aluno por nome, e-mail ou telefone" /><select id="access-member-filter" aria-label="Filtrar acesso"><option value="">Todos os alunos</option><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="blocked">Acesso bloqueado</option><option value="pending">Acesso pendente</option></select></div>
       <p class="status-line" id="access-status" aria-live="polite"></p>
       <ul class="access-member-list" id="access-member-list"></ul>
     </section>
@@ -36,6 +36,13 @@
       <ul class="access-decision-list" id="access-decision-list"></ul>
     </section>
   </main>
+
+  <div class="modal hidden" id="access-filter-modal" role="dialog" aria-modal="true" aria-labelledby="access-filter-title">
+    <div class="modal-card access-filter-modal-card">
+      <div class="toolbar"><h3 id="access-filter-title">Pesquisar alunos</h3><button class="secondary modal-close" id="close-access-filter-modal" type="button" aria-label="Fechar" title="Fechar">×</button></div>
+      <div id="access-filter-modal-body"></div>
+    </div>
+  </div>
 
   <div class="modal hidden" id="access-credential-modal" role="dialog" aria-modal="true" aria-labelledby="access-credential-title" aria-hidden="true">
     <section class="modal-card access-credential-modal">

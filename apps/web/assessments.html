@@ -13,7 +13,6 @@
     <section class="hero">
       <p class="eyebrow">Evolução do aluno</p>
       <h1>Avaliações físicas e metas</h1>
-      <p>Registre medidas, acompanhe a evolução e organize metas individuais.</p>
     </section>
 
     <section class="panel workspace-panel">
@@ -23,27 +22,24 @@
           <p>Escolha uma ação para abrir o formulário correspondente.</p>
         </div>
         <div class="workspace-actions">
-          <button id="open-assessment-modal" type="button">Nova avaliação</button>
-          <button id="open-goal-modal" class="secondary" type="button">Nova meta</button>
-          <button id="open-summary-modal" class="secondary" type="button">Resumo comparativo</button>
+          <button id="open-assessment-modal" class="icon-button" type="button" aria-label="Nova avaliação" title="Nova avaliação">+</button>
+          <button id="open-summary-modal" class="secondary icon-button" type="button" aria-label="Resumo comparativo" title="Resumo comparativo"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
         </div>
       </div>
-      <p class="status-line" id="assessment-status" aria-live="polite">Carregando avaliações.</p>
+      <p class="status-line" id="assessment-status" aria-live="polite"></p>
     </section>
 
     <section class="assessment-dashboard">
       <article class="panel">
         <div class="panel-header-copy">
-          <h3>Metas</h3>
-          <p>Metas atuais e histórico de objetivos definidos para os alunos.</p>
+          <div class="panel-header-title"><h3>Metas</h3><button id="open-goal-modal" class="icon-button" type="button" aria-label="Nova meta" title="Nova meta">+</button></div>
         </div>
         <ul class="workflow-list" id="goal-list"></ul>
       </article>
 
       <article class="panel">
         <div class="panel-header-copy">
-          <h3>Histórico de avaliações</h3>
-          <p>Últimas medições registradas pela equipe.</p>
+          <div class="panel-header-title"><h3>Histórico de avaliações</h3><button id="assessment-filter-toggle" class="icon-button" type="button" aria-label="Filtrar histórico" title="Filtrar histórico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
         </div>
         <div class="assessment-filter-panel">
           <div class="assessment-filter-grid"><div class="field"><label for="assessment-filter-member">Aluno</label><select id="assessment-filter-member"><option value="">Todos os alunos</option></select></div><div class="field"><label for="assessment-filter-from">De</label><input id="assessment-filter-from" type="date" /></div><div class="field"><label for="assessment-filter-to">Até</label><input id="assessment-filter-to" type="date" /></div></div>
@@ -53,6 +49,13 @@
       </article>
     </section>
   </main>
+
+  <div class="modal hidden" id="assessment-filter-modal" role="dialog" aria-modal="true" aria-labelledby="assessment-filter-title">
+    <div class="modal-card assessment-filter-modal-card">
+      <div class="toolbar"><h3 id="assessment-filter-title">Filtrar histórico</h3><button class="secondary modal-close" id="close-assessment-filter-modal" type="button" aria-label="Fechar" title="Fechar">×</button></div>
+      <div id="assessment-filter-modal-body"></div>
+    </div>
+  </div>
 
   <div class="modal hidden" id="assessment-modal" role="dialog" aria-modal="true" aria-labelledby="assessment-modal-title" aria-hidden="true">
     <form class="modal-card assessment-modal-card workflow-modal-form" id="assessment-form">

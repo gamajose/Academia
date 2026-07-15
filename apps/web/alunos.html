@@ -20,7 +20,7 @@
 
     <section class="panel">
       <div class="toolbar students-toolbar">
-        <div><h2>Lista de alunos</h2><small>Pesquise, edite, altere o status ou visualize a credencial de entrada.</small></div>
+        <div><h2>Lista de alunos</h2></div>
         <div class="student-toolbar-actions">
           <button id="new-student-button" class="icon-button" type="button" aria-label="Cadastrar aluno" title="Cadastrar aluno">+</button>
           <button id="student-search-toggle" class="icon-button" type="button" aria-label="Pesquisar aluno" title="Pesquisar aluno"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
@@ -28,8 +28,9 @@
       </div>
       <div id="student-search-wrap" class="student-search-wrap hidden"><input id="student-search" type="search" placeholder="Buscar por nome, e-mail, telefone, CPF ou RG" /></div>
       <span id="student-count" class="student-count" aria-live="polite"></span>
-      <p class="status-line" id="students-status">Carregando...</p>
+      <p class="status-line" id="students-status" aria-live="polite"></p>
       <ul id="students-list"></ul>
+      <div class="student-pagination" id="student-pagination" aria-label="Paginação de alunos"></div>
     </section>
   </main>
 

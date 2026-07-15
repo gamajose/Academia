@@ -3,6 +3,8 @@ const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
 const TOKEN = localStorage.getItem('academiaToken') || '';
 const $ = (id) => document.getElementById(id);
 let rows = [];
+let currentPage = 1;
+let pageSize = 10;
 let phoneWidget = null;
 let credentialMemberId = '';
 let credentialExpiresAt = null;
@@ -171,8 +173,12 @@ function render() {
   const filtered = rows.filter((item) => {
     return `${item.name} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`.toLowerCase().includes(term);
   });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const visibleRows = filtered.slice(start, start + pageSize);
 
-  for (const item of filtered) {
+  for (const item of visibleRows) {
     const pending = Number(item.pending_amount_cents || 0);
     const li = document.createElement('li');
     li.className = 'entity-card';
@@ -186,7 +192,7 @@ function render() {
     const statusClass = item.status === 'active' ? 'ok' : 'bad';
     main.innerHTML = `
       <strong>${item.name}</strong>
-      <span>${item.email || 'Sem e-mail'} · ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
+      <span>E-mail: ${item.email || 'Sem e-mail'} · Tel: ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
       <span class="student-card-tags"><span>${item.plan_name || 'Sem plano'}</span><span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}<span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
     const whatsapp = whatsappLink(item.phone);
     const actions = document.createElement('div');
@@ -208,7 +214,37 @@ function render() {
     li.textContent = 'Nenhum aluno encontrado.';
     list.appendChild(li);
   }
-  $('student-count').textContent = `${filtered.length} de ${rows.length} aluno(s)`;
+  $('student-count').textContent = filtered.length
+    ? (filtered.length <= pageSize ? `${filtered.length} de ${rows.length} aluno(s)` : `${start + 1}-${Math.min(start + pageSize, filtered.length)} de ${filtered.length} aluno(s)`)
+    : `0 de ${rows.length} aluno(s)`;
+  renderPagination(filtered.length, totalPages);
+}
+
+function renderPagination(totalItems, totalPages) {
+  const pagination = $('student-pagination');
+  pagination.innerHTML = '';
+  if (!totalItems) return;
+  const pageSizeField = document.createElement('label');
+  pageSizeField.className = 'student-page-size';
+  pageSizeField.innerHTML = '<span>Por página</span><select aria-label="Alunos por página"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select>';
+  const select = pageSizeField.querySelector('select');
+  select.value = String(pageSize);
+  select.addEventListener('change', () => { pageSize = Number(select.value) || 10; currentPage = 1; render(); });
+  pagination.appendChild(pageSizeField);
+  if (totalPages <= 1) return;
+  const pages = document.createElement('div');
+  pages.className = 'student-page-buttons';
+  for (let page = 1; page <= totalPages; page += 1) {
+    const pageButton = document.createElement('button');
+    pageButton.type = 'button';
+    pageButton.className = `mini-button ${page === currentPage ? 'current' : 'secondary'}`;
+    pageButton.textContent = String(page);
+    pageButton.setAttribute('aria-label', `Página ${page}`);
+    pageButton.setAttribute('aria-current', page === currentPage ? 'page' : 'false');
+    pageButton.addEventListener('click', () => { currentPage = page; render(); });
+    pages.appendChild(pageButton);
+  }
+  pagination.appendChild(pages);
 }
 
 async function load() {
@@ -216,8 +252,9 @@ async function load() {
   try {
     const result = await req('/api/members/detail');
     rows = result.data || [];
+    currentPage = 1;
     render();
-    $('students-status').textContent = `${rows.length} aluno(s) carregado(s).`;
+    $('students-status').textContent = '';
   } catch (error) {
     $('students-status').textContent = `Erro: ${error.message}`;
   }
@@ -538,7 +575,7 @@ $('close-student-modal').onclick = closeModal;
 $('close-student-view-modal').onclick = closeStudentViewModal;
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
-$('student-search').oninput = render;
+$('student-search').oninput = () => { currentPage = 1; render(); };
 $('student-cpf').addEventListener('input', (event) => { event.target.value = formatCpf(event.target.value); });
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });

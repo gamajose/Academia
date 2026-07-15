@@ -11,23 +11,20 @@
 <body>
   <main class="app-shell employees-page">
     <section class="hero">
-      <p class="eyebrow">Equipe</p>
       <h1>Funcionários</h1>
-      <p>Visualize a equipe cadastrada, acompanhe os últimos acessos e organize os perfis da academia.</p>
     </section>
 
     <section class="panel employee-list-panel">
       <div class="toolbar employee-list-toolbar">
         <div>
           <h3>Equipe cadastrada</h3>
-          <small>Consulte os funcionários, edite os dados e acompanhe a presença no sistema.</small>
         </div>
         <div class="toolbar-actions">
-          <button id="new-user-button" type="button">Cadastrar funcionário</button>
-          <button id="manage-permissions-button" class="secondary" type="button">Gerenciar permissões</button>
+          <button id="new-user-button" class="icon-button" type="button" aria-label="Cadastrar funcionário" title="Cadastrar funcionário">+</button>
+          <button id="manage-permissions-button" class="secondary" type="button">Permissões</button>
         </div>
       </div>
-      <p class="status-line" id="users-status" aria-live="polite">Carregando equipe.</p>
+      <p class="status-line" id="users-status" aria-live="polite"></p>
       <div class="table-wrap">
         <table>
           <thead>

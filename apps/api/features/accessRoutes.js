@@ -677,9 +677,17 @@ async function listAccessMembers(res, user, helpers) {
   const { send, query } = helpers;
   if (!canManageDevices(user)) return send(res, 403, { error: 'sem_permissao' });
   const result = await query(
-    `SELECT id, name, email, phone, status, created_at
-     FROM members
-     WHERE gym_id = $1
+    `SELECT m.id, m.name, m.email, m.phone, m.status, m.created_at,
+            latest.status AS access_status, latest.reason AS access_reason, latest.decided_at AS access_decided_at
+     FROM members m
+     LEFT JOIN LATERAL (
+       SELECT status, reason, decided_at
+       FROM access_decisions
+       WHERE gym_id = m.gym_id AND member_id = m.id
+       ORDER BY decided_at DESC
+       LIMIT 1
+     ) latest ON true
+     WHERE m.gym_id = $1
      ORDER BY name ASC
      LIMIT 500`,
     [user.gym_id]
