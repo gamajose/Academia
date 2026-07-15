@@ -69,6 +69,7 @@ function canAccess(user, method, pathname, permissions = null) {
   if (user.role === 'student') {
     if (pathname === '/api/editor/images' && method === 'POST') return true;
     if (pathname === '/api/editor/videos' && method === 'POST') return true;
+    if (pathname.startsWith('/api/student/goals') && ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'].includes(method)) return true;
     if (pathname.startsWith('/api/student') && (method === 'GET' || method === 'POST')) return true;
     return false;
   }

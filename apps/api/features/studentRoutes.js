@@ -474,6 +474,61 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     return send(res, 200, { assessments: assessments.rows, goals: goals.rows, analysis: buildProgressAnalysis(assessments.rows[0], assessments.rows[1], goals.rows) });
   }
 
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/goals') {
+    const result = await query(
+      `SELECT id, goal_type, target_value, target_date, status, notes, created_at, updated_at
+       FROM member_goals
+       WHERE gym_id = $1 AND member_id = $2
+       ORDER BY CASE WHEN status = 'active' THEN 0 ELSE 1 END, target_date NULLS LAST, created_at DESC
+       LIMIT 50`,
+      [user.gym_id, user.member_id]
+    );
+    return send(res, 200, { data: result.rows });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/goals') {
+    const input = await body(req);
+    const goalType = studentText(input.goal_type, '', 120);
+    const targetDate = String(input.target_date || '').trim();
+    const targetValue = studentNumber(input.target_value);
+    const hasTargetValue = input.target_value !== undefined && input.target_value !== null && input.target_value !== '';
+    if (!goalType || (targetDate && !validCalendarDate(targetDate)) || (hasTargetValue && targetValue === null)) return send(res, 400, { error: 'dados_invalidos' });
+    const result = await query(
+      `INSERT INTO member_goals (gym_id, member_id, goal_type, target_value, target_date, status, notes)
+       VALUES ($1, $2, $3, $4, NULLIF($5, '')::date, 'active', $6)
+       RETURNING id, goal_type, target_value, target_date, status, notes, created_at, updated_at`,
+      [user.gym_id, user.member_id, goalType, targetValue, targetDate, studentText(input.notes, '', 2000) || null]
+    );
+    return send(res, 201, result.rows[0]);
+  }
+
+  const studentGoalMatch = url.pathname.match(/^\/api\/student\/goals\/([0-9a-f-]+)$/i);
+  if (isStudent(user) && studentGoalMatch && ['PATCH', 'PUT', 'DELETE'].includes(req.method)) {
+    const goalId = studentGoalMatch[1];
+    const existing = await query('SELECT id FROM member_goals WHERE id = $1 AND gym_id = $2 AND member_id = $3 LIMIT 1', [goalId, user.gym_id, user.member_id]);
+    if (!existing.rowCount) return send(res, 404, { error: 'meta_nao_encontrada' });
+    if (req.method === 'DELETE') {
+      await query('DELETE FROM member_goals WHERE id = $1 AND gym_id = $2 AND member_id = $3', [goalId, user.gym_id, user.member_id]);
+      return send(res, 200, { status: 'meta_excluida' });
+    }
+    const input = await body(req);
+    const goalType = studentText(input.goal_type, '', 120);
+    const targetDate = String(input.target_date || '').trim();
+    const targetValue = studentNumber(input.target_value);
+    const goalStatus = ['active', 'completed'].includes(String(input.status || '')) ? String(input.status) : 'active';
+    const hasTargetValue = input.target_value !== undefined && input.target_value !== null && input.target_value !== '';
+    if (!goalType || (targetDate && !validCalendarDate(targetDate)) || (hasTargetValue && targetValue === null)) return send(res, 400, { error: 'dados_invalidos' });
+    const result = await query(
+      `UPDATE member_goals
+       SET goal_type = $4, target_value = $5, target_date = NULLIF($6, '')::date,
+           status = $7, notes = $8, updated_at = now()
+       WHERE id = $1 AND gym_id = $2 AND member_id = $3
+       RETURNING id, goal_type, target_value, target_date, status, notes, created_at, updated_at`,
+      [goalId, user.gym_id, user.member_id, goalType, targetValue, targetDate, goalStatus, studentText(input.notes, '', 2000) || null]
+    );
+    return send(res, 200, result.rows[0]);
+  }
+
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/progress/assessment') {
     const input = await body(req);
     const assessmentDate = String(input.assessment_date || '').trim();

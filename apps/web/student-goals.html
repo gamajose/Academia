@@ -1,3 +1,96 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Minhas metas - BlueREC Academia</title><link rel="stylesheet" href="./styles.css" /><link rel="stylesheet" href="./premium-ui.css" /><link rel="stylesheet" href="./blue-theme.css" /><link rel="stylesheet" href="./student-shell.css" /></head>
-<body class="student-page" data-student-page="goals"><nav class="top-nav student-top-nav"><a class="top-nav-brand" href="./student-portal.html"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /><span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></span></a><div class="top-nav-links student-module-nav"><a data-student-link="training" href="./student-portal.html">Meu treino</a><a data-student-link="complete" href="./student-complete.html">Concluir treino</a><a data-student-link="progress" href="./student-progress.html">Minha evolução</a><a data-student-link="goals" href="./student-goals.html">Minhas metas</a><a data-student-link="share" href="./student-share.html">Compartilhar foto</a><a data-student-link="history" href="./student-history.html">Histórico</a></div><div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-profile.html">Meu perfil</a><a href="./student-security.html">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div></nav>
-<main class="app-shell"><section class="hero"><p class="eyebrow">Objetivos pessoais</p><h1>Minhas metas</h1><p>Acompanhe os objetivos definidos para o seu treino e veja os prazos combinados.</p></section><section class="panel"><h3>Metas ativas</h3><ul id="student-goal-list"></ul><p class="status-line" id="student-goals-status" aria-live="polite"></p></section></main><script src="./student-shell.js"></script><script src="./student-goals.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minhas metas | BlueREC</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
+  <link rel="stylesheet" href="./student-shell.css" />
+  <link rel="stylesheet" href="./student-goals.css" />
+</head>
+<body class="student-page" data-student-page="goals">
+  <nav class="top-nav student-top-nav">
+    <a class="top-nav-brand" href="./student-portal.html">
+      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
+      <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><span>área do aluno</span></span>
+    </a>
+    <div class="top-nav-links student-module-nav">
+      <a data-student-link="training" href="./student-portal.html">Meu treino</a>
+      <a data-student-link="complete" href="./student-complete.html">Concluir treino</a>
+      <a data-student-link="progress" href="./student-progress.html">Minha evolução</a>
+      <a data-student-link="goals" href="./student-goals.html">Minhas metas</a>
+      <a data-student-link="share" href="./student-share.html">Compartilhar foto</a>
+      <a data-student-link="history" href="./student-history.html">Histórico</a>
+    </div>
+    <div class="profile-menu">
+      <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false">
+        <span class="profile-avatar" data-student-avatar>A</span>
+        <span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span>
+      </button>
+      <div class="profile-dropdown hidden" id="student-profile-dropdown">
+        <a href="./student-profile.html">Meu perfil</a>
+        <a href="./student-security.html">Segurança</a>
+        <button class="logout-item" id="student-profile-logout" type="button">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-shell student-goals-shell">
+    <section class="panel student-goals-panel" aria-labelledby="student-goals-title">
+      <div class="student-goals-toolbar">
+        <div>
+          <h1 id="student-goals-title">Minhas metas</h1>
+          <p>Defina um objetivo, acompanhe o prazo e comece outro quando concluir.</p>
+        </div>
+        <button class="primary-button student-goal-new" id="student-goal-new" type="button">+ Nova meta</button>
+      </div>
+      <ul id="student-goal-list" class="student-goal-list" aria-live="polite"></ul>
+      <p class="status-line" id="student-goals-status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="student-goal-modal" role="dialog" aria-modal="true" aria-labelledby="student-goal-modal-title">
+    <div class="modal-card student-goal-form">
+      <button class="modal-close" id="student-goal-close" type="button" aria-label="Fechar">&times;</button>
+      <p class="eyebrow">Objetivo pessoal</p>
+      <h2 id="student-goal-modal-title">Nova meta</h2>
+      <p class="modal-description">Registre o que você quer alcançar e acompanhe sua evolução.</p>
+      <form id="student-goal-form">
+        <input id="student-goal-id" type="hidden" />
+        <div class="field-grid two-columns">
+          <label>Meta
+            <input id="student-goal-type" name="goal_type" type="text" maxlength="120" placeholder="Ex.: Peso, corrida ou força" required />
+          </label>
+          <label>Valor alvo
+            <input id="student-goal-value" name="target_value" type="number" min="0" step="0.01" placeholder="Ex.: 80" />
+          </label>
+        </div>
+        <div class="field-grid two-columns">
+          <label>Prazo
+            <input id="student-goal-date" name="target_date" type="date" />
+          </label>
+          <label>Situação
+            <select id="student-goal-status" name="status">
+              <option value="active">Ativa</option>
+              <option value="completed">Concluída</option>
+            </select>
+          </label>
+        </div>
+        <label>Observações
+          <textarea id="student-goal-notes" name="notes" rows="3" maxlength="2000" placeholder="Ex.: chegar a 80 kg em três meses"></textarea>
+        </label>
+        <p class="form-error" id="student-goal-form-error" role="alert"></p>
+        <div class="modal-actions">
+          <button class="secondary-button" id="student-goal-cancel" type="button">Cancelar</button>
+          <button class="primary-button" id="student-goal-save" type="submit">Salvar meta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="./student-shell.js"></script>
+  <script src="./student-goals.js"></script>
+</body>
+</html>

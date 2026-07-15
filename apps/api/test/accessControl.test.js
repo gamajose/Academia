@@ -45,3 +45,12 @@ test('aluno pode enviar foto de evolucao sem acessar rotas administrativas', () 
   assert.equal(canAccess(user, 'POST', '/api/student/progress/photos'), true);
   assert.equal(canAccess(user, 'GET', '/api/finance/overview'), false);
 });
+
+test('aluno pode gerenciar apenas as proprias metas', () => {
+  const user = { role: 'student', member_id: 'member-1' };
+  assert.equal(canAccess(user, 'GET', '/api/student/goals'), true);
+  assert.equal(canAccess(user, 'POST', '/api/student/goals'), true);
+  assert.equal(canAccess(user, 'PATCH', '/api/student/goals/goal-1'), true);
+  assert.equal(canAccess(user, 'DELETE', '/api/student/goals/goal-1'), true);
+  assert.equal(canAccess(user, 'PATCH', '/api/goals/goal-1'), false);
+});
