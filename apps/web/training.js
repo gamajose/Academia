@@ -15,7 +15,8 @@ let activePlanWeekday = null;
 const t = (id) => document.getElementById(id);
 
 function trainingActionIcon(type, label, className = '') {
-  if (window.AcademiaIcons) return window.AcademiaIcons.button(type, label, className);
+  const iconType = type === 'delete' ? 'trash' : type;
+  if (window.AcademiaIcons) return window.AcademiaIcons.button(iconType, label, className);
   const button = document.createElement('button');
   button.type = 'button';
   button.className = `icon-button action-icon-button ${className}`.trim();

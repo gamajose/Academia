@@ -380,6 +380,14 @@ html[data-admin-shell="true"] .compact-toolbar-actions svg {
   stroke-linejoin: round !important;
 }
 
+html[data-admin-shell="true"] .membership-table td:last-child {
+  white-space: nowrap;
+}
+
+html[data-admin-shell="true"] .membership-table td:last-child .icon-button + .icon-button {
+  margin-left: 6px !important;
+}
+
 /* Search in pre-enrollments is an icon control, never a stretched toolbar field. */
 html[data-admin-shell="true"] #signup-search-toggle {
   display: inline-grid !important;

@@ -63,7 +63,7 @@ function renderMembers() {
     if (member.access_status === 'blocked') { const reason = document.createElement('small'); reason.textContent = `Motivo: ${accessReasonLabel(member.access_reason)}`; info.appendChild(reason); }
     const meta = document.createElement('div'); meta.className = 'access-member-meta';
     const badge = document.createElement('span'); badge.className = `badge ${member.status === 'active' ? 'ok' : 'bad'}`; badge.textContent = statusLabel(member);
-    const button = document.createElement('button'); button.type = 'button'; button.className = 'icon-button'; button.textContent = '▦'; button.title = 'Abrir QR Code e credencial'; button.setAttribute('aria-label', 'Abrir QR Code e credencial'); button.addEventListener('click', (event) => { event.stopPropagation(); openCredential(member); });
+    const button = window.AcademiaIcons.button('qr', 'Abrir QR Code e credencial'); button.addEventListener('click', (event) => { event.stopPropagation(); openCredential(member); });
     meta.append(badge, button); row.append(info, meta); list.appendChild(row);
   }
 }
