@@ -11,6 +11,9 @@ let editingOriginalVideoUrl = '';
 let editingPlanId = null;
 let planDayDrafts = new Map();
 let activePlanWeekday = null;
+let exerciseLibraryQuery = '';
+let exercisePrimaryFilter = '';
+let exerciseSecondaryFilter = '';
 
 const t = (id) => document.getElementById(id);
 
@@ -195,20 +198,86 @@ async function loadBase() {
   setTrainingStatus('');
 }
 
-function renderAll() {
-  fillLevelSelect('exercise-level');
-  fillLevelSelect('profile-level');
-  fillLevelSelect('plan-level');
-  fillSelect('profile-member', members, (m) => m.name, 'Selecione o aluno');
-  fillSelect('plan-member', members, (m) => m.name, 'Selecione o aluno');
-  fillSelect('exercise-select', exercises, (e) => `${e.name} - ${e.muscle_group_primary || e.muscle_group}`, 'Selecione o exercicio');
-  fillSelect('day-plan', plans, (p) => planDisplayName(p), 'Selecione a ficha');
-  fillSelect('review-plan', plans, (p) => `${planDisplayName(p)} (${p.age_days || 0} dias)`, 'Selecione a ficha');
-  renderTrainingLevels();
+function normalizeExerciseFilterValue(value) {
+  return String(value || '').trim().toLocaleLowerCase('pt-BR');
+}
+
+function getExerciseFilterValues(type) {
+  const values = new Set();
+  for (const item of exercises) {
+    const source = type === 'secondary'
+      ? item.muscle_group_secondary
+      : (item.muscle_group_primary || item.muscle_group);
+    if (type === 'secondary') {
+      String(source || '').split(',').map((value) => value.trim()).filter(Boolean).forEach((value) => values.add(value));
+    } else if (String(source || '').trim()) {
+      values.add(String(source).trim());
+    }
+  }
+  return [...values].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function fillExerciseFilter(id, values, selectedValue) {
+  const select = t(id);
+  if (!select) return;
+  select.replaceChildren();
+  const all = document.createElement('option');
+  all.value = '';
+  all.textContent = 'Todos';
+  select.appendChild(all);
+  values.forEach((value) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  });
+  select.value = values.includes(selectedValue) ? selectedValue : '';
+}
+
+function renderExerciseFilters() {
+  fillExerciseFilter('exercise-primary-filter', getExerciseFilterValues('primary'), exercisePrimaryFilter);
+  fillExerciseFilter('exercise-secondary-filter', getExerciseFilterValues('secondary'), exerciseSecondaryFilter);
+}
+
+function getVisibleExercises() {
+  const query = normalizeExerciseFilterValue(exerciseLibraryQuery);
+  const primary = normalizeExerciseFilterValue(exercisePrimaryFilter);
+  const secondary = normalizeExerciseFilterValue(exerciseSecondaryFilter);
+  return exercises.filter((item) => {
+    const name = normalizeExerciseFilterValue(item.name);
+    const primaryValue = normalizeExerciseFilterValue(item.muscle_group_primary || item.muscle_group);
+    const secondaryValue = normalizeExerciseFilterValue(item.muscle_group_secondary);
+    const equipment = normalizeExerciseFilterValue(item.equipment);
+    const matchesQuery = !query || [name, primaryValue, secondaryValue, equipment].some((value) => value.includes(query));
+    return matchesQuery && (!primary || primaryValue === primary) && (!secondary || secondaryValue.includes(secondary));
+  });
+}
+
+function renderAll({ libraryOnly = false } = {}) {
+  if (!libraryOnly) {
+    fillLevelSelect('exercise-level');
+    fillLevelSelect('profile-level');
+    fillLevelSelect('plan-level');
+    fillSelect('profile-member', members, (m) => m.name, 'Selecione o aluno');
+    fillSelect('plan-member', members, (m) => m.name, 'Selecione o aluno');
+    fillSelect('exercise-select', exercises, (e) => `${e.name} - ${e.muscle_group_primary || e.muscle_group}`, 'Selecione o exercicio');
+    fillSelect('day-plan', plans, (p) => planDisplayName(p), 'Selecione a ficha');
+    fillSelect('review-plan', plans, (p) => `${planDisplayName(p)} (${p.age_days || 0} dias)`, 'Selecione a ficha');
+    renderTrainingLevels();
+    renderExerciseFilters();
+  }
 
   const exerciseList = t('exercise-list');
   exerciseList.innerHTML = '';
-  for (const item of exercises) {
+  const visibleExercises = getVisibleExercises();
+  const renderedExercises = visibleExercises.slice(0, 4);
+  const libraryStatus = t('exercise-library-status');
+  if (libraryStatus) {
+    libraryStatus.textContent = visibleExercises.length > renderedExercises.length
+      ? `Mostrando ${renderedExercises.length} de ${visibleExercises.length} exercícios. Use a pesquisa para encontrar outros.`
+      : `${visibleExercises.length} exercício(s) encontrado(s).`;
+  }
+  for (const item of renderedExercises) {
     const row = document.createElement('li');
     row.className = 'entity-card';
     if (item.is_active === false) row.classList.add('is-inactive');
@@ -268,6 +337,14 @@ function renderAll() {
     }
     exerciseList.appendChild(row);
   }
+  if (!renderedExercises.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.textContent = 'Nenhum exercício encontrado com esses filtros.';
+    exerciseList.appendChild(empty);
+  }
+
+  if (libraryOnly) return;
 
   const planList = t('plan-list');
   planList.innerHTML = '';
@@ -1022,6 +1099,26 @@ function closeTrainingModal(id) {
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => openTrainingModal(modalId)));
 t('open-exercise-button')?.addEventListener('click', () => openExerciseForm());
 t('open-plan-levels-button')?.addEventListener('click', () => openTrainingModal('training-levels-modal'));
+t('toggle-exercise-search')?.addEventListener('click', () => {
+  const filters = t('exercise-library-filters');
+  const isOpen = filters?.classList.toggle('hidden') === false;
+  filters?.setAttribute('aria-hidden', String(!isOpen));
+  t('toggle-exercise-search')?.setAttribute('aria-expanded', String(isOpen));
+  if (isOpen) t('exercise-search')?.focus();
+});
+t('exercise-search')?.addEventListener('input', (event) => {
+  exerciseLibraryQuery = event.target.value;
+  renderAll({ libraryOnly: true });
+  t('exercise-search')?.focus();
+});
+t('exercise-primary-filter')?.addEventListener('change', (event) => {
+  exercisePrimaryFilter = event.target.value;
+  renderAll({ libraryOnly: true });
+});
+t('exercise-secondary-filter')?.addEventListener('change', (event) => {
+  exerciseSecondaryFilter = event.target.value;
+  renderAll({ libraryOnly: true });
+});
 
 [
   ['close-training-levels-modal', 'training-levels-modal'],

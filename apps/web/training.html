@@ -23,7 +23,19 @@
 
     <section class="grid lists-grid">
       <article class="panel">
-        <div class="toolbar"><h3>Exercícios cadastrados</h3><button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício">+</button></div>
+        <div class="toolbar">
+          <h3>Exercícios cadastrados</h3>
+          <div class="exercise-library-actions">
+            <button class="icon-button" id="toggle-exercise-search" type="button" aria-label="Pesquisar exercícios" title="Pesquisar exercícios" aria-expanded="false" aria-controls="exercise-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button>
+            <button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício">+</button>
+          </div>
+        </div>
+        <div id="exercise-library-filters" class="exercise-library-filters hidden" aria-hidden="true">
+          <label class="exercise-library-search"><span class="sr-only">Pesquisar exercícios</span><input id="exercise-search" type="search" placeholder="Pesquisar exercício..." autocomplete="off" /></label>
+          <label><span>Músculo primário</span><select id="exercise-primary-filter"><option value="">Todos</option></select></label>
+          <label><span>Músculo secundário</span><select id="exercise-secondary-filter"><option value="">Todos</option></select></label>
+        </div>
+        <p id="exercise-library-status" class="exercise-library-status" aria-live="polite"></p>
         <ul id="exercise-list"></ul>
       </article>
       <article class="panel">
