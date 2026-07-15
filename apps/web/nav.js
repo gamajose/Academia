@@ -139,7 +139,7 @@ function renderNavigation() {
   document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
 
   const current = pageName(window.location.pathname) || 'painel.html';
-  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
+  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
   if (adminPages.includes(current)) document.documentElement.dataset.adminShell = 'true';
   const pages = [
     ['painel.html', 'Painel', 'painel'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
@@ -156,9 +156,8 @@ function renderNavigation() {
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
   nav.innerHTML = `
-    <a class="top-nav-brand" href="${pageUrl('painel.html')}" aria-label="BlueREC Academia, voltar ao painel">
-      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" />
-      <span class="brand-wordmark"><strong><span class="brand-academia">Blue</span>REC</strong><small>academia e saúde</small></span>
+    <a class="top-nav-brand logo-only" href="${pageUrl('painel.html')}" aria-label="Blue Hack, voltar ao painel">
+      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="Logo da Blue Hack" width="36" height="36" />
     </a>
     <div class="top-nav-links">${pages.map(([href, label, key]) => `<a data-page="${href}" data-nav-key="${key}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
     <div class="profile-menu">

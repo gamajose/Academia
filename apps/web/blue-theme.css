@@ -22,5 +22,6 @@ input:focus, select:focus, textarea:focus, .rich-editor:focus { border-color: rg
 .top-nav-brand .brand-wordmark { display: grid; gap: 1px; }
 .top-nav-brand .brand-academia { color: #2d9cff; }
 .top-nav-logo { border-color: #2d9cff; }
+.top-nav-brand.logo-only { gap: 0; }
 .quick-card strong, .eyebrow, .status-line { color: var(--accent); }
 .finance-table th { background: #edf5fc; }

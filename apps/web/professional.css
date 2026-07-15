@@ -24,6 +24,8 @@
 .top-nav-brand .brand-wordmark .brand-academia { color: #f05252; font-size: inherit; }
 .top-nav-brand .brand-wordmark > small { color: #d8d2c8; font-size: 11px; }
 .top-nav-brand:hover .brand-wordmark > strong { color: #fff; }
+.top-nav-brand.logo-only { gap: 0; }
+.top-nav-brand.logo-only .top-nav-logo { display: block; }
 .top-nav-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .top-nav-links a {
   color: #f8fafc;
