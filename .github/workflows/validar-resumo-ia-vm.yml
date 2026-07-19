@@ -1,0 +1,60 @@
+name: Validar resumo da IA na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validar-resumo-ia-vm.yml'
+
+jobs:
+  validar:
+    runs-on:
+      - self-hosted
+      - linux
+    timeout-minutes: 10
+    env:
+      PROJECT_DIR: /mnt/Projetos/Academia
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      WEB_DIR: /mnt/Projetos/Academia/apps/web
+      EXPECTED_SHA: 80ecd1822c94e8bc55bd53d89118c4d4e330dd1b
+    steps:
+      - name: Validar deploy e resumo
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config --global --add safe.directory "$PROJECT_DIR"
+          deployed=""
+          remote=""
+          branch=""
+          for attempt in $(seq 1 36); do
+            git -C "$PROJECT_DIR" fetch --quiet origin main
+            deployed="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
+            remote="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
+            branch="$(git -C "$PROJECT_DIR" branch --show-current)"
+            if [ "$branch" = "main" ] && [ "$deployed" = "$EXPECTED_SHA" ] && [ "$remote" = "$EXPECTED_SHA" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "$branch" = "main"
+          test "$deployed" = "$EXPECTED_SHA"
+          test "$remote" = "$EXPECTED_SHA"
+          test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+          test "$(systemctl is-active academia-api.service)" = "active"
+          test "$(systemctl is-active academia-web.service)" = "active"
+          test "$(systemctl is-active ollama.service)" = "active"
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
+          grep -q 'function safeSummary' "$WEB_DIR/training-review-ui.js"
+          grep -q 'O plano inclui 3 rep' "$API_DIR/test/trainingReviewUi.test.js"
+          node --check "$WEB_DIR/training-review-ui.js"
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          node --test test/trainingReviewUi.test.js
+          echo "deployed_sha=$deployed"
+          echo "services=active"
+          echo "health=ok"
+          echo "summary_guard=ok"
