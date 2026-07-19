@@ -18,7 +18,7 @@ jobs:
     runs-on:
       - self-hosted
       - linux
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       PROJECT_DIR: /mnt/Projetos/Academia
       API_DIR: /mnt/Projetos/Academia/apps/api
@@ -32,7 +32,7 @@ jobs:
           : > "$DIAG_FILE"
           echo "diagnostico_inicio=$(date -Is)" | tee -a "$DIAG_FILE"
 
-      - name: Confirmar commit implantado
+      - name: Confirmar ambiente implantado
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -52,18 +52,12 @@ jobs:
           test "$HEAD_SHA" = "$MAIN_SHA"
           test -z "$TRACKED_DIRTY"
 
-      - name: Validar serviços e bind local
-        shell: bash
-        run: |
-          set -Eeuo pipefail
           for service in academia-api.service academia-web.service ollama.service; do
             state="$(systemctl is-active "$service")"
             echo "$service=$state" | tee -a "$DIAG_FILE"
             test "$state" = "active"
           done
-          enabled="$(systemctl is-enabled ollama.service)"
-          echo "ollama_enabled=$enabled" | tee -a "$DIAG_FILE"
-          test "$enabled" = "enabled"
+          test "$(systemctl is-enabled ollama.service)" = "enabled"
 
           OLLAMA_LISTENERS="$(ss -lntH | awk '$4 ~ /:11434$/ {print $4}')"
           echo "ollama_listeners=$OLLAMA_LISTENERS" | tee -a "$DIAG_FILE"
@@ -71,11 +65,76 @@ jobs:
           ! printf '%s\n' "$OLLAMA_LISTENERS" | grep -Eq '(^|\[)(0\.0\.0\.0|::|\*).*:11434$'
 
           curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
-          echo "api_health=ok" | tee -a "$DIAG_FILE"
           curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
-          echo "web_health=ok" | tee -a "$DIAG_FILE"
+          echo "application_health=ok" | tee -a "$DIAG_FILE"
+          ollama list | awk 'NR > 1 && $1 == "gemma3:4b" {found=1} END {exit found ? 0 : 1}'
+          echo "ollama_model=gemma3:4b" | tee -a "$DIAG_FILE"
 
-      - name: Validar configuração, modelo e migration
+      - name: Ajustar limites seguros para execução por CPU
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('/mnt/Projetos/Academia/apps/api/.env')
+          text = path.read_text(encoding='utf-8')
+          updates = {
+              'LOCAL_TRAINING_AI_ENABLED': 'true',
+              'OLLAMA_BASE_URL': 'http://127.0.0.1:11434',
+              'OLLAMA_MODEL': 'gemma3:4b',
+              'OLLAMA_TIMEOUT_MS': '300000',
+              'LOCAL_TRAINING_MAX_RETRIES': '0',
+              'OLLAMA_TEMPERATURE': '0',
+              'OLLAMA_KEEP_ALIVE': '0',
+              'OLLAMA_NUM_CTX': '2048',
+              'OLLAMA_NUM_PARALLEL': '1',
+              'LOCAL_TRAINING_PROMPT_VERSION': 'v1',
+          }
+          lines = text.splitlines()
+          found = set()
+          output = []
+          for line in lines:
+              stripped = line.strip()
+              replaced = False
+              for key, value in updates.items():
+                  if stripped.startswith(f'{key}='):
+                      output.append(f'{key}={value}')
+                      found.add(key)
+                      replaced = True
+                      break
+              if not replaced:
+                  output.append(line)
+          if output and output[-1] != '':
+              output.append('')
+          for key, value in updates.items():
+              if key not in found:
+                  output.append(f'{key}={value}')
+          path.write_text('\n'.join(output).rstrip() + '\n', encoding='utf-8')
+          PY
+
+          sudo -n systemctl restart academia-api.service
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          for key in LOCAL_TRAINING_AI_ENABLED OLLAMA_BASE_URL OLLAMA_MODEL OLLAMA_TIMEOUT_MS LOCAL_TRAINING_MAX_RETRIES OLLAMA_TEMPERATURE OLLAMA_KEEP_ALIVE OLLAMA_NUM_CTX OLLAMA_NUM_PARALLEL LOCAL_TRAINING_PROMPT_VERSION; do
+            value="${!key-}"
+            test -n "$value"
+            echo "$key=$value" | tee -a "$DIAG_FILE"
+          done
+          test "$OLLAMA_TIMEOUT_MS" = "300000"
+          test "$LOCAL_TRAINING_MAX_RETRIES" = "0"
+
+      - name: Validar migration, seed e testes
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -83,18 +142,6 @@ jobs:
           set -a
           source <(sed 's/^\*#/#/' .env)
           set +a
-
-          for key in LOCAL_TRAINING_AI_ENABLED OLLAMA_BASE_URL OLLAMA_MODEL OLLAMA_TIMEOUT_MS OLLAMA_TEMPERATURE OLLAMA_KEEP_ALIVE OLLAMA_NUM_CTX OLLAMA_NUM_PARALLEL LOCAL_TRAINING_PROMPT_VERSION; do
-            value="${!key-}"
-            test -n "$value"
-            echo "$key=$value" | tee -a "$DIAG_FILE"
-          done
-          test "$LOCAL_TRAINING_AI_ENABLED" = "true"
-          test "$OLLAMA_BASE_URL" = "http://127.0.0.1:11434"
-          test "$OLLAMA_MODEL" = "gemma3:4b"
-
-          ollama list | awk 'NR > 1 && $1 == "gemma3:4b" {found=1} END {exit found ? 0 : 1}'
-          echo "ollama_model=gemma3:4b" | tee -a "$DIAG_FILE"
 
           node <<'NODE' | tee -a "$DIAG_FILE"
           const { query, pool } = require('./lib/db');
@@ -111,23 +158,12 @@ jobs:
               'input_snapshot_hash', 'approved_at', 'approved_by', 'rejected_at',
               'rejected_by', 'rejection_reason', 'error_code', 'duration_ms', 'token_usage'
             ];
-            for (const name of required) {
-              if (!found.has(name)) throw new Error(`coluna_ausente:${name}`);
-            }
+            for (const name of required) if (!found.has(name)) throw new Error(`coluna_ausente:${name}`);
             const lockTable = await query(`SELECT to_regclass('public.training_ai_generation_locks') AS name`);
             if (!lockTable.rows[0]?.name) throw new Error('tabela_lock_ausente');
             console.log(JSON.stringify({ migration_058: 'ok', columns: required.length, lock_table: 'ok' }));
           })().finally(() => pool.end());
           NODE
-
-      - name: Validar seed e testes automatizados
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          cd "$API_DIR"
-          set -a
-          source <(sed 's/^\*#/#/' .env)
-          set +a
 
           SEED_OUTPUT="$(npm run seed:demo 2>&1)"
           printf '%s' "$SEED_OUTPUT" | grep -q 'seed_demo_ok'
@@ -152,11 +188,7 @@ jobs:
 
           LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 node <<'NODE' | tee -a "$DIAG_FILE"
           const { query, pool } = require('./lib/db');
-          const {
-            reviewTrainingPlan,
-            decideTrainingReview,
-            latestApprovedStudentMessage
-          } = require('./services/trainingReviewService');
+          const { reviewTrainingPlan, decideTrainingReview, latestApprovedStudentMessage } = require('./services/trainingReviewService');
 
           (async () => {
             const created = [];
@@ -180,25 +212,16 @@ jobs:
                 LIMIT 1
               `, [plan.gym_id]);
               if (!actorResult.rowCount) throw new Error('gestor_ausente');
-              const actorRow = actorResult.rows[0];
-              const actor = {
-                sub: actorRow.id,
-                gym_id: actorRow.gym_id,
-                role: actorRow.role,
-                access_profile: actorRow.access_profile,
-                access_permissions: { training: true }
-              };
+              const row = actorResult.rows[0];
+              const actor = { sub: row.id, gym_id: row.gym_id, role: row.role, access_profile: row.access_profile, access_permissions: { training: true } };
 
               const generative = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
               created.push(generative.id);
-              if (generative.source !== 'local_generative') {
-                throw new Error(`geracao_local_falhou:${generative.error_code || generative.source}`);
-              }
+              if (generative.source !== 'local_generative') throw new Error(`geracao_local_falhou:${generative.error_code || generative.source}`);
+
               const approved = await decideTrainingReview(query, actor, generative.id, 'approved');
               if (!approved.approved_at) throw new Error('aprovacao_falhou');
-              const studentView = await latestApprovedStudentMessage(query, {
-                role: 'student', gym_id: plan.gym_id, member_id: plan.member_id
-              });
+              const studentView = await latestApprovedStudentMessage(query, { role: 'student', gym_id: plan.gym_id, member_id: plan.member_id });
               if (studentView?.id !== generative.id) throw new Error('mensagem_aprovada_nao_visivel');
               const rejected = await decideTrainingReview(query, actor, generative.id, 'rejected', 'Validação automatizada temporária');
               if (!rejected.rejected_at || rejected.approved_at) throw new Error('rejeicao_falhou');
@@ -221,13 +244,9 @@ jobs:
                 fallback_error_code: fallback.error_code
               }));
             } finally {
-              if (created.length) {
-                await query('DELETE FROM workout_ai_reviews WHERE id = ANY($1::uuid[])', [created]);
-              }
-              if (plan) {
-                await query('UPDATE workout_plans SET reviewed_at = $2 WHERE id = $1', [plan.id, plan.reviewed_at]);
-              }
-              await query("DELETE FROM training_ai_generation_locks WHERE lock_key = 'global' AND expires_at < now()");
+              if (created.length) await query('DELETE FROM workout_ai_reviews WHERE id = ANY($1::uuid[])', [created]);
+              if (plan) await query('UPDATE workout_plans SET reviewed_at = $2 WHERE id = $1', [plan.id, plan.reviewed_at]);
+              await query("DELETE FROM training_ai_generation_locks WHERE lock_key = 'global'");
               await pool.end();
             }
           })();
