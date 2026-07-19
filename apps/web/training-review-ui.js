@@ -86,6 +86,17 @@
     return Number(count) === 1 ? singular : pluralText;
   }
 
+  function safeSummary(review) {
+    const summary = humanizeText(review?.summary || '');
+    const normalized = summary.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const incompleteEnding = /\b(rep|reps|serie|series|sessao|sessoes|treino|exercicio|exercicios)$/i.test(normalized);
+    if (summary.length >= 20 && /[.!?]$/.test(summary) && !incompleteEnding) return summary;
+    if (review?.requires_human_review || review?.status === 'professional_review') {
+      return 'A ficha precisa de revisão do professor antes de qualquer progressão.';
+    }
+    return 'A análise foi concluída. Consulte os pontos de atenção e as sugestões abaixo.';
+  }
+
   function comparisonText(rows) {
     if (!Array.isArray(rows) || rows.length < 2) return '';
     const currentSignals = Array.isArray(rows[0]?.signals) ? rows[0].signals.length : 0;
@@ -197,7 +208,7 @@
         human.classList.toggle('hidden', !review?.requires_human_review);
       }
       setText('review-status-readable', `Recomendação: ${statusLabel(review?.status)}.`);
-      setText('review-summary', review?.summary || 'A análise foi concluída.');
+      setText('review-summary', safeSummary(review));
       setText('review-student-message', review?.student_message || '');
       setText('review-trainer-notes', review?.trainer_notes || '');
 
@@ -245,7 +256,7 @@
       const percentage = confidencePercent(item?.confidence);
       const card = reviewItem(
         `${new Date(item.created_at).toLocaleString('pt-BR')} · ${sourceLabel(item?.source)}`,
-        item?.summary || '',
+        safeSummary(item),
         [
           `Recomendação: ${statusLabel(item?.status)}`,
           `Confiabilidade dos dados: ${percentage}% (${confidenceBand(item?.confidence)})`,
@@ -399,6 +410,7 @@
     statusLabel,
     sourceLabel,
     humanizeText,
+    safeSummary,
     comparisonText
   };
 }));

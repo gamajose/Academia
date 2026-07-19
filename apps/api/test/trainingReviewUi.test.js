@@ -5,6 +5,7 @@ const {
   confidenceBand,
   statusLabel,
   humanizeText,
+  safeSummary,
   comparisonText
 } = require('../../web/training-review-ui');
 
@@ -36,4 +37,16 @@ test('comparação não exibe enumerações internas', () => {
   assert.match(text, /manter a ficha atual/i);
   assert.match(text, /3 pontos de atenção/i);
   assert.doesNotMatch(text, /professional_review|maintain/);
+});
+
+test('substitui resumo cortado por uma mensagem completa', () => {
+  assert.equal(
+    safeSummary({ summary: 'O plano inclui 3 rep', status: 'professional_review', requires_human_review: true }),
+    'A ficha precisa de revisão do professor antes de qualquer progressão.'
+  );
+});
+
+test('preserva resumo completo da análise', () => {
+  const summary = 'A ficha está organizada, mas precisa de acompanhamento do professor.';
+  assert.equal(safeSummary({ summary, status: 'adjust' }), summary);
 });
