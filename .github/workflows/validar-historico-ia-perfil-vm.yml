@@ -1,11 +1,10 @@
-name: Validar histórico de IA no perfil na VM
+name: Validação temporária encerrada
 
 on:
   workflow_dispatch:
 
 jobs:
-  validar:
-    runs-on: [self-hosted, linux]
-    timeout-minutes: 10
+  encerrado:
+    runs-on: ubuntu-latest
     steps:
-      - run: echo "Validação manual desativada para não disputar o runner único com o deploy."
+      - run: echo "Fluxo temporário encerrado."
