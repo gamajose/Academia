@@ -131,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
     if (role == 'student' || role == 'visitor') {
       try {
         final status = await loadFirstAccessStatus(baseUrl, token);
-        final destination = (String name) => _authenticatedPage(
+        Widget destination(String name) => _authenticatedPage(
               baseUrl,
               token,
               role,
@@ -192,9 +192,10 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       await _openHome(baseUrl, token, role);
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() => message =
             'Falha no login: credenciais invalidas ou servidor indisponivel.');
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -211,8 +212,9 @@ class _LoginPageState extends State<LoginPage> {
       if (account == null) return;
       final authentication = await account.authentication;
       final idToken = authentication.idToken;
-      if (idToken == null || idToken.isEmpty)
+      if (idToken == null || idToken.isEmpty) {
         throw Exception('token_google_invalido');
+      }
       final baseUrl = apiController.text.trim().replaceAll(RegExp(r'/$'), '');
       final result = await ApiClient(baseUrl, null)
           .post('/api/auth/google', {'id_token': idToken});
@@ -224,9 +226,10 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       await _openHome(baseUrl, result['token'] as String, role);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() => message =
             'Não foi possível entrar com o Google. Verifique a configuração OAuth.');
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -345,8 +348,9 @@ class _DashboardPageState extends State<DashboardPage> {
         if (!silent) message = 'Atualizado.';
       });
     } catch (error) {
-      if (!silent && mounted)
+      if (!silent && mounted) {
         setState(() => message = 'Erro ao carregar: $error');
+      }
     }
   }
 

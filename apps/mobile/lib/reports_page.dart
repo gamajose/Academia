@@ -23,7 +23,10 @@ class _ReportsPageState extends State<ReportsPage> {
   bool loading = true;
   String message = 'Carregando relatorios...';
 
-  Map<String, String> get headers => {'Content-Type': 'application/json', 'Authorization': 'Bearer ${widget.token}'};
+  Map<String, String> get headers => {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${widget.token}'
+      };
 
   @override
   void initState() {
@@ -34,9 +37,14 @@ class _ReportsPageState extends State<ReportsPage> {
   Future<void> refresh() async {
     if (mounted) setState(() => loading = true);
     try {
-      final response = await http.get(Uri.parse('${widget.baseUrl}/api/reports/overview?days=$days'), headers: headers);
-      final data = jsonDecode(response.body.isEmpty ? '{}' : response.body) as Map<String, dynamic>;
-      if (response.statusCode >= 400) throw Exception(data['error'] ?? 'erro_requisicao');
+      final response = await http.get(
+          Uri.parse('${widget.baseUrl}/api/reports/overview?days=$days'),
+          headers: headers);
+      final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
+          as Map<String, dynamic>;
+      if (response.statusCode >= 400) {
+        throw Exception(data['error'] ?? 'erro_requisicao');
+      }
       if (!mounted) return;
       setState(() {
         summary = data['summary'] as Map<String, dynamic>? ?? {};
@@ -58,40 +66,57 @@ class _ReportsPageState extends State<ReportsPage> {
     return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
   }
 
-  Widget metric(String title, dynamic value, IconData icon, {bool currency = false}) {
+  Widget metric(String title, dynamic value, IconData icon,
+      {bool currency = false}) {
     return SizedBox(
       width: 170,
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(14),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(icon),
             const SizedBox(height: 8),
             Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(currency ? money(value) : '${value ?? 0}', style: const TextStyle(fontSize: 24)),
+            Text(currency ? money(value) : '${value ?? 0}',
+                style: const TextStyle(fontSize: 24)),
           ]),
         ),
       ),
     );
   }
 
-  List<double> dailyCheckins() => daily.map((raw) => double.tryParse('${(raw as Map<String, dynamic>)['checkins']}') ?? 0).toList();
-  List<double> dailyRevenue() => daily.map((raw) => (double.tryParse('${(raw as Map<String, dynamic>)['received_cents']}') ?? 0) / 100).toList();
+  List<double> dailyCheckins() => daily
+      .map((raw) =>
+          double.tryParse('${(raw as Map<String, dynamic>)['checkins']}') ?? 0)
+      .toList();
+  List<double> dailyRevenue() => daily
+      .map((raw) =>
+          (double.tryParse(
+                  '${(raw as Map<String, dynamic>)['received_cents']}') ??
+              0) /
+          100)
+      .toList();
 
   Widget chartCard(String title, List<double> values, String suffix) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           SizedBox(
             height: 190,
             width: double.infinity,
-            child: values.isEmpty ? const Center(child: Text('Sem dados.')) : CustomPaint(painter: _BarChartPainter(values)),
+            child: values.isEmpty
+                ? const Center(child: Text('Sem dados.'))
+                : CustomPaint(painter: _BarChartPainter(values)),
           ),
           const SizedBox(height: 8),
-          Text('Maior valor: ${values.isEmpty ? 0 : values.reduce(math.max).toStringAsFixed(1)} $suffix'),
+          Text(
+              'Maior valor: ${values.isEmpty ? 0 : values.reduce(math.max).toStringAsFixed(1)} $suffix'),
         ]),
       ),
     );
@@ -102,7 +127,11 @@ class _ReportsPageState extends State<ReportsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Relatorios gerenciais'),
-        actions: [IconButton(onPressed: loading ? null : refresh, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(
+              onPressed: loading ? null : refresh,
+              icon: const Icon(Icons.refresh))
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: refresh,
@@ -126,23 +155,43 @@ class _ReportsPageState extends State<ReportsPage> {
               metric('Alunos ativos', summary['active_members'], Icons.people),
               metric('Novos alunos', summary['new_members'], Icons.person_add),
               metric('Check-ins', summary['checkins'], Icons.login),
-              metric('Recebido', summary['received_cents'], Icons.payments, currency: true),
-              metric('Em aberto', summary['outstanding_cents'], Icons.warning_amber, currency: true),
-              metric('Aulas reservadas', summary['class_reservations'], Icons.event_available),
+              metric('Recebido', summary['received_cents'], Icons.payments,
+                  currency: true),
+              metric('Em aberto', summary['outstanding_cents'],
+                  Icons.warning_amber,
+                  currency: true),
+              metric('Aulas reservadas', summary['class_reservations'],
+                  Icons.event_available),
             ]),
             chartCard('Entradas por dia', dailyCheckins(), 'entradas'),
             chartCard('Receita por dia', dailyRevenue(), 'reais'),
-            const Text('Planos mais utilizados', style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+            const Text('Planos mais utilizados',
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
             ...plans.map((raw) {
               final item = raw as Map<String, dynamic>;
-              return Card(child: ListTile(leading: const Icon(Icons.card_membership), title: Text('${item['name']}'), trailing: Text('${item['memberships']} aluno(s)')));
+              return Card(
+                  child: ListTile(
+                      leading: const Icon(Icons.card_membership),
+                      title: Text('${item['name']}'),
+                      trailing: Text('${item['memberships']} aluno(s)')));
             }),
             const SizedBox(height: 12),
-            const Text('Alunos inadimplentes', style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
-            if (overdue.isEmpty) const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('Nenhum aluno inadimplente.'))),
+            const Text('Alunos inadimplentes',
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+            if (overdue.isEmpty)
+              const Card(
+                  child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('Nenhum aluno inadimplente.'))),
             ...overdue.map((raw) {
               final item = raw as Map<String, dynamic>;
-              return Card(child: ListTile(leading: const Icon(Icons.warning, color: Colors.red), title: Text('${item['name']}'), subtitle: Text('${item['invoices']} parcela(s) | mais antiga: ${item['oldest_due_date']}'), trailing: Text(money(item['total_cents']))));
+              return Card(
+                  child: ListTile(
+                      leading: const Icon(Icons.warning, color: Colors.red),
+                      title: Text('${item['name']}'),
+                      subtitle: Text(
+                          '${item['invoices']} parcela(s) | mais antiga: ${item['oldest_due_date']}'),
+                      trailing: Text(money(item['total_cents']))));
             }),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
@@ -161,10 +210,15 @@ class _BarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final maxValue = math.max(1.0, values.reduce(math.max));
-    final gap = 3.0;
-    final width = math.max(2.0, (size.width - gap * (values.length - 1)) / values.length);
-    final barPaint = Paint()..color = Colors.blue..style = PaintingStyle.fill;
-    final gridPaint = Paint()..color = Colors.grey.withValues(alpha: 0.25)..strokeWidth = 1;
+    const gap = 3.0;
+    final width =
+        math.max(2.0, (size.width - gap * (values.length - 1)) / values.length);
+    final barPaint = Paint()
+      ..color = Colors.blue
+      ..style = PaintingStyle.fill;
+    final gridPaint = Paint()
+      ..color = Colors.grey.withValues(alpha: 0.25)
+      ..strokeWidth = 1;
     for (var i = 0; i <= 4; i++) {
       final y = size.height * i / 4;
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
@@ -173,12 +227,15 @@ class _BarChartPainter extends CustomPainter {
       final height = values[i] / maxValue * (size.height - 8);
       final left = i * (width + gap);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(left, size.height - height, width, height), const Radius.circular(3)),
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(left, size.height - height, width, height),
+            const Radius.circular(3)),
         barPaint,
       );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _BarChartPainter oldDelegate) => oldDelegate.values != values;
+  bool shouldRepaint(covariant _BarChartPainter oldDelegate) =>
+      oldDelegate.values != values;
 }

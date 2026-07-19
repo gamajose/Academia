@@ -48,15 +48,16 @@ class _StudentLoginPageState extends State<StudentLoginPage> {
   Future<void> login() async {
     try {
       final base = api.text.trim().replaceAll(RegExp(r'/+$'), '');
-      final body = {'email': email.text.trim(), 'pass' + 'word': key.text};
+      final body = {'email': email.text.trim(), 'pass' 'word': key.text};
       final response = await http.post(
           Uri.parse('$base/api/student/auth/login'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body));
       final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
           as Map<String, dynamic>;
-      if (response.statusCode >= 400)
+      if (response.statusCode >= 400) {
         throw Exception(data['error'] ?? 'erro_login');
+      }
       await _openAuthenticated(base, data);
     } catch (error) {
       setState(() => message = 'Falha no acesso: $error');
@@ -71,21 +72,24 @@ class _StudentLoginPageState extends State<StudentLoginPage> {
       if (account == null) return;
       final authentication = await account.authentication;
       final idToken = authentication.idToken;
-      if (idToken == null || idToken.isEmpty)
+      if (idToken == null || idToken.isEmpty) {
         throw Exception('token_google_invalido');
+      }
       final base = api.text.trim().replaceAll(RegExp(r'/+$'), '');
       final response = await http.post(Uri.parse('$base/api/auth/google'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'id_token': idToken}));
       final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
           as Map<String, dynamic>;
-      if (response.statusCode >= 400)
+      if (response.statusCode >= 400) {
         throw Exception(data['error'] ?? 'erro_google');
+      }
       await _openAuthenticated(base, data);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() => message =
             'Não foi possível entrar com o Google. Verifique a configuração OAuth.');
+      }
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -170,8 +174,9 @@ class _StudentPortalPageState extends State<StudentPortalPage> {
         await http.get(Uri.parse('${widget.baseUrl}$path'), headers: headers);
     final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
         as Map<String, dynamic>;
-    if (response.statusCode >= 400)
+    if (response.statusCode >= 400) {
       throw Exception(data['error'] ?? 'erro_requisicao');
+    }
     return data;
   }
 
@@ -180,8 +185,9 @@ class _StudentPortalPageState extends State<StudentPortalPage> {
         headers: headers, body: jsonEncode(body));
     final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
         as Map<String, dynamic>;
-    if (response.statusCode >= 400)
+    if (response.statusCode >= 400) {
       throw Exception(data['error'] ?? 'erro_requisicao');
+    }
   }
 
   @override

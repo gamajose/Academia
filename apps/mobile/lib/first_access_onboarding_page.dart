@@ -34,8 +34,9 @@ Map<String, String> _headers(String? token) => {
 Map<String, dynamic> _decode(http.Response response) {
   final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
       as Map<String, dynamic>;
-  if (response.statusCode >= 400)
+  if (response.statusCode >= 400) {
     throw Exception(data['error'] ?? 'erro_requisicao');
+  }
   return data;
 }
 
@@ -128,25 +129,29 @@ class _FirstAccessOnboardingPageState extends State<FirstAccessOnboardingPage> {
       ][step];
 
   String? _validationMessage() {
-    if (step == 0 && nameController.text.trim().length < 2)
+    if (step == 0 && nameController.text.trim().length < 2) {
       return 'Informe seu nome.';
+    }
     if (step == 1) {
       final year = int.tryParse(birthYearController.text.trim());
       final currentYear = DateTime.now().year;
-      if (year == null || year < currentYear - 120 || year > currentYear)
+      if (year == null || year < currentYear - 120 || year > currentYear) {
         return 'Informe um ano válido.';
+      }
     }
     if (step == 2) {
       final weight =
           double.tryParse(weightController.text.trim().replaceAll(',', '.'));
-      if (weight == null || weight < 10 || weight > 500)
+      if (weight == null || weight < 10 || weight > 500) {
         return 'Informe um peso válido.';
+      }
     }
     if (step == 3) {
       final height =
           double.tryParse(heightController.text.trim().replaceAll(',', '.'));
-      if (height == null || height < 50 || height > 250)
+      if (height == null || height < 50 || height > 250) {
         return 'Informe uma altura válida.';
+      }
     }
     return null;
   }
@@ -196,9 +201,10 @@ class _FirstAccessOnboardingPageState extends State<FirstAccessOnboardingPage> {
             builder: (_) => widget.nextPageBuilder(nameController.text.trim())),
       );
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(
             () => message = 'Não foi possível salvar agora. Tente novamente.');
+      }
     } finally {
       if (mounted) setState(() => saving = false);
     }
@@ -419,10 +425,11 @@ class _CreateStudentAccountPageState extends State<CreateStudentAccountPage> {
       );
     } catch (error) {
       final duplicate = error.toString().contains('email_ja_cadastrado');
-      if (mounted)
+      if (mounted) {
         setState(() => message = duplicate
             ? 'Este e-mail já possui uma conta.'
             : 'Não foi possível criar a conta agora.');
+      }
     } finally {
       if (mounted) setState(() => saving = false);
     }
