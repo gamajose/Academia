@@ -1,0 +1,43 @@
+name: Aplicar histórico de IA no perfil
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/apply_student_ai_history_profile.py'
+      - '.github/workflows/apply-student-ai-history-profile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    if: github.head_ref == 'feat/historico-ia-no-perfil-aluno'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/historico-ia-no-perfil-aluno
+          fetch-depth: 0
+
+      - name: Aplicar alterações
+        run: python3 .github/scripts/apply_student_ai_history_profile.py
+
+      - name: Validar alterações
+        run: |
+          node --check apps/api/lib/progressReviewHistory.js
+          node --check apps/api/features/assessmentRoutes.js
+          node --check apps/web/alunos.js
+          node --test apps/api/test/progressReviewHistory.test.js apps/api/test/studentAiProfileHistoryUi.test.js
+
+      - name: Registrar alterações
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/scripts/apply_student_ai_history_profile.py
+          rm -f .github/workflows/apply-student-ai-history-profile.yml
+          git add apps/api/features/assessmentRoutes.js apps/web/alunos.html apps/web/alunos.js apps/web/product-layout.css .github/scripts/apply_student_ai_history_profile.py .github/workflows/apply-student-ai-history-profile.yml
+          git commit -m 'feat(web): registrar análises de IA no perfil do aluno'
+          git push origin HEAD:feat/historico-ia-no-perfil-aluno
