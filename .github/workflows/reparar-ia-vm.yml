@@ -1,0 +1,217 @@
+name: Reparar IA local na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/reparar-ia-vm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: manutencao-ia-vm
+  cancel-in-progress: false
+
+jobs:
+  reparar:
+    name: Testar gemma3:1b e ajustar backend
+    runs-on:
+      - self-hosted
+      - linux
+    timeout-minutes: 20
+    env:
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      RESULT_FILE: /tmp/academia-ai-repair.txt
+
+    steps:
+      - name: Preparar manutenção
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : > "$RESULT_FILE"
+          echo "inicio=$(date -Is)" | tee -a "$RESULT_FILE"
+          test "$(systemctl is-active academia-api.service)" = "active"
+          test "$(systemctl is-active ollama.service)" = "active"
+
+      - name: Instalar e validar gemma3 1b
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ollama stop gemma3:4b >/dev/null 2>&1 || true
+          if ! ollama list | awk 'NR > 1 && $1 == "gemma3:1b" {found=1} END {exit found ? 0 : 1}'; then
+            if ! ollama pull gemma3:1b >/tmp/ollama-pull-1b.log 2>&1; then
+              echo "pull_model=failed" | tee -a "$RESULT_FILE"
+              tail -n 20 /tmp/ollama-pull-1b.log
+              exit 1
+            fi
+          fi
+          ollama list | awk 'NR > 1 && $1 == "gemma3:1b" {found=1} END {exit found ? 0 : 1}'
+          echo "model_ready=gemma3:1b" | tee -a "$RESULT_FILE"
+
+      - name: Testar geração real com gemma3 1b
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+
+          OLLAMA_MODEL=gemma3:1b \
+          OLLAMA_TIMEOUT_MS=120000 \
+          LOCAL_TRAINING_MAX_RETRIES=0 \
+          LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 \
+          LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 \
+          node <<'NODE' | tee -a "$RESULT_FILE"
+          const { query, pool } = require('./lib/db');
+          const {
+            reviewTrainingPlan,
+            decideTrainingReview,
+            latestApprovedStudentMessage
+          } = require('./services/trainingReviewService');
+
+          (async () => {
+            const created = [];
+            let plan;
+            try {
+              const planResult = await query(`
+                SELECT wp.id, wp.gym_id, wp.member_id, wp.reviewed_at
+                FROM workout_plans wp
+                WHERE wp.name = 'Ficha Demo - Força' AND wp.status = 'active'
+                ORDER BY wp.created_at
+                LIMIT 1
+              `);
+              if (!planResult.rowCount) throw new Error('ficha_demo_ausente');
+              plan = planResult.rows[0];
+
+              const actorResult = await query(`
+                SELECT id, gym_id, role, access_profile
+                FROM users
+                WHERE gym_id = $1 AND is_active = true AND role IN ('owner', 'admin')
+                ORDER BY created_at
+                LIMIT 1
+              `, [plan.gym_id]);
+              if (!actorResult.rowCount) throw new Error('gestor_ausente');
+              const actorRow = actorResult.rows[0];
+              const actor = {
+                sub: actorRow.id,
+                gym_id: actorRow.gym_id,
+                role: actorRow.role,
+                access_profile: actorRow.access_profile,
+                access_permissions: { training: true }
+              };
+
+              const generated = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
+              created.push(generated.id);
+              if (generated.source !== 'local_generative') {
+                throw new Error(`gemma1b_fallback:${generated.error_code || generated.source}`);
+              }
+
+              const approved = await decideTrainingReview(query, actor, generated.id, 'approved');
+              if (!approved.approved_at) throw new Error('aprovacao_falhou');
+              const studentView = await latestApprovedStudentMessage(query, {
+                role: 'student', gym_id: plan.gym_id, member_id: plan.member_id
+              });
+              if (studentView?.id !== generated.id) throw new Error('visibilidade_aluno_falhou');
+              const rejected = await decideTrainingReview(query, actor, generated.id, 'rejected', 'Teste operacional temporário');
+              if (!rejected.rejected_at || rejected.approved_at) throw new Error('rejeicao_falhou');
+
+              console.log(JSON.stringify({
+                source: generated.source,
+                model: generated.model,
+                duration_ms: generated.duration_ms,
+                approval: 'ok',
+                rejection: 'ok',
+                student_visibility: 'ok'
+              }));
+            } finally {
+              if (created.length) {
+                await query('DELETE FROM workout_ai_reviews WHERE id = ANY($1::uuid[])', [created]);
+              }
+              if (plan) {
+                await query('UPDATE workout_plans SET reviewed_at = $2 WHERE id = $1', [plan.id, plan.reviewed_at]);
+              }
+              await query("DELETE FROM training_ai_generation_locks WHERE lock_key = 'global' AND expires_at < now()");
+              await pool.end();
+            }
+          })();
+          NODE
+
+      - name: Aplicar configuração e reiniciar API
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          BACKUP="/tmp/academia-api.env.before-model-1b"
+          cp -f .env "$BACKUP"
+          rollback() {
+            cp -f "$BACKUP" .env
+            sudo -n systemctl restart academia-api.service || true
+          }
+          trap rollback ERR
+
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.env')
+          updates = {
+              'OLLAMA_MODEL': 'gemma3:1b',
+              'LOCAL_TRAINING_MAX_RETRIES': '0',
+              'OLLAMA_TIMEOUT_MS': '120000',
+              'OLLAMA_NUM_CTX': '2048',
+              'OLLAMA_NUM_PARALLEL': '1',
+              'LOCAL_TRAINING_AI_ENABLED': 'true',
+          }
+          lines = path.read_text(encoding='utf-8').splitlines()
+          found = set()
+          output = []
+          for line in lines:
+              stripped = line.lstrip()
+              if not stripped or stripped.startswith('#') or '=' not in line:
+                  output.append(line)
+                  continue
+              key = line.split('=', 1)[0].strip()
+              if key in updates:
+                  output.append(f'{key}={updates[key]}')
+                  found.add(key)
+              else:
+                  output.append(line)
+          for key, value in updates.items():
+              if key not in found:
+                  output.append(f'{key}={value}')
+          path.write_text('\n'.join(output) + '\n', encoding='utf-8')
+          print('env_keys_updated=' + ','.join(sorted(updates)))
+          PY
+
+          sudo -n systemctl restart academia-api.service
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+          trap - ERR
+          rm -f "$BACKUP"
+          echo "production_model=gemma3:1b" | tee -a "$RESULT_FILE"
+          echo "production_retries=0" | tee -a "$RESULT_FILE"
+          echo "api_restart=ok" | tee -a "$RESULT_FILE"
+
+      - name: Registrar recursos
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "memory=$(free -h | awk '/^Mem:/ {print $2 "/" $3 "/" $7}')"
+            echo "swap=$(free -h | awk '/^Swap:/ {print $2 "/" $3}')"
+            echo "ollama_loaded=$(ollama ps 2>/dev/null | awk 'NR > 1 {print $1}' | paste -sd, -)"
+            echo "fim=$(date -Is)"
+          } | tee -a "$RESULT_FILE"
+
+      - name: Publicar resultado seguro
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reparo-ia-vm-${{ github.run_id }}
+          path: /tmp/academia-ai-repair.txt
+          if-no-files-found: warn
+          retention-days: 3
