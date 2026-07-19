@@ -14,16 +14,16 @@ concurrency:
 
 jobs:
   benchmark:
-    name: Medir respostas do gemma3 1b
+    name: Medir schema compacto no gemma3 1b
     runs-on:
       - self-hosted
       - linux
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
       API_DIR: /mnt/Projetos/Academia/apps/api
       OLLAMA_BASE_URL: http://127.0.0.1:11434
       OLLAMA_MODEL: gemma3:1b
-      OLLAMA_TIMEOUT_MS: 180000
+      OLLAMA_TIMEOUT_MS: 120000
       LOCAL_TRAINING_MAX_RETRIES: 0
       RESULT_FILE: /tmp/ollama-benchmark.json
 
@@ -45,16 +45,17 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const { requestOllama } = require('./services/localTrainingAiService');
-          const { TRAINING_REVIEW_JSON_SCHEMA, validateTrainingReview } = require('./lib/trainingReviewSchema');
 
           const model = process.env.OLLAMA_MODEL;
           const results = [];
+          const save = () => fs.writeFileSync(process.env.RESULT_FILE, JSON.stringify({ model, results }, null, 2));
 
           async function measure(name, payload, validate) {
             const started = Date.now();
             try {
               const response = await requestOllama(payload);
               const content = String(response?.message?.content || '');
+              if (validate) validate(content);
               const item = {
                 name,
                 ok: true,
@@ -65,8 +66,8 @@ jobs:
                 total_duration_ms: Math.round(Number(response.total_duration || 0) / 1e6),
                 load_duration_ms: Math.round(Number(response.load_duration || 0) / 1e6)
               };
-              if (validate) validate(content);
               results.push(item);
+              save();
               console.log(JSON.stringify(item));
             } catch (error) {
               const item = {
@@ -76,6 +77,7 @@ jobs:
                 error_code: String(error.code || error.message || 'unknown').slice(0, 120)
               };
               results.push(item);
+              save();
               console.log(JSON.stringify(item));
             }
           }
@@ -113,16 +115,32 @@ jobs:
               if (parsed.status !== 'ok') throw new Error('small_schema_invalid');
             });
 
-            await measure('training_schema_minimal', {
+            const compactSchema = {
+              type: 'object',
+              additionalProperties: false,
+              required: [
+                'summary', 'status', 'confidence', 'requires_human_review',
+                'student_message', 'trainer_notes'
+              ],
+              properties: {
+                summary: { type: 'string', minLength: 1, maxLength: 320 },
+                status: { type: 'string', enum: ['maintain', 'adjust', 'replace_partially', 'professional_review'] },
+                confidence: { type: 'number', minimum: 0, maximum: 1 },
+                requires_human_review: { type: 'boolean' },
+                student_message: { type: 'string', minLength: 1, maxLength: 320 },
+                trainer_notes: { type: 'string', minLength: 1, maxLength: 640 }
+              }
+            };
+            await measure('compact_training_schema', {
               model,
               stream: false,
               keep_alive: 0,
-              format: TRAINING_REVIEW_JSON_SCHEMA,
-              options: { temperature: 0, num_ctx: 4096, num_predict: 384 },
+              format: compactSchema,
+              options: { temperature: 0, num_ctx: 2048, num_predict: 192 },
               messages: [
                 {
                   role: 'system',
-                  content: 'Você apoia um profissional de educação física. Responda somente no JSON do schema, sem diagnóstico e sem prescrição.'
+                  content: 'Você apoia um profissional de educação física. Responda somente no JSON solicitado. Não diagnostique nem prescreva.'
                 },
                 {
                   role: 'user',
@@ -130,18 +148,22 @@ jobs:
                     objective: 'condicionamento geral',
                     level: 'iniciante',
                     restrictions: [],
-                    plan: { age_days: 10, exercises: [] },
-                    execution_summary: { considered_sessions: 0 },
-                    instruction: 'Gere uma análise conservadora, sem sinais e sem sugestões.'
+                    plan_age_days: 10,
+                    sessions: 0,
+                    rule_status: 'professional_review',
+                    rule_requires_human_review: true,
+                    instruction: 'Explique de forma curta e conservadora. Preserve a revisão humana obrigatória.'
                   })
                 }
               ]
             }, (content) => {
-              validateTrainingReview(JSON.parse(content), { planExercises: [], catalog: [] });
+              const value = JSON.parse(content);
+              const keys = ['summary', 'status', 'confidence', 'requires_human_review', 'student_message', 'trainer_notes'];
+              if (!keys.every((key) => Object.prototype.hasOwnProperty.call(value, key))) throw new Error('compact_schema_missing_field');
+              if (value.requires_human_review !== true) throw new Error('compact_schema_safety_lost');
             });
 
-            fs.writeFileSync(process.env.RESULT_FILE, JSON.stringify({ model, results }, null, 2));
-            if (!results[0]?.ok || !results[1]?.ok) process.exitCode = 1;
+            if (!results.every((item) => item.ok)) process.exitCode = 1;
           })();
           NODE
 
