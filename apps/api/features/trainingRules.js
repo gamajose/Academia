@@ -34,6 +34,23 @@ function metricDelta(assessments, field) {
   return Number.isFinite(current) && Number.isFinite(previous) ? current - previous : null;
 }
 
+function formatAssessmentDate(value) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date);
+}
+
+function describeAssessment(item = {}) {
+  const details = [];
+  const date = formatAssessmentDate(item.assessment_date);
+  if (date) details.push(`Avaliação realizada em ${date}`);
+  if (Number.isFinite(Number(item.weight_kg))) details.push(`Peso: ${Number(item.weight_kg).toFixed(1)} kg`);
+  if (Number.isFinite(Number(item.body_fat_percent))) details.push(`Gordura corporal: ${Number(item.body_fat_percent).toFixed(1)}%`);
+  if (Number.isFinite(Number(item.muscle_mass_kg))) details.push(`Massa muscular: ${Number(item.muscle_mass_kg).toFixed(1)} kg`);
+  if (Number.isFinite(Number(item.waist_cm))) details.push(`Cintura: ${Number(item.waist_cm).toFixed(1)} cm`);
+  return details.slice(0, 4);
+}
+
 function suggestion(type, priority, action, reason, progression, extra = {}) {
   return {
     type,
@@ -98,7 +115,12 @@ function buildTrainingReview(input = {}) {
   }
 
   if (restrictions.length) {
-    addSignal('restriction', 'critical', 'Existem restrições cadastradas que precisam ser consideradas antes de qualquer ajuste.', restrictions.map((_, index) => `Restrição cadastrada ${index + 1}`));
+    addSignal(
+      'restriction',
+      'critical',
+      'Existem restrições cadastradas que precisam ser consideradas antes de qualquer ajuste.',
+      restrictions.map((value) => `Restrição informada: ${String(value).trim()}`).filter((value) => value !== 'Restrição informada:')
+    );
   }
 
   const assessmentEvidence = [];
@@ -107,7 +129,10 @@ function buildTrainingReview(input = {}) {
   if (waistDelta !== null) assessmentEvidence.push(`Variação de cintura: ${waistDelta.toFixed(1)} cm`);
   if (assessmentEvidence.length) addSignal('assessment', 'info', 'As avaliações recentes apresentam mudanças mensuráveis.', assessmentEvidence);
   if (assessments.length < 2) {
-    addSignal('assessment', 'attention', 'Há poucos dados físicos para comparar evolução com segurança.', [`${assessments.length} avaliação disponível`]);
+    const evidence = assessments.length
+      ? describeAssessment(assessments[0])
+      : ['Nenhuma avaliação física registrada'];
+    addSignal('assessment', 'attention', 'Ainda não há avaliações suficientes para comparar evolução com segurança.', evidence);
     requiresHumanReview = true;
   }
 
@@ -172,4 +197,4 @@ function buildTrainingReview(input = {}) {
   };
 }
 
-module.exports = { normalizeLevel, progressionByLevel, buildTrainingReview };
+module.exports = { normalizeLevel, progressionByLevel, describeAssessment, buildTrainingReview };
