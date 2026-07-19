@@ -5,6 +5,7 @@ const { pool } = require('../lib/db');
 const { buildProgressAnalysis, carryForwardAssessments } = require('../lib/progressAnalysis');
 const { loadTrainingIntelligence } = require('../lib/trainingIntelligence');
 const { reachedGoals } = require('../lib/goalAchievement');
+const { latestApprovedStudentMessage } = require('../services/trainingReviewService');
 
 const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo1234';
 const STUDENT_WEEKDAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -498,6 +499,15 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (isStudent(user) && !isPasswordChangeRequest && !isStudentProfileRequest && !isOnboardingRequest) {
     const accountState = await query('SELECT must_change_password FROM member_accounts WHERE id = $1 AND member_id = $2 AND gym_id = $3 LIMIT 1', [user.sub, user.member_id, user.gym_id]);
     if (accountState.rows[0]?.must_change_password) return send(res, 403, { error: 'troca_senha_obrigatoria' });
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/training/analysis') {
+    try {
+      return send(res, 200, { analysis: await latestApprovedStudentMessage(query, user) });
+    } catch (error) {
+      if (error?.statusCode) return send(res, error.statusCode, { error: error.code || error.message });
+      throw error;
+    }
   }
 
   if (isOnboardingRequest && req.method === 'GET') {

@@ -1,7 +1,7 @@
 const { recordAudit } = require('../lib/audit');
-const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
+const { normalizeLevel } = require('./trainingRules');
 const { hasModulePermission } = require('../lib/accessControl');
-const { MODEL_VERSION, loadTrainingIntelligence } = require('../lib/trainingIntelligence');
+const { reviewTrainingPlan, decideTrainingReview } = require('../services/trainingReviewService');
 
 function canManageTrainingLevels(user) {
   return hasModulePermission(user, 'training');
@@ -141,20 +141,27 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/training/advanced/review') {
     const input = await body(req);
-    if (!input.plan_id) return send(res, 400, { error: 'plan_id_obrigatorio' });
-    const plan = await query('SELECT id, member_id, level, current_date - starts_at AS age_days FROM workout_plans WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.plan_id, user.gym_id]);
-    if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
-    const intelligence = await loadTrainingIntelligence(query, user.gym_id, plan.rows[0].member_id);
-    if (!intelligence) return send(res, 404, { error: 'aluno_nao_encontrado' });
-    const suggestions = [...intelligence.plan_review.recommendations.map((reason) => ({ type: 'plan_adjustment', reason })), ...intelligence.exercise_recommendations];
-    const saved = await query('INSERT INTO workout_ai_reviews (gym_id, member_id, plan_id, plan_age_days, recommendation, suggestions, model_version, confidence, performance_score, analysis_snapshot) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10::jsonb) RETURNING id, recommendation, suggestions, model_version, confidence, performance_score, created_at', [user.gym_id, plan.rows[0].member_id, input.plan_id, Number(plan.rows[0].age_days || 0), intelligence.performance.trainer_summary, JSON.stringify(suggestions), MODEL_VERSION, intelligence.confidence.score, intelligence.performance.score, JSON.stringify(intelligence)]);
-    await query('UPDATE workout_plans SET reviewed_at = now() WHERE id = $1 AND gym_id = $2', [input.plan_id, user.gym_id]);
-    return send(res, 201, { ...saved.rows[0], intelligence });
+    try {
+      const review = await reviewTrainingPlan({ query, user, planId: input.plan_id });
+      return send(res, 201, review);
+    } catch (error) {
+      if (error?.statusCode) return send(res, error.statusCode, { error: error.code || error.message });
+      throw error;
+    }
   }
 
   if (req.method === 'POST' && url.pathname === '/api/training/advanced/review/feedback') {
     const input = await body(req);
-    if (!input.review_id || !['accepted', 'rejected', 'applied'].includes(input.decision)) return send(res, 400, { error: 'dados_invalidos' });
+    if (!input.review_id || !['accepted', 'rejected'].includes(input.decision)) return send(res, 400, { error: 'dados_invalidos' });
+    if (String(input.recommendation_key || 'plan_review') === 'plan_review') {
+      try {
+        const decision = await decideTrainingReview(query, user, input.review_id, input.decision === 'accepted' ? 'approved' : 'rejected', input.notes);
+        return send(res, 200, decision);
+      } catch (error) {
+        if (error?.statusCode) return send(res, error.statusCode, { error: error.code || error.message });
+        throw error;
+      }
+    }
     const review = await query('SELECT id, member_id, plan_id FROM workout_ai_reviews WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.review_id, user.gym_id]);
     if (!review.rowCount) return send(res, 404, { error: 'analise_nao_encontrada' });
     const saved = await query('INSERT INTO ai_recommendation_feedback (gym_id, review_id, member_id, plan_id, recommendation_key, actor_user_id, decision, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [user.gym_id, input.review_id, review.rows[0].member_id, review.rows[0].plan_id, String(input.recommendation_key || 'review'), user.sub, input.decision, String(input.notes || '').slice(0, 1000) || null]);
