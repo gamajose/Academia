@@ -51,7 +51,7 @@ async function main() {
     await client.query("INSERT INTO member_goals(gym_id,member_id,goal_type,target_value,target_date,status,notes) SELECT $1,$2,'Peso',78,current_date+90,'active','Meta de demonstração.' WHERE NOT EXISTS (SELECT 1 FROM member_goals WHERE gym_id=$1 AND member_id=$2 AND goal_type='Peso')", [gym.id,primary.id]);
     await client.query("INSERT INTO checkins(gym_id,member_id,source) SELECT $1,$2,'demo' WHERE NOT EXISTS (SELECT 1 FROM checkins WHERE gym_id=$1 AND member_id=$2 AND checked_at::date=current_date)", [gym.id,primary.id]);
     await client.query('COMMIT');
-    console.log(JSON.stringify({ gym: gym.name, members: members.length, demo_login: members[0].email, demo_password: DEMO_PASSWORD }, null, 2));
+    console.log(JSON.stringify({ status: 'seed_demo_ok', members: members.length }));
   } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); await pool.end(); }
 }
 main().catch((error) => { console.error(error.message); process.exitCode = 1; });
