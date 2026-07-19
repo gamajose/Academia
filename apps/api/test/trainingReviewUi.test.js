@@ -54,7 +54,6 @@ test('preserva resumo completo da análise', () => {
   assert.equal(safeSummary({ summary, status: 'adjust' }), summary);
 });
 
-
 test('explica ausência de dados sem mostrar zero como resultado', () => {
   assert.equal(confidenceText(0), 'Dados insuficientes para medir a confiabilidade');
   assert.equal(confidenceText(0.73), 'Confiabilidade dos dados: 73% (alta)');
