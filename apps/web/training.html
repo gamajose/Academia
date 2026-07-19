@@ -123,7 +123,54 @@
   </div>
 
   <div class="modal hidden" id="review-modal" role="dialog" aria-modal="true" aria-labelledby="review-title" aria-hidden="true">
-    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Revisão</p><h3 id="review-title">Análise inteligente</h3><p>Revise uma ficha antiga e receba sugestões para a equipe.</p></div><button type="button" id="close-review-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="review-plan"></select><button id="review-plan-button" type="button">Analisar ficha</button><ul id="review-list"></ul><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="review-modal">Fechar</button></div></section>
+    <section class="modal-card training-modal-card training-review-card">
+      <div class="modal-header">
+        <div><h3 id="review-title">Análise com IA</h3></div>
+        <button type="button" id="close-review-modal" class="secondary modal-close" aria-label="Fechar">×</button>
+      </div>
+      <label for="review-plan">Ficha</label>
+      <select id="review-plan"></select>
+      <div class="training-review-toolbar">
+        <button id="review-plan-button" type="button">Analisar ficha</button>
+        <button id="review-history-button" class="secondary" type="button">Histórico</button>
+      </div>
+      <div id="review-loading" class="training-review-loading hidden" role="status">
+        <span class="training-review-spinner" aria-hidden="true"></span>
+        Analisando ficha. Isso pode levar alguns instantes.
+      </div>
+      <div id="review-error" class="status-message training-review-error hidden" role="alert"></div>
+      <section id="review-result" class="training-review-result hidden" aria-live="polite">
+        <div class="training-review-badges">
+          <span id="review-source" class="status-pill"></span>
+          <span id="review-confidence" class="status-pill"></span>
+          <span id="review-human" class="status-pill alert hidden">Revisão humana necessária</span>
+        </div>
+        <h4 id="review-summary"></h4>
+        <div>
+          <h5>Sinais e evidências</h5>
+          <div id="review-signals" class="training-review-list"></div>
+        </div>
+        <div>
+          <h5>Sugestões</h5>
+          <div id="review-suggestions" class="training-review-list"></div>
+        </div>
+        <div class="training-review-note"><strong>Mensagem para o aluno após aprovação</strong><p id="review-student-message"></p></div>
+        <div class="training-review-note"><strong>Notas para o profissional</strong><p id="review-trainer-notes"></p></div>
+        <label for="review-rejection-reason">Motivo da rejeição (opcional)</label>
+        <textarea id="review-rejection-reason" maxlength="500" placeholder="Registre o motivo para o histórico"></textarea>
+        <div id="review-decision" class="form-actions">
+          <button id="review-reject-button" class="secondary" type="button">Rejeitar</button>
+          <button id="review-approve-button" type="button">Aprovar</button>
+        </div>
+        <p id="review-decision-status" class="status-message hidden" role="status"></p>
+      </section>
+      <section id="review-history" class="training-review-history hidden">
+        <h4>Histórico</h4>
+        <div id="review-comparison" class="training-review-note hidden"></div>
+        <div id="review-history-list" class="training-review-list"></div>
+      </section>
+      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="review-modal">Fechar</button></div>
+    </section>
   </div>
 
   <script src="./nav.js?v=20260719-1"></script>

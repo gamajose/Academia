@@ -31,6 +31,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   Map<String, dynamic> access = {};
   Map<String, dynamic> accountOverview = {};
   Map<String, dynamic>? trainingPlan;
+  Map<String, dynamic>? approvedTrainingAnalysis;
   List<dynamic> exercises = [];
   List<dynamic> trainingLogs = [];
   List<dynamic> assessments = [];
@@ -54,7 +55,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   bool get accessAllowed => access['allowed'] == true;
   bool get hasOfflineCredential =>
-      (offlineRegistrationNumber?.isNotEmpty ?? false) && (offlinePin?.isNotEmpty ?? false);
+      (offlineRegistrationNumber?.isNotEmpty ?? false) &&
+      (offlinePin?.isNotEmpty ?? false);
 
   int get remainingSeconds {
     if (credentialExpiresAt == null) return 0;
@@ -118,7 +120,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
   Future<void> _saveOfflineCredential(Map<String, dynamic> credential) async {
     final registration = credential['registration_number']?.toString();
     final pin = credential['offline_pin']?.toString();
-    if (registration == null || registration.isEmpty || pin == null || pin.isEmpty) return;
+    if (registration == null ||
+        registration.isEmpty ||
+        pin == null ||
+        pin.isEmpty) {
+      return;
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('studentOfflineRegistrationNumber', registration);
     await prefs.setString('studentOfflinePin', pin);
@@ -136,9 +143,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
   ]) async {
     final uri = Uri.parse('${widget.baseUrl}$path');
     final response = method == 'POST'
-        ? await http.post(uri, headers: headers, body: jsonEncode(requestBody ?? {}))
+        ? await http.post(uri,
+            headers: headers, body: jsonEncode(requestBody ?? {}))
         : await http.get(uri, headers: headers);
-    final data = jsonDecode(response.body.isEmpty ? '{}' : response.body) as Map<String, dynamic>;
+    final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
+        as Map<String, dynamic>;
     if (response.statusCode >= 400) {
       throw Exception(data['error'] ?? data['message'] ?? 'erro_requisicao');
     }
@@ -158,13 +167,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
         overview = {};
       }
       try {
-        offlineCredential = await _request('GET', '/api/student/access/offline-credential');
+        offlineCredential =
+            await _request('GET', '/api/student/access/offline-credential');
         await _saveOfflineCredential(offlineCredential);
       } catch (_) {
         offlineCredential = {};
       }
 
       Map<String, dynamic>? currentPlan;
+      Map<String, dynamic>? approvedAnalysis;
       List<dynamic> currentExercises = [];
       List<dynamic> logs = [];
       List<dynamic> progressAssessments = [];
@@ -176,11 +187,24 @@ class _StudentHomePageState extends State<StudentHomePage> {
         currentPlan = training['plan'] as Map<String, dynamic>?;
         final allExercises = training['exercises'] as List<dynamic>? ?? [];
         final today = DateTime.now().weekday;
-        final todayExercises = allExercises.where((item) => int.tryParse('${item['weekday']}') == today).toList();
-        currentExercises = todayExercises.isEmpty ? allExercises : todayExercises;
-        workoutDayId = currentExercises.isEmpty ? null : currentExercises.first['workout_day_id'] as String?;
+        final todayExercises = allExercises
+            .where((item) => int.tryParse('${item['weekday']}') == today)
+            .toList();
+        currentExercises =
+            todayExercises.isEmpty ? allExercises : todayExercises;
+        workoutDayId = currentExercises.isEmpty
+            ? null
+            : currentExercises.first['workout_day_id'] as String?;
       } catch (_) {
         currentPlan = null;
+      }
+
+      try {
+        final analysis =
+            await _request('GET', '/api/student/training/analysis');
+        approvedAnalysis = analysis['analysis'] as Map<String, dynamic>?;
+      } catch (_) {
+        approvedAnalysis = null;
       }
 
       try {
@@ -205,13 +229,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
         access = accessResult['access'] as Map<String, dynamic>? ?? {};
         accountOverview = overview;
         trainingPlan = currentPlan;
+        approvedTrainingAnalysis = approvedAnalysis;
         exercises = currentExercises;
         trainingLogs = logs;
         assessments = progressAssessments;
         goals = progressGoals;
         currentDayId = workoutDayId;
         if (offlineCredential.isNotEmpty) {
-          offlineRegistrationNumber = offlineCredential['registration_number']?.toString();
+          offlineRegistrationNumber =
+              offlineCredential['registration_number']?.toString();
           offlinePin = offlineCredential['offline_pin']?.toString();
         }
         message = access['message']?.toString() ?? 'Dados atualizados.';
@@ -249,7 +275,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
 
     try {
-      final result = await _request('POST', '/api/student/access/credential', {});
+      final result =
+          await _request('POST', '/api/student/access/credential', {});
       final newAccess = result['access'] as Map<String, dynamic>? ?? {};
       final generated = result['generated'] == true;
       if (!mounted) return;
@@ -258,7 +285,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
         if (generated) {
           qrPayload = result['qr_payload'] as String?;
           accessCode = result['access_code']?.toString();
-          credentialExpiresAt = DateTime.parse(result['expires_at'] as String).toLocal();
+          credentialExpiresAt =
+              DateTime.parse(result['expires_at'] as String).toLocal();
           message = newAccess['status'] == 'grace_period'
               ? 'Acesso em carência. Regularize a pendência para evitar bloqueio.'
               : 'Credencial atualizada automaticamente.';
@@ -292,9 +320,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
         'feedback': 'Concluído pelo aplicativo',
       });
       await _refresh();
-      if (mounted) setState(() => message = 'Treino marcado como concluído. Parabéns!');
+      if (mounted) {
+        setState(() => message = 'Treino marcado como concluído. Parabéns!');
+      }
     } catch (error) {
-      if (mounted) setState(() => message = 'Não foi possível concluir o treino: $error');
+      if (mounted) {
+        setState(() => message = 'Não foi possível concluir o treino: $error');
+      }
     } finally {
       if (mounted) setState(() => completingWorkout = false);
     }
@@ -328,7 +360,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   void _openPage(Widget page) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => page)).then((_) => _refresh());
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page))
+        .then((_) => _refresh());
   }
 
   Color get statusColor {
@@ -425,7 +458,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
             children: [
               Icon(Icons.signal_wifi_off),
               SizedBox(width: 8),
-              Text('Acesso sem internet', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Acesso sem internet',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 8),
@@ -441,19 +475,27 @@ class _StudentHomePageState extends State<StudentHomePage> {
             children: [
               Column(
                 children: [
-                  const Text('Matrícula', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('Matrícula',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   SelectableText(
                     offlineRegistrationNumber ?? '------',
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: 3),
+                    style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 3),
                   ),
                 ],
               ),
               Column(
                 children: [
-                  const Text('PIN', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('PIN',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   SelectableText(
                     offlinePin ?? '----',
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: 4),
+                    style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 4),
                   ),
                 ],
               ),
@@ -470,7 +512,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const Text('Minha entrada', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Minha entrada',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             const Text(
               'Com internet, apresente o QR Code ou digite o código temporário. Sem internet, use a matrícula e o PIN salvos.',
@@ -488,20 +531,28 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text('Código temporário', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text('Código temporário',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               SelectableText(
                 formattedAccessCode,
-                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: 5),
+                style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 5),
               ),
               const SizedBox(height: 8),
               Text(
-                generatingCredential ? 'Atualizando credencial...' : 'Muda em $remainingSeconds segundos',
+                generatingCredential
+                    ? 'Atualizando credencial...'
+                    : 'Muda em $remainingSeconds segundos',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: credentialExpiresAt == null ? null : (remainingSeconds / 30).clamp(0.0, 1.0),
+                value: credentialExpiresAt == null
+                    ? null
+                    : (remainingSeconds / 30).clamp(0.0, 1.0),
               ),
             ] else if (generatingCredential)
               const Padding(
@@ -517,7 +568,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: accessAllowed
-                  ? () => _openPage(ScanGymQrPage(baseUrl: widget.baseUrl, token: widget.token))
+                  ? () => _openPage(ScanGymQrPage(
+                      baseUrl: widget.baseUrl, token: widget.token))
                   : null,
               icon: const Icon(Icons.qr_code_scanner),
               label: const Text('Ler QR da catraca'),
@@ -531,13 +583,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   Widget build(BuildContext context) {
     final overdueDays = access['overdue_days'] ?? 0;
-    final frequency = accountOverview['frequency'] as Map<String, dynamic>? ?? {};
+    final frequency =
+        accountOverview['frequency'] as Map<String, dynamic>? ?? {};
     final unread = accountOverview['unread_notifications']?.toString() ?? '0';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Área do aluno'),
-        actions: [IconButton(onPressed: _logout, icon: const Icon(Icons.logout))],
+        actions: [
+          IconButton(onPressed: _logout, icon: const Icon(Icons.logout))
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
@@ -546,7 +601,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
           children: [
             Text(
               profile['name'] == null ? 'Bem-vindo' : 'Olá, ${profile['name']}',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -556,9 +614,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 _shortcut(Icons.card_membership, 'Meu plano', 0),
                 _shortcut(Icons.payments, 'Pagamentos', 1),
                 _shortcut(Icons.history, 'Minhas entradas', 2),
-                _shortcut(Icons.notifications, 'Notificações', 3, badge: unread),
-                _pageShortcut(Icons.event, 'Aulas', StudentClassesPage(baseUrl: widget.baseUrl, token: widget.token)),
-                _pageShortcut(Icons.show_chart, 'Minha evolução', EvolutionPage(baseUrl: widget.baseUrl, token: widget.token)),
+                _shortcut(Icons.notifications, 'Notificações', 3,
+                    badge: unread),
+                _pageShortcut(
+                    Icons.event,
+                    'Aulas',
+                    StudentClassesPage(
+                        baseUrl: widget.baseUrl, token: widget.token)),
+                _pageShortcut(
+                    Icons.show_chart,
+                    'Minha evolução',
+                    EvolutionPage(
+                        baseUrl: widget.baseUrl, token: widget.token)),
               ],
             ),
             const SizedBox(height: 12),
@@ -570,20 +637,29 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   children: [
                     Row(
                       children: [
-                        Icon(accessAllowed ? Icons.verified : Icons.block, color: statusColor),
+                        Icon(accessAllowed ? Icons.verified : Icons.block,
+                            color: statusColor),
                         const SizedBox(width: 8),
-                        Text(statusTitle, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: statusColor)),
+                        Text(statusTitle,
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor)),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(access['message']?.toString() ?? message),
                     if (overdueDays > 0) ...[
                       const SizedBox(height: 6),
-                      Text('Dias de atraso: $overdueDays de ${access['grace_days'] ?? 10} dias de carência.'),
+                      Text(
+                          'Dias de atraso: $overdueDays de ${access['grace_days'] ?? 10} dias de carência.'),
                     ],
-                    if (access['membership_ends_at'] != null) Text('Vigência da matrícula: ${access['membership_ends_at']}'),
+                    if (access['membership_ends_at'] != null)
+                      Text(
+                          'Vigência da matrícula: ${access['membership_ends_at']}'),
                     const SizedBox(height: 8),
-                    Text('Frequência: ${frequency['week_checkins'] ?? 0} entrada(s) nesta semana e ${frequency['month_checkins'] ?? 0} neste mês.'),
+                    Text(
+                        'Frequência: ${frequency['week_checkins'] ?? 0} entrada(s) nesta semana e ${frequency['month_checkins'] ?? 0} neste mês.'),
                   ],
                 ),
               ),
@@ -601,54 +677,100 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       children: [
                         Icon(Icons.fitness_center),
                         SizedBox(width: 8),
-                        Text('Treino atual', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('Treino atual',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(trainingPlan?['name']?.toString() ?? 'Nenhum treino ativo'),
+                    Text(trainingPlan?['name']?.toString() ??
+                        'Nenhum treino ativo'),
                     if (trainingPlan != null)
-                      Text('Nível: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
+                      Text(
+                          'Nível: ${trainingPlan?['level'] ?? '-'} | Objetivo: ${trainingPlan?['goal'] ?? '-'} | ${trainingPlan?['age_days'] ?? 0} dias'),
                     const SizedBox(height: 12),
                     FilledButton.icon(
-                      onPressed: currentDayId == null || completingWorkout ? null : _completeWorkout,
+                      onPressed: currentDayId == null || completingWorkout
+                          ? null
+                          : _completeWorkout,
                       icon: const Icon(Icons.check_circle),
-                      label: Text(completingWorkout ? 'Salvando...' : 'Marcar treino como concluído'),
+                      label: Text(completingWorkout
+                          ? 'Salvando...'
+                          : 'Marcar treino como concluído'),
                     ),
                   ],
                 ),
               ),
             ),
+            if (approvedTrainingAnalysis?['student_message'] != null) ...[
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.auto_awesome),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Orientação do seu professor',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              approvedTrainingAnalysis!['student_message']
+                                  .toString(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             _section(
               'Exercícios de hoje',
               Icons.list_alt,
               exercises,
-              (item) => '${item['exercise_name'] ?? '-'} | ${item['sets'] ?? '-'}x ${item['reps'] ?? '-'} | descanso ${item['rest_seconds'] ?? '-'}s',
+              (item) =>
+                  '${item['exercise_name'] ?? '-'} | ${item['sets'] ?? '-'}x ${item['reps'] ?? '-'} | descanso ${item['rest_seconds'] ?? '-'}s',
               'Nenhum exercício para hoje.',
             ),
             _section(
               'Evolução física',
               Icons.monitor_heart,
               assessments,
-              (item) => '${item['assessment_date'] ?? '-'} | Peso ${item['weight_kg'] ?? '-'} kg | Cintura ${item['waist_cm'] ?? '-'} cm',
+              (item) =>
+                  '${item['assessment_date'] ?? '-'} | Peso ${item['weight_kg'] ?? '-'} kg | Cintura ${item['waist_cm'] ?? '-'} cm',
               'Nenhuma avaliação registrada.',
             ),
             _section(
               'Metas',
               Icons.flag,
               goals,
-              (item) => '${item['goal_type'] ?? 'Meta'} | Alvo ${item['target_value'] ?? '-'} | ${item['status'] ?? '-'}',
+              (item) =>
+                  '${item['goal_type'] ?? 'Meta'} | Alvo ${item['target_value'] ?? '-'} | ${item['status'] ?? '-'}',
               'Nenhuma meta registrada.',
             ),
             _section(
               'Histórico de treinos',
               Icons.history,
               trainingLogs,
-              (item) => '${item['completed_at'] ?? '-'} | ${item['day_title'] ?? item['plan_name'] ?? 'Treino'}',
+              (item) =>
+                  '${item['completed_at'] ?? '-'} | ${item['day_title'] ?? item['plan_name'] ?? 'Treino'}',
               'Nenhum treino concluído.',
             ),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
-            if (loading) const Padding(padding: EdgeInsets.all(12), child: LinearProgressIndicator()),
+            if (loading)
+              const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: LinearProgressIndicator()),
           ],
         ),
       ),

@@ -32,6 +32,18 @@
     }
   }
 
+  async function loadApprovedAnalysis() {
+    try {
+      const result = await StudentPortal.api('/api/student/training/analysis');
+      const analysis = result.analysis;
+      if (!analysis?.student_message) return;
+      p('student-approved-analysis-message').textContent = analysis.student_message;
+      p('student-approved-analysis').classList.remove('hidden');
+    } catch (_) {
+      // A orientação é opcional e nunca bloqueia o carregamento do treino.
+    }
+  }
+
   revealTrainingContent();
 
   function toDateKey(date) {
@@ -374,7 +386,7 @@
   }
 
   async function load() {
-    try { revealTrainingContent(); await StudentPortal.init(); const me = await StudentPortal.api('/api/student/me'); p('student-portal-title').textContent = `Meu treino, ${(me.name || 'Aluno').split(' ')[0]}`; const result = await StudentPortal.api('/api/student/training/catalog'); catalog = [...(result.public || []).map((item) => ({ ...item, is_private: false })), ...(result.private || []).map((item) => ({ ...item, is_private: true }))]; populateMuscleFilters(); await loadCalendar(); }
+    try { revealTrainingContent(); await StudentPortal.init(); const me = await StudentPortal.api('/api/student/me'); p('student-portal-title').textContent = `Meu treino, ${(me.name || 'Aluno').split(' ')[0]}`; const result = await StudentPortal.api('/api/student/training/catalog'); catalog = [...(result.public || []).map((item) => ({ ...item, is_private: false })), ...(result.private || []).map((item) => ({ ...item, is_private: true }))]; populateMuscleFilters(); await Promise.all([loadCalendar(), loadApprovedAnalysis()]); }
     catch (error) { status('student-portal-status', `Erro: ${error.message}`, true); }
     finally { revealTrainingContent(); }
   }

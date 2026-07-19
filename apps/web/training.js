@@ -17,6 +17,7 @@ let exerciseSecondaryFilter = '';
 let planLibraryQuery = '';
 let exercisePage = 1;
 let planPage = 1;
+let currentTrainingReview = null;
 const TRAINING_PAGE_SIZE = 5;
 
 const t = (id) => document.getElementById(id);
@@ -1113,38 +1114,114 @@ async function addWorkoutExercise() {
 }
 
 async function reviewPlan() {
-  const result = await api('/api/training/plans/review', {
+  const button = t('review-plan-button');
+  const loading = t('review-loading');
+  const error = t('review-error');
+  button.disabled = true;
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  t('review-result').classList.add('hidden');
+  t('review-history').classList.add('hidden');
+  try {
+    currentTrainingReview = await api('/api/training/plans/review', {
+      method: 'POST',
+      body: JSON.stringify({ plan_id: t('review-plan').value })
+    });
+    renderTrainingReview(currentTrainingReview);
+    setTrainingStatus(currentTrainingReview.source === 'local_generative' ? 'Análise local gerada.' : 'Análise gerada pelo motor de regras.');
+  } catch (requestError) {
+    error.textContent = trainingReviewErrorMessage(requestError);
+    error.classList.remove('hidden');
+  } finally {
+    button.disabled = false;
+    loading.classList.add('hidden');
+  }
+}
+
+function trainingReviewErrorMessage(error) {
+  const text = String(error?.message || error || '');
+  if (text.includes('analise_em_andamento')) return 'Já existe uma análise em andamento. Aguarde a conclusão.';
+  if (text.includes('aguarde_nova_analise')) return 'Esta ficha foi analisada há pouco. Aguarde antes de gerar novamente.';
+  if (text.includes('limite_horario_atingido')) return 'O limite de análises desta hora foi atingido.';
+  return 'Não foi possível concluir a análise. Tente novamente.';
+}
+
+function reviewItem(title, description, evidence = []) {
+  const item = document.createElement('article');
+  item.className = 'training-review-item';
+  const strong = document.createElement('strong');
+  strong.textContent = title;
+  const body = document.createElement('div');
+  body.textContent = description;
+  item.append(strong, body);
+  if (evidence.length) {
+    const list = document.createElement('ul');
+    list.className = 'training-review-evidence';
+    evidence.forEach((value) => {
+      const row = document.createElement('li');
+      row.textContent = value;
+      list.appendChild(row);
+    });
+    item.appendChild(list);
+  }
+  return item;
+}
+
+function renderTrainingReview(review) {
+  t('review-source').textContent = review.source === 'local_generative' ? 'IA local' : 'Motor de regras';
+  t('review-confidence').textContent = `Confiança ${Math.round(Number(review.confidence || 0) * 100)}%`;
+  t('review-human').classList.toggle('hidden', !review.requires_human_review);
+  t('review-summary').textContent = review.summary || '';
+  t('review-student-message').textContent = review.student_message || '';
+  t('review-trainer-notes').textContent = review.trainer_notes || '';
+  const signals = t('review-signals');
+  signals.replaceChildren(...(review.signals || []).map((item) => reviewItem(`${item.severity} · ${item.type}`, item.description, item.evidence || [])));
+  const suggestions = t('review-suggestions');
+  suggestions.replaceChildren(...(review.suggestions || []).map((item) => reviewItem(`${item.priority} · ${item.type}`, item.suggested_action, [item.reason])));
+  t('review-decision').classList.toggle('hidden', Boolean(review.approved_at || review.rejected_at));
+  t('review-decision-status').textContent = review.approved_at
+    ? 'Análise aprovada. A mensagem está disponível para o aluno.'
+    : review.rejected_at
+      ? 'Análise rejeitada.'
+      : '';
+  t('review-decision-status').classList.toggle('hidden', !review.approved_at && !review.rejected_at);
+  t('review-result').classList.remove('hidden');
+}
+
+async function decideCurrentReview(decision) {
+  if (!currentTrainingReview) return;
+  const reason = decision === 'reject' ? t('review-rejection-reason').value.trim() : '';
+  const review = await api(`/api/training/plans/review/${decision}`, {
     method: 'POST',
-    body: JSON.stringify({ plan_id: t('review-plan').value })
+    body: JSON.stringify({ review_id: currentTrainingReview.id, reason })
   });
-  const list = t('review-list');
-  list.innerHTML = '';
-  const title = document.createElement('li');
-  title.textContent = result.recommendation;
-  list.appendChild(title);
-  for (const suggestion of result.suggestions || []) {
-    const row = document.createElement('li');
-    row.appendChild(document.createTextNode(suggestion.name ? `${suggestion.name}: ${suggestion.reason || ''}` : (suggestion.reason || suggestion.type || '')));
-    if (suggestion.exercise_id) {
-      const actions = document.createElement('span'); actions.className = 'training-ai-suggestion-actions';
-      for (const [decision, label] of [['accepted', '✓'], ['rejected', '×']]) {
-        const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary icon-button'; button.textContent = label; button.title = decision === 'accepted' ? 'Aprovar sugestão' : 'Rejeitar sugestão';
-        button.addEventListener('click', async () => { await api('/api/training/advanced/review/feedback', { method: 'POST', body: JSON.stringify({ review_id: result.id, recommendation_key: suggestion.exercise_id, decision }) }); actions.textContent = decision === 'accepted' ? 'Aprovado' : 'Rejeitado'; }); actions.appendChild(button);
-      }
-      row.appendChild(actions);
-    }
-    list.appendChild(row);
+  currentTrainingReview = review;
+  renderTrainingReview(review);
+  await loadReviewHistory();
+}
+
+async function loadReviewHistory() {
+  const planId = t('review-plan').value;
+  const result = await api(`/api/training/plans/reviews?plan_id=${encodeURIComponent(planId)}&limit=20`);
+  const rows = result.data || [];
+  const list = t('review-history-list');
+  list.replaceChildren(...rows.map((item) => {
+    const card = reviewItem(`${new Date(item.created_at).toLocaleString('pt-BR')} · ${item.source === 'local_generative' ? 'IA local' : 'Regras'}`, item.summary || '', [`Status: ${item.status}`, `Confiança: ${Math.round(Number(item.confidence || 0) * 100)}%`]);
+    card.classList.add('training-review-history-item');
+    card.addEventListener('click', () => {
+      currentTrainingReview = item;
+      renderTrainingReview(item);
+    });
+    return card;
+  }));
+  const comparison = t('review-comparison');
+  if (rows.length >= 2) {
+    comparison.textContent = `Comparação: ${rows[0].status} agora; ${rows[1].status} na análise anterior. Sinais: ${(rows[0].signals || []).length} agora e ${(rows[1].signals || []).length} antes.`;
+    comparison.classList.remove('hidden');
+  } else {
+    comparison.classList.add('hidden');
   }
-  const feedback = document.createElement('li'); feedback.className = 'training-ai-feedback';
-  for (const [decision, label] of [['accepted', 'Aprovar'], ['rejected', 'Rejeitar']]) {
-    const button = document.createElement('button'); button.type = 'button'; button.className = decision === 'rejected' ? 'secondary' : '';
-    button.textContent = label; button.addEventListener('click', async () => {
-      await api('/api/training/advanced/review/feedback', { method: 'POST', body: JSON.stringify({ review_id: result.id, recommendation_key: 'plan_review', decision }) });
-      feedback.replaceChildren(document.createTextNode(decision === 'accepted' ? 'Sugestões aprovadas pelo personal.' : 'Sugestões rejeitadas pelo personal.'));
-    }); feedback.appendChild(button);
-  }
-  list.appendChild(feedback);
-  setTrainingStatus('Analise gerada.');
+  t('review-history').classList.remove('hidden');
 }
 
 t('create-exercise-button').addEventListener('click', createExercise);
@@ -1165,6 +1242,9 @@ document.querySelectorAll('input[name="plan-day"]').forEach((input) => {
 t('create-day-button').addEventListener('click', createDay);
 t('add-workout-exercise-button').addEventListener('click', addWorkoutExercise);
 t('review-plan-button').addEventListener('click', reviewPlan);
+t('review-history-button').addEventListener('click', loadReviewHistory);
+t('review-approve-button').addEventListener('click', () => decideCurrentReview('approve'));
+t('review-reject-button').addEventListener('click', () => decideCurrentReview('reject'));
 
 function syncTrainingModalState() {
   document.body.classList.toggle('modal-open', Boolean(document.querySelector('.modal:not(.hidden)')));
