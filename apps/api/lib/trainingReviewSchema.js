@@ -7,10 +7,22 @@ const SUGGESTION_TYPES = ['keep_plan', 'adjust_volume', 'adjust_rest', 'progress
 const PRIORITIES = ['low', 'medium', 'high'];
 const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$';
 const UUID_RE = new RegExp(UUID_PATTERN);
+const UNSAFE_NARRATIVE_RE = /<[^>]+>|https?:\/\/|www\.|diagn[oó]stic|prescrev|medicament|rem[eé]dio|horm[oô]n|anabolizante|subst[aâ]ncia|dosagem|\b\d+\s*mg\b/i;
 
 const nullableString = (maxLength) => ({ anyOf: [{ type: 'string', maxLength }, { type: 'null' }] });
 const nullableInteger = (minimum, maximum) => ({ anyOf: [{ type: 'integer', minimum, maximum }, { type: 'null' }] });
 const nullableUuid = { anyOf: [{ type: 'string', pattern: UUID_PATTERN }, { type: 'null' }] };
+
+const TRAINING_NARRATIVE_JSON_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['summary', 'student_message', 'trainer_notes'],
+  properties: {
+    summary: { type: 'string', minLength: 1, maxLength: 180 },
+    student_message: { type: 'string', minLength: 1, maxLength: 180 },
+    trainer_notes: { type: 'string', minLength: 1, maxLength: 300 }
+  }
+};
 
 const TRAINING_REVIEW_JSON_SCHEMA = {
   type: 'object',
@@ -87,6 +99,12 @@ function string(value, code, min, max) {
   return result;
 }
 
+function safeNarrative(value, code, max) {
+  const result = string(value, code, 1, max);
+  assert(!UNSAFE_NARRATIVE_RE.test(result), 'conteudo_narrativo_inseguro');
+  return result;
+}
+
 function nullableText(value, code, max) {
   if (value === null) return null;
   return string(value, code, 1, max);
@@ -97,6 +115,18 @@ function nullableId(value, code, allowed) {
   assert(typeof value === 'string' && UUID_RE.test(value), code);
   assert(allowed.has(value), code);
   return value;
+}
+
+function validateTrainingNarrative(input) {
+  assert(input && typeof input === 'object' && !Array.isArray(input), 'narrativa_invalida');
+  const allowed = new Set(TRAINING_NARRATIVE_JSON_SCHEMA.required);
+  assert(Object.keys(input).every((key) => allowed.has(key)), 'narrativa_campo_nao_permitido');
+  assert([...allowed].every((key) => Object.prototype.hasOwnProperty.call(input, key)), 'narrativa_incompleta');
+  return {
+    summary: safeNarrative(input.summary, 'resumo_narrativo_invalido', 180),
+    student_message: safeNarrative(input.student_message, 'mensagem_aluno_invalida', 180),
+    trainer_notes: safeNarrative(input.trainer_notes, 'notas_profissional_invalidas', 300)
+  };
 }
 
 function validateTrainingReview(input, context = {}) {
@@ -175,12 +205,14 @@ function stableHash(value) {
 }
 
 module.exports = {
+  TRAINING_NARRATIVE_JSON_SCHEMA,
   TRAINING_REVIEW_JSON_SCHEMA,
   STATUS,
   SIGNAL_TYPES,
   SEVERITIES,
   SUGGESTION_TYPES,
   PRIORITIES,
+  validateTrainingNarrative,
   validateTrainingReview,
   stableHash
 };

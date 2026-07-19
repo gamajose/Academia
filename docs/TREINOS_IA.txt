@@ -2,23 +2,27 @@ Módulo de Treinos e Análise Inteligente Local
 
 Arquitetura
 ------------
-O sistema usa uma arquitetura híbrida e totalmente local:
+O sistema usa uma arquitetura híbrida, explicável e totalmente local:
 
 1. O professor ou administrador solicita manualmente a análise de uma ficha.
-2. O backend carrega apenas dados necessários da academia e da ficha solicitada.
+2. O backend carrega apenas os dados necessários da academia e da ficha solicitada.
 3. Dados identificáveis são removidos ou pseudonimizados antes da inferência.
-4. O motor de regras calcula sinais obrigatórios de segurança.
+4. O motor de regras calcula status, confiança, revisão humana, sinais e sugestões.
 5. Quando habilitado, o backend chama o Ollama local em 127.0.0.1:11434.
-6. O gemma3:4b responde usando Structured Outputs (JSON Schema).
-7. O backend valida tipos, limites e IDs de exercícios contra a ficha e o catálogo da mesma academia.
-8. Qualquer falha usa imediatamente o motor de regras.
-9. A análise é salva como sugestão. Nenhuma ficha é alterada automaticamente.
-10. O aluno recebe somente student_message depois de aprovação explícita do profissional.
+6. O gemma3:1b gera somente três textos curtos: resumo, mensagem ao aluno e notas ao professor.
+7. O modelo não decide status, segurança, exercícios, séries, repetições, carga ou descanso.
+8. O backend valida a narrativa e combina os textos com as decisões autoritativas das regras.
+9. Qualquer falha usa imediatamente a análise completa do motor de regras.
+10. A análise é salva como sugestão. Nenhuma ficha é alterada automaticamente.
+11. O aluno recebe somente student_message depois de aprovação explícita do profissional.
+
+A separação entre regras e narrativa reduz o custo de CPU, evita que o modelo rebaixe
+alertas objetivos e mantém o resultado utilizável quando o Ollama estiver indisponível.
 
 Origens salvas:
-- local_generative: saída válida do modelo local.
-- rules_fallback: resultado do motor de regras em desativação, indisponibilidade,
-  timeout, modelo ausente, recusa, JSON inválido ou schema incompleto.
+- local_generative: narrativa válida produzida pelo modelo local e combinada às regras.
+- rules_fallback: resultado integral das regras em desativação, indisponibilidade,
+  timeout, modelo ausente, recusa, JSON inválido ou narrativa insegura.
 
 Segurança e privacidade
 ----------------------
@@ -31,11 +35,11 @@ Segurança e privacidade
 - O ID do aluno é pseudonimizado por academia.
 - Logs registram apenas origem, modelo, duração, erro técnico e contagem de tokens.
 - Prompts, respostas completas e informações pessoais não são registrados.
-- IDs sugeridos são aceitos somente quando pertencem ao catálogo da academia.
-- IDs atuais são aceitos somente quando pertencem à ficha analisada.
+- Sinais, sugestões, status e necessidade de revisão vêm do motor de regras.
+- A narrativa não pode conter HTML, links, diagnóstico, prescrição, medicamentos,
+  hormônios, anabolizantes, substâncias ou dosagens.
 - Dor, lesão, restrições, esforço excessivo e poucos dados nunca podem ser
-  rebaixados pelo modelo e exigem revisão humana.
-- A análise não diagnostica, trata ou recomenda medicamentos, hormônios ou substâncias.
+  rebaixados pelo modelo e exigem revisão humana quando definidos pelas regras.
 
 Execução controlada
 -------------------
@@ -44,24 +48,26 @@ Execução controlada
 - Uma trava no PostgreSQL permite uma única geração por vez em toda a instalação.
 - A trava expira e também é liberada em finally.
 - Há limite por academia/hora e intervalo mínimo por ficha.
-- Timeout e tentativas são limitados.
-- keep_alive=0 descarrega o modelo depois da resposta.
-- O modelo usa temperatura zero e contexto limitado.
+- Timeout e tamanho de saída são limitados.
+- Não há nova tentativa automática após timeout, evitando duas inferências pesadas.
+- keep_alive=0 solicita o descarregamento do modelo depois da resposta concluída.
+- O modelo usa temperatura zero, contexto curto e no máximo 96 tokens de saída.
 
 Variáveis do backend
 --------------------
 LOCAL_TRAINING_AI_ENABLED=true
 OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=gemma3:4b
-OLLAMA_TIMEOUT_MS=120000
+OLLAMA_MODEL=gemma3:1b
+OLLAMA_TIMEOUT_MS=150000
 OLLAMA_TEMPERATURE=0
 OLLAMA_KEEP_ALIVE=0
-OLLAMA_NUM_CTX=2048
+OLLAMA_NUM_CTX=1024
+OLLAMA_NUM_PREDICT=96
 OLLAMA_NUM_PARALLEL=1
-LOCAL_TRAINING_PROMPT_VERSION=v1
+LOCAL_TRAINING_PROMPT_VERSION=v2-narrative
 
 Controles adicionais opcionais:
-LOCAL_TRAINING_MAX_RETRIES=1
+LOCAL_TRAINING_MAX_RETRIES=0
 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=10
 LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=60
 
@@ -80,13 +86,17 @@ Override esperado em /etc/systemd/system/ollama.service.d/override.conf:
 Aplicar e baixar o modelo:
   sudo systemctl daemon-reload
   sudo systemctl enable --now ollama
-  ollama pull gemma3:4b
+  ollama pull gemma3:1b
 
 Validar:
   systemctl is-active ollama
   systemctl is-enabled ollama
   ss -ltnp | grep ':11434'
   ollama list
+
+O modelo gemma3:4b pode permanecer instalado para testes manuais, mas não é o
+modelo recomendado para esta VM sem GPU. O gemma3:1b concluiu a narrativa curta
+em CPU; o schema completo com listas aninhadas excedeu o tempo operacional.
 
 Rotas
 -----
@@ -122,14 +132,14 @@ Testes mínimos
 Na API:
   npm run check
 
-Os testes cobrem saída estruturada, minimização de dados, sucesso local, timeout,
-resposta HTTP inválida, JSON incompleto, modelo ausente, fallback, trava,
-restrições/dor, permissões, isolamento entre academias, aprovação, rejeição e
-visibilidade restrita do aluno.
+Os testes cobrem saída estruturada, narrativa curta, bloqueio de conteúdo inseguro,
+minimização de dados, autoridade das regras, sucesso local, timeout, resposta HTTP
+inválida, JSON incompleto, modelo ausente, fallback, trava, restrições/dor,
+permissões, isolamento entre academias, aprovação, rejeição e visibilidade do aluno.
 
 Na VM também validar:
-- análise real com Ollama disponível;
-- análise com Ollama parado retornando rules_fallback;
+- análise real com Ollama disponível retornando local_generative;
+- análise com IA desabilitada retornando rules_fallback;
 - nenhuma alteração nas tabelas da ficha;
 - mensagem invisível antes da aprovação e visível depois;
 - API e web saudáveis durante e depois da inferência;
@@ -145,7 +155,7 @@ Rollback operacional, sem perder análises:
 4. Se necessário, parar e desabilitar o Ollama:
      sudo systemctl disable --now ollama
 5. Para liberar disco depois de confirmar o rollback:
-     ollama rm gemma3:4b
+     ollama rm gemma3:1b
 6. Restaurar o override do systemd a partir do backup preparado antes da instalação.
 7. Qualquer reversão de código deve ocorrer por novo PR.
 
@@ -155,7 +165,9 @@ manter o módulo funcionando pelo motor de regras.
 
 Limitações
 ----------
-- A VM executa o modelo em CPU; a primeira análise pode levar mais tempo.
-- A saída é apoio ao profissional, não decisão autônoma.
-- Qualidade depende da regularidade dos registros de execução e avaliações.
+- A VM executa o modelo em CPU; uma narrativa pode levar cerca de um a dois minutos.
+- O modelo gera explicação, não decisão autônoma.
+- A qualidade depende da regularidade dos registros de execução e avaliações.
 - Alterações de ficha continuam sendo uma ação separada e exclusivamente humana.
+- Uma requisição HTTP cancelada por timeout pode continuar consumindo CPU no Ollama
+  por alguns instantes; por isso a aplicação não repete automaticamente a chamada.
