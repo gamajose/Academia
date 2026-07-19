@@ -30,48 +30,27 @@ jobs:
           path = Path('apps/api/services/localTrainingAiService.js')
           text = path.read_text(encoding='utf-8')
 
-          old_prompt = "    'Responda somente no JSON definido pelo schema, com três textos curtos em português do Brasil.',"
-          new_prompt = "    'Responda somente no JSON definido pelo schema, com três textos curtos em português do Brasil e sempre em frases completas, sem códigos internos ou palavras abreviadas.',"
-          if old_prompt not in text:
-              raise SystemExit('prompt_alvo_nao_encontrado')
-          text = text.replace(old_prompt, new_prompt, 1)
+          original_prompt = "    'Responda somente no JSON definido pelo schema, com três textos curtos em português do Brasil.',"
+          improved_prompt = "    'Responda somente no JSON definido pelo schema, com três textos curtos em português do Brasil e sempre em frases completas, sem códigos internos ou palavras abreviadas.',"
+          if original_prompt in text:
+              text = text.replace(original_prompt, improved_prompt, 1)
 
-          old_merge = """function mergeNarrativeWithRules(narrative, rules) {
-  return {
-    summary: narrative.summary,
-    status: rules.status,
-    confidence: rules.confidence,
-    requires_human_review: rules.requires_human_review,
-    signals: rules.signals,
-    suggestions: rules.suggestions,
-    student_message: narrative.student_message,
-    trainer_notes: narrative.trainer_notes
-  };
-}
-"""
-          new_merge = """function completeNarrativeSummary(value, fallback) {
+          marker = "function mergeNarrativeWithRules(narrative, rules) {\n  return {\n    summary: narrative.summary,"
+          replacement = """function completeNarrativeSummary(value, fallback) {
   const text = String(value || '').trim();
-  const truncatedEnding = /\\b(rep|reps|serie|series|sessao|sessoes|treino|exercicio|exercicios)$/i.test(text.normalize('NFD').replace(/[\\u0300-\\u036f]/g, ''));
+  const normalized = text.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+  const truncatedEnding = /\\b(rep|reps|serie|series|sessao|sessoes|treino|exercicio|exercicios)$/i.test(normalized);
   if (text.length < 20 || truncatedEnding || !/[.!?]$/.test(text)) return fallback;
   return text;
 }
 
 function mergeNarrativeWithRules(narrative, rules) {
   return {
-    summary: completeNarrativeSummary(narrative.summary, rules.summary),
-    status: rules.status,
-    confidence: rules.confidence,
-    requires_human_review: rules.requires_human_review,
-    signals: rules.signals,
-    suggestions: rules.suggestions,
-    student_message: narrative.student_message,
-    trainer_notes: narrative.trainer_notes
-  };
-}
-"""
-          if old_merge not in text:
+    summary: completeNarrativeSummary(narrative.summary, rules.summary),"""
+          if marker not in text:
               raise SystemExit('merge_alvo_nao_encontrado')
-          path.write_text(text.replace(old_merge, new_merge, 1), encoding='utf-8')
+          text = text.replace(marker, replacement, 1)
+          path.write_text(text, encoding='utf-8')
           Path('.github/workflows/aplicar-qualidade-narrativa.yml').unlink()
           PY
 
