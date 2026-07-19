@@ -1,4 +1,4 @@
-name: Ativar IA narrativa na VM
+name: Confirmar deploy final da IA local
 
 on:
   pull_request:
@@ -9,193 +9,48 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ativar-ia-local-vm
-  cancel-in-progress: false
+  group: confirmar-ia-local-vm
+  cancel-in-progress: true
 
 jobs:
-  ativar:
-    name: Validar narrativa real com saída ampliada
+  confirmar:
+    name: Validar commit e serviços finais
     runs-on:
       - self-hosted
       - linux
-    timeout-minutes: 25
+    timeout-minutes: 10
     env:
       PROJECT_DIR: /mnt/Projetos/Academia
       API_DIR: /mnt/Projetos/Academia/apps/api
-      EXPECTED_MAIN_SHA: d8b307edb05aab62333f0973346c98f203ddf31f
-      RESULT_FILE: /tmp/academia-ai-activation.txt
+      EXPECTED_MAIN_SHA: bfcaf555f5f8b9795cd7443d166e57bf52f90713
+      RESULT_FILE: /tmp/academia-ai-final-state.txt
 
     steps:
-      - name: Confirmar deploy e recuperar modo seguro
+      - name: Aguardar commit final na VM
         shell: bash
         run: |
           set -Eeuo pipefail
           : > "$RESULT_FILE"
           git config --global --add safe.directory "$PROJECT_DIR"
-          git -C "$PROJECT_DIR" fetch --quiet origin main
-          test "$(git -C "$PROJECT_DIR" branch --show-current)" = "main"
-          test "$(git -C "$PROJECT_DIR" rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
-          test "$(git -C "$PROJECT_DIR" rev-parse origin/main)" = "$EXPECTED_MAIN_SHA"
+          deployed=""
+          remote=""
+          for attempt in $(seq 1 36); do
+            git -C "$PROJECT_DIR" fetch --quiet origin main
+            deployed="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
+            remote="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
+            branch="$(git -C "$PROJECT_DIR" branch --show-current)"
+            if [ "$branch" = "main" ] && [ "$deployed" = "$EXPECTED_MAIN_SHA" ] && [ "$remote" = "$EXPECTED_MAIN_SHA" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "$deployed" = "$EXPECTED_MAIN_SHA"
+          test "$remote" = "$EXPECTED_MAIN_SHA"
           test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+          echo "deployed_sha=$deployed" | tee -a "$RESULT_FILE"
+          echo "origin_main_sha=$remote" | tee -a "$RESULT_FILE"
 
-          cd "$API_DIR"
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.env')
-          lines = path.read_text(encoding='utf-8').splitlines()
-          output = []
-          found = False
-          for line in lines:
-              if '=' in line and line.split('=', 1)[0].strip() == 'LOCAL_TRAINING_AI_ENABLED':
-                  output.append('LOCAL_TRAINING_AI_ENABLED=false')
-                  found = True
-              else:
-                  output.append(line)
-          if not found:
-              output.append('LOCAL_TRAINING_AI_ENABLED=false')
-          path.write_text('\n'.join(output) + '\n', encoding='utf-8')
-          PY
-          ollama stop gemma3:4b >/dev/null 2>&1 || true
-          ollama stop gemma3:1b >/dev/null 2>&1 || true
-          sudo -n systemctl restart academia-api.service
-          for attempt in $(seq 1 15); do
-            curl --fail --silent --max-time 10 http://127.0.0.1:3004/health >/dev/null && break
-            sleep 3
-          done
-          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
-          echo "safe_start=rules_only" | tee -a "$RESULT_FILE"
-          echo "deployed_sha=$EXPECTED_MAIN_SHA" | tee -a "$RESULT_FILE"
-
-      - name: Diagnosticar narrativa com 160 tokens
-        shell: bash
-        env:
-          OLLAMA_MODEL: gemma3:1b
-          OLLAMA_TIMEOUT_MS: 240000
-          OLLAMA_NUM_CTX: 1024
-          OLLAMA_NUM_PREDICT: 160
-          LOCAL_TRAINING_MAX_RETRIES: 0
-        run: |
-          set -Eeuo pipefail
-          cd "$API_DIR"
-          set -a
-          source <(sed 's/^\*#/#/' .env)
-          set +a
-          export OLLAMA_MODEL=gemma3:1b OLLAMA_TIMEOUT_MS=240000 OLLAMA_NUM_CTX=1024 OLLAMA_NUM_PREDICT=160 LOCAL_TRAINING_MAX_RETRIES=0
-
-          node <<'NODE' | tee -a "$RESULT_FILE"
-          const { query, pool } = require('./lib/db');
-          const { loadTrainingReviewSnapshot } = require('./lib/trainingReviewSnapshot');
-          const { TRAINING_NARRATIVE_JSON_SCHEMA, validateTrainingNarrative } = require('./lib/trainingReviewSchema');
-          const { buildTrainingReview } = require('./features/trainingRules');
-          const { prepareModelInput, requestOllama } = require('./services/localTrainingAiService');
-
-          (async () => {
-            try {
-              const plan = await query(`
-                SELECT id, gym_id FROM workout_plans
-                WHERE name = 'Ficha Demo - Força' AND status = 'active'
-                ORDER BY created_at LIMIT 1
-              `);
-              if (!plan.rowCount) throw new Error('ficha_demo_ausente');
-              const loaded = await loadTrainingReviewSnapshot(query, plan.rows[0].gym_id, plan.rows[0].id);
-              const rules = buildTrainingReview({
-                snapshot: loaded.snapshot,
-                planAgeDays: loaded.planAgeDays,
-                level: loaded.snapshot.level
-              });
-              const payload = {
-                model: 'gemma3:1b',
-                stream: false,
-                keep_alive: 0,
-                format: TRAINING_NARRATIVE_JSON_SCHEMA,
-                options: { temperature: 0, num_ctx: 1024, num_predict: 160 },
-                messages: [
-                  {
-                    role: 'system',
-                    content: 'Explique apenas as regras recebidas. Retorne somente JSON com summary, student_message e trainer_notes. Use textos muito curtos. Não diagnostique, não prescreva e não altere o treino.'
-                  },
-                  { role: 'user', content: JSON.stringify(prepareModelInput(loaded.snapshot, rules)) }
-                ]
-              };
-              const started = Date.now();
-              const response = await requestOllama(payload);
-              const content = String(response?.message?.content || '');
-              const metadata = {
-                direct_elapsed_ms: Date.now() - started,
-                direct_content_chars: content.length,
-                direct_eval_count: Number(response.eval_count || 0),
-                direct_prompt_eval_count: Number(response.prompt_eval_count || 0),
-                direct_done: response.done === true,
-                direct_done_reason: String(response.done_reason || ''),
-                direct_first_char: content.slice(0, 1),
-                direct_last_char: content.slice(-1),
-                direct_open_braces: (content.match(/\{/g) || []).length,
-                direct_close_braces: (content.match(/\}/g) || []).length
-              };
-              console.log(JSON.stringify(metadata));
-              let parsed;
-              try {
-                parsed = JSON.parse(content);
-              } catch (error) {
-                throw new Error(`json_direto_invalido:${error.message}`);
-              }
-              validateTrainingNarrative(parsed);
-              console.log(JSON.stringify({ direct_narrative: 'valid' }));
-            } finally {
-              await pool.end();
-            }
-          })();
-          NODE
-
-      - name: Ativar configuração validada
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          cd "$API_DIR"
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.env')
-          updates = {
-              'LOCAL_TRAINING_AI_ENABLED': 'true',
-              'OLLAMA_BASE_URL': 'http://127.0.0.1:11434',
-              'OLLAMA_MODEL': 'gemma3:1b',
-              'OLLAMA_TIMEOUT_MS': '240000',
-              'OLLAMA_TEMPERATURE': '0',
-              'OLLAMA_KEEP_ALIVE': '0',
-              'OLLAMA_NUM_CTX': '1024',
-              'OLLAMA_NUM_PREDICT': '160',
-              'OLLAMA_NUM_PARALLEL': '1',
-              'LOCAL_TRAINING_PROMPT_VERSION': 'v2-narrative',
-              'LOCAL_TRAINING_MAX_RETRIES': '0',
-          }
-          lines = path.read_text(encoding='utf-8').splitlines()
-          found = set()
-          output = []
-          for line in lines:
-              if '=' not in line or line.lstrip().startswith('#'):
-                  output.append(line)
-                  continue
-              key = line.split('=', 1)[0].strip()
-              if key in updates:
-                  output.append(f'{key}={updates[key]}')
-                  found.add(key)
-              else:
-                  output.append(line)
-          for key, value in updates.items():
-              if key not in found:
-                  output.append(f'{key}={value}')
-          path.write_text('\n'.join(output) + '\n', encoding='utf-8')
-          PY
-          sudo -n systemctl restart academia-api.service
-          for attempt in $(seq 1 15); do
-            curl --fail --silent --max-time 10 http://127.0.0.1:3004/health >/dev/null && break
-            sleep 3
-          done
-          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
-          echo "production_model=gemma3:1b" | tee -a "$RESULT_FILE"
-          echo "production_num_predict=160" | tee -a "$RESULT_FILE"
-
-      - name: Validar serviço ponta a ponta
+      - name: Validar configuração e serviços
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -203,118 +58,38 @@ jobs:
           set -a
           source <(sed 's/^\*#/#/' .env)
           set +a
-          LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 node <<'NODE' | tee -a "$RESULT_FILE"
-          const { query, pool } = require('./lib/db');
-          const { reviewTrainingPlan, decideTrainingReview, latestApprovedStudentMessage } = require('./services/trainingReviewService');
-
-          (async () => {
-            const created = [];
-            let plan;
-            try {
-              const plans = await query(`
-                SELECT id, gym_id, member_id, reviewed_at FROM workout_plans
-                WHERE name = 'Ficha Demo - Força' AND status = 'active'
-                ORDER BY created_at LIMIT 1
-              `);
-              if (!plans.rowCount) throw new Error('ficha_demo_ausente');
-              plan = plans.rows[0];
-              const users = await query(`
-                SELECT id, gym_id, role, access_profile FROM users
-                WHERE gym_id = $1 AND is_active = true AND role IN ('owner','admin')
-                ORDER BY created_at LIMIT 1
-              `, [plan.gym_id]);
-              if (!users.rowCount) throw new Error('gestor_ausente');
-              const row = users.rows[0];
-              const actor = { sub: row.id, gym_id: row.gym_id, role: row.role, access_profile: row.access_profile, access_permissions: { training: true } };
-
-              const generated = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
-              created.push(generated.id);
-              if (generated.source !== 'local_generative') throw new Error(`geracao_falhou:${generated.error_code || generated.source}`);
-              const approved = await decideTrainingReview(query, actor, generated.id, 'approved');
-              if (!approved.approved_at) throw new Error('aprovacao_falhou');
-              const visible = await latestApprovedStudentMessage(query, { role: 'student', gym_id: plan.gym_id, member_id: plan.member_id });
-              if (visible?.id !== generated.id) throw new Error('visibilidade_falhou');
-              const rejected = await decideTrainingReview(query, actor, generated.id, 'rejected', 'Validação temporária');
-              if (!rejected.rejected_at || rejected.approved_at) throw new Error('rejeicao_falhou');
-
-              const enabled = process.env.LOCAL_TRAINING_AI_ENABLED;
-              process.env.LOCAL_TRAINING_AI_ENABLED = 'false';
-              const fallback = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
-              process.env.LOCAL_TRAINING_AI_ENABLED = enabled;
-              created.push(fallback.id);
-              if (fallback.source !== 'rules_fallback') throw new Error('fallback_falhou');
-
-              console.log(JSON.stringify({
-                service_source: generated.source,
-                service_model: generated.model,
-                service_duration_ms: generated.duration_ms,
-                service_prompt_tokens: Number(generated.token_usage?.prompt_tokens || 0),
-                service_completion_tokens: Number(generated.token_usage?.completion_tokens || 0),
-                approval: 'ok', rejection: 'ok', student_visibility: 'ok', fallback: fallback.source
-              }));
-            } finally {
-              if (created.length) await query('DELETE FROM workout_ai_reviews WHERE id = ANY($1::uuid[])', [created]);
-              if (plan) await query('UPDATE workout_plans SET reviewed_at = $2 WHERE id = $1', [plan.id, plan.reviewed_at]);
-              await query("DELETE FROM training_ai_generation_locks WHERE lock_key = 'global' AND expires_at < now()");
-              await pool.end();
-            }
-          })();
-          NODE
-          echo "end_to_end=ok" | tee -a "$RESULT_FILE"
-
-      - name: Confirmar saúde final
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          test "$(systemctl is-active academia-api.service)" = "active"
-          test "$(systemctl is-active academia-web.service)" = "active"
-          test "$(systemctl is-active ollama.service)" = "active"
+          test "$LOCAL_TRAINING_AI_ENABLED" = "true"
+          test "$OLLAMA_BASE_URL" = "http://127.0.0.1:11434"
+          test "$OLLAMA_MODEL" = "gemma3:1b"
+          test "$OLLAMA_TIMEOUT_MS" = "240000"
+          test "$OLLAMA_NUM_CTX" = "1024"
+          test "$OLLAMA_NUM_PREDICT" = "160"
+          test "$LOCAL_TRAINING_MAX_RETRIES" = "0"
+          for service in academia-api.service academia-web.service ollama.service; do
+            state="$(systemctl is-active "$service")"
+            test "$state" = "active"
+            echo "$service=$state" | tee -a "$RESULT_FILE"
+          done
+          test "$(systemctl is-enabled ollama.service)" = "enabled"
+          listeners="$(ss -lntH | awk '$4 ~ /:11434$/ {print $4}')"
+          printf '%s\n' "$listeners" | grep -Eq '^127\.0\.0\.1:11434$'
+          ! printf '%s\n' "$listeners" | grep -Eq '(^|\[)(0\.0\.0\.0|::|\*).*:11434$'
+          ollama list | awk 'NR > 1 && $1 == "gemma3:1b" {found=1} END {exit found ? 0 : 1}'
           curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
           curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
+          echo "ai_enabled=true" | tee -a "$RESULT_FILE"
+          echo "ollama_model=gemma3:1b" | tee -a "$RESULT_FILE"
+          echo "ollama_bind=$listeners" | tee -a "$RESULT_FILE"
           echo "api_health=ok" | tee -a "$RESULT_FILE"
           echo "web_health=ok" | tee -a "$RESULT_FILE"
-          echo "ollama_bind=$(ss -lntH | awk '$4 ~ /:11434$/ {print $4}' | paste -sd, -)" | tee -a "$RESULT_FILE"
           echo "memory=$(free -h | awk '/^Mem:/ {print $2 "/" $3 "/" $7}')" | tee -a "$RESULT_FILE"
           echo "swap=$(free -h | awk '/^Swap:/ {print $2 "/" $3}')" | tee -a "$RESULT_FILE"
 
-      - name: Manter somente regras em caso de falha
-        if: failure()
-        shell: bash
-        run: |
-          set +e
-          cd "$API_DIR"
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('.env')
-          lines = path.read_text(encoding='utf-8').splitlines()
-          output = []
-          found = False
-          for line in lines:
-              if '=' in line and line.split('=', 1)[0].strip() == 'LOCAL_TRAINING_AI_ENABLED':
-                  output.append('LOCAL_TRAINING_AI_ENABLED=false')
-                  found = True
-              else:
-                  output.append(line)
-          if not found:
-              output.append('LOCAL_TRAINING_AI_ENABLED=false')
-          path.write_text('\n'.join(output) + '\n', encoding='utf-8')
-          PY
-          ollama stop gemma3:1b >/dev/null 2>&1 || true
-          sudo -n systemctl restart academia-api.service
-          healthy=no
-          for attempt in $(seq 1 20); do
-            if curl --fail --silent --max-time 10 http://127.0.0.1:3004/health >/dev/null; then healthy=yes; break; fi
-            sleep 3
-          done
-          echo "safe_rollback=rules_only" | tee -a "$RESULT_FILE"
-          echo "safe_api_health=$healthy" | tee -a "$RESULT_FILE"
-          test "$healthy" = "yes"
-
-      - name: Publicar resultado seguro
+      - name: Publicar estado seguro
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ativacao-ia-local-${{ github.run_id }}
-          path: /tmp/academia-ai-activation.txt
+          name: estado-final-ia-local-${{ github.run_id }}
+          path: /tmp/academia-ai-final-state.txt
           if-no-files-found: warn
           retention-days: 3
