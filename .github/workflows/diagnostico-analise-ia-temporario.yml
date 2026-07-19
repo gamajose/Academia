@@ -1,0 +1,152 @@
+name: Diagnosticar retorno da análise na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/diagnostico-analise-ia-temporario.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: diagnostico-retorno-analise-ia
+  cancel-in-progress: true
+
+jobs:
+  diagnostico:
+    name: Verificar geração, persistência e logs
+    runs-on:
+      - self-hosted
+      - linux
+    timeout-minutes: 12
+    env:
+      PROJECT_DIR: /mnt/Projetos/Academia
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      RESULT_FILE: /tmp/academia-review-return-diagnostic.txt
+
+    steps:
+      - name: Preparar diagnóstico
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : > "$RESULT_FILE"
+          git config --global --add safe.directory "$PROJECT_DIR"
+          git -C "$PROJECT_DIR" fetch --quiet origin main
+          echo "deployed_sha=$(git -C "$PROJECT_DIR" rev-parse HEAD)" | tee -a "$RESULT_FILE"
+          echo "origin_main_sha=$(git -C "$PROJECT_DIR" rev-parse origin/main)" | tee -a "$RESULT_FILE"
+          echo "api_state=$(systemctl is-active academia-api.service)" | tee -a "$RESULT_FILE"
+          echo "ollama_state=$(systemctl is-active ollama.service)" | tee -a "$RESULT_FILE"
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+          echo "api_health=ok" | tee -a "$RESULT_FILE"
+
+      - name: Consultar histórico seguro
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          node <<'NODE' | tee -a "$RESULT_FILE"
+          const { query, pool } = require('./lib/db');
+          (async () => {
+            const rows = await query(`
+              SELECT source, status, confidence, requires_human_review,
+                     error_code, duration_ms, created_at
+              FROM workout_ai_reviews
+              WHERE plan_id = (
+                SELECT id FROM workout_plans
+                WHERE name = 'Ficha Demo - Força' AND status = 'active'
+                ORDER BY created_at LIMIT 1
+              )
+              ORDER BY created_at DESC
+              LIMIT 5
+            `);
+            console.log(JSON.stringify({ reviews: rows.rows }));
+          })().finally(() => pool.end());
+          NODE
+
+      - name: Testar serviço de análise e persistência
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 node <<'NODE' | tee -a "$RESULT_FILE"
+          const { query, pool } = require('./lib/db');
+          const { reviewTrainingPlan } = require('./services/trainingReviewService');
+          (async () => {
+            let createdId = null;
+            let plan = null;
+            try {
+              const planResult = await query(`
+                SELECT id, gym_id, reviewed_at
+                FROM workout_plans
+                WHERE name = 'Ficha Demo - Força' AND status = 'active'
+                ORDER BY created_at LIMIT 1
+              `);
+              if (!planResult.rowCount) throw new Error('ficha_demo_ausente');
+              plan = planResult.rows[0];
+              const actorResult = await query(`
+                SELECT id, gym_id, role, access_profile
+                FROM users
+                WHERE gym_id = $1 AND is_active = true AND role IN ('owner', 'admin')
+                ORDER BY created_at LIMIT 1
+              `, [plan.gym_id]);
+              if (!actorResult.rowCount) throw new Error('gestor_ausente');
+              const actorRow = actorResult.rows[0];
+              const actor = {
+                sub: actorRow.id,
+                gym_id: actorRow.gym_id,
+                role: actorRow.role,
+                access_profile: actorRow.access_profile,
+                access_permissions: { training: true }
+              };
+              const result = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
+              createdId = result.id;
+              console.log(JSON.stringify({
+                service_result: 'ok',
+                source: result.source,
+                status: result.status,
+                confidence: result.confidence,
+                error_code: result.error_code,
+                duration_ms: result.duration_ms,
+                saved_id_present: Boolean(result.id)
+              }));
+            } finally {
+              if (createdId) await query('DELETE FROM workout_ai_reviews WHERE id = $1', [createdId]);
+              if (plan) await query('UPDATE workout_plans SET reviewed_at = $2 WHERE id = $1', [plan.id, plan.reviewed_at]);
+              await query("DELETE FROM training_ai_generation_locks WHERE lock_key = 'global' AND expires_at < now()");
+              await pool.end();
+            }
+          })();
+          NODE
+
+      - name: Coletar erros recentes sanitizados
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          journalctl -u academia-api.service --since '8 hours ago' --no-pager \
+            | grep -E 'training_ai|ollama|audit_log_error|Unhandled|unhandled|Error|ERROR|erro' \
+            | tail -n 120 \
+            | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/[email-removido]/g; s/[0-9a-fA-F]{8}-[0-9a-fA-F-]{27,36}/[id-removido]/g' \
+            | tee -a "$RESULT_FILE" || true
+
+      - name: Registrar recursos
+        if: always()
+        shell: bash
+        run: |
+          echo "memory=$(free -h | awk '/^Mem:/ {print $2 "/" $3 "/" $7}')" | tee -a "$RESULT_FILE"
+          echo "swap=$(free -h | awk '/^Swap:/ {print $2 "/" $3}')" | tee -a "$RESULT_FILE"
+
+      - name: Publicar diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico-retorno-analise-${{ github.run_id }}
+          path: /tmp/academia-review-return-diagnostic.txt
+          if-no-files-found: warn
+          retention-days: 3
