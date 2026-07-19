@@ -1,0 +1,86 @@
+name: Aplicar qualidade da narrativa
+
+on:
+  push:
+    branches:
+      - fix/analise-ia-interface-clara
+    paths:
+      - '.github/workflows/aplicar-qualidade-narrativa.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/analise-ia-interface-clara
+          fetch-depth: 0
+
+      - name: Proteger resumo da IA local
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/api/services/localTrainingAiService.js')
+          text = path.read_text(encoding='utf-8')
+
+          old_prompt = "    'Responda somente no JSON definido pelo schema, com três textos curtos em português do Brasil.',"
+          new_prompt = "    'Responda somente no JSON definido pelo schema, com três textos curtos em português do Brasil e sempre em frases completas, sem códigos internos ou palavras abreviadas.',"
+          if old_prompt not in text:
+              raise SystemExit('prompt_alvo_nao_encontrado')
+          text = text.replace(old_prompt, new_prompt, 1)
+
+          old_merge = """function mergeNarrativeWithRules(narrative, rules) {
+  return {
+    summary: narrative.summary,
+    status: rules.status,
+    confidence: rules.confidence,
+    requires_human_review: rules.requires_human_review,
+    signals: rules.signals,
+    suggestions: rules.suggestions,
+    student_message: narrative.student_message,
+    trainer_notes: narrative.trainer_notes
+  };
+}
+"""
+          new_merge = """function completeNarrativeSummary(value, fallback) {
+  const text = String(value || '').trim();
+  const truncatedEnding = /\\b(rep|reps|serie|series|sessao|sessoes|treino|exercicio|exercicios)$/i.test(text.normalize('NFD').replace(/[\\u0300-\\u036f]/g, ''));
+  if (text.length < 20 || truncatedEnding || !/[.!?]$/.test(text)) return fallback;
+  return text;
+}
+
+function mergeNarrativeWithRules(narrative, rules) {
+  return {
+    summary: completeNarrativeSummary(narrative.summary, rules.summary),
+    status: rules.status,
+    confidence: rules.confidence,
+    requires_human_review: rules.requires_human_review,
+    signals: rules.signals,
+    suggestions: rules.suggestions,
+    student_message: narrative.student_message,
+    trainer_notes: narrative.trainer_notes
+  };
+}
+"""
+          if old_merge not in text:
+              raise SystemExit('merge_alvo_nao_encontrado')
+          path.write_text(text.replace(old_merge, new_merge, 1), encoding='utf-8')
+          Path('.github/workflows/aplicar-qualidade-narrativa.yml').unlink()
+          PY
+
+      - name: Registrar alteração
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/api/services/localTrainingAiService.js .github/workflows/aplicar-qualidade-narrativa.yml
+          git commit -m 'fix(api): rejeitar resumo narrativo incompleto'
+          git push origin HEAD:fix/analise-ia-interface-clara
