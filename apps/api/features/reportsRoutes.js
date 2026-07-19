@@ -54,16 +54,21 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
   if (req.method === 'POST' && url.pathname === '/api/reports/finance-adjust') {
     const input = await body(req);
     if (!input.payment_id) return send(res, 400, { error: 'payment_id_obrigatorio' });
-    const current = await query('SELECT original_amount_cents, amount_cents FROM payments WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.payment_id, user.gym_id]);
+    const current = await query('SELECT original_amount_cents, amount_cents, status FROM payments WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.payment_id, user.gym_id]);
     if (!current.rowCount) return send(res, 404, { error: 'pagamento_nao_encontrado' });
     const base = Number(current.rows[0].original_amount_cents || current.rows[0].amount_cents || 0);
     const discount = Number(input.discount_cents || 0);
     const fee = Number(input.fee_cents || 0);
+    const status = String(input.status || current.rows[0].status || '').trim();
+    if (!['pending', 'paid', 'overdue', 'cancelled'].includes(status)) return send(res, 400, { error: 'status_invalido' });
     const amount = Math.max(0, base - discount + fee);
     const result = await query(
-      `UPDATE payments SET amount_cents = $3, discount_cents = $4, fee_cents = $5, method = COALESCE($6, method), notes = COALESCE($7, notes), updated_at = now()
-       WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, original_amount_cents, amount_cents, discount_cents, fee_cents, method, notes, status, due_date`,
-      [input.payment_id, user.gym_id, amount, discount, fee, input.method || null, input.notes || null]
+      `UPDATE payments SET amount_cents = $3, discount_cents = $4, fee_cents = $5,
+       method = COALESCE($6, method), notes = COALESCE($7, notes), status = $8,
+       paid_at = CASE WHEN $8 = 'paid' THEN COALESCE(paid_at, now()) ELSE NULL END,
+       updated_at = now()
+       WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, original_amount_cents, amount_cents, discount_cents, fee_cents, method, notes, status, due_date, paid_at`,
+      [input.payment_id, user.gym_id, amount, discount, fee, input.method || null, input.notes || null, status]
     );
     return send(res, 200, result.rows[0]);
   }

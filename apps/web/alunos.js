@@ -11,6 +11,9 @@ let credentialExpiresAt = null;
 let credentialTimer = null;
 let credentialRequestInFlight = false;
 let credentialTtlSeconds = 30;
+let activeStudentView = null;
+let studentAiRefreshTimer = null;
+let studentAiLoading = false;
 
 async function req(path, options = {}) {
   const response = await fetch(`${API}${path}`, {
@@ -73,6 +76,59 @@ function whatsappLink(phone) {
   return link;
 }
 
+function closeStudentCardMenus() {
+  document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+}
+
+function studentMobileMenu(item, whatsappUrl = '') {
+  const wrap = document.createElement('div');
+  wrap.className = 'mobile-card-menu';
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'mobile-card-menu-trigger';
+  trigger.textContent = '⋮';
+  trigger.setAttribute('aria-label', `Opções de ${item.name}`);
+  trigger.setAttribute('aria-expanded', 'false');
+  const dropdown = document.createElement('div');
+  dropdown.className = 'mobile-card-menu-dropdown hidden';
+  if (whatsappUrl) {
+    const whatsapp = document.createElement('a');
+    whatsapp.href = whatsappUrl;
+    whatsapp.target = '_blank';
+    whatsapp.rel = 'noopener noreferrer';
+    whatsapp.textContent = 'Abrir WhatsApp';
+    whatsapp.addEventListener('click', closeStudentCardMenus);
+    dropdown.appendChild(whatsapp);
+  }
+  const credential = document.createElement('button');
+  credential.dataset.moduleFeature = 'access';
+  credential.type = 'button'; credential.textContent = 'Abrir QR Code';
+  credential.addEventListener('click', () => { closeStudentCardMenus(); openCredentialPreview(item); });
+  const edit = document.createElement('button');
+  edit.type = 'button'; edit.textContent = 'Editar cadastro';
+  edit.addEventListener('click', () => { closeStudentCardMenus(); openModal(item); });
+  const status = document.createElement('button');
+  status.type = 'button'; status.className = item.status === 'active' ? 'danger' : '';
+  status.textContent = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno';
+  status.addEventListener('click', () => { closeStudentCardMenus(); void toggle(item); });
+  if (window.AcademiaModules?.isEnabled?.('access') !== false) dropdown.appendChild(credential);
+  dropdown.append(edit, status);
+  trigger.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const opening = dropdown.classList.contains('hidden');
+    closeStudentCardMenus();
+    dropdown.classList.toggle('hidden', !opening);
+    trigger.setAttribute('aria-expanded', String(opening));
+  });
+  wrap.addEventListener('click', (event) => event.stopPropagation());
+  wrap.addEventListener('keydown', (event) => event.stopPropagation());
+  wrap.append(trigger, dropdown);
+  return wrap;
+}
+
+document.addEventListener('click', closeStudentCardMenus);
+
 function plainText(value) {
   const holder = document.createElement('div');
   holder.innerHTML = value || '';
@@ -92,6 +148,189 @@ function assessmentAge(value) {
   return `${Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000))} dias atrás`;
 }
 
+function setStudentViewTab(tabName = 'registration') {
+  document.querySelectorAll('[data-student-view-tab]').forEach((button) => {
+    const active = button.dataset.studentViewTab === tabName;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('[data-student-view-panel]').forEach((panel) => panel.classList.toggle('hidden', panel.dataset.studentViewPanel !== tabName));
+  clearInterval(studentAiRefreshTimer);
+  studentAiRefreshTimer = null;
+  if (tabName === 'ai' && activeStudentView) {
+    void loadStudentAi(activeStudentView.id);
+    studentAiRefreshTimer = setInterval(() => {
+      if (!document.hidden && !$('student-view-modal').classList.contains('hidden')) void loadStudentAi(activeStudentView?.id);
+    }, 30000);
+  }
+}
+
+function contextDecimal(id) {
+  const raw = val(id).replace(',', '.');
+  if (!raw) return null;
+  const number = Number(raw);
+  return Number.isFinite(number) ? number : null;
+}
+
+function setStudentContextModal(id, open) {
+  const modal = $(id);
+  if (!modal) return;
+  modal.classList.toggle('hidden', !open);
+  modal.setAttribute('aria-hidden', String(!open));
+  document.body.classList.toggle('modal-open', open || !$('student-view-modal').classList.contains('hidden'));
+}
+
+function openStudentAssessmentModal() {
+  if (!activeStudentView) return;
+  $('student-assessment-form').reset();
+  $('student-assessment-date').value = new Date().toISOString().slice(0, 10);
+  $('student-assessment-member-name').textContent = activeStudentView.name || 'Aluno';
+  $('student-assessment-status').textContent = '';
+  setStudentContextModal('student-assessment-modal', true);
+}
+
+function openStudentGoalModal() {
+  if (!activeStudentView) return;
+  $('student-goal-form').reset();
+  $('student-goal-member-name').textContent = activeStudentView.name || 'Aluno';
+  $('student-goal-status').textContent = '';
+  setStudentContextModal('student-goal-modal', true);
+}
+
+async function saveStudentAssessment(event) {
+  event.preventDefault();
+  if (!activeStudentView) return;
+  const button = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
+  try {
+    button.disabled = true;
+    $('student-assessment-status').textContent = 'Salvando...';
+    await req('/api/assessments', { method: 'POST', body: JSON.stringify({
+      member_id: activeStudentView.id,
+      assessment_date: val('student-assessment-date') || null,
+      weight_kg: contextDecimal('student-assessment-weight'), height_cm: contextDecimal('student-assessment-height'),
+      body_fat_percent: contextDecimal('student-assessment-fat'), muscle_mass_kg: contextDecimal('student-assessment-muscle'),
+      waist_cm: contextDecimal('student-assessment-waist'), chest_cm: contextDecimal('student-assessment-chest'),
+      hip_cm: contextDecimal('student-assessment-hip'), biceps_cm: contextDecimal('student-assessment-biceps'),
+      back_cm: contextDecimal('student-assessment-back'), notes: val('student-assessment-notes')
+    }) });
+    setStudentContextModal('student-assessment-modal', false);
+    await openStudentView(activeStudentView);
+    setStudentViewTab('history');
+  } catch (error) { $('student-assessment-status').textContent = `Não foi possível salvar: ${error.message}`; }
+  finally { button.disabled = false; }
+}
+
+async function saveStudentGoal(event) {
+  event.preventDefault();
+  if (!activeStudentView) return;
+  const button = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
+  try {
+    button.disabled = true;
+    $('student-goal-status').textContent = 'Salvando...';
+    await req('/api/goals', { method: 'POST', body: JSON.stringify({ member_id: activeStudentView.id, goal_type: val('student-goal-type'), target_value: contextDecimal('student-goal-value'), target_date: val('student-goal-date') || null, notes: val('student-goal-notes') }) });
+    setStudentContextModal('student-goal-modal', false);
+    await openStudentView(activeStudentView);
+    setStudentViewTab('goals');
+  } catch (error) { $('student-goal-status').textContent = `Não foi possível salvar: ${error.message}`; }
+  finally { button.disabled = false; }
+}
+
+async function openStudentSummary() {
+  if (!activeStudentView) return;
+  $('student-summary-member-name').textContent = activeStudentView.name || 'Aluno';
+  $('student-summary-status').textContent = 'Carregando resumo...';
+  $('student-summary-list').replaceChildren();
+  setStudentContextModal('student-summary-modal', true);
+  try {
+    const result = await req(`/api/assessments/summary?member_id=${encodeURIComponent(activeStudentView.id)}`);
+    if (!result.current) { $('student-summary-status').textContent = 'Nenhuma avaliação encontrada para este aluno.'; return; }
+    $('student-summary-status').textContent = '';
+    const number = (value, suffix = '') => value === null || value === undefined || value === '' ? '-' : `${Number(value).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${suffix}`;
+    const items = [`Avaliação atual: ${dateOnly(result.current.assessment_date)}`, `Peso atual: ${number(result.current.weight_kg, ' kg')}`, `Gordura atual: ${number(result.current.body_fat_percent, '%')}`, `Massa muscular: ${number(result.current.muscle_mass_kg, ' kg')}`, `Variação de peso: ${number(result.delta?.weight_kg, ' kg')}`, `Variação de gordura: ${number(result.delta?.body_fat_percent, '%')}`, `Variação de cintura: ${number(result.delta?.waist_cm, ' cm')}`, `Análise inteligente: ${result.analysis?.message || 'Registre uma segunda medição para comparar.'}`];
+    for (const text of items) { const row = document.createElement('li'); row.textContent = text; $('student-summary-list').appendChild(row); }
+  } catch (error) { $('student-summary-status').textContent = `Não foi possível carregar: ${error.message}`; }
+}
+
+function renderStudentAi(result) {
+  const host = $('student-view-ai-content');
+  host.replaceChildren();
+  const analysis = result.recent_analysis || result.analysis;
+  const currentAssessment = result.assessments?.[0] || result.baseline || {};
+
+  const facts = document.createElement('div'); facts.className = 'student-admin-ai-facts';
+  const factItems = [
+    ['Avaliações', result.assessments?.length || 0],
+    ['Treinos no período', result.training_sessions || 0],
+    ['Metas ativas', (result.goals || []).filter((goal) => !['completed', 'closed'].includes(goal.status)).length]
+  ];
+  for (const [label, value] of factItems) { const card = document.createElement('div'); const name = document.createElement('span'); name.textContent = label; const content = document.createElement('strong'); content.textContent = String(value); card.append(name, content); facts.appendChild(card); }
+  host.appendChild(facts);
+
+  const metrics = analysis?.metrics || {};
+  const metricDefinitions = [['weight_kg', 'Peso', ' kg'], ['body_fat_percent', 'Gordura corporal', '%'], ['muscle_mass_kg', 'Massa muscular', ' kg'], ['waist_cm', 'Cintura', ' cm']];
+  if (Object.keys(metrics).length) {
+    const grid = document.createElement('div'); grid.className = 'student-admin-ai-metrics';
+    for (const [field, label, suffix] of metricDefinitions) {
+      const metric = metrics[field] || {}; const card = document.createElement('article'); card.className = metric.source === 'estimated' ? 'is-estimated' : '';
+      const heading = document.createElement('div'); const name = document.createElement('span'); name.textContent = label; const source = document.createElement('small'); source.textContent = metric.source === 'estimated' ? 'Estimado' : 'Medido'; heading.append(name, source);
+      const value = document.createElement('strong'); value.textContent = metric.value === null || metric.value === undefined ? '-' : `${Number(metric.value).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${suffix}`;
+      const delta = document.createElement('b');
+      if (metric.delta === null || metric.delta === undefined) delta.textContent = 'Sem comparação';
+      else { delta.className = metric.delta > 0 ? 'is-up' : metric.delta < 0 ? 'is-down' : 'is-stable'; delta.textContent = `${metric.delta > 0 ? '↑' : metric.delta < 0 ? '↓' : '→'} ${Math.abs(Number(metric.delta)).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${field === 'body_fat_percent' ? ' p.p.' : suffix}`; }
+      card.append(heading, value, delta); grid.appendChild(card);
+    }
+    host.appendChild(grid);
+  }
+
+  const metricNumber = (key) => {
+    const raw = metrics[key]?.value ?? currentAssessment[key];
+    if (raw === null || raw === undefined || raw === '') return null;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
+  };
+  const weight = metricNumber('weight_kg');
+  const heightCm = metricNumber('height_cm');
+  const fatPercent = metricNumber('body_fat_percent');
+  const waist = metricNumber('waist_cm');
+  const heightM = heightCm ? heightCm / 100 : null;
+  const technicalItems = [
+    ['IMC', weight !== null && heightM ? weight / (heightM * heightM) : null, 'kg/m²', metrics.weight_kg?.source === 'estimated' || metrics.height_cm?.source === 'estimated'],
+    ['Relação cintura/altura', waist !== null && heightCm ? waist / heightCm : null, '', metrics.waist_cm?.source === 'estimated' || metrics.height_cm?.source === 'estimated'],
+    ['Massa de gordura', weight !== null && fatPercent !== null ? weight * fatPercent / 100 : null, ' kg', metrics.weight_kg?.source === 'estimated' || metrics.body_fat_percent?.source === 'estimated'],
+    ['Massa livre de gordura', weight !== null && fatPercent !== null ? weight * (1 - fatPercent / 100) : null, ' kg', metrics.weight_kg?.source === 'estimated' || metrics.body_fat_percent?.source === 'estimated']
+  ];
+  if (technicalItems.some(([, value]) => value !== null)) {
+    const section = document.createElement('section'); section.className = 'student-ai-technical';
+    const title = document.createElement('h4'); title.textContent = 'Indicadores técnicos'; section.appendChild(title);
+    const grid = document.createElement('div'); grid.className = 'student-ai-technical-grid';
+    for (const [label, rawValue, suffix, estimated] of technicalItems) {
+      const card = document.createElement('article'); if (estimated) card.classList.add('is-estimated');
+      const name = document.createElement('span'); name.textContent = label;
+      const value = document.createElement('strong'); value.textContent = rawValue === null ? '-' : `${Number(rawValue).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${suffix}`;
+      const source = document.createElement('small'); source.textContent = rawValue === null ? 'Sem dados' : estimated ? 'Calculado com estimativa' : 'Calculado com medições';
+      card.append(name, value, source); grid.appendChild(card);
+    }
+    section.appendChild(grid); host.appendChild(section);
+  }
+}
+
+async function loadStudentAi(memberId = activeStudentView?.id) {
+  if (!memberId || studentAiLoading) return;
+  studentAiLoading = true;
+  const requestedMemberId = String(memberId);
+  $('student-view-ai-status').textContent = 'Analisando rendimento...';
+  try {
+    const result = await req(`/api/assessments/analysis?member_id=${encodeURIComponent(memberId)}`);
+    if (String(activeStudentView?.id || '') !== requestedMemberId) return;
+    $('student-view-ai-status').textContent = '';
+    renderStudentAi(result);
+  } catch (error) {
+    if (String(activeStudentView?.id || '') !== requestedMemberId) return;
+    $('student-view-ai-status').textContent = `Não foi possível gerar a análise: ${error.message}`;
+    $('student-view-ai-content').replaceChildren();
+  } finally { studentAiLoading = false; }
+}
+
 function openStudentViewModal() {
   $('student-view-modal').classList.remove('hidden');
   $('student-view-modal').setAttribute('aria-hidden', 'false');
@@ -99,12 +338,16 @@ function openStudentViewModal() {
 }
 
 function closeStudentViewModal() {
+  clearInterval(studentAiRefreshTimer);
+  studentAiRefreshTimer = null;
   $('student-view-modal').classList.add('hidden');
   $('student-view-modal').setAttribute('aria-hidden', 'true');
   if ($('student-form-panel').classList.contains('hidden') && $('credential-preview-modal').classList.contains('hidden')) document.body.classList.remove('modal-open');
 }
 
 async function openStudentView(item) {
+  activeStudentView = item;
+  setStudentViewTab('registration');
   $('student-view-name').textContent = item.name || 'Aluno';
   $('student-view-contact').textContent = [item.email, item.phone ? formatPhone(item.phone) : ''].filter(Boolean).join(' · ') || 'Sem contato informado';
   $('student-view-status').textContent = item.status === 'active' ? 'Ativo' : 'Inativo';
@@ -121,12 +364,18 @@ async function openStudentView(item) {
   $('student-view-photo-empty').hidden = Boolean(item.photo_url);
   $('student-view-exercises').innerHTML = '<li class="empty-state">Carregando ficha...</li>';
   $('student-view-assessments').innerHTML = '<li class="empty-state">Carregando avaliações...</li>';
+  $('student-view-goal-list').innerHTML = '<li class="empty-state">Carregando metas...</li>';
+  $('student-view-media').innerHTML = '<div class="empty-state">Carregando fotos...</div>';
+  $('student-view-ai-content').replaceChildren();
+  $('student-view-ai-status').textContent = 'Analisando rendimento...';
   openStudentViewModal();
+  void loadStudentAi(item.id);
   try {
-    const [assessmentResult, goalResult, trainingResult] = await Promise.all([
+    const [assessmentResult, goalResult, trainingResult, mediaResult] = await Promise.all([
       req(`/api/assessments?member_id=${encodeURIComponent(item.id)}`),
       req(`/api/goals?member_id=${encodeURIComponent(item.id)}`),
-      item.training_plan_id ? req(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.training_plan_id)}`) : Promise.resolve({ exercises: [] })
+      item.training_plan_id ? req(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.training_plan_id)}`) : Promise.resolve({ exercises: [] }),
+      req(`/api/student/admin-community/media?q=${encodeURIComponent(item.name || '')}&page=1`).catch(() => ({ items: [] }))
     ]);
     const exerciseList = $('student-view-exercises');
     exerciseList.innerHTML = '';
@@ -141,6 +390,8 @@ async function openStudentView(item) {
     const list = $('student-view-assessments');
     list.innerHTML = '';
     const assessments = assessmentResult.data || [];
+    const latestAssessment = assessments[0];
+    $('student-view-assessment-age').textContent = latestAssessment?.assessment_date ? `${dateOnly(latestAssessment.assessment_date)} · ${assessmentAge(latestAssessment.assessment_date)}` : 'Nunca avaliado';
     for (const assessment of assessments.slice(0, 8)) {
       const row = document.createElement('li');
       row.className = 'student-view-assessment-row';
@@ -155,20 +406,73 @@ async function openStudentView(item) {
       list.appendChild(row);
     }
     if (!list.children.length) list.innerHTML = '<li class="empty-state">Nenhuma avaliação registrada.</li>';
+    const media = new Map();
+    if (item.photo_url) media.set(item.photo_url, { url: item.photo_url, label: 'Foto do perfil' });
+    for (const assessment of assessments) {
+      if (assessment.photo_url) media.set(assessment.photo_url, { url: assessment.photo_url, label: `Avaliação de ${dateOnly(assessment.assessment_date)}` });
+    }
+    for (const mediaItem of mediaResult.items || []) {
+      if (!mediaItem.photo_url || String(mediaItem.author_name || '').trim().toLowerCase() !== String(item.name || '').trim().toLowerCase()) continue;
+      media.set(mediaItem.photo_url, { url: mediaItem.photo_url, label: `${mediaItem.source_type === 'comment' ? 'Comentário' : 'Publicação'} de ${dateOnly(mediaItem.created_at)}` });
+    }
+    const mediaGrid = $('student-view-media');
+    mediaGrid.innerHTML = '';
+    for (const mediaItem of media.values()) {
+      const figure = document.createElement('figure');
+      const image = document.createElement('img'); image.src = mediaItem.url; image.alt = mediaItem.label; image.loading = 'lazy';
+      const caption = document.createElement('figcaption'); caption.textContent = mediaItem.label;
+      figure.append(image, caption); mediaGrid.appendChild(figure);
+    }
+    if (!mediaGrid.children.length) mediaGrid.innerHTML = '<div class="empty-state">Nenhuma foto vinculada a este aluno.</div>';
     const goals = goalResult.data || [];
     $('student-view-goals').textContent = goals.length ? goals.map((goal) => `${goal.goal_type}: ${goal.target_value ?? '-'}${goal.target_date ? ` até ${new Date(`${String(goal.target_date).slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR')}` : ''}`).join(' · ') : 'Nenhuma meta cadastrada.';
+    const goalList = $('student-view-goal-list'); goalList.innerHTML = '';
+    for (const goal of goals) {
+      const row = document.createElement('li'); row.className = 'student-view-assessment-row';
+      const copy = document.createElement('div'); const title = document.createElement('strong'); title.textContent = goal.goal_type || 'Meta';
+      const detail = document.createElement('span'); detail.textContent = `Alvo: ${goal.target_value ?? '-'} · Data: ${dateOnly(goal.target_date)} · Status: ${goal.status || 'active'}`;
+      copy.append(title, detail); row.appendChild(copy); goalList.appendChild(row);
+    }
+    if (!goalList.children.length) goalList.innerHTML = '<li class="empty-state">Nenhuma meta cadastrada.</li>';
   } catch (error) {
     $('student-view-assessments').innerHTML = `<li class="empty-state">Não foi possível carregar o histórico: ${error.message}</li>`;
+    $('student-view-media').innerHTML = `<div class="empty-state">Não foi possível carregar as fotos.</div>`;
+    $('student-view-goal-list').innerHTML = `<li class="empty-state">Não foi possível carregar as metas.</li>`;
   }
 }
 
 function render() {
   const list = $('students-list');
-  const term = val('student-search').toLowerCase();
+  const term = normalizeStudentSearch(val('student-search'));
+  const searchField = val('student-search-field') || 'all';
+  const statusFilter = val('student-status-filter') || 'all';
+  const paymentFilter = val('student-payment-filter') || 'all';
+  const trainingFilter = val('student-training-filter') || 'all';
   list.innerHTML = '';
   const filtered = rows.filter((item) => {
-    return `${item.name} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`.toLowerCase().includes(term);
+    if (term) {
+      const searchable = {
+        name: item.name || '',
+        email: item.email || '',
+        phone: item.phone || '',
+        all: `${item.name || ''} ${item.email || ''} ${item.phone || ''} ${item.cpf || ''} ${item.rg || ''}`
+      };
+      const source = searchable[searchField] ?? searchable.all;
+      const textMatch = normalizeStudentSearch(source).includes(term);
+      const digitTerm = digits(term);
+      const digitMatch = digitTerm && digits(source).includes(digitTerm);
+      if (!textMatch && !digitMatch) return false;
+    }
+    if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+    const hasOverduePayment = Number(item.overdue_amount_cents || 0) > 0;
+    if (paymentFilter === 'current' && hasOverduePayment) return false;
+    if (paymentFilter === 'overdue' && !hasOverduePayment) return false;
+    const hasTrainingPlan = Boolean(item.training_plan_id);
+    if (trainingFilter === 'with' && !hasTrainingPlan) return false;
+    if (trainingFilter === 'without' && hasTrainingPlan) return false;
+    return true;
   });
+  syncStudentFilterState(filtered.length);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   currentPage = Math.min(currentPage, totalPages);
   const start = (currentPage - 1) * pageSize;
@@ -176,6 +480,7 @@ function render() {
 
   for (const item of visibleRows) {
     const pending = Number(item.pending_amount_cents || 0);
+    const overdue = Number(item.overdue_amount_cents || 0);
     const li = document.createElement('li');
     li.className = 'entity-card';
     li.tabIndex = 0;
@@ -189,20 +494,23 @@ function render() {
     main.innerHTML = `
       <strong>${item.name}</strong>
       <span>E-mail: ${item.email || 'Sem e-mail'} · Tel: ${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
-      <span class="student-card-tags"><span>${item.plan_name || 'Sem plano'}</span><span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>'}<span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
+      <span class="student-card-tags"><span>${item.plan_name || 'Sem plano'}</span><span class="badge ${statusClass}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span> ${overdue > 0 ? `<span class="badge bad">Em atraso ${brl(overdue)}</span>` : (pending > 0 ? `<span class="badge warn">Pendente ${brl(pending)}</span>` : '<span class="badge ok">Em dia</span>')}<span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
     const whatsapp = whatsappLink(item.phone);
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
     if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); actions.appendChild(whatsapp); }
-    const credentialButton = window.AcademiaIcons.button('qr', 'Abrir QR Code e credencial');
-    credentialButton.addEventListener('click', (event) => { event.stopPropagation(); openCredentialPreview(item); });
-    actions.appendChild(credentialButton);
+    if (window.AcademiaModules?.isEnabled?.('access') !== false) {
+      const credentialButton = window.AcademiaIcons.button('qr', 'Abrir QR Code e credencial');
+      credentialButton.dataset.moduleFeature = 'access';
+      credentialButton.addEventListener('click', (event) => { event.stopPropagation(); openCredentialPreview(item); });
+      actions.appendChild(credentialButton);
+    }
     const editButton = window.AcademiaIcons.button('edit', 'Editar cadastro');
     editButton.addEventListener('click', (event) => { event.stopPropagation(); openModal(item); });
     actions.appendChild(editButton);
     actions.appendChild(button(item.status === 'active' ? '⊘' : '●', (event) => { event?.stopPropagation?.(); toggle(item); }, 'icon-button'));
     actions.lastElementChild.title = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno'; actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);
-    li.append(main, actions);
+    li.append(main, actions, studentMobileMenu(item, whatsapp?.href || ''));
     list.appendChild(li);
   }
 
@@ -216,6 +524,29 @@ function render() {
     ? (filtered.length <= pageSize ? `${filtered.length} de ${rows.length} aluno(s)` : `${start + 1}-${Math.min(start + pageSize, filtered.length)} de ${filtered.length} aluno(s)`)
     : `0 de ${rows.length} aluno(s)`;
   renderPagination(filtered.length, totalPages);
+}
+
+function normalizeStudentSearch(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+    .trim();
+}
+
+function syncStudentFilterState(filteredCount) {
+  const activeCount = [
+    val('student-search'),
+    val('student-status-filter') !== 'all' ? val('student-status-filter') : '',
+    val('student-payment-filter') !== 'all' ? val('student-payment-filter') : '',
+    val('student-training-filter') !== 'all' ? val('student-training-filter') : ''
+  ].filter(Boolean).length;
+  const toggle = $('student-search-toggle');
+  toggle.classList.toggle('has-active-filters', activeCount > 0);
+  toggle.setAttribute('aria-label', activeCount ? `Pesquisar e filtrar alunos, ${activeCount} filtro(s) ativo(s)` : 'Pesquisar e filtrar alunos');
+  const summary = $('student-active-filters');
+  summary.textContent = activeCount ? `${activeCount} filtro(s) ativo(s) · ${filteredCount} resultado(s)` : '';
+  summary.classList.toggle('hidden', activeCount === 0);
 }
 
 function renderPagination(totalItems, totalPages) {
@@ -477,10 +808,16 @@ async function drawCredentialQr(payload, dataUrl = '') {
   });
 }
 
+function setCredentialPreviewStatus(message = '') {
+  const status = $('credential-preview-status');
+  status.textContent = message;
+  status.classList.toggle('hidden', !message);
+}
+
 async function loadCredentialPreview({ silent = false } = {}) {
   if (!credentialMemberId || credentialRequestInFlight) return;
   credentialRequestInFlight = true;
-  if (!silent) $('credential-preview-status').textContent = 'Gerando credencial segura...';
+  if (!silent) setCredentialPreviewStatus('');
   try {
     const result = await req('/api/access/member-credential/preview', {
       method: 'POST',
@@ -492,7 +829,6 @@ async function loadCredentialPreview({ silent = false } = {}) {
     const member = result.member || {};
 
     $('credential-student-name').textContent = member.name || 'Aluno';
-    $('credential-preview-subtitle').textContent = `Prévia real da credencial de ${member.name || 'aluno'}.`;
     $('offline-registration-number').textContent = offline.registration_number || '------';
     $('offline-pin').textContent = offline.pin || '----';
     $('credential-dynamic-code').textContent = formatDynamicCode(dynamic.access_code);
@@ -500,13 +836,11 @@ async function loadCredentialPreview({ silent = false } = {}) {
     credentialTtlSeconds = Number(dynamic.ttl_seconds || 30);
     setCredentialAccessState(access);
     await drawCredentialQr(dynamic.qr_payload || '', dynamic.qr_data_url || '');
-    $('credential-preview-status').textContent = access.allowed
-      ? 'QR e código temporário ativos. Matrícula e PIN funcionam mesmo sem internet no celular.'
-      : (access.message || 'O acesso deste aluno está bloqueado.');
+    setCredentialPreviewStatus(access.allowed ? '' : (access.message || 'O acesso deste aluno está bloqueado.'));
     updateCredentialCountdown();
   } catch (error) {
     credentialExpiresAt = null;
-    $('credential-preview-status').textContent = `Erro: ${error.message}`;
+    setCredentialPreviewStatus(`Erro: ${error.message}`);
     $('credential-dynamic-code').textContent = '--- ---';
     await drawCredentialQr('');
   } finally {
@@ -520,7 +854,7 @@ function openCredentialPreview(item) {
   $('credential-preview-modal').classList.remove('hidden');
   $('credential-preview-modal').setAttribute('aria-hidden', 'false');
   $('credential-student-name').textContent = item.name || 'Aluno';
-  $('credential-preview-subtitle').textContent = `Carregando a credencial de ${item.name || 'aluno'}...`;
+  setCredentialPreviewStatus('');
   $('offline-registration-number').textContent = '------';
   $('offline-pin').textContent = '----';
   $('credential-dynamic-code').textContent = '--- ---';
@@ -555,9 +889,9 @@ async function resetOfflinePin() {
     });
     $('offline-registration-number').textContent = result.registration_number || '------';
     $('offline-pin').textContent = result.pin || '----';
-    $('credential-preview-status').textContent = 'Novo PIN gerado. Oriente o aluno a atualizar o código salvo no celular.';
+    setCredentialPreviewStatus('Novo PIN gerado.');
   } catch (error) {
-    $('credential-preview-status').textContent = `Erro: ${error.message}`;
+    setCredentialPreviewStatus(`Erro: ${error.message}`);
   } finally {
     buttonElement.disabled = false;
   }
@@ -567,13 +901,27 @@ $('new-student-button').onclick = () => openModal();
 $('student-search-toggle').onclick = () => {
   const wrapper = $('student-search-wrap');
   const isHidden = wrapper.classList.toggle('hidden');
+  $('student-search-toggle').setAttribute('aria-expanded', String(!isHidden));
   if (!isHidden) $('student-search').focus();
 };
 $('close-student-modal').onclick = closeModal;
 $('close-student-view-modal').onclick = closeStudentViewModal;
+document.querySelectorAll('[data-student-view-tab]').forEach((button) => button.addEventListener('click', () => setStudentViewTab(button.dataset.studentViewTab)));
+$('student-view-new-assessment').onclick = openStudentAssessmentModal;
+$('student-view-summary').onclick = openStudentSummary;
+$('student-view-new-goal').onclick = openStudentGoalModal;
+$('student-assessment-form').addEventListener('submit', saveStudentAssessment);
+$('student-goal-form').addEventListener('submit', saveStudentGoal);
+$('close-student-assessment-modal').onclick = $('cancel-student-assessment').onclick = () => setStudentContextModal('student-assessment-modal', false);
+$('close-student-goal-modal').onclick = $('cancel-student-goal').onclick = () => setStudentContextModal('student-goal-modal', false);
+$('close-student-summary-modal').onclick = () => setStudentContextModal('student-summary-modal', false);
+for (const id of ['student-assessment-modal', 'student-goal-modal', 'student-summary-modal']) $(id).addEventListener('click', (event) => { if (event.target === $(id)) setStudentContextModal(id, false); });
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
 $('student-search').oninput = () => { currentPage = 1; render(); };
+['student-search-field', 'student-status-filter', 'student-payment-filter', 'student-training-filter'].forEach((id) => {
+  $(id).addEventListener('change', () => { currentPage = 1; render(); });
+});
 $('student-cpf').addEventListener('input', (event) => { event.target.value = formatCpf(event.target.value); });
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });

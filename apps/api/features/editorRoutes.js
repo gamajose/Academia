@@ -133,7 +133,8 @@ async function handleEditorRoutes(req, res, user, url, helpers) {
   const isTrainingVideo = url.pathname === '/api/training/videos';
   const isSocialVideo = url.pathname === '/api/editor/videos';
   const allowedRoles = isTrainingVideo ? ['owner', 'admin', 'staff'] : ['owner', 'admin', 'student'];
-  if (!user || !allowedRoles.includes(user.role)) return helpers.send(res, 403, { error: 'sem_permissao' });
+  const isImage = url.pathname === '/api/editor/images';
+  if (!user || (!isImage && !allowedRoles.includes(user.role))) return helpers.send(res, 403, { error: 'sem_permissao' });
   if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('multipart/form-data')) return helpers.send(res, 415, { error: 'multipart_obrigatorio' });
   return handleMediaUpload(req, res, helpers, isTrainingVideo ? 'training' : (isSocialVideo ? 'video' : 'image'));
 }

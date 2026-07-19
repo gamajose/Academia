@@ -211,6 +211,7 @@ class _StudentToolsPageState extends State<StudentToolsPage> with SingleTickerPr
     if (type.contains('payment')) return Icons.payments;
     if (type == 'access_blocked') return Icons.block;
     if (type == 'training') return Icons.fitness_center;
+    if (type == 'measurement_reminder') return Icons.monitor_weight_outlined;
     if (type == 'membership') return Icons.card_membership;
     return Icons.notifications;
   }

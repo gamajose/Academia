@@ -4,6 +4,7 @@ const { pool, query } = require('./lib/db');
 const { hashPassword, verifyPassword, validatePassword, signToken, verifyToken, randomToken, hashToken } = require('./lib/security');
 const { sendTransactionalEmail } = require('./lib/mailer');
 const { canAccess, loadAccessPermissions } = require('./lib/accessControl');
+const { normalizeModules, moduleForRequest, loadEnabledModules } = require('./lib/moduleAvailability');
 const { applySecurityHeaders, isOriginAllowed, consumeRateLimit } = require('./lib/httpSecurity');
 const { handleMemberships } = require('./features/memberships');
 const { handlePayments } = require('./features/payments');
@@ -275,6 +276,23 @@ const server = http.createServer(async (req, res) => {
 
     const user = auth(req);
     if (!user) return send(req, res, 401, { error: 'nao_autorizado' });
+    if (req.method === 'GET' && url.pathname === '/api/gym/modules') {
+      const modules = await loadEnabledModules(query, user.gym_id);
+      return send(req, res, 200, { modules });
+    }
+    if (req.method === 'PUT' && url.pathname === '/api/gym/modules') {
+      if (!['owner', 'admin'].includes(user.role)) return send(req, res, 403, { error: 'acesso_negado' });
+      const input = await body(req);
+      const modules = normalizeModules(input.modules || {});
+      await query('UPDATE gyms SET enabled_modules = $2::jsonb WHERE id = $1', [user.gym_id, JSON.stringify(modules)]);
+      return send(req, res, 200, { modules });
+    }
+    const enabledModules = await loadEnabledModules(query, user.gym_id);
+    user.enabled_modules = enabledModules;
+    const requestedModule = moduleForRequest(url.pathname);
+    if (requestedModule && enabledModules[requestedModule] === false) {
+      return send(req, res, 403, { error: 'modulo_desabilitado', module: requestedModule });
+    }
     const accessPermissions = await loadAccessPermissions(query, user);
     user.access_permissions = accessPermissions;
     if (!canAccess(user, req.method, url.pathname, accessPermissions)) return send(req, res, 403, { error: 'acesso_negado' });

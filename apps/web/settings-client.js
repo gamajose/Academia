@@ -1,37 +1,37 @@
-const settingsHost = window.location.hostname || 'localhost';
-const defaultApi = `http://${settingsHost}:3004`;
-const apiInput = document.getElementById('api-base-url');
-const settingsStatus = document.getElementById('settings-status');
+const moduleStatus = document.getElementById('module-settings-status');
+const moduleLabels = {
+  dashboard: ['Painel', 'Resumo da operação'], community: ['Comunidade', 'Publicações e interações'], members: ['Alunos', 'Cadastros dos alunos'],
+  plans: ['Planos', 'Planos comerciais'], memberships: ['Matrículas', 'Vínculos e matrículas'], pre_enrollments: ['Pré-matrículas', 'Solicitações de entrada'],
+  finance: ['Financeiro', 'Cobranças e movimentações'], alerts: ['Alertas', 'Avisos operacionais'], training: ['Treinos', 'Exercícios e fichas'],
+  access: ['Acessos', 'QR Code, catraca e credenciais'], users: ['Funcionários', 'Equipe e permissões']
+};
 
-apiInput.value = localStorage.getItem('apiBaseUrl') || defaultApi;
-
-function setSettingsStatus(text) {
-  settingsStatus.textContent = text;
+async function loadModuleSettings() {
+  const modules = await window.AcademiaModules.load(localStorage.getItem('academiaToken') || '');
+  document.getElementById('module-settings-grid').innerHTML = Object.entries(moduleLabels).map(([key, [label, help]]) => `
+    <label class="module-toggle"><input type="checkbox" data-module-key="${key}" ${modules[key] !== false ? 'checked' : ''} /><span><strong>${label}</strong><small>${help}</small></span></label>`).join('');
 }
 
-async function testApiConnection() {
+async function saveModuleSettings() {
+  const button = document.getElementById('save-modules-button');
+  const modules = { ...window.AcademiaModules.defaults };
+  document.querySelectorAll('[data-module-key]').forEach((input) => { modules[input.dataset.moduleKey] = input.checked; });
+  button.disabled = true;
+  moduleStatus.textContent = 'Salvando...';
   try {
-    const cleanUrl = apiInput.value.replace(/\/$/, '');
-    const response = await fetch(`${cleanUrl}/health`);
-    const data = await response.json();
-    setSettingsStatus(`API ${data.status || 'ok'} - ${data.version || 'sem versao'}`);
+    const token = localStorage.getItem('academiaToken') || '';
+    const response = await fetch('/api/gym/modules', { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ modules }) });
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await response.json() : { error: `resposta_invalida_${response.status}` };
+    if (!response.ok) throw new Error(data.error || 'falha_ao_salvar');
+    window.AcademiaModules.store(data.modules);
+    moduleStatus.textContent = 'Configuração salva. Os menus foram atualizados para toda a academia.';
+    setTimeout(() => window.location.reload(), 450);
   } catch (error) {
-    setSettingsStatus('Falha ao conectar na API.');
-  }
+    const messages = { acesso_negado: 'Somente administrador ou proprietário pode alterar os módulos.', nao_autorizado: 'Sua sessão expirou. Entre novamente.', resposta_invalida_501: 'O servidor web não aceitou a atualização. Recarregue a página e tente novamente.' };
+    moduleStatus.textContent = messages[error.message] || `Não foi possível salvar os módulos: ${error.message}`;
+  } finally { button.disabled = false; }
 }
 
-function saveApiUrl() {
-  const cleanUrl = apiInput.value.replace(/\/$/, '');
-  localStorage.setItem('apiBaseUrl', cleanUrl);
-  setSettingsStatus('URL salva.');
-}
-
-function clearSession() {
-  localStorage.removeItem('academiaToken');
-  setSettingsStatus('Sessao limpa. Abra o painel para entrar novamente.');
-}
-
-document.getElementById('save-api-button').addEventListener('click', saveApiUrl);
-document.getElementById('test-api-button').addEventListener('click', testApiConnection);
-document.getElementById('logout-settings-button').addEventListener('click', clearSession);
-testApiConnection();
+document.getElementById('save-modules-button').addEventListener('click', saveModuleSettings);
+loadModuleSettings();

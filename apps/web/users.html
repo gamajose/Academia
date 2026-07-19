@@ -1,19 +1,16 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Funcionários - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./users-access.css?v=20260712-2310" />
+  <link rel="stylesheet" href="./users-access.css?v=20260719-2" />
 </head>
 <body>
   <main class="app-shell employees-page">
-    <section class="hero">
-      <h1>Funcionários</h1>
-    </section>
-
     <section class="panel employee-list-panel">
       <div class="toolbar employee-list-toolbar">
         <div>
@@ -21,8 +18,23 @@
         </div>
         <div class="toolbar-actions">
           <button id="new-user-button" class="icon-button" type="button" aria-label="Cadastrar funcionário" title="Cadastrar funcionário">+</button>
+          <button id="employee-filter-toggle" class="icon-button" type="button" aria-label="Pesquisar funcionários" title="Pesquisar funcionários" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
           <button id="manage-permissions-button" class="secondary" type="button">Permissões</button>
         </div>
+        <div class="employee-toolbar-mobile-menu">
+          <button id="employee-toolbar-menu-trigger" class="employee-menu-trigger" type="button" aria-label="Opções da equipe" aria-expanded="false">⋮</button>
+          <div id="employee-toolbar-menu-dropdown" class="employee-menu-dropdown hidden">
+            <button id="employee-toolbar-new" type="button">Cadastrar funcionário</button>
+            <button id="employee-toolbar-search" type="button">Pesquisar funcionários</button>
+            <button id="employee-toolbar-permissions" type="button">Permissões</button>
+          </div>
+        </div>
+      </div>
+      <div class="employee-filter-panel hidden" id="employee-filter-panel">
+        <div class="field employee-filter-search"><label for="employee-filter-term">Buscar</label><input id="employee-filter-term" type="search" placeholder="Nome, e-mail ou telefone" /></div>
+        <div class="field"><label for="employee-filter-job">Cargo</label><select id="employee-filter-job"><option value="">Todos</option></select></div>
+        <div class="field"><label for="employee-filter-profile">Permissão</label><select id="employee-filter-profile"><option value="">Todas</option></select></div>
+        <div class="field"><label for="employee-filter-status">Status</label><select id="employee-filter-status"><option value="">Todos</option><option value="active">Ativo agora</option><option value="inactive">Inativo</option><option value="disabled">Desativado</option></select></div>
       </div>
       <p class="status-line" id="users-status" aria-live="polite"></p>
       <div class="table-wrap">
@@ -164,8 +176,8 @@
     </form>
   </div>
 
-<script src="./nav.js?v=20260712-2310"></script>
+<script src="./nav.js?v=20260719-1"></script>
 <script src="./icon-utils.js"></script>
-<script src="./users.js?v=20260712-2310"></script>
+<script src="./users.js?v=20260719-1"></script>
 </body>
 </html>

@@ -170,7 +170,38 @@ async function loadStudentOverview(query, user) {
   };
 }
 
+async function ensureMeasurementReminder(query, user) {
+  await query(
+    `WITH measurement_state AS (
+       SELECT m.gym_id, m.id AS member_id,
+              COALESCE(MAX(a.assessment_date), MIN(ms.starts_at), m.created_at::date) AS reference_date
+       FROM members m
+       LEFT JOIN memberships ms ON ms.gym_id = m.gym_id AND ms.member_id = m.id
+       LEFT JOIN member_assessments a ON a.gym_id = m.gym_id AND a.member_id = m.id
+       WHERE m.gym_id = $1 AND m.id = $2
+       GROUP BY m.gym_id, m.id, m.created_at
+     )
+     INSERT INTO member_notifications (gym_id, member_id, type, title, message, action_route, metadata)
+     SELECT state.gym_id, state.member_id, 'measurement_reminder', 'Hora de atualizar suas medições',
+            'Já se passaram 30 dias. Registre uma nova medição para atualizar sua análise inteligente do progresso.',
+            '/evolution', jsonb_build_object('reference_date', state.reference_date::text)
+     FROM measurement_state state
+     WHERE state.reference_date IS NOT NULL
+       AND current_date >= state.reference_date + 30
+       AND NOT EXISTS (
+         SELECT 1 FROM member_notifications notification
+         WHERE notification.gym_id = state.gym_id
+           AND notification.member_id = state.member_id
+           AND notification.type = 'measurement_reminder'
+           AND notification.metadata->>'reference_date' = state.reference_date::text
+       )
+     ON CONFLICT DO NOTHING`,
+    [user.gym_id, user.member_id]
+  );
+}
+
 async function studentOverview(res, user, helpers) {
+  await ensureMeasurementReminder(helpers.query, user);
   const overview = await loadStudentOverview(helpers.query, user);
   if (!overview) return helpers.send(res, 404, { error: 'aluno_nao_encontrado' });
   return helpers.send(res, 200, overview);
@@ -263,6 +294,7 @@ function dynamicNotifications(overview) {
 }
 
 async function studentNotifications(res, user, helpers) {
+  await ensureMeasurementReminder(helpers.query, user);
   const [overview, stored] = await Promise.all([
     loadStudentOverview(helpers.query, user),
     helpers.query(

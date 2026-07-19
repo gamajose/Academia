@@ -1,6 +1,7 @@
 (function () {
   const p = (id) => document.getElementById(id);
   const accountFields = ['name', 'birth_date', 'cpf', 'rg', 'email', 'phone', 'postal_code', 'street', 'address_number', 'neighborhood', 'city', 'state', 'objective', 'allergies', 'notes'];
+  const bodyFields = { weight_kg: 'weight', height_cm: 'height', body_fat_percent: 'fat', muscle_mass_kg: 'muscle', waist_cm: 'waist', chest_cm: 'chest', hip_cm: 'hip', biceps_cm: 'biceps', thigh_cm: 'thigh' };
   let photoPreview = '';
   let currentPhoto = '';
 
@@ -26,31 +27,33 @@
 
   function showView(view) {
     document.querySelectorAll('[data-settings-view-panel]').forEach((panel) => {
-      panel.hidden = panel.dataset.settingsViewPanel !== view;
+      panel.hidden = panel.dataset.settingsViewPanel !== view && panel.dataset.settingsGroup !== view;
     });
-    document.querySelectorAll('[data-settings-view]').forEach((link) => {
-      const active = link.dataset.settingsView === view;
-      link.classList.toggle('is-active', active);
-      if (active) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
-    });
+    const labels = { profile: 'Editar perfil', account: 'Dados da conta', body: 'Dados corporais', security: 'Segurança', preferences: 'Preferências', language: 'Idioma', theme: 'Tema' };
+    if (p('social-settings-title')) p('social-settings-title').textContent = labels[view] || labels.profile;
   }
 
   function setupViewNavigation() {
-    document.querySelectorAll('[data-settings-view]').forEach((link) => {
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-        showView(link.dataset.settingsView);
-      });
-    });
-    const initialView = { '#social-account': 'account', '#social-language': 'language', '#social-theme': 'theme', '#social-security': 'security' }[window.location.hash] || 'profile';
-    showView(initialView);
+    const resolveView = () => ({ '#social-account': 'account', '#social-body': 'body', '#social-preferences': 'preferences', '#social-language': 'language', '#social-theme': 'theme', '#social-security': 'security' }[window.location.hash] || 'profile');
+    showView(resolveView());
+    window.addEventListener('hashchange', () => showView(resolveView()));
   }
 
   function fillAccount(data) {
     accountFields.forEach((field) => {
       const element = p(`profile-${field.replaceAll('_', '-')}`);
       if (element) element.value = data[field] || data[`account_${field}`] || '';
+    });
+  }
+
+  function fillBody(progress) {
+    const assessments = progress.assessments || [];
+    const baseline = progress.baseline || assessments[assessments.length - 1] || null;
+    p('body-assessment-date').value = baseline?.assessment_date ? String(baseline.assessment_date).slice(0, 10) : new Date().toISOString().slice(0, 10);
+    Object.entries(bodyFields).forEach(([field, id]) => {
+      const sourceField = field === 'thigh_cm' ? 'left_thigh_cm' : field;
+      const element = p(`body-${id}`);
+      if (element) element.value = baseline?.[sourceField] ?? '';
     });
   }
 
@@ -96,9 +99,10 @@
   async function load() {
     try {
       await StudentPortal.init();
-      const [socialResult, account] = await Promise.all([
+      const [socialResult, account, progress] = await Promise.all([
         StudentPortal.api('/api/student/social/profile'),
-        StudentPortal.api('/api/student/profile')
+        StudentPortal.api('/api/student/profile'),
+        StudentPortal.api('/api/student/progress')
       ]);
       const profile = socialResult.profile;
       currentPhoto = profile.profile_photo_url || '';
@@ -111,6 +115,7 @@
       StudentPortal.setLocale(profile.language || 'pt-BR');
       StudentPortal.applyTheme(profile.theme || 'light');
       fillAccount(account);
+      fillBody(progress);
       setAvatar(profile);
     } catch (error) {
       setStatus(`Não foi possível carregar seus dados: ${error.message}`, true);
@@ -192,6 +197,22 @@
     }
   }
 
+  async function saveBody(event) {
+    event.preventDefault();
+    const button = p('student-body-save');
+    const payload = { assessment_date: p('body-assessment-date').value };
+    Object.entries(bodyFields).forEach(([field, id]) => { payload[field] = p(`body-${id}`)?.value || ''; });
+    try {
+      button.disabled = true; button.textContent = 'Salvando...';
+      await StudentPortal.api('/api/student/progress/baseline', { method: 'PUT', body: JSON.stringify(payload) });
+      setStatus('Dados corporais iniciais salvos. Sua evolução será comparada com este ponto de partida.', false, 'student-body-status');
+    } catch (error) {
+      setStatus(`Não foi possível salvar os dados corporais: ${error.message}`, true, 'student-body-status');
+    } finally {
+      button.disabled = false; button.textContent = 'Salvar dados iniciais';
+    }
+  }
+
   function csvCell(value) { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
 
   async function exportData() {
@@ -217,6 +238,7 @@
 
   setupViewNavigation();
   p('social-profile-form').addEventListener('submit', saveProfile);
+  p('student-body-form').addEventListener('submit', saveBody);
   p('student-profile-form').addEventListener('submit', saveAccount);
   p('social-language-form').addEventListener('submit', (event) => savePreference(event, 'social-language-status', 'language'));
   p('social-theme-form').addEventListener('submit', (event) => savePreference(event, 'social-theme-status', 'theme'));

@@ -14,6 +14,10 @@ let activePlanWeekday = null;
 let exerciseLibraryQuery = '';
 let exercisePrimaryFilter = '';
 let exerciseSecondaryFilter = '';
+let planLibraryQuery = '';
+let exercisePage = 1;
+let planPage = 1;
+const TRAINING_PAGE_SIZE = 5;
 
 const t = (id) => document.getElementById(id);
 
@@ -30,6 +34,49 @@ function trainingActionIcon(type, label, className = '') {
     : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6v14H5V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>';
   return button;
 }
+
+function trainingMobileMenu(label, items) {
+  const wrap = document.createElement('div');
+  wrap.className = 'mobile-card-menu';
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'mobile-card-menu-trigger';
+  trigger.textContent = '⋮';
+  trigger.setAttribute('aria-label', label);
+  trigger.setAttribute('aria-expanded', 'false');
+  const dropdown = document.createElement('div');
+  dropdown.className = 'mobile-card-menu-dropdown hidden';
+  for (const item of items) {
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.textContent = item.label;
+    if (item.danger) action.classList.add('danger');
+    action.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      await item.run(action);
+    });
+    dropdown.appendChild(action);
+  }
+  trigger.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const willOpen = dropdown.classList.contains('hidden');
+    document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+    document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+    dropdown.classList.toggle('hidden', !willOpen);
+    trigger.setAttribute('aria-expanded', String(willOpen));
+  });
+  wrap.addEventListener('click', (event) => event.stopPropagation());
+  wrap.addEventListener('keydown', (event) => event.stopPropagation());
+  wrap.append(trigger, dropdown);
+  return wrap;
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+});
 
 function setTrainingStatus(text) {
   t('training-status').textContent = text;
@@ -270,11 +317,19 @@ function renderAll({ libraryOnly = false } = {}) {
   const exerciseList = t('exercise-list');
   exerciseList.innerHTML = '';
   const visibleExercises = getVisibleExercises();
-  const renderedExercises = visibleExercises.slice(0, 4);
+  const exercisePages = Math.max(1, Math.ceil(visibleExercises.length / TRAINING_PAGE_SIZE));
+  exercisePage = Math.min(exercisePages, Math.max(1, exercisePage));
+  const renderedExercises = visibleExercises.slice((exercisePage - 1) * TRAINING_PAGE_SIZE, exercisePage * TRAINING_PAGE_SIZE);
+  window.AdminPagination?.render(t('exercise-pagination'), {
+    page: exercisePage,
+    total: visibleExercises.length,
+    pageSize: TRAINING_PAGE_SIZE,
+    onChange: (page) => { exercisePage = page; renderAll({ libraryOnly: true }); }
+  });
   const libraryStatus = t('exercise-library-status');
   if (libraryStatus) {
-    libraryStatus.textContent = visibleExercises.length > renderedExercises.length
-      ? `Mostrando ${renderedExercises.length} de ${visibleExercises.length} exercícios. Use a pesquisa para encontrar outros.`
+    libraryStatus.textContent = visibleExercises.length > TRAINING_PAGE_SIZE
+      ? `Mostrando ${((exercisePage - 1) * TRAINING_PAGE_SIZE) + 1}-${Math.min(exercisePage * TRAINING_PAGE_SIZE, visibleExercises.length)} de ${visibleExercises.length} exercícios.`
       : `${visibleExercises.length} exercício(s) encontrado(s).`;
   }
   for (const item of renderedExercises) {
@@ -334,6 +389,10 @@ function renderAll({ libraryOnly = false } = {}) {
       });
       actions.append(edit, remove);
       row.appendChild(actions);
+      row.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
+        { label: 'Editar', run: () => openExerciseForm(item) },
+        { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
+      ]));
     }
     exerciseList.appendChild(row);
   }
@@ -348,7 +407,18 @@ function renderAll({ libraryOnly = false } = {}) {
 
   const planList = t('plan-list');
   planList.innerHTML = '';
-  for (const item of plans) {
+  const normalizedPlanQuery = normalizeExerciseFilterValue(planLibraryQuery);
+  const visiblePlans = plans.filter((item) => !normalizedPlanQuery || normalizeExerciseFilterValue(`${item.member_name || ''} ${item.name || ''}`).includes(normalizedPlanQuery));
+  const planPages = Math.max(1, Math.ceil(visiblePlans.length / TRAINING_PAGE_SIZE));
+  planPage = Math.min(planPages, Math.max(1, planPage));
+  const renderedPlans = visiblePlans.slice((planPage - 1) * TRAINING_PAGE_SIZE, planPage * TRAINING_PAGE_SIZE);
+  window.AdminPagination?.render(t('plan-pagination'), {
+    page: planPage,
+    total: visiblePlans.length,
+    pageSize: TRAINING_PAGE_SIZE,
+    onChange: (page) => { planPage = page; renderAll(); }
+  });
+  for (const item of renderedPlans) {
     const row = document.createElement('li');
     row.className = 'entity-card';
     row.tabIndex = 0;
@@ -380,8 +450,18 @@ function renderAll({ libraryOnly = false } = {}) {
       });
       actions.append(edit, remove);
       row.appendChild(actions);
+      row.appendChild(trainingMobileMenu(`Opções da ficha de ${item.member_name}`, [
+        { label: 'Editar', run: () => openPlanForm(item) },
+        { label: 'Excluir', danger: true, run: (button) => deletePlan(item, button) }
+      ]));
     }
     planList.appendChild(row);
+  }
+  if (!renderedPlans.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.textContent = planLibraryQuery ? 'Nenhuma ficha encontrada para esse aluno.' : 'Nenhuma ficha cadastrada.';
+    planList.appendChild(empty);
   }
 }
 
@@ -454,7 +534,7 @@ function openExerciseForm(item = null) {
   editingExerciseId = item?.id || null;
   editingOriginalVideoUrl = item?.video_url || '';
   t('exercise-title').textContent = item ? 'Editar exercício' : 'Novo exercício';
-  t('create-exercise-button').textContent = item ? 'Salvar alterações' : 'Cadastrar exercício';
+  t('create-exercise-button').textContent = 'Salvar';
   t('exercise-name').value = item?.name || '';
   t('exercise-group').value = item?.muscle_group_primary || item?.muscle_group || '';
   t('exercise-secondary-muscles').value = item?.muscle_group_secondary || '';
@@ -671,7 +751,7 @@ async function createExercise() {
     editingExerciseId = null;
     editingOriginalVideoUrl = '';
     t('exercise-title').textContent = 'Novo exercício';
-    t('create-exercise-button').textContent = 'Cadastrar exercício';
+    t('create-exercise-button').textContent = 'Salvar';
     t('exercise-video-file').value = '';
     t('exercise-video-url').value = '';
     setVideoSourceMode();
@@ -726,7 +806,7 @@ function resetPlanBuilder() {
   activePlanWeekday = null;
   document.querySelectorAll('input[name="plan-day"]').forEach((input) => { input.checked = false; });
   if (t('plan-title')) t('plan-title').textContent = 'Nova ficha';
-  if (t('create-plan-button')) t('create-plan-button').textContent = 'Criar ficha';
+  if (t('create-plan-button')) t('create-plan-button').textContent = 'Salvar';
   if (t('plan-member')) {
     t('plan-member').value = '';
     t('plan-member').disabled = false;
@@ -750,7 +830,7 @@ async function openPlanForm(item) {
     const detail = await api(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.id)}`);
     editingPlanId = item.id;
     t('plan-title').textContent = 'Editar ficha';
-    t('create-plan-button').textContent = 'Salvar alterações';
+    t('create-plan-button').textContent = 'Salvar';
     t('plan-member').value = detail.plan?.member_id || item.member_id || '';
     t('plan-member').disabled = false;
     t('plan-level').value = detail.plan?.level || item.level || '';
@@ -1044,9 +1124,26 @@ async function reviewPlan() {
   list.appendChild(title);
   for (const suggestion of result.suggestions || []) {
     const row = document.createElement('li');
-    row.textContent = `${suggestion.type}: ${suggestion.reason || ''}`;
+    row.appendChild(document.createTextNode(suggestion.name ? `${suggestion.name}: ${suggestion.reason || ''}` : (suggestion.reason || suggestion.type || '')));
+    if (suggestion.exercise_id) {
+      const actions = document.createElement('span'); actions.className = 'training-ai-suggestion-actions';
+      for (const [decision, label] of [['accepted', '✓'], ['rejected', '×']]) {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary icon-button'; button.textContent = label; button.title = decision === 'accepted' ? 'Aprovar sugestão' : 'Rejeitar sugestão';
+        button.addEventListener('click', async () => { await api('/api/training/advanced/review/feedback', { method: 'POST', body: JSON.stringify({ review_id: result.id, recommendation_key: suggestion.exercise_id, decision }) }); actions.textContent = decision === 'accepted' ? 'Aprovado' : 'Rejeitado'; }); actions.appendChild(button);
+      }
+      row.appendChild(actions);
+    }
     list.appendChild(row);
   }
+  const feedback = document.createElement('li'); feedback.className = 'training-ai-feedback';
+  for (const [decision, label] of [['accepted', 'Aprovar'], ['rejected', 'Rejeitar']]) {
+    const button = document.createElement('button'); button.type = 'button'; button.className = decision === 'rejected' ? 'secondary' : '';
+    button.textContent = label; button.addEventListener('click', async () => {
+      await api('/api/training/advanced/review/feedback', { method: 'POST', body: JSON.stringify({ review_id: result.id, recommendation_key: 'plan_review', decision }) });
+      feedback.replaceChildren(document.createTextNode(decision === 'accepted' ? 'Sugestões aprovadas pelo personal.' : 'Sugestões rejeitadas pelo personal.'));
+    }); feedback.appendChild(button);
+  }
+  list.appendChild(feedback);
   setTrainingStatus('Analise gerada.');
 }
 
@@ -1108,16 +1205,32 @@ t('toggle-exercise-search')?.addEventListener('click', () => {
 });
 t('exercise-search')?.addEventListener('input', (event) => {
   exerciseLibraryQuery = event.target.value;
+  exercisePage = 1;
   renderAll({ libraryOnly: true });
   t('exercise-search')?.focus();
 });
 t('exercise-primary-filter')?.addEventListener('change', (event) => {
   exercisePrimaryFilter = event.target.value;
+  exercisePage = 1;
   renderAll({ libraryOnly: true });
 });
 t('exercise-secondary-filter')?.addEventListener('change', (event) => {
   exerciseSecondaryFilter = event.target.value;
+  exercisePage = 1;
   renderAll({ libraryOnly: true });
+});
+t('toggle-plan-search')?.addEventListener('click', () => {
+  const filters = t('plan-library-filters');
+  const isOpen = filters?.classList.toggle('hidden') === false;
+  filters?.setAttribute('aria-hidden', String(!isOpen));
+  t('toggle-plan-search')?.setAttribute('aria-expanded', String(isOpen));
+  if (isOpen) t('plan-search')?.focus();
+});
+t('plan-search')?.addEventListener('input', (event) => {
+  planLibraryQuery = event.target.value;
+  planPage = 1;
+  renderAll();
+  t('plan-search')?.focus();
 });
 
 [

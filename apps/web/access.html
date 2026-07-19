@@ -1,31 +1,29 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Acesso e catraca - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./access-credential.css" />
-  <link rel="stylesheet" href="./access-page.css" />
+  <link rel="stylesheet" href="./access-page.css?v=20260719-1" />
+  <link rel="stylesheet" href="./admin-compact-pages.css?v=20260716-3" />
+  <link rel="stylesheet" href="./admin-pagination.css?v=20260716-1" />
 </head>
-<body>
+<body class="admin-compact-page admin-access-page">
   <main class="app-shell">
-    <section class="hero">
-      <div>
-        <h1>Acesso e catraca</h1>
-      </div>
-    </section>
-
     <section class="panel access-overview-panel">
       <div class="access-overview-copy"><h2>Credenciais dos alunos</h2></div>
       <div class="access-metrics"><article><span>Alunos cadastrados</span><strong id="access-member-count">0</strong></article><article><span>Entradas recentes</span><strong id="access-decision-count">0</strong></article><article><span>Última atualização</span><strong id="access-last-update">--:--</strong></article></div>
     </section>
 
     <section class="panel access-members-panel">
-      <div class="toolbar"><div><h2>Alunos</h2></div><button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar alunos" title="Pesquisar alunos"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
-      <div class="access-member-filters"><input id="access-member-search" type="search" placeholder="Buscar aluno por nome, e-mail ou telefone" /><select id="access-member-filter" aria-label="Filtrar acesso"><option value="">Todos os alunos</option><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="blocked">Acesso bloqueado</option><option value="pending">Acesso pendente</option></select></div>
+      <div class="toolbar"><div><h2>Alunos</h2></div><button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar alunos" title="Pesquisar alunos" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button></div>
+      <div class="access-member-filters inline-filter-panel hidden" id="access-filter-panel"><input id="access-member-search" type="search" placeholder="Buscar aluno por nome, e-mail ou telefone" /><select id="access-member-filter" aria-label="Filtrar acesso"><option value="">Todos os alunos</option><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="blocked">Acesso bloqueado</option><option value="pending">Acesso pendente</option></select></div>
       <p class="status-line" id="access-status" aria-live="polite"></p>
+      <div id="access-member-pagination" class="admin-pagination" hidden></div>
       <ul class="access-member-list" id="access-member-list"></ul>
     </section>
 
@@ -34,13 +32,6 @@
       <ul class="access-decision-list" id="access-decision-list"></ul>
     </section>
   </main>
-
-  <div class="modal hidden" id="access-filter-modal" role="dialog" aria-modal="true" aria-labelledby="access-filter-title">
-    <div class="modal-card access-filter-modal-card">
-      <div class="toolbar"><h3 id="access-filter-title">Pesquisar alunos</h3><button class="secondary modal-close" id="close-access-filter-modal" type="button" aria-label="Fechar" title="Fechar">×</button></div>
-      <div id="access-filter-modal-body"></div>
-    </div>
-  </div>
 
   <div class="modal hidden" id="access-credential-modal" role="dialog" aria-modal="true" aria-labelledby="access-credential-title" aria-hidden="true">
     <section class="modal-card access-credential-modal">
@@ -58,9 +49,10 @@
     </section>
   </div>
 
-  <script src="./nav.js"></script>
+  <script src="./nav.js?v=20260719-1"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script src="./icon-utils.js"></script>
-  <script src="./access.js"></script>
+  <script src="./admin-pagination.js?v=20260716-2"></script>
+  <script src="./access.js?v=20260719-1"></script>
 </body>
 </html>

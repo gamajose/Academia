@@ -1,6 +1,6 @@
 const { recordAudit } = require('../lib/audit');
-const { buildTrainingReview } = require('./trainingRules');
 const { resolveTrainingLevel } = require('./trainingRoutes');
+const { MODEL_VERSION, loadTrainingIntelligence } = require('../lib/trainingIntelligence');
 
 async function planExercises(query, gymId, planId) {
   const result = await query(
@@ -172,11 +172,12 @@ async function handleTrainingPlansRoutes(req, res, user, url, helpers) {
     if (!input.plan_id) return send(res, 400, { error: 'plan_id_obrigatorio' });
     const plan = await query('SELECT id, member_id, level, current_date - starts_at AS age_days FROM workout_plans WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.plan_id, user.gym_id]);
     if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
-    const exercises = await planExercises(query, user.gym_id, input.plan_id);
-    const review = buildTrainingReview({ planAgeDays: Number(plan.rows[0].age_days || 0), level: plan.rows[0].level, exercises });
-    const saved = await query('INSERT INTO workout_ai_reviews (gym_id, member_id, plan_id, plan_age_days, recommendation, suggestions) VALUES ($1, $2, $3, $4, $5, $6::jsonb) RETURNING id, recommendation, suggestions, created_at', [user.gym_id, plan.rows[0].member_id, input.plan_id, Number(plan.rows[0].age_days || 0), review.recommendation, JSON.stringify(review.suggestions)]);
+    const intelligence = await loadTrainingIntelligence(query, user.gym_id, plan.rows[0].member_id);
+    if (!intelligence) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    const suggestions = [...intelligence.plan_review.recommendations.map((reason) => ({ type: 'plan_adjustment', reason })), ...intelligence.exercise_recommendations];
+    const saved = await query('INSERT INTO workout_ai_reviews (gym_id, member_id, plan_id, plan_age_days, recommendation, suggestions, model_version, confidence, performance_score, analysis_snapshot) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10::jsonb) RETURNING id, recommendation, suggestions, model_version, confidence, performance_score, created_at', [user.gym_id, plan.rows[0].member_id, input.plan_id, Number(plan.rows[0].age_days || 0), intelligence.performance.trainer_summary, JSON.stringify(suggestions), MODEL_VERSION, intelligence.confidence.score, intelligence.performance.score, JSON.stringify(intelligence)]);
     await query('UPDATE workout_plans SET reviewed_at = now() WHERE id = $1 AND gym_id = $2', [input.plan_id, user.gym_id]);
-    return send(res, 201, saved.rows[0]);
+    return send(res, 201, { ...saved.rows[0], intelligence });
   }
 
   return false;

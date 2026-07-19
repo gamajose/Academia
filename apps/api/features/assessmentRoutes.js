@@ -1,5 +1,6 @@
 const { recordAudit } = require('../lib/audit');
-const { buildProgressAnalysis } = require('../lib/progressAnalysis');
+const { buildProgressAnalysis, carryForwardAssessments } = require('../lib/progressAnalysis');
+const { loadTrainingIntelligence } = require('../lib/trainingIntelligence');
 
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null;
@@ -138,6 +139,42 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
         waist_cm: delta(current, previous, 'waist_cm')
       } : null,
       analysis: buildProgressAnalysis(current, previous)
+    });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/assessments/analysis') {
+    const memberId = url.searchParams.get('member_id');
+    if (!memberId) return send(res, 400, { error: 'member_id_obrigatorio' });
+    const [assessments, baseline, goals] = await Promise.all([
+      query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 20', [user.gym_id, memberId]),
+      query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date ASC, created_at ASC LIMIT 1', [user.gym_id, memberId]),
+      query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, memberId])
+    ]);
+    const assessmentRows = [...assessments.rows];
+    if (baseline.rows[0] && !assessmentRows.some((assessment) => assessment.id === baseline.rows[0].id)) assessmentRows.push(baseline.rows[0]);
+    const effectiveAssessments = carryForwardAssessments(assessmentRows);
+    const effectiveBaseline = effectiveAssessments.find((assessment) => assessment.id === baseline.rows[0]?.id) || effectiveAssessments.at(-1) || null;
+    let trainingSessions = 0;
+    if (effectiveAssessments[0]?.assessment_date && effectiveAssessments[1]?.assessment_date) {
+      const training = await query(
+        `SELECT (
+          (SELECT count(*) FROM workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND status = 'completed' AND completed_at::date BETWEEN $3::date AND $4::date) +
+          (SELECT count(*) FROM student_workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND status = 'completed' AND completed_at::date BETWEEN $3::date AND $4::date)
+        )::int AS total`,
+        [user.gym_id, memberId, effectiveAssessments[1].assessment_date, effectiveAssessments[0].assessment_date]
+      );
+      trainingSessions = Number(training.rows[0]?.total) || 0;
+    }
+    const hasProgress = effectiveAssessments[0] && effectiveBaseline && effectiveAssessments[0].id !== effectiveBaseline.id;
+    const trainingIntelligence = await loadTrainingIntelligence(query, user.gym_id, memberId, { assessments: effectiveAssessments, goals: goals.rows });
+    return send(res, 200, {
+      assessments: effectiveAssessments,
+      baseline: effectiveBaseline,
+      goals: goals.rows,
+      training_sessions: trainingSessions,
+      training_intelligence: trainingIntelligence,
+      analysis: buildProgressAnalysis(effectiveAssessments[0], hasProgress ? effectiveBaseline : null, goals.rows, { comparisonLabel: 'medição inicial', includeProjection: false }),
+      recent_analysis: buildProgressAnalysis(effectiveAssessments[0], effectiveAssessments[1] || null, goals.rows, { comparisonLabel: 'avaliação anterior', includeProjection: false, trainingSessions })
     });
   }
 

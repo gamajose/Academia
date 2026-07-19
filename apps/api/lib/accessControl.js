@@ -62,6 +62,7 @@ function commonStaffAccess(method, pathname, permissions = null) {
 
 function canAccess(user, method, pathname, permissions = null) {
   if (!user || !user.role) return false;
+  if (method === 'POST' && pathname === '/api/editor/images') return true;
   if (user.role === 'owner') return true;
   if (user.role === 'admin' && pathname.startsWith('/api/access-profiles')) return true;
   if (publicRoles.includes(user.role) && !permissions) return true;
@@ -79,6 +80,7 @@ function canAccess(user, method, pathname, permissions = null) {
   }
 
   if (user.role === 'admin') {
+    if (method === 'POST' && pathname === '/api/editor/videos') return true;
     return !permissions || permissions[moduleForPath(pathname)] === true;
   }
 

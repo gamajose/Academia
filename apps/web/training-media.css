@@ -106,8 +106,8 @@
 .plan-modal-card { width: min(820px, 96vw); }
 .training-modal-card .field { display: grid; gap: 7px; }
 .training-modal-card .field > span { color: var(--muted, #68716b); font-size: 13px; font-weight: 600; }
-.plan-level-picker { display: grid; grid-template-columns: minmax(0, 1fr) 38px; gap: 10px; align-items: end; }
-.plan-level-picker .icon-button { align-self: end; width: 38px; height: 38px; margin-bottom: 5px !important; padding: 0; border-radius: 9px; }
+.plan-level-picker { display: grid; grid-template-columns: minmax(0, 1fr) 46px; gap: 10px; align-items: end; }
+html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { align-self: end; width: 46px !important; min-width: 46px !important; max-width: 46px !important; height: 46px !important; min-height: 46px !important; max-height: 46px !important; margin: 0 !important; padding: 0; border-radius: 9px; }
 .training-week-field { display: grid; gap: 8px; min-inline-size: 0; border: 0; padding: 0; margin: 0; }
 .training-week-field legend { padding: 0; color: var(--muted, #68716b); font-size: 13px; font-weight: 600; }
 .training-week-field .section-help { margin: 0; }
@@ -165,3 +165,6 @@
   .exercise-view-layout { grid-template-columns: 1fr; }
   .exercise-view-media { min-height: 190px; }
 }
+.training-ai-feedback { display: flex; align-items: center; gap: 10px; margin-top: 12px; list-style: none; }
+.training-ai-suggestion-actions { display: inline-flex; gap: 5px; margin-left: 8px; vertical-align: middle; }
+.training-ai-suggestion-actions .icon-button { width: 28px; height: 28px; padding: 0; }

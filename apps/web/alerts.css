@@ -31,6 +31,13 @@
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .modal-actions button { width: auto; }
 .alert-assessment-card { width: min(860px, 96vw); }
+.evolution-alerts-card { width: min(620px, 96vw); }
+.evolution-alerts-list { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+.evolution-alert-person { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 18px; width: 100% !important; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: transparent; color: var(--text); text-align: left; }
+.evolution-alert-person strong { font-size: 15px; }
+.evolution-alert-person span { color: var(--muted); font-size: 12px; }
+.evolution-alert-person small { grid-column: 2; grid-row: 1 / span 2; color: var(--accent); font-weight: 850; }
+.evolution-alert-person:hover, .evolution-alert-person:focus-visible { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); outline: none; transform: none; }
 .alert-assessment-card > .modal-header { margin-bottom: 18px; }
 .alert-assessment-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .alert-assessment-grid label { display: grid; gap: 7px; color: #26332e; font-size: 13px; font-weight: 800; }

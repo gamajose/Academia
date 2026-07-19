@@ -7,6 +7,7 @@ import 'package:academia_mobile/assessments_page.dart';
 import 'package:academia_mobile/classes_admin_page.dart';
 import 'package:academia_mobile/commercial_plans_page.dart';
 import 'package:academia_mobile/finance_operations_page.dart';
+import 'package:academia_mobile/first_access_onboarding_page.dart';
 import 'package:academia_mobile/member_workspace_page.dart';
 import 'package:academia_mobile/reports_page.dart';
 import 'package:academia_mobile/revenue_page.dart';
@@ -45,12 +46,15 @@ class ApiClient {
   final String? token;
 
   Future<Map<String, dynamic>> get(String path) async {
-    final response = await http.get(Uri.parse('$baseUrl$path'), headers: _headers());
+    final response =
+        await http.get(Uri.parse('$baseUrl$path'), headers: _headers());
     return _decode(response);
   }
 
-  Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body) async {
-    final response = await http.post(Uri.parse('$baseUrl$path'), headers: _headers(), body: jsonEncode(body));
+  Future<Map<String, dynamic>> post(
+      String path, Map<String, dynamic> body) async {
+    final response = await http.post(Uri.parse('$baseUrl$path'),
+        headers: _headers(), body: jsonEncode(body));
     return _decode(response);
   }
 
@@ -62,7 +66,8 @@ class ApiClient {
   }
 
   Map<String, dynamic> _decode(http.Response response) {
-    final data = jsonDecode(response.body.isEmpty ? '{}' : response.body) as Map<String, dynamic>;
+    final data = jsonDecode(response.body.isEmpty ? '{}' : response.body)
+        as Map<String, dynamic>;
     if (response.statusCode >= 400) {
       throw Exception(data['error'] ?? 'erro_requisicao');
     }
@@ -98,20 +103,63 @@ class _LoginPageState extends State<LoginPage> {
     final role = prefs.getString('sessionRole');
     if (token != null && baseUrl != null && role != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _openHome(baseUrl, token, role);
+        if (mounted) unawaited(_openHome(baseUrl, token, role));
       });
     }
   }
 
-  void _openHome(String baseUrl, String token, String role) {
-    final page = role == 'student'
-        ? StudentHomePage(
-            baseUrl: baseUrl,
-            token: token,
-            loginPageBuilder: () => const LoginPage(),
-          )
-        : DashboardPage(baseUrl: baseUrl, token: token, role: role);
+  Widget _authenticatedPage(String baseUrl, String token, String role,
+      [String name = '']) {
+    if (role == 'student') {
+      return StudentHomePage(
+        baseUrl: baseUrl,
+        token: token,
+        loginPageBuilder: () => const LoginPage(),
+      );
+    }
+    if (role == 'visitor') {
+      return VisitorAccountPage(
+        name: name.isEmpty ? 'aluno' : name,
+        loginPageBuilder: () => const LoginPage(),
+      );
+    }
+    return DashboardPage(baseUrl: baseUrl, token: token, role: role);
+  }
+
+  Future<void> _openHome(String baseUrl, String token, String role) async {
+    Widget page;
+    if (role == 'student' || role == 'visitor') {
+      try {
+        final status = await loadFirstAccessStatus(baseUrl, token);
+        final destination = (String name) => _authenticatedPage(
+              baseUrl,
+              token,
+              role,
+              name,
+            );
+        page = status.completed
+            ? destination(status.profile['name']?.toString() ?? '')
+            : FirstAccessOnboardingPage(
+                baseUrl: baseUrl,
+                token: token,
+                status: status,
+                nextPageBuilder: destination,
+              );
+      } catch (_) {
+        page = _authenticatedPage(baseUrl, token, role);
+      }
+    } else {
+      page = _authenticatedPage(baseUrl, token, role);
+    }
+    if (!mounted) return;
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  Future<void> _saveSession(String baseUrl, String token, String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('apiBaseUrl', baseUrl);
+    await prefs.setString('token', token);
+    await prefs.setString('sessionRole', role);
   }
 
   Future<void> _login() async {
@@ -140,42 +188,62 @@ class _LoginPageState extends State<LoginPage> {
 
       final role = identity['role']?.toString() ?? 'student';
       final token = result['token'] as String;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('apiBaseUrl', baseUrl);
-      await prefs.setString('token', token);
-      await prefs.setString('sessionRole', role);
+      await _saveSession(baseUrl, token, role);
       if (!mounted) return;
-      _openHome(baseUrl, token, role);
+      await _openHome(baseUrl, token, role);
     } catch (error) {
-      if (mounted) setState(() => message = 'Falha no login: credenciais invalidas ou servidor indisponivel.');
+      if (mounted)
+        setState(() => message =
+            'Falha no login: credenciais invalidas ou servidor indisponivel.');
     } finally {
       if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> _loginWithGoogle() async {
-    setState(() { loading = true; message = 'Abrindo o Google...'; });
+    setState(() {
+      loading = true;
+      message = 'Abrindo o Google...';
+    });
     try {
-      final account = await GoogleSignIn(scopes: const ['email', 'profile']).signIn();
+      final account =
+          await GoogleSignIn(scopes: const ['email', 'profile']).signIn();
       if (account == null) return;
       final authentication = await account.authentication;
       final idToken = authentication.idToken;
-      if (idToken == null || idToken.isEmpty) throw Exception('token_google_invalido');
+      if (idToken == null || idToken.isEmpty)
+        throw Exception('token_google_invalido');
       final baseUrl = apiController.text.trim().replaceAll(RegExp(r'/$'), '');
-      final result = await ApiClient(baseUrl, null).post('/api/auth/google', {'id_token': idToken});
-      final identity = (result['user'] ?? result['student'] ?? {}) as Map<String, dynamic>;
-      final role = identity['role']?.toString() ?? (result['account_type'] == 'admin' ? 'admin' : 'student');
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('apiBaseUrl', baseUrl);
-      await prefs.setString('token', result['token'] as String);
-      await prefs.setString('sessionRole', role);
+      final result = await ApiClient(baseUrl, null)
+          .post('/api/auth/google', {'id_token': idToken});
+      final identity =
+          (result['user'] ?? result['student'] ?? {}) as Map<String, dynamic>;
+      final role = identity['role']?.toString() ??
+          (result['account_type'] == 'admin' ? 'admin' : 'student');
+      await _saveSession(baseUrl, result['token'] as String, role);
       if (!mounted) return;
-      _openHome(baseUrl, result['token'] as String, role);
+      await _openHome(baseUrl, result['token'] as String, role);
     } catch (_) {
-      if (mounted) setState(() => message = 'Não foi possível entrar com o Google. Verifique a configuração OAuth.');
+      if (mounted)
+        setState(() => message =
+            'Não foi possível entrar com o Google. Verifique a configuração OAuth.');
     } finally {
       if (mounted) setState(() => loading = false);
     }
+  }
+
+  Future<void> _createAccount() async {
+    final session = await Navigator.push<RegisteredSession>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            CreateStudentAccountPage(initialBaseUrl: apiController.text.trim()),
+      ),
+    );
+    if (session == null || !mounted) return;
+    await _saveSession(session.baseUrl, session.token, session.role);
+    if (!mounted) return;
+    await _openHome(session.baseUrl, session.token, session.role);
   }
 
   @override
@@ -185,17 +253,35 @@ class _LoginPageState extends State<LoginPage> {
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          const Text('Acesse sua conta', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Acesse sua conta',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          const Text('O aplicativo identifica automaticamente se voce e aluno, professor ou administrador.'),
+          const Text(
+              'O aplicativo identifica automaticamente se voce e aluno, professor ou administrador.'),
           const SizedBox(height: 16),
-          TextField(controller: apiController, decoration: const InputDecoration(labelText: 'URL da API')),
-          TextField(controller: emailController, decoration: const InputDecoration(labelText: 'E-mail')),
-          TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Senha'), obscureText: true),
+          TextField(
+              controller: apiController,
+              decoration: const InputDecoration(labelText: 'URL da API')),
+          TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: 'E-mail')),
+          TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'Senha'),
+              obscureText: true),
           const SizedBox(height: 16),
-          FilledButton(onPressed: loading ? null : _login, child: Text(loading ? 'Entrando...' : 'Entrar')),
+          FilledButton(
+              onPressed: loading ? null : _login,
+              child: Text(loading ? 'Entrando...' : 'Entrar')),
           const SizedBox(height: 10),
-          OutlinedButton.icon(onPressed: loading ? null : _loginWithGoogle, icon: const Icon(Icons.account_circle_outlined), label: const Text('Continuar com Google')),
+          OutlinedButton.icon(
+              onPressed: loading ? null : _loginWithGoogle,
+              icon: const Icon(Icons.account_circle_outlined),
+              label: const Text('Continuar com Google')),
+          const SizedBox(height: 10),
+          TextButton(
+              onPressed: loading ? null : _createAccount,
+              child: const Text('Criar conta')),
           const SizedBox(height: 12),
           Text(message),
         ],
@@ -205,7 +291,11 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key, required this.baseUrl, required this.token, required this.role});
+  const DashboardPage(
+      {super.key,
+      required this.baseUrl,
+      required this.token,
+      required this.role});
 
   final String baseUrl;
   final String token;
@@ -224,14 +314,16 @@ class _DashboardPageState extends State<DashboardPage> {
   String message = 'Carregando...';
 
   bool get isManager => widget.role == 'owner' || widget.role == 'admin';
-  String get panelTitle => isManager ? 'Painel administrativo' : 'Painel do professor';
+  String get panelTitle =>
+      isManager ? 'Painel administrativo' : 'Painel do professor';
 
   @override
   void initState() {
     super.initState();
     api = ApiClient(widget.baseUrl, widget.token);
     _refresh();
-    syncTimer = Timer.periodic(const Duration(seconds: 30), (_) => _refresh(silent: true));
+    syncTimer = Timer.periodic(
+        const Duration(seconds: 30), (_) => _refresh(silent: true));
   }
 
   @override
@@ -253,13 +345,15 @@ class _DashboardPageState extends State<DashboardPage> {
         if (!silent) message = 'Atualizado.';
       });
     } catch (error) {
-      if (!silent && mounted) setState(() => message = 'Erro ao carregar: $error');
+      if (!silent && mounted)
+        setState(() => message = 'Erro ao carregar: $error');
     }
   }
 
   Future<void> _quickCheckin(String memberId) async {
     try {
-      await api.post('/api/checkins', {'member_id': memberId, 'source': 'mobile'});
+      await api
+          .post('/api/checkins', {'member_id': memberId, 'source': 'mobile'});
       await _refresh();
       if (mounted) setState(() => message = 'Check-in registrado.');
     } catch (error) {
@@ -287,7 +381,8 @@ class _DashboardPageState extends State<DashboardPage> {
     await prefs.remove('sessionRole');
     syncTimer?.cancel();
     if (!mounted) return;
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (_) => const LoginPage()));
   }
 
   Widget _card(String title, dynamic value) {
@@ -304,7 +399,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget actionButton(IconData icon, String label, Widget page) {
     return FilledButton.icon(
-      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      onPressed: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
       icon: Icon(icon),
       label: Text(label),
     );
@@ -315,7 +411,10 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(panelTitle),
-        actions: [IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)), IconButton(onPressed: _logout, icon: const Icon(Icons.logout))],
+        actions: [
+          IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)),
+          IconButton(onPressed: _logout, icon: const Icon(Icons.logout))
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
@@ -330,38 +429,80 @@ class _DashboardPageState extends State<DashboardPage> {
             ]),
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              actionButton(Icons.warning_amber, 'Alertas', AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
-              actionButton(Icons.fitness_center, 'Treinos', TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
-              actionButton(Icons.monitor_heart, 'Avaliacoes', AssessmentsPage(baseUrl: widget.baseUrl, token: widget.token)),
-              actionButton(Icons.event, 'Aulas e agenda', ClassesAdminPage(baseUrl: widget.baseUrl, token: widget.token, isManager: isManager)),
-              if (isManager) actionButton(Icons.payments, 'Financeiro', RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
-              if (isManager) actionButton(Icons.point_of_sale, 'Financeiro e vendas', FinanceOperationsPage(baseUrl: widget.baseUrl, token: widget.token)),
-              if (isManager) actionButton(Icons.door_front_door, 'Controle de acesso', AccessControlPage(baseUrl: widget.baseUrl, token: widget.token)),
-              if (isManager) actionButton(Icons.analytics, 'Relatorios', ReportsPage(baseUrl: widget.baseUrl, token: widget.token)),
-              if (isManager) actionButton(Icons.sell, 'Planos comerciais', CommercialPlansPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.warning_amber, 'Alertas',
+                  AlertsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(Icons.fitness_center, 'Treinos',
+                  TrainingPage(baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(
+                  Icons.monitor_heart,
+                  'Avaliacoes',
+                  AssessmentsPage(
+                      baseUrl: widget.baseUrl, token: widget.token)),
+              actionButton(
+                  Icons.event,
+                  'Aulas e agenda',
+                  ClassesAdminPage(
+                      baseUrl: widget.baseUrl,
+                      token: widget.token,
+                      isManager: isManager)),
+              if (isManager)
+                actionButton(Icons.payments, 'Financeiro',
+                    RevenuePage(baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager)
+                actionButton(
+                    Icons.point_of_sale,
+                    'Financeiro e vendas',
+                    FinanceOperationsPage(
+                        baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager)
+                actionButton(
+                    Icons.door_front_door,
+                    'Controle de acesso',
+                    AccessControlPage(
+                        baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager)
+                actionButton(Icons.analytics, 'Relatorios',
+                    ReportsPage(baseUrl: widget.baseUrl, token: widget.token)),
+              if (isManager)
+                actionButton(
+                    Icons.sell,
+                    'Planos comerciais',
+                    CommercialPlansPage(
+                        baseUrl: widget.baseUrl, token: widget.token)),
             ]),
             const SizedBox(height: 12),
             Text('$message Sincronizacao automatica a cada 30s.'),
             const Divider(),
-            const Text('Alunos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Alunos',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ...members.map((raw) {
               final member = raw as Map<String, dynamic>;
               return Card(
                 child: ListTile(
-                  leading: CircleAvatar(child: Text('${member['name'] ?? '?'}'.substring(0, 1))),
+                  leading: CircleAvatar(
+                      child: Text('${member['name'] ?? '?'}'.substring(0, 1))),
                   title: Text(member['name'] ?? ''),
                   subtitle: Text(member['status'] ?? ''),
                   onTap: () => _openMember(member),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(onPressed: () => _openMember(member), icon: const Icon(Icons.folder_shared)),
-                    IconButton(onPressed: member['status'] == 'active' ? () => _quickCheckin(member['id']) : null, icon: const Icon(Icons.login)),
+                    IconButton(
+                        onPressed: () => _openMember(member),
+                        icon: const Icon(Icons.folder_shared)),
+                    IconButton(
+                        onPressed: member['status'] == 'active'
+                            ? () => _quickCheckin(member['id'])
+                            : null,
+                        icon: const Icon(Icons.login)),
                   ]),
                 ),
               );
             }),
             const Divider(),
-            const Text('Ultimos check-ins', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            ...checkins.map((item) => ListTile(title: Text(item['member_name'] ?? ''), subtitle: Text(item['checked_at'] ?? ''))),
+            const Text('Ultimos check-ins',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ...checkins.map((item) => ListTile(
+                title: Text(item['member_name'] ?? ''),
+                subtitle: Text(item['checked_at'] ?? ''))),
           ],
         ),
       ),

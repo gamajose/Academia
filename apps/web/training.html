@@ -1,35 +1,29 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Treinos - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./training-media.css" />
+  <link rel="stylesheet" href="./training-media.css?v=20260716-2" />
+  <link rel="stylesheet" href="./admin-compact-pages.css?v=20260716-3" />
+  <link rel="stylesheet" href="./admin-pagination.css?v=20260716-1" />
 </head>
-<body>
+<body class="admin-compact-page admin-training-page">
   <main class="app-shell">
-    <section class="hero training-hero">
-      <div class="training-hero-title-row">
-        <h1>Ficha semanal e exercícios</h1>
-        <button id="open-review-button" class="training-ai-button" type="button" title="Análise com IA" aria-label="Análise com IA">
-          <span class="training-ai-icon" aria-hidden="true">✦</span>
-          <span>Análise com IA</span>
-        </button>
-      </div>
-      <p class="status-line training-status" id="training-status"></p>
-    </section>
-
     <section class="grid lists-grid">
       <article class="panel">
         <div class="toolbar">
           <h3>Exercícios cadastrados</h3>
           <div class="exercise-library-actions">
+            <button id="open-review-button" class="icon-button training-ai-button" type="button" title="Análise com IA" aria-label="Análise com IA"><span class="training-ai-icon" aria-hidden="true">✦</span></button>
             <button class="icon-button" id="toggle-exercise-search" type="button" aria-label="Pesquisar exercícios" title="Pesquisar exercícios" aria-expanded="false" aria-controls="exercise-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button>
             <button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício">+</button>
           </div>
         </div>
+        <p class="status-line training-status" id="training-status"></p>
         <div id="exercise-library-filters" class="exercise-library-filters hidden" aria-hidden="true">
           <label class="exercise-library-search"><span class="sr-only">Pesquisar exercícios</span><input id="exercise-search" type="search" placeholder="Pesquisar exercício..." autocomplete="off" /></label>
           <label><span>Músculo primário</span><select id="exercise-primary-filter"><option value="">Todos</option></select></label>
@@ -37,10 +31,13 @@
         </div>
         <p id="exercise-library-status" class="exercise-library-status" aria-live="polite"></p>
         <ul id="exercise-list"></ul>
+        <div id="exercise-pagination" class="admin-pagination" hidden></div>
       </article>
       <article class="panel">
-        <div class="toolbar"><h3>Fichas</h3><button class="icon-button" id="open-plan-button" type="button" aria-label="Adicionar ficha" title="Adicionar ficha">+</button></div>
+        <div class="toolbar"><h3>Fichas</h3><div class="exercise-library-actions"><button class="icon-button" id="toggle-plan-search" type="button" aria-label="Pesquisar fichas" title="Pesquisar fichas" aria-expanded="false" aria-controls="plan-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button><button class="icon-button" id="open-plan-button" type="button" aria-label="Adicionar ficha" title="Adicionar ficha">+</button></div></div>
+        <div id="plan-library-filters" class="exercise-library-filters hidden" aria-hidden="true"><label class="exercise-library-search"><span class="sr-only">Pesquisar fichas</span><input id="plan-search" type="search" placeholder="Pesquisar pelo nome do aluno..." autocomplete="off" /></label></div>
         <ul id="plan-list"></ul>
+        <div id="plan-pagination" class="admin-pagination" hidden></div>
       </article>
     </section>
   </main>
@@ -62,8 +59,8 @@
 
   <div class="modal hidden" id="training-levels-modal" role="dialog" aria-modal="true" aria-labelledby="training-levels-title" aria-hidden="true">
     <section class="modal-card training-modal-card training-levels-panel" id="training-levels-panel">
-      <div class="modal-header"><div><p class="eyebrow">Configuração</p><h3 id="training-levels-title">Níveis de treino</h3><p class="section-help">Edite, desative ou crie os níveis que aparecem nas fichas e perfis.</p></div><button type="button" id="close-training-levels-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
-      <form class="training-level-form" id="training-level-form"><input id="training-level-name" maxlength="60" placeholder="Novo nível. Ex.: Hipertrofia" required /><button type="submit">Adicionar nível</button></form>
+      <div class="modal-header"><div><h3 id="training-levels-title">Níveis de treino</h3></div><button type="button" id="close-training-levels-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <form class="training-level-form" id="training-level-form"><input id="training-level-name" maxlength="60" placeholder="Novo nível. Ex.: Hipertrofia" required /><button type="submit">Adicionar</button></form>
       <ul class="training-level-list" id="training-level-list"></ul>
       <p class="status-line" id="training-level-status">Níveis carregados.</p>
     </section>
@@ -76,7 +73,7 @@
       <input id="exercise-group" placeholder="Músculo principal. Ex.: Peito" />
       <input id="exercise-secondary-muscles" placeholder="Músculos secundários. Ex.: Tríceps, Ombros" />
       <input id="exercise-equipment" placeholder="Equipamento" />
-      <select id="exercise-level"><option value="">Carregando níveis...</option></select>
+      <div class="field"><label for="exercise-level">Nível do exercício</label><select id="exercise-level"><option value="">Carregando níveis...</option></select></div>
       <label class="training-active-field"><input id="exercise-active" type="checkbox" checked /> Exercício ativo no catálogo</label>
       <textarea id="exercise-instructions" placeholder="Instruções de execução"></textarea>
       <div class="video-source-fields">
@@ -87,7 +84,7 @@
         <img id="exercise-media-preview" class="exercise-gif-preview" alt="Prévia da demonstração" hidden />
         <p class="status-line" id="exercise-video-status">Nenhuma demonstração selecionada.</p>
       </div>
-      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="exercise-modal">Cancelar</button><button id="create-exercise-button" type="button">Cadastrar exercício</button></div>
+      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="exercise-modal">Cancelar</button><button id="create-exercise-button" type="button">Salvar</button></div>
     </section>
   </div>
 
@@ -97,7 +94,7 @@
 
   <div class="modal hidden" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-title" aria-hidden="true">
     <section class="modal-card training-modal-card plan-modal-card">
-      <div class="modal-header"><div><p class="eyebrow">Planejamento</p><h3 id="plan-title">Nova ficha</h3><p>A ficha será identificada pelo nome do aluno.</p></div><button type="button" id="close-plan-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="modal-header"><div><h3 id="plan-title">Nova ficha</h3></div><button type="button" id="close-plan-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
       <label class="field"><span>Aluno</span><select id="plan-member"></select></label>
       <div class="plan-level-picker"><label class="field"><span>Nível de treino</span><select id="plan-level"><option value="">Carregando níveis...</option></select></label><button class="icon-button" id="open-plan-levels-button" type="button" aria-label="Cadastrar novo nível de treino" title="Cadastrar novo nível">+</button></div>
       <label class="field"><span>Objetivo da ficha</span><input id="plan-goal" placeholder="Ex.: ganhar força, mobilidade ou condicionamento" /></label>
@@ -113,7 +110,7 @@
       </section>
       <label class="field"><span>Data de início</span><input id="plan-start" type="date" /></label>
       <p class="status-line" id="plan-status" aria-live="polite"></p>
-      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="plan-modal">Cancelar</button><button id="create-plan-button" type="button">Criar ficha</button></div>
+      <div class="form-actions"><button class="secondary" type="button" data-close-training-modal="plan-modal">Cancelar</button><button id="create-plan-button" type="button">Salvar</button></div>
     </section>
   </div>
 
@@ -129,9 +126,10 @@
     <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Revisão</p><h3 id="review-title">Análise inteligente</h3><p>Revise uma ficha antiga e receba sugestões para a equipe.</p></div><button type="button" id="close-review-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="review-plan"></select><button id="review-plan-button" type="button">Analisar ficha</button><ul id="review-list"></ul><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="review-modal">Fechar</button></div></section>
   </div>
 
-  <script src="./nav.js"></script>
+  <script src="./nav.js?v=20260719-1"></script>
 <script src="./training-media.js"></script>
 <script src="./icon-utils.js"></script>
-<script src="./training.js"></script>
+<script src="./admin-pagination.js?v=20260716-2"></script>
+<script src="./training.js?v=20260716-5"></script>
 </body>
 </html>

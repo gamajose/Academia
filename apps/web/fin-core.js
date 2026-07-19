@@ -3,7 +3,6 @@ const FAPI = localStorage.getItem('apiBaseUrl') || `http://${FH}:3004`;
 const FT = localStorage.getItem('academiaToken') || '';
 const f = (id) => document.getElementById(id);
 let rows = [];
-let financeFilterPlaceholder = null;
 let currentPage = 1;
 let pageSize = 10;
 
@@ -208,6 +207,7 @@ function openM(item) {
   f('finance-title').textContent = `Ajuste financeiro - ${item.member_name}`;
   f('finance-discount').value = (Number(item.discount_cents || 0) / 100).toFixed(2);
   f('finance-fee').value = (Number(item.fee_cents || 0) / 100).toFixed(2);
+  f('finance-status').value = ['pending', 'paid', 'overdue', 'cancelled'].includes(item.status) ? item.status : 'pending';
   f('finance-method').value = item.method || 'manual';
   f('finance-notes').value = item.notes || '';
 }
@@ -255,6 +255,7 @@ async function adjust() {
       payment_id: f('finance-payment-id').value,
       discount_cents: Math.round(Number(f('finance-discount').value || 0) * 100),
       fee_cents: Math.round(Number(f('finance-fee').value || 0) * 100),
+      status: f('finance-status').value,
       method: f('finance-method').value.trim() || 'manual',
       notes: f('finance-notes').value.trim()
     })
@@ -302,25 +303,13 @@ f('load-button')?.addEventListener('click', load);
 f('finance-apply-filters')?.addEventListener('click', draw);
 ['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => f(id)?.addEventListener('change', draw));
 f('finance-filter-member')?.addEventListener('input', draw);
-function openFinanceFilters() {
-  const panel = document.querySelector('.finance-filter-panel');
-  const body = f('finance-filter-modal-body');
-  if (!panel || !body) return;
-  financeFilterPlaceholder = document.createComment('finance-filter-placeholder');
-  panel.parentElement.insertBefore(financeFilterPlaceholder, panel);
-  body.appendChild(panel);
-  f('finance-filter-modal').classList.remove('hidden');
+function toggleFinanceFilters() {
+  const panel = f('finance-filter-panel');
+  const hidden = panel.classList.toggle('hidden');
+  f('finance-filter-toggle').setAttribute('aria-expanded', String(!hidden));
+  if (!hidden) setTimeout(() => f('finance-filter-member')?.focus(), 40);
 }
-function closeFinanceFilters() {
-  const panel = document.querySelector('#finance-filter-modal .finance-filter-panel');
-  if (panel && financeFilterPlaceholder?.parentElement) financeFilterPlaceholder.parentElement.insertBefore(panel, financeFilterPlaceholder.nextSibling);
-  financeFilterPlaceholder?.remove();
-  financeFilterPlaceholder = null;
-  f('finance-filter-modal').classList.add('hidden');
-}
-f('finance-filter-toggle')?.addEventListener('click', openFinanceFilters);
-f('close-finance-filter-modal')?.addEventListener('click', closeFinanceFilters);
-f('finance-filter-modal')?.addEventListener('click', (event) => { if (event.target === f('finance-filter-modal')) closeFinanceFilters(); });
+f('finance-filter-toggle')?.addEventListener('click', toggleFinanceFilters);
 f('finance-download-csv')?.addEventListener('click', () => downloadExport('csv').catch((error) => { f('reports-status').textContent = `Erro ao exportar CSV: ${error.message}`; }));
 f('finance-download-pdf')?.addEventListener('click', () => downloadExport('pdf').catch((error) => { f('reports-status').textContent = `Erro ao exportar PDF: ${error.message}`; }));
 f('close-finance-modal')?.addEventListener('click', closeM);

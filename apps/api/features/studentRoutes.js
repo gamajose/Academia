@@ -2,7 +2,9 @@ const { hashPassword, verifyPassword, signToken, randomToken, hashToken, validat
 const { recordAudit } = require('../lib/audit');
 const { sendTransactionalEmail } = require('../lib/mailer');
 const { pool } = require('../lib/db');
-const { buildProgressAnalysis } = require('../lib/progressAnalysis');
+const { buildProgressAnalysis, carryForwardAssessments } = require('../lib/progressAnalysis');
+const { loadTrainingIntelligence } = require('../lib/trainingIntelligence');
+const { reachedGoals } = require('../lib/goalAchievement');
 
 const ADMIN_DEFAULT_STUDENT_PASSWORD = process.env.ADMIN_DEFAULT_STUDENT_PASSWORD || 'Lobo1234';
 const STUDENT_WEEKDAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -27,6 +29,10 @@ function appUrl(path) {
 
 function isStudent(user) {
   return user && user.role === 'student' && user.member_id;
+}
+
+function canUseAdminCommunity(user) {
+  return user && ['owner', 'admin'].includes(user.role);
 }
 
 function isVisitor(user) {
@@ -65,6 +71,20 @@ function studentNumber(value) {
 
 function studentText(value, fallback = '', maximum = 2000) {
   return String(value ?? fallback).trim().slice(0, maximum);
+}
+
+async function completeReachedStudentGoals(query, user, current, previous, goals) {
+  const completed = reachedGoals(goals, current, previous);
+  if (!completed.length) return [];
+  const result = await query(
+    `UPDATE member_goals
+     SET status = 'completed', updated_at = now()
+     WHERE gym_id = $1 AND member_id = $2 AND status = 'active' AND id = ANY($3::uuid[])
+     RETURNING id, goal_type, target_value, target_date, status, notes, created_at, updated_at`,
+    [user.gym_id, user.member_id, completed.map((goal) => goal.id)]
+  );
+  for (const goal of result.rows) await recordAudit(user, 'complete', 'member_goal', goal.id, { member_id: user.member_id, source: 'student_assessment' });
+  return result.rows;
 }
 
 function isUuid(value) {
@@ -110,27 +130,66 @@ async function socialProfileDetail(query, user, memberId) {
   return profile;
 }
 
-async function socialPosts(query, user, memberId = null) {
+async function socialComments(query, user, postIds) {
+  if (!postIds.length) return [];
+  const viewerId = isStudent(user) ? user.member_id : user.sub;
+  const viewerField = isStudent(user) ? 'member_id' : 'user_id';
+  const result = await query(
+    `SELECT c.id, c.post_id, c.body, c.photo_url, c.parent_comment_id, c.reply_to_comment_id,
+            c.created_at, c.member_id, c.user_id,
+            COALESCE(m.name, u.name, 'Academia') AS author_name,
+            CASE WHEN c.user_id IS NOT NULL THEN COALESCE(u.profile_photo_url, '') ELSE COALESCE(sp.profile_photo_url, '') END AS author_photo,
+            u.role AS author_role, u.access_profile AS author_access_profile,
+            COALESCE(rm.name, ru.name, '') AS reply_to_name,
+            (SELECT count(*) FROM student_social_comment_likes cl WHERE cl.comment_id = c.id) AS likes_count,
+            EXISTS (SELECT 1 FROM student_social_comment_likes cl WHERE cl.comment_id = c.id AND cl.${viewerField} = $3) AS viewer_liked
+     FROM student_social_comments c
+     LEFT JOIN members m ON m.id = c.member_id AND m.gym_id = c.gym_id AND m.status = 'active'
+     LEFT JOIN users u ON u.id = c.user_id AND u.gym_id = c.gym_id AND u.is_active = true
+     LEFT JOIN student_social_profiles sp ON sp.gym_id = c.gym_id AND sp.member_id = c.member_id
+     LEFT JOIN student_social_comments rc ON rc.id = c.reply_to_comment_id AND rc.gym_id = c.gym_id
+     LEFT JOIN members rm ON rm.id = rc.member_id AND rm.gym_id = rc.gym_id AND rm.status = 'active'
+     LEFT JOIN users ru ON ru.id = rc.user_id AND ru.gym_id = rc.gym_id AND ru.is_active = true
+     WHERE c.gym_id = $1 AND c.post_id = ANY($2::uuid[])
+       AND (m.id IS NOT NULL OR u.id IS NOT NULL)
+     ORDER BY c.created_at ASC`,
+    [user.gym_id, postIds, viewerId]
+  );
+  return result.rows;
+}
+
+async function socialPosts(query, user, memberId = null, options = {}) {
   const params = [user.gym_id, user.member_id];
   let targetClause = '';
   if (memberId) {
     params.push(memberId);
     targetClause = 'AND p.member_id = $3';
   }
+  const limit = studentInteger(options.limit, 40, 1, 60);
+  const offset = studentInteger(options.offset, 0, 0, 10000);
+  params.push(limit + 1, offset);
+  const limitParameter = params.length - 1;
+  const offsetParameter = params.length;
   const posts = await query(
-    `SELECT p.id, p.member_id, p.caption, p.media_url, p.media_type, p.created_at,
-            m.name AS author_name,
-            COALESCE(sp.profile_photo_url, '') AS author_photo,
+    `SELECT p.id, p.member_id, p.author_user_id, p.caption, p.media_url, p.media_type, p.created_at,
+            COALESCE(m.name, u.name, 'Academia') AS author_name,
+            CASE WHEN p.author_user_id IS NOT NULL THEN COALESCE(u.profile_photo_url, '') ELSE COALESCE(sp.profile_photo_url, '') END AS author_photo,
+            u.role AS author_role, u.access_profile AS author_access_profile,
+            (p.author_user_id IS NOT NULL) AS is_gym_post,
+            (p.member_id = $2) AS viewer_owns_post,
+            (p.member_id = $2 AND p.created_at >= now() - interval '30 minutes') AS can_delete,
             (SELECT count(*) FROM student_social_post_likes l WHERE l.post_id = p.id) AS likes_count,
             (SELECT count(*) FROM student_social_comments c WHERE c.post_id = p.id) AS comments_count,
             EXISTS (SELECT 1 FROM student_social_post_likes l WHERE l.post_id = p.id AND l.member_id = $2) AS viewer_liked
      FROM student_social_posts p
-     INNER JOIN members m ON m.id = p.member_id AND m.gym_id = p.gym_id AND m.status = 'active'
+     LEFT JOIN members m ON m.id = p.member_id AND m.gym_id = p.gym_id AND m.status = 'active'
+     LEFT JOIN users u ON u.id = p.author_user_id AND u.gym_id = p.gym_id AND u.is_active = true
      LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id
      WHERE p.gym_id = $1 AND p.is_active = true
        ${targetClause}
        AND (
-         p.member_id = $2
+         p.author_user_id IS NOT NULL
+         OR p.member_id = $2
          OR COALESCE(sp.is_private, false) = false
          OR EXISTS (
            SELECT 1 FROM student_social_follows f
@@ -138,34 +197,99 @@ async function socialPosts(query, user, memberId = null) {
              AND f.following_member_id = p.member_id AND f.status = 'accepted'
          )
        )
+       AND (p.member_id IS NULL OR m.id IS NOT NULL)
      ORDER BY p.created_at DESC
-     LIMIT 40`,
+     LIMIT $${limitParameter} OFFSET $${offsetParameter}`,
     params
   );
-  if (!posts.rowCount) return [];
-  const postIds = posts.rows.map((post) => post.id);
-  const comments = await query(
-    `SELECT c.id, c.post_id, c.body, c.created_at, c.member_id, m.name AS author_name,
-            COALESCE(sp.profile_photo_url, '') AS author_photo
-     FROM student_social_comments c
-     INNER JOIN members m ON m.id = c.member_id AND m.gym_id = c.gym_id AND m.status = 'active'
-     LEFT JOIN student_social_profiles sp ON sp.gym_id = c.gym_id AND sp.member_id = c.member_id
-     WHERE c.gym_id = $1 AND c.post_id = ANY($2::uuid[])
-     ORDER BY c.created_at ASC`,
-    [user.gym_id, postIds]
-  );
-  const grouped = new Map(posts.rows.map((post) => [String(post.id), []]));
-  comments.rows.forEach((comment) => {
-    if (grouped.has(String(comment.post_id)) && grouped.get(String(comment.post_id)).length < 10) grouped.get(String(comment.post_id)).push(comment);
+  if (!posts.rowCount) return options.paginated ? { posts: [], has_more: false } : [];
+  const pageRows = posts.rows.slice(0, limit);
+  const postIds = pageRows.map((post) => post.id);
+  const comments = await socialComments(query, user, postIds);
+  const grouped = new Map(pageRows.map((post) => [String(post.id), []]));
+  comments.forEach((comment) => {
+    if (grouped.has(String(comment.post_id)) && grouped.get(String(comment.post_id)).length < 80) grouped.get(String(comment.post_id)).push(comment);
   });
-  return posts.rows.map((post) => ({ ...post, comments: grouped.get(String(post.id)) || [] }));
+  const hydrated = pageRows.map((post) => ({ ...post, comments: grouped.get(String(post.id)) || [] }));
+  return options.paginated ? { posts: hydrated, has_more: posts.rows.length > limit } : hydrated;
+}
+
+async function socialMediaGallery(query, user, url, adminView = false) {
+  const search = studentText(url.searchParams.get('q'), '', 100).toLowerCase();
+  const dateFrom = String(url.searchParams.get('date_from') || '').trim();
+  const dateTo = String(url.searchParams.get('date_to') || '').trim();
+  if ((dateFrom && !validCalendarDate(dateFrom)) || (dateTo && !validCalendarDate(dateTo))) return { error: 'data_invalida' };
+  const page = studentInteger(url.searchParams.get('page'), 1, 1, 10000);
+  const pageSize = 24;
+  const result = await query(
+    `WITH media AS (
+       SELECT 'post:' || p.id::text AS media_key, 'post'::text AS source_type, p.id AS post_id, NULL::uuid AS comment_id,
+              p.media_url AS photo_url, p.caption AS description, p.created_at, p.member_id, p.author_user_id,
+              COALESCE(m.name, u.name, 'Academia') AS author_name
+       FROM student_social_posts p
+       LEFT JOIN members m ON m.id = p.member_id AND m.gym_id = p.gym_id AND m.status = 'active'
+       LEFT JOIN users u ON u.id = p.author_user_id AND u.gym_id = p.gym_id AND u.is_active = true
+       LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id
+       WHERE p.gym_id = $1 AND p.is_active = true AND p.media_type = 'image' AND NULLIF(p.media_url, '') IS NOT NULL
+         AND ($2::boolean OR p.author_user_id IS NOT NULL OR p.member_id = $3 OR COALESCE(sp.is_private, false) = false OR EXISTS (
+           SELECT 1 FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = $3
+             AND f.following_member_id = p.member_id AND f.status = 'accepted'
+         ))
+       UNION ALL
+       SELECT 'comment:' || c.id::text, 'comment'::text, p.id, c.id, c.photo_url, c.body, c.created_at, c.member_id, c.user_id,
+              COALESCE(cm.name, cu.name, 'Academia')
+       FROM student_social_comments c
+       INNER JOIN student_social_posts p ON p.id = c.post_id AND p.gym_id = c.gym_id AND p.is_active = true
+       LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id
+       LEFT JOIN members cm ON cm.id = c.member_id AND cm.gym_id = c.gym_id AND cm.status = 'active'
+       LEFT JOIN users cu ON cu.id = c.user_id AND cu.gym_id = c.gym_id AND cu.is_active = true
+       WHERE c.gym_id = $1 AND NULLIF(c.photo_url, '') IS NOT NULL AND (cm.id IS NOT NULL OR cu.id IS NOT NULL)
+         AND ($2::boolean OR p.author_user_id IS NOT NULL OR p.member_id = $3 OR COALESCE(sp.is_private, false) = false OR EXISTS (
+           SELECT 1 FROM student_social_follows f WHERE f.gym_id = $1 AND f.follower_member_id = $3
+             AND f.following_member_id = p.member_id AND f.status = 'accepted'
+         ))
+     )
+     SELECT * FROM media
+     WHERE ($4 = '' OR lower(author_name) LIKE '%' || $4 || '%' OR lower(COALESCE(description, '')) LIKE '%' || $4 || '%')
+       AND ($5 = '' OR created_at::date >= $5::date)
+       AND ($6 = '' OR created_at::date <= $6::date)
+     ORDER BY created_at DESC, media_key DESC
+     LIMIT $7 OFFSET $8`,
+    [user.gym_id, adminView, isStudent(user) ? user.member_id : null, search, dateFrom, dateTo, pageSize + 1, (page - 1) * pageSize]
+  );
+  return { items: result.rows.slice(0, pageSize), page, has_more: result.rows.length > pageSize };
+}
+
+async function studentWorkoutScheduleAvailable(query) {
+  const result = await query(
+    `SELECT count(*)::int AS column_count
+     FROM information_schema.columns
+     WHERE table_schema = 'public'
+       AND table_name = 'student_workout_days'
+       AND column_name IN ('start_time', 'end_time')`
+  );
+  return Number(result.rows[0]?.column_count || 0) === 2;
+}
+
+async function studentWorkoutDays(query, user, planId) {
+  const hasSchedule = await studentWorkoutScheduleAvailable(query);
+  const result = hasSchedule
+    ? await query(
+      'SELECT id, plan_id, weekday, title, notes, start_time, end_time FROM student_workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday',
+      [user.gym_id, planId]
+    )
+    : await query(
+      'SELECT id, plan_id, weekday, title, notes FROM student_workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday',
+      [user.gym_id, planId]
+    );
+
+  return hasSchedule
+    ? result.rows
+    : result.rows.map((day) => ({ ...day, start_time: '18:00', end_time: '19:00' }));
 }
 
 async function studentCustomDetail(query, user, customPlan) {
-  const days = await query(
-    'SELECT id, plan_id, weekday, title, notes, start_time, end_time FROM student_workout_days WHERE gym_id = $1 AND plan_id = $2 ORDER BY weekday',
-    [user.gym_id, customPlan.id]
-  );
+  const days = await studentWorkoutDays(query, user, customPlan.id);
   const exercises = await query(
     `SELECT swe.id, swe.plan_day_id AS workout_day_id, swe.order_index, swe.sets, swe.reps, swe.rest_seconds, swe.notes,
             swe.exercise_library_id, swe.private_exercise_id,
@@ -189,7 +313,7 @@ async function studentCustomDetail(query, user, customPlan) {
   );
   return {
     plan: { ...customPlan, source: 'student', editable: true },
-    days: days.rows,
+    days,
     exercises: exercises.rows
   };
 }
@@ -369,10 +493,105 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   if (!user) return send(res, 401, { error: 'nao_autorizado' });
 
   const isPasswordChangeRequest = isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/change-password';
+  const isOnboardingRequest = (isStudent(user) || isVisitor(user)) && ['GET', 'PUT'].includes(req.method) && url.pathname === '/api/student/onboarding';
   const isStudentProfileRequest = isStudent(user) && ((req.method === 'GET' && ['/api/student/me', '/api/student/profile'].includes(url.pathname)) || (req.method === 'POST' && url.pathname === '/api/student/profile'));
-  if (isStudent(user) && !isPasswordChangeRequest && !isStudentProfileRequest) {
+  if (isStudent(user) && !isPasswordChangeRequest && !isStudentProfileRequest && !isOnboardingRequest) {
     const accountState = await query('SELECT must_change_password FROM member_accounts WHERE id = $1 AND member_id = $2 AND gym_id = $3 LIMIT 1', [user.sub, user.member_id, user.gym_id]);
     if (accountState.rows[0]?.must_change_password) return send(res, 403, { error: 'troca_senha_obrigatoria' });
+  }
+
+  if (isOnboardingRequest && req.method === 'GET') {
+    if (isStudent(user)) {
+      const result = await query(
+        `SELECT m.name, m.email, m.birth_date, m.onboarding_completed_at,
+                a.weight_kg, a.height_cm
+         FROM members m
+         LEFT JOIN LATERAL (
+           SELECT weight_kg, height_cm
+           FROM member_assessments
+           WHERE gym_id = m.gym_id AND member_id = m.id
+           ORDER BY assessment_date ASC, created_at ASC LIMIT 1
+         ) a ON true
+         WHERE m.id = $1 AND m.gym_id = $2 LIMIT 1`,
+        [user.member_id, user.gym_id]
+      );
+      if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+      const profile = result.rows[0];
+      const completed = Boolean(profile.onboarding_completed_at || (profile.name && profile.birth_date && profile.weight_kg && profile.height_cm));
+      return send(res, 200, { account_type: 'student', completed, profile });
+    }
+    const result = await query(
+      `SELECT name, email, birth_date, weight_kg, height_cm, onboarding_completed_at
+       FROM visitor_accounts
+       WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1`,
+      [user.visitor_id, user.gym_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'conta_nao_encontrada' });
+    const profile = result.rows[0];
+    const completed = Boolean(profile.onboarding_completed_at || (profile.name && profile.birth_date && profile.weight_kg && profile.height_cm));
+    return send(res, 200, { account_type: 'visitor', completed, profile });
+  }
+
+  if (isOnboardingRequest && req.method === 'PUT') {
+    const input = await body(req);
+    const name = String(input.name || '').trim();
+    const birthDate = String(input.birth_date || '').trim();
+    const weight = studentNumber(input.weight_kg);
+    const height = studentNumber(input.height_cm);
+    const birthYear = Number(birthDate.slice(0, 4));
+    const currentYear = new Date().getUTCFullYear();
+    if (name.length < 2 || name.length > 160) return send(res, 400, { error: 'nome_invalido' });
+    if (!validCalendarDate(birthDate) || birthYear < currentYear - 120 || birthYear > currentYear) return send(res, 400, { error: 'nascimento_invalido' });
+    if (weight === null || weight < 10 || weight > 500) return send(res, 400, { error: 'peso_invalido' });
+    if (height === null || height < 50 || height > 250) return send(res, 400, { error: 'altura_invalida' });
+
+    if (isVisitor(user)) {
+      const result = await query(
+        `UPDATE visitor_accounts
+         SET name = $3, birth_date = $4::date, weight_kg = $5, height_cm = $6,
+             onboarding_completed_at = now(), updated_at = now()
+         WHERE id = $1 AND gym_id = $2 AND is_active = true
+         RETURNING name, email, birth_date, weight_kg, height_cm, onboarding_completed_at`,
+        [user.visitor_id, user.gym_id, name, birthDate, weight, height]
+      );
+      if (!result.rowCount) return send(res, 404, { error: 'conta_nao_encontrada' });
+      return send(res, 200, { account_type: 'visitor', completed: true, profile: result.rows[0] });
+    }
+
+    await query(
+      `UPDATE members
+       SET name = $3, birth_date = $4::date, onboarding_completed_at = now(), updated_at = now()
+       WHERE id = $1 AND gym_id = $2`,
+      [user.member_id, user.gym_id, name, birthDate]
+    );
+    const existing = await query(
+      'SELECT id FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date ASC, created_at ASC LIMIT 1',
+      [user.gym_id, user.member_id]
+    );
+    const sources = JSON.stringify({ measured: ['weight_kg', 'height_cm'] });
+    let assessment;
+    if (existing.rowCount) {
+      assessment = await query(
+        `UPDATE member_assessments
+         SET weight_kg = $4, height_cm = $5,
+             measurement_sources = jsonb_set(measurement_sources, '{measured}', COALESCE(measurement_sources->'measured', '[]'::jsonb) || $6::jsonb->'measured', true)
+         WHERE id = $1 AND gym_id = $2 AND member_id = $3
+         RETURNING weight_kg, height_cm`,
+        [existing.rows[0].id, user.gym_id, user.member_id, weight, height, sources]
+      );
+    } else {
+      assessment = await query(
+        `INSERT INTO member_assessments (gym_id, member_id, assessment_date, weight_kg, height_cm, notes, measurement_sources)
+         VALUES ($1, $2, current_date, $3, $4, 'Dados iniciais informados no primeiro acesso ao aplicativo.', $5::jsonb)
+         RETURNING weight_kg, height_cm`,
+        [user.gym_id, user.member_id, weight, height, sources]
+      );
+    }
+    return send(res, 200, {
+      account_type: 'student',
+      completed: true,
+      profile: { name, birth_date: birthDate, ...assessment.rows[0] }
+    });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/student/accounts') {
@@ -470,8 +689,75 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/progress') {
     const assessments = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
+    const baseline = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date ASC, created_at ASC LIMIT 1', [user.gym_id, user.member_id]);
     const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
-    return send(res, 200, { assessments: assessments.rows, goals: goals.rows, analysis: buildProgressAnalysis(assessments.rows[0], assessments.rows[1], goals.rows) });
+    const assessmentRows = [...assessments.rows];
+    if (baseline.rows[0] && !assessmentRows.some((assessment) => assessment.id === baseline.rows[0].id)) assessmentRows.push(baseline.rows[0]);
+    const effectiveAssessments = carryForwardAssessments(assessmentRows);
+    const effectiveBaseline = effectiveAssessments.find((assessment) => assessment.id === baseline.rows[0]?.id) || effectiveAssessments.at(-1) || null;
+    let trainingSessions = 0;
+    if (effectiveAssessments[0]?.assessment_date && effectiveAssessments[1]?.assessment_date) {
+      const training = await query(
+        `SELECT (
+          (SELECT count(*) FROM workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND status = 'completed' AND completed_at::date BETWEEN $3::date AND $4::date) +
+          (SELECT count(*) FROM student_workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND status = 'completed' AND completed_at::date BETWEEN $3::date AND $4::date)
+        )::int AS total`,
+        [user.gym_id, user.member_id, effectiveAssessments[1].assessment_date, effectiveAssessments[0].assessment_date]
+      );
+      trainingSessions = Number(training.rows[0]?.total) || 0;
+    }
+    const completedGoals = await completeReachedStudentGoals(query, user, effectiveAssessments[0], effectiveAssessments[1], goals.rows);
+    const completedIds = new Set(completedGoals.map((goal) => String(goal.id)));
+    const effectiveGoals = goals.rows.map((goal) => completedIds.has(String(goal.id)) ? { ...goal, status: 'completed' } : goal);
+    const hasProgress = effectiveAssessments[0] && effectiveBaseline && effectiveAssessments[0].id !== effectiveBaseline.id;
+    const trainingIntelligence = await loadTrainingIntelligence(query, user.gym_id, user.member_id, { assessments: effectiveAssessments, goals: effectiveGoals });
+    return send(res, 200, {
+      assessments: effectiveAssessments,
+      baseline: effectiveBaseline,
+      goals: effectiveGoals,
+      completed_goals: completedGoals,
+      training_intelligence: trainingIntelligence,
+      analysis: buildProgressAnalysis(effectiveAssessments[0], hasProgress ? effectiveBaseline : null, effectiveGoals, { comparisonLabel: 'medição inicial', includeProjection: false }),
+      recent_analysis: buildProgressAnalysis(effectiveAssessments[0], effectiveAssessments[1] || null, effectiveGoals, { comparisonLabel: 'avaliação anterior', includeProjection: false, trainingSessions })
+    });
+  }
+
+  if (isStudent(user) && ['POST', 'PUT'].includes(req.method) && url.pathname === '/api/student/progress/baseline') {
+    const input = await body(req);
+    const assessmentDate = String(input.assessment_date || '').trim();
+    if (assessmentDate && !validCalendarDate(assessmentDate)) return send(res, 400, { error: 'data_invalida' });
+    const existing = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date ASC, created_at ASC LIMIT 1', [user.gym_id, user.member_id]);
+    const values = [studentNumber(input.weight_kg), studentNumber(input.height_cm), studentNumber(input.body_fat_percent), studentNumber(input.muscle_mass_kg), studentNumber(input.waist_cm), studentNumber(input.chest_cm), studentNumber(input.hip_cm), studentNumber(input.biceps_cm), studentNumber(input.thigh_cm)];
+    const baselineKeys = ['weight_kg', 'height_cm', 'body_fat_percent', 'muscle_mass_kg', 'waist_cm', 'chest_cm', 'hip_cm', 'biceps_cm', 'thigh_cm'];
+    const baselineMeasured = baselineKeys.filter((key) => input[key] !== undefined && input[key] !== null && input[key] !== '');
+    const baselineSources = JSON.stringify({ measured: baselineMeasured.flatMap((key) => key === 'thigh_cm' ? ['left_thigh_cm', 'right_thigh_cm'] : [key]) });
+    let result;
+    if (existing.rowCount) {
+      result = await query(
+        `UPDATE member_assessments
+         SET assessment_date = COALESCE(NULLIF($4, '')::date, assessment_date),
+             weight_kg = COALESCE($5, weight_kg), height_cm = COALESCE($6, height_cm), body_fat_percent = COALESCE($7, body_fat_percent),
+             muscle_mass_kg = COALESCE($8, muscle_mass_kg), waist_cm = COALESCE($9, waist_cm), chest_cm = COALESCE($10, chest_cm),
+             hip_cm = COALESCE($11, hip_cm), biceps_cm = COALESCE($12, biceps_cm),
+             left_thigh_cm = COALESCE($13, left_thigh_cm), right_thigh_cm = COALESCE($13, right_thigh_cm),
+             measurement_sources = jsonb_set(
+               measurement_sources,
+               '{measured}',
+               COALESCE(measurement_sources->'measured', '[]'::jsonb) || COALESCE($14::jsonb->'measured', '[]'::jsonb),
+               true
+             )
+         WHERE id = $1 AND gym_id = $2 AND member_id = $3 RETURNING *`,
+        [existing.rows[0].id, user.gym_id, user.member_id, assessmentDate, ...values, baselineSources]
+      );
+    } else {
+      result = await query(
+        `INSERT INTO member_assessments (gym_id, member_id, assessment_date, weight_kg, height_cm, body_fat_percent, muscle_mass_kg, waist_cm, chest_cm, hip_cm, biceps_cm, left_thigh_cm, right_thigh_cm, notes, measurement_sources)
+         VALUES ($1,$2,COALESCE(NULLIF($3, '')::date,current_date),$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,'Dados corporais iniciais informados pelo aluno.',$13::jsonb) RETURNING *`,
+        [user.gym_id, user.member_id, assessmentDate, ...values, baselineSources]
+      );
+    }
+    await recordAudit(user, existing.rowCount ? 'update' : 'create', 'member_assessment_baseline', result.rows[0].id, { member_id: user.member_id });
+    return send(res, existing.rowCount ? 200 : 201, { baseline: result.rows[0] });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/goals') {
@@ -535,22 +821,166 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     if (assessmentDate && !/^\d{4}-\d{2}-\d{2}$/.test(assessmentDate)) return send(res, 400, { error: 'data_invalida' });
     const photoUrl = studentText(input.photo_url, '', 1000);
     if (photoUrl && !validPhotoSource(photoUrl)) return send(res, 400, { error: 'foto_invalida' });
+    const previous = await query(
+      `SELECT weight_kg, height_cm, body_fat_percent, muscle_mass_kg, waist_cm, chest_cm, hip_cm,
+              biceps_cm, back_cm, left_arm_cm, right_arm_cm, left_thigh_cm, right_thigh_cm, resting_heart_rate
+       FROM member_assessments
+       WHERE gym_id = $1 AND member_id = $2
+       ORDER BY assessment_date DESC, created_at DESC LIMIT 1`,
+      [user.gym_id, user.member_id]
+    );
+    const latest = previous.rows[0] || {};
+    const inherited = (inputKey, previousKey = inputKey) => studentNumber(input[inputKey]) ?? latest[previousKey] ?? null;
+    const thigh = studentNumber(input.thigh_cm);
+    const submittedKeys = ['weight_kg', 'height_cm', 'body_fat_percent', 'muscle_mass_kg', 'waist_cm', 'chest_cm', 'hip_cm', 'biceps_cm', 'thigh_cm'];
+    const submittedMeasured = submittedKeys.filter((key) => input[key] !== undefined && input[key] !== null && input[key] !== '');
+    const measurementSources = JSON.stringify({ measured: submittedMeasured.flatMap((key) => key === 'thigh_cm' ? ['left_thigh_cm', 'right_thigh_cm'] : [key]) });
     const result = await query(
       `INSERT INTO member_assessments (
         gym_id, member_id, assessment_date, weight_kg, height_cm, body_fat_percent, muscle_mass_kg,
         waist_cm, chest_cm, hip_cm, biceps_cm, back_cm, left_arm_cm, right_arm_cm, left_thigh_cm, right_thigh_cm,
-        resting_heart_rate, photo_url, notes
-      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,COALESCE($7,(SELECT muscle_mass_kg FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 1)),$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+        resting_heart_rate, photo_url, notes, measurement_sources
+      ) VALUES ($1,$2,COALESCE($3::date,current_date),$4,$5,$6,COALESCE($7,(SELECT muscle_mass_kg FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 1)),$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20::jsonb)
       RETURNING *`,
-      [user.gym_id, user.member_id, assessmentDate || null, studentNumber(input.weight_kg), studentNumber(input.height_cm), studentNumber(input.body_fat_percent), studentNumber(input.muscle_mass_kg), studentNumber(input.waist_cm), studentNumber(input.chest_cm), studentNumber(input.hip_cm), studentNumber(input.biceps_cm), null, studentNumber(input.thigh_cm), studentNumber(input.thigh_cm), null, null, null, photoUrl || null, studentText(input.notes, '', 5000) || null]
+      [user.gym_id, user.member_id, assessmentDate || null, inherited('weight_kg'), inherited('height_cm'), inherited('body_fat_percent'), inherited('muscle_mass_kg'), inherited('waist_cm'), inherited('chest_cm'), inherited('hip_cm'), inherited('biceps_cm'), latest.back_cm ?? null, latest.left_arm_cm ?? null, latest.right_arm_cm ?? null, thigh ?? latest.left_thigh_cm ?? null, thigh ?? latest.right_thigh_cm ?? null, latest.resting_heart_rate ?? null, photoUrl || null, studentText(input.notes, '', 5000) || null, measurementSources]
     );
     const history = await query('SELECT * FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 2', [user.gym_id, user.member_id]);
     const goals = await query('SELECT * FROM member_goals WHERE gym_id = $1 AND member_id = $2 ORDER BY status, target_date NULLS LAST, created_at DESC LIMIT 20', [user.gym_id, user.member_id]);
-    return send(res, 201, { assessment: result.rows[0], analysis: buildProgressAnalysis(history.rows[0], history.rows[1], goals.rows) });
+    const effectiveHistory = carryForwardAssessments(history.rows);
+    const completedGoals = await completeReachedStudentGoals(query, user, effectiveHistory[0], effectiveHistory[1], goals.rows);
+    return send(res, 201, { assessment: effectiveHistory[0], completed_goals: completedGoals, analysis: buildProgressAnalysis(effectiveHistory[0], effectiveHistory[1], goals.rows) });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/feed') {
-    return send(res, 200, { posts: await socialPosts(query, user) });
+    const limit = studentInteger(url.searchParams.get('limit'), 5, 1, 60);
+    const offset = studentInteger(url.searchParams.get('offset'), 0, 0, 10000);
+    return send(res, 200, await socialPosts(query, user, null, { limit, offset, paginated: true }));
+  }
+
+  if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/media') {
+    const gallery = await socialMediaGallery(query, user, url, false);
+    return gallery.error ? send(res, 400, { error: gallery.error }) : send(res, 200, gallery);
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'GET' && url.pathname === '/api/student/admin-community/feed') {
+    const limit = studentInteger(url.searchParams.get('limit'), 5, 1, 60);
+    const offset = studentInteger(url.searchParams.get('offset'), 0, 0, 10000);
+    const result = await query(
+      `SELECT p.id, p.member_id, p.author_user_id, p.caption, p.media_url, p.media_type, p.created_at,
+              COALESCE(m.name, u.name, 'Academia') AS author_name,
+              CASE WHEN p.author_user_id IS NOT NULL THEN COALESCE(u.profile_photo_url, '') ELSE COALESCE(sp.profile_photo_url, '') END AS author_photo,
+              u.role AS author_role, u.access_profile AS author_access_profile,
+              (p.author_user_id IS NOT NULL) AS is_gym_post,
+              (p.author_user_id = $2) AS viewer_owns_post,
+              (p.author_user_id = $2 AND p.created_at >= now() - interval '30 minutes') AS can_delete,
+              (SELECT count(*) FROM student_social_post_likes l WHERE l.post_id = p.id) AS likes_count,
+              (SELECT count(*) FROM student_social_comments c WHERE c.post_id = p.id) AS comments_count,
+              EXISTS (SELECT 1 FROM student_social_post_likes l WHERE l.post_id = p.id AND l.user_id = $2) AS viewer_liked
+       FROM student_social_posts p
+       LEFT JOIN members m ON m.id = p.member_id AND m.gym_id = p.gym_id
+       LEFT JOIN users u ON u.id = p.author_user_id AND u.gym_id = p.gym_id
+       LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id
+       WHERE p.gym_id = $1 AND p.is_active = true
+       ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
+      [user.gym_id, user.sub, limit + 1, offset]
+    );
+    const pageRows = result.rows.slice(0, limit);
+    const postIds = pageRows.map((post) => post.id);
+    const comments = await socialComments(query, user, postIds);
+    const grouped = new Map(pageRows.map((post) => [String(post.id), []]));
+    comments.forEach((comment) => {
+      if (grouped.has(String(comment.post_id)) && grouped.get(String(comment.post_id)).length < 80) grouped.get(String(comment.post_id)).push(comment);
+    });
+    return send(res, 200, { posts: pageRows.map((post) => ({ ...post, comments: grouped.get(String(post.id)) || [] })), has_more: result.rows.length > limit });
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'GET' && url.pathname === '/api/student/admin-community/media') {
+    const gallery = await socialMediaGallery(query, user, url, true);
+    return gallery.error ? send(res, 400, { error: gallery.error }) : send(res, 200, gallery);
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'POST' && url.pathname === '/api/student/admin-community/posts') {
+    const input = await body(req);
+    const caption = studentText(input.caption, '', 2000) || null;
+    const mediaUrl = studentText(input.media_url, '', 1000) || null;
+    const mediaType = String(input.media_type || (mediaUrl ? 'image' : 'link'));
+    if (!caption && !mediaUrl) return send(res, 400, { error: 'post_vazio' });
+    if (!validSocialMediaType(mediaType) || (mediaUrl && !validPhotoSource(mediaUrl))) return send(res, 400, { error: 'midia_invalida' });
+    const result = await query(
+      `INSERT INTO student_social_posts (gym_id, member_id, author_user_id, caption, media_url, media_type)
+       VALUES ($1, NULL, $2, $3, $4, $5)
+       RETURNING id, author_user_id, caption, media_url, media_type, created_at`,
+      [user.gym_id, user.sub, caption, mediaUrl, mediaType]
+    );
+    await recordAudit(user, 'create', 'community_post', result.rows[0].id, { source: 'admin_community' });
+    return send(res, 201, { post: result.rows[0] });
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'POST' && url.pathname === '/api/student/admin-community/posts/delete') {
+    const input = await body(req);
+    if (!isUuid(input.post_id)) return send(res, 400, { error: 'post_invalido' });
+    const owned = await query(
+      `SELECT id, created_at >= now() - interval '30 minutes' AS within_time
+       FROM student_social_posts WHERE id = $1 AND gym_id = $2 AND author_user_id = $3 AND is_active = true LIMIT 1`,
+      [input.post_id, user.gym_id, user.sub]
+    );
+    if (!owned.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
+    if (!owned.rows[0].within_time) return send(res, 409, { error: 'prazo_exclusao_expirado' });
+    await query('UPDATE student_social_posts SET is_active = false, updated_at = now() WHERE id = $1 AND gym_id = $2', [input.post_id, user.gym_id]);
+    await recordAudit(user, 'delete', 'community_post', input.post_id, { source: 'admin_community' });
+    return send(res, 200, { deleted: true });
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'POST' && url.pathname === '/api/student/admin-community/posts/like') {
+    const input = await body(req);
+    if (!isUuid(input.post_id)) return send(res, 400, { error: 'post_invalido' });
+    const removed = await query('DELETE FROM student_social_post_likes WHERE gym_id = $1 AND post_id = $2 AND user_id = $3 RETURNING id', [user.gym_id, input.post_id, user.sub]);
+    if (removed.rowCount) return send(res, 200, { liked: false });
+    const post = await query('SELECT id FROM student_social_posts WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1', [input.post_id, user.gym_id]);
+    if (!post.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
+    await query('INSERT INTO student_social_post_likes (gym_id, post_id, member_id, user_id) VALUES ($1, $2, NULL, $3) ON CONFLICT DO NOTHING', [user.gym_id, input.post_id, user.sub]);
+    return send(res, 200, { liked: true });
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'POST' && url.pathname === '/api/student/admin-community/posts/comment') {
+    const input = await body(req);
+    const bodyText = studentText(input.body, '', 800) || null;
+    const photoUrl = studentText(input.photo_url, '', 1000) || null;
+    if (!isUuid(input.post_id) || (!bodyText && !photoUrl) || (photoUrl && !validPhotoSource(photoUrl))) return send(res, 400, { error: 'comentario_invalido' });
+    const post = await query('SELECT id FROM student_social_posts WHERE id = $1 AND gym_id = $2 AND is_active = true LIMIT 1', [input.post_id, user.gym_id]);
+    if (!post.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
+    let parentCommentId = null;
+    let replyToCommentId = null;
+    if (input.reply_to_comment_id) {
+      if (!isUuid(input.reply_to_comment_id)) return send(res, 400, { error: 'resposta_invalida' });
+      const target = await query('SELECT id, parent_comment_id FROM student_social_comments WHERE id = $1 AND post_id = $2 AND gym_id = $3 LIMIT 1', [input.reply_to_comment_id, input.post_id, user.gym_id]);
+      if (!target.rowCount) return send(res, 404, { error: 'comentario_nao_encontrado' });
+      parentCommentId = target.rows[0].parent_comment_id || target.rows[0].id;
+      replyToCommentId = target.rows[0].id;
+    }
+    const result = await query(
+      `INSERT INTO student_social_comments (gym_id, post_id, member_id, user_id, body, photo_url, parent_comment_id, reply_to_comment_id)
+       VALUES ($1, $2, NULL, $3, $4, $5, $6, $7)
+       RETURNING id, post_id, user_id, body, photo_url, parent_comment_id, reply_to_comment_id, created_at`,
+      [user.gym_id, input.post_id, user.sub, bodyText, photoUrl, parentCommentId, replyToCommentId]
+    );
+    return send(res, 201, { comment: result.rows[0] });
+  }
+
+  if (canUseAdminCommunity(user) && req.method === 'POST' && url.pathname === '/api/student/admin-community/comments/like') {
+    const input = await body(req);
+    if (!isUuid(input.comment_id)) return send(res, 400, { error: 'comentario_invalido' });
+    const comment = await query(
+      `SELECT c.id FROM student_social_comments c
+       INNER JOIN student_social_posts p ON p.id = c.post_id AND p.gym_id = c.gym_id AND p.is_active = true
+       WHERE c.id = $1 AND c.gym_id = $2 LIMIT 1`,
+      [input.comment_id, user.gym_id]
+    );
+    if (!comment.rowCount) return send(res, 404, { error: 'comentario_nao_encontrado' });
+    const removed = await query('DELETE FROM student_social_comment_likes WHERE gym_id = $1 AND comment_id = $2 AND user_id = $3 RETURNING id', [user.gym_id, input.comment_id, user.sub]);
+    if (removed.rowCount) return send(res, 200, { liked: false });
+    await query('INSERT INTO student_social_comment_likes (gym_id, comment_id, member_id, user_id) VALUES ($1, $2, NULL, $3) ON CONFLICT DO NOTHING', [user.gym_id, input.comment_id, user.sub]);
+    return send(res, 200, { liked: true });
   }
 
   if (isStudent(user) && req.method === 'GET' && url.pathname === '/api/student/social/profile') {
@@ -675,14 +1105,65 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     return send(res, 200, { liked: true });
   }
 
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/posts/delete') {
+    const input = await body(req);
+    if (!isUuid(input.post_id)) return send(res, 400, { error: 'post_invalido' });
+    const owned = await query(
+      `SELECT id, created_at >= now() - interval '30 minutes' AS within_time
+       FROM student_social_posts WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND is_active = true LIMIT 1`,
+      [input.post_id, user.gym_id, user.member_id]
+    );
+    if (!owned.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
+    if (!owned.rows[0].within_time) return send(res, 409, { error: 'prazo_exclusao_expirado' });
+    await query('UPDATE student_social_posts SET is_active = false, updated_at = now() WHERE id = $1 AND gym_id = $2', [input.post_id, user.gym_id]);
+    await recordAudit(user, 'delete', 'student_social_post', input.post_id, { member_id: user.member_id });
+    return send(res, 200, { deleted: true });
+  }
+
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/posts/comment') {
     const input = await body(req);
-    const bodyText = studentText(input.body, '', 800);
-    if (!isUuid(input.post_id) || !bodyText) return send(res, 400, { error: 'comentario_invalido' });
-    const post = await query('SELECT id, member_id FROM student_social_posts p LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id WHERE p.id = $1 AND p.gym_id = $2 AND p.is_active = true AND (p.member_id = $3 OR COALESCE(sp.is_private, false) = false OR EXISTS (SELECT 1 FROM student_social_follows f WHERE f.gym_id = $2 AND f.follower_member_id = $3 AND f.following_member_id = p.member_id AND f.status = \'accepted\')) LIMIT 1', [input.post_id, user.gym_id, user.member_id]);
+    const bodyText = studentText(input.body, '', 800) || null;
+    const photoUrl = studentText(input.photo_url, '', 1000) || null;
+    if (!isUuid(input.post_id) || (!bodyText && !photoUrl) || (photoUrl && !validPhotoSource(photoUrl))) return send(res, 400, { error: 'comentario_invalido' });
+    const post = await query('SELECT p.id, p.member_id FROM student_social_posts p LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id WHERE p.id = $1 AND p.gym_id = $2 AND p.is_active = true AND (p.member_id = $3 OR COALESCE(sp.is_private, false) = false OR EXISTS (SELECT 1 FROM student_social_follows f WHERE f.gym_id = $2 AND f.follower_member_id = $3 AND f.following_member_id = p.member_id AND f.status = \'accepted\')) LIMIT 1', [input.post_id, user.gym_id, user.member_id]);
     if (!post.rowCount) return send(res, 404, { error: 'post_nao_encontrado' });
-    const result = await query('INSERT INTO student_social_comments (gym_id, post_id, member_id, body) VALUES ($1, $2, $3, $4) RETURNING id, post_id, member_id, body, created_at', [user.gym_id, input.post_id, user.member_id, bodyText]);
+    let parentCommentId = null;
+    let replyToCommentId = null;
+    if (input.reply_to_comment_id) {
+      if (!isUuid(input.reply_to_comment_id)) return send(res, 400, { error: 'resposta_invalida' });
+      const target = await query('SELECT id, parent_comment_id FROM student_social_comments WHERE id = $1 AND post_id = $2 AND gym_id = $3 LIMIT 1', [input.reply_to_comment_id, input.post_id, user.gym_id]);
+      if (!target.rowCount) return send(res, 404, { error: 'comentario_nao_encontrado' });
+      parentCommentId = target.rows[0].parent_comment_id || target.rows[0].id;
+      replyToCommentId = target.rows[0].id;
+    }
+    const result = await query(
+      `INSERT INTO student_social_comments (gym_id, post_id, member_id, body, photo_url, parent_comment_id, reply_to_comment_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, post_id, member_id, body, photo_url, parent_comment_id, reply_to_comment_id, created_at`,
+      [user.gym_id, input.post_id, user.member_id, bodyText, photoUrl, parentCommentId, replyToCommentId]
+    );
     return send(res, 201, { comment: result.rows[0] });
+  }
+
+  if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/comments/like') {
+    const input = await body(req);
+    if (!isUuid(input.comment_id)) return send(res, 400, { error: 'comentario_invalido' });
+    const comment = await query(
+      `SELECT c.id FROM student_social_comments c
+       INNER JOIN student_social_posts p ON p.id = c.post_id AND p.gym_id = c.gym_id AND p.is_active = true
+       LEFT JOIN student_social_profiles sp ON sp.gym_id = p.gym_id AND sp.member_id = p.member_id
+       WHERE c.id = $1 AND c.gym_id = $2
+         AND (p.author_user_id IS NOT NULL OR p.member_id = $3 OR COALESCE(sp.is_private, false) = false OR EXISTS (
+           SELECT 1 FROM student_social_follows f WHERE f.gym_id = $2 AND f.follower_member_id = $3
+             AND f.following_member_id = p.member_id AND f.status = 'accepted'
+         )) LIMIT 1`,
+      [input.comment_id, user.gym_id, user.member_id]
+    );
+    if (!comment.rowCount) return send(res, 404, { error: 'comentario_nao_encontrado' });
+    const removed = await query('DELETE FROM student_social_comment_likes WHERE gym_id = $1 AND comment_id = $2 AND member_id = $3 RETURNING id', [user.gym_id, input.comment_id, user.member_id]);
+    if (removed.rowCount) return send(res, 200, { liked: false });
+    await query('INSERT INTO student_social_comment_likes (gym_id, comment_id, member_id, user_id) VALUES ($1, $2, $3, NULL) ON CONFLICT DO NOTHING', [user.gym_id, input.comment_id, user.member_id]);
+    return send(res, 200, { liked: true });
   }
 
   if (isStudent(user) && req.method === 'POST' && url.pathname === '/api/student/social/follow') {
@@ -995,19 +1476,28 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       );
       if (updated.rowCount) customPlan = updated.rows[0];
 
+      const hasSchedule = await studentWorkoutScheduleAvailable(query);
       for (const dayInput of input.days) {
         const weekday = studentInteger(dayInput?.weekday, null, 1, 7);
         if (!weekday) continue;
         const startTime = validCalendarTime(dayInput?.start_time || input.start_time) ? String(dayInput?.start_time || input.start_time) : '18:00';
         const requestedEnd = dayInput?.end_time || input.end_time;
         const endTime = validCalendarTime(requestedEnd) && String(requestedEnd) > startTime ? String(requestedEnd) : null;
-        const day = await query(
-          `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes, start_time, end_time)
-           VALUES ($1, $2, $3, $4, $5, $6::time, $7::time)
-           ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, updated_at = now()
-           RETURNING id, weekday, start_time, end_time`,
-          [user.gym_id, customPlan.id, weekday, studentText(dayInput.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(dayInput.notes, '', 2000) || null, startTime, endTime]
-        );
+        const day = hasSchedule
+          ? await query(
+            `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes, start_time, end_time)
+             VALUES ($1, $2, $3, $4, $5, $6::time, $7::time)
+             ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, updated_at = now()
+             RETURNING id, weekday, start_time, end_time`,
+            [user.gym_id, customPlan.id, weekday, studentText(dayInput.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(dayInput.notes, '', 2000) || null, startTime, endTime]
+          )
+          : await query(
+            `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, updated_at = now()
+             RETURNING id, weekday`,
+            [user.gym_id, customPlan.id, weekday, studentText(dayInput.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(dayInput.notes, '', 2000) || null]
+          );
         if (!day.rowCount) continue;
         const planDayId = day.rows[0].id;
         await query('DELETE FROM student_workout_exercises WHERE gym_id = $1 AND plan_day_id = $2', [user.gym_id, planDayId]);
@@ -1090,13 +1580,25 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     if (!input.plan_id || !weekday) return send(res, 400, { error: 'dados_invalidos' });
     const ownsPlan = await query("SELECT id FROM student_workout_plans WHERE id = $1 AND gym_id = $2 AND member_id = $3 AND status = 'active' LIMIT 1", [input.plan_id, user.gym_id, user.member_id]);
     if (!ownsPlan.rowCount) return send(res, 404, { error: 'ficha_personalizada_nao_encontrada' });
-    const result = await query(
-      `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes, start_time, end_time)
-       VALUES ($1, $2, $3, $4, $5, $6::time, $7::time)
-       ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, updated_at = now()
-       RETURNING id, plan_id, weekday, title, notes, start_time, end_time`,
-      [user.gym_id, input.plan_id, weekday, studentText(input.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(input.notes, '', 2000) || null, validCalendarTime(input.start_time) ? String(input.start_time) : '18:00', validCalendarTime(input.end_time) && String(input.end_time) > (validCalendarTime(input.start_time) ? String(input.start_time) : '18:00') ? String(input.end_time) : null]
-    );
+    const startTime = validCalendarTime(input.start_time) ? String(input.start_time) : '18:00';
+    const endTime = validCalendarTime(input.end_time) && String(input.end_time) > startTime ? String(input.end_time) : null;
+    const result = await (await studentWorkoutScheduleAvailable(query)
+      ? query(
+        `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes, start_time, end_time)
+         VALUES ($1, $2, $3, $4, $5, $6::time, $7::time)
+         ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time, updated_at = now()
+         RETURNING id, plan_id, weekday, title, notes, start_time, end_time`,
+        [user.gym_id, input.plan_id, weekday, studentText(input.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(input.notes, '', 2000) || null, startTime, endTime]
+      )
+      : query(
+        `INSERT INTO student_workout_days (gym_id, plan_id, weekday, title, notes)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (plan_id, weekday) DO UPDATE SET title = EXCLUDED.title, notes = EXCLUDED.notes, updated_at = now()
+         RETURNING id, plan_id, weekday, title, notes`,
+        [user.gym_id, input.plan_id, weekday, studentText(input.title, STUDENT_WEEKDAYS[weekday - 1], 120) || STUDENT_WEEKDAYS[weekday - 1], studentText(input.notes, '', 2000) || null]
+      ));
+    if (!result.rows[0].start_time) result.rows[0].start_time = startTime;
+    if (!result.rows[0].end_time) result.rows[0].end_time = endTime;
     return send(res, 200, result.rows[0]);
   }
 

@@ -14,6 +14,9 @@ let assessmentFilterPlaceholder = null;
 let editingAssessmentId = '';
 let editingGoalId = '';
 let preservedAssessmentPhoto = '';
+const ASSESSMENT_PAGE_SIZE = 5;
+let assessmentPage = 1;
+let goalPage = 1;
 const canEditAssessmentPhoto = localStorage.getItem('academiaRole') === 'student';
 
 function setAssessmentStatus(text) {
@@ -154,6 +157,49 @@ function closeModal(id) {
   modal.setAttribute('aria-hidden', 'true');
   if (!document.querySelector('.modal:not(.hidden)')) document.body.classList.remove('modal-open');
 }
+
+function assessmentMobileMenu(label, items) {
+  const wrap = document.createElement('div');
+  wrap.className = 'mobile-card-menu';
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'mobile-card-menu-trigger';
+  trigger.textContent = '⋮';
+  trigger.setAttribute('aria-label', label);
+  trigger.setAttribute('aria-expanded', 'false');
+  const dropdown = document.createElement('div');
+  dropdown.className = 'mobile-card-menu-dropdown hidden';
+  for (const item of items) {
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.textContent = item.label;
+    if (item.danger) action.classList.add('danger');
+    action.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      await item.run(action);
+    });
+    dropdown.appendChild(action);
+  }
+  trigger.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const willOpen = dropdown.classList.contains('hidden');
+    document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+    document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+    dropdown.classList.toggle('hidden', !willOpen);
+    trigger.setAttribute('aria-expanded', String(willOpen));
+  });
+  wrap.addEventListener('click', (event) => event.stopPropagation());
+  wrap.addEventListener('keydown', (event) => event.stopPropagation());
+  wrap.append(trigger, dropdown);
+  return wrap;
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+});
 
 function resetAssessmentForm() {
   q('assessment-form')?.reset();
@@ -315,6 +361,15 @@ function renderAssessments(rows) {
   const list = q('assessment-list');
   if (!list) return;
   list.innerHTML = '';
+  const pages = Math.max(1, Math.ceil(rows.length / ASSESSMENT_PAGE_SIZE));
+  assessmentPage = Math.min(pages, Math.max(1, assessmentPage));
+  const visibleRows = rows.slice((assessmentPage - 1) * ASSESSMENT_PAGE_SIZE, assessmentPage * ASSESSMENT_PAGE_SIZE);
+  window.AdminPagination?.render(q('assessment-pagination'), {
+    page: assessmentPage,
+    total: rows.length,
+    pageSize: ASSESSMENT_PAGE_SIZE,
+    onChange: (page) => { assessmentPage = page; renderAssessments(filterAssessments(currentAssessments)); }
+  });
 
   if (!rows.length) {
     const empty = document.createElement('li');
@@ -324,7 +379,7 @@ function renderAssessments(rows) {
     return;
   }
 
-  for (const item of rows) {
+  for (const item of visibleRows) {
     const row = document.createElement('li');
     row.className = 'workflow-record';
     row.tabIndex = 0;
@@ -361,7 +416,10 @@ function renderAssessments(rows) {
     const remove = window.AcademiaIcons.button('trash', 'Excluir avaliação', 'danger');
     remove.addEventListener('click', (event) => { event.stopPropagation(); deleteAssessment(item); });
     actions.append(edit, remove);
-    row.append(main, actions);
+    row.append(main, actions, assessmentMobileMenu(`Opções da avaliação de ${item.member_name || 'aluno'}`, [
+      { label: 'Editar', run: () => openAssessmentEdit(item) },
+      { label: 'Excluir', danger: true, run: () => deleteAssessment(item) }
+    ]));
     list.appendChild(row);
   }
 }
@@ -370,6 +428,15 @@ function renderGoals(rows) {
   const list = q('goal-list');
   if (!list) return;
   list.innerHTML = '';
+  const pages = Math.max(1, Math.ceil(rows.length / ASSESSMENT_PAGE_SIZE));
+  goalPage = Math.min(pages, Math.max(1, goalPage));
+  const visibleRows = rows.slice((goalPage - 1) * ASSESSMENT_PAGE_SIZE, goalPage * ASSESSMENT_PAGE_SIZE);
+  window.AdminPagination?.render(q('goal-pagination'), {
+    page: goalPage,
+    total: rows.length,
+    pageSize: ASSESSMENT_PAGE_SIZE,
+    onChange: (page) => { goalPage = page; renderGoals(filterGoals(currentGoals)); }
+  });
 
   if (!rows.length) {
     const empty = document.createElement('li');
@@ -379,7 +446,7 @@ function renderGoals(rows) {
     return;
   }
 
-  for (const item of rows) {
+  for (const item of visibleRows) {
     const row = document.createElement('li');
     row.className = 'workflow-record';
     row.tabIndex = 0;
@@ -404,7 +471,10 @@ function renderGoals(rows) {
     const remove = window.AcademiaIcons.button('trash', 'Excluir meta', 'danger');
     remove.addEventListener('click', (event) => { event.stopPropagation(); deleteGoal(item); });
     actions.append(edit, remove);
-    row.append(main, actions);
+    row.append(main, actions, assessmentMobileMenu(`Opções da meta de ${item.member_name || 'aluno'}`, [
+      { label: 'Editar', run: () => openGoalEdit(item) },
+      { label: 'Excluir', danger: true, run: () => deleteGoal(item) }
+    ]));
     list.appendChild(row);
   }
 }
@@ -669,7 +739,7 @@ function bindAssessmentEvents() {
   });
   q('photo-url')?.addEventListener('input', (event) => { if (!q('assessment-photo-file')?.files?.length) previewAssessmentPhoto(event.target.value.trim()); });
   q('load-summary-button')?.addEventListener('click', loadSummary);
-  q('apply-assessment-filters')?.addEventListener('click', () => { renderAssessments(filterAssessments(currentAssessments)); renderGoals(filterGoals(currentGoals)); });
+  q('apply-assessment-filters')?.addEventListener('click', () => { assessmentPage = 1; goalPage = 1; renderAssessments(filterAssessments(currentAssessments)); renderGoals(filterGoals(currentGoals)); });
   q('download-assessments-csv')?.addEventListener('click', () => downloadAssessmentExport('csv').catch((error) => setAssessmentStatus(`Erro ao exportar CSV: ${error.message}`)));
   q('download-assessments-pdf')?.addEventListener('click', () => downloadAssessmentExport('pdf').catch((error) => setAssessmentStatus(`Erro ao exportar PDF: ${error.message}`)));
 

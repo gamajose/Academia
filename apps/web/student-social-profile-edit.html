@@ -1,26 +1,17 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Editar perfil - BlueREC Academia</title>
-  <link rel="stylesheet" href="./styles.css" /><link rel="stylesheet" href="./premium-ui.css" /><link rel="stylesheet" href="./blue-theme.css" /><link rel="stylesheet" href="./student-shell.css" /><link rel="stylesheet" href="./student-feed.css" /><link rel="stylesheet" href="./student-social-profile.css" />
+  <link rel="stylesheet" href="./styles.css" /><link rel="stylesheet" href="./premium-ui.css" /><link rel="stylesheet" href="./blue-theme.css" /><link rel="stylesheet" href="./student-shell.css?v=20260719-1" /><link rel="stylesheet" href="./student-feed.css" /><link rel="stylesheet" href="./student-social-profile.css?v=20260719-1" />
 </head>
 <body class="student-page social-profile-edit-page" data-student-page="profile">
   <nav class="top-nav student-top-nav"><a class="top-nav-brand" href="./student-portal.html" aria-label="BlueREC Academia, área do aluno"><img class="top-nav-logo" src="./blue-rec-logo.png" alt="BlueREC Academia" width="36" height="36" /></a><div class="top-nav-links student-module-nav"><a data-student-link="training" href="./student-portal.html">Meu treino</a><a data-student-link="progress" href="./student-progress.html">Minha evolução</a><a data-student-link="goals" href="./student-goals.html">Minhas metas</a><a data-student-link="share" href="./student-share.html">Compartilhar foto</a><a data-student-link="history" href="./student-history.html">Histórico</a></div><div class="profile-menu"><button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false"><span class="profile-avatar" data-student-avatar>A</span><span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span></button><div class="profile-dropdown hidden" id="student-profile-dropdown"><a href="./student-social-profile.html">Meu perfil</a><a href="./student-social-profile-edit.html#social-security">Segurança</a><button class="logout-item" id="student-profile-logout" type="button">Sair</button></div></div></nav>
   <main class="app-shell">
-    <section class="hero social-profile-edit-hero"><h1>Editar perfil</h1></section>
+    <section class="hero social-profile-edit-hero"><h1 id="social-settings-title">Editar perfil</h1></section>
     <div class="social-profile-settings-layout">
-      <aside class="panel social-profile-settings-nav" aria-label="Configurações da conta">
-        <h2>Conta</h2>
-        <a class="is-active" data-settings-view="profile" href="#social-profile">Perfil</a>
-        <a data-settings-view="account" href="#social-account">Dados da conta</a>
-        <a data-settings-view="security" href="#social-security">Segurança</a>
-        <h2>Preferências</h2>
-        <a data-settings-view="language" href="#social-language">Idioma</a>
-        <a data-settings-view="theme" href="#social-theme">Tema</a>
-        <a id="social-export-data" href="#social-profile-export">Exportar dados</a>
-      </aside>
       <div class="social-profile-settings-content">
         <form class="panel social-profile-edit-form" id="social-profile-form" data-settings-view-panel="profile">
           <div class="social-profile-edit-photo"><div class="social-avatar" id="social-edit-avatar" role="button" tabindex="0" aria-label="Alterar foto do perfil" title="Alterar foto do perfil" data-tooltip="Alterar foto">A</div><div><small>Foto visível no seu perfil</small><input id="social-profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden /></div></div>
@@ -38,13 +29,17 @@
           <section class="form-section"><h2>Sobre você</h2><div class="field"><label for="profile-objective">Objetivo</label><textarea id="profile-objective" maxlength="5000" placeholder="Conte o que você quer alcançar."></textarea></div><div class="field"><label for="profile-allergies">Alergias e restrições</label><textarea id="profile-allergies" maxlength="5000"></textarea></div><div class="field"><label for="profile-notes">Observações</label><textarea id="profile-notes" maxlength="5000"></textarea></div></section>
           <div class="form-actions"><button type="submit" id="student-profile-save">Salvar alterações</button></div><p class="status-line" id="student-profile-status" aria-live="polite"></p>
         </form>
-        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-language-form" data-settings-view-panel="language" hidden>
-          <section class="form-section"><h2>Idioma</h2><div class="field"><label for="social-profile-language">Idioma</label><select id="social-profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select><small>O idioma escolhido será aplicado à interface do aluno.</small></div></section>
-          <p class="status-line" id="social-language-status" aria-live="polite"></p><div class="form-actions"><button class="button" type="submit">Salvar idioma</button></div>
+        <form class="panel social-profile-edit-form social-profile-body-form" id="student-body-form" data-settings-view-panel="body" hidden>
+          <section class="form-section"><h2>Dados corporais iniciais</h2><p class="section-help">Este é o seu ponto de partida. O assistente de evolução compara as novas medições com estes dados.</p><div class="form-grid three"><div class="field"><label for="body-assessment-date">Data inicial</label><input id="body-assessment-date" type="date" /></div><div class="field"><label for="body-weight">Peso inicial (kg)</label><input id="body-weight" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-height">Altura (cm)</label><input id="body-height" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-fat">Gordura corporal (%)</label><input id="body-fat" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-muscle">Massa muscular (kg)</label><input id="body-muscle" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-waist">Cintura (cm)</label><input id="body-waist" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-chest">Peito (cm)</label><input id="body-chest" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-hip">Quadril (cm)</label><input id="body-hip" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-biceps">Bíceps (cm)</label><input id="body-biceps" type="number" min="0" step="0.01" /></div><div class="field"><label for="body-thigh">Coxa (cm)</label><input id="body-thigh" type="number" min="0" step="0.01" /></div></div></section>
+          <p class="status-line" id="student-body-status" aria-live="polite"></p><div class="form-actions"><a class="button secondary" href="./student-progress.html">Ver evolução</a><button class="button" id="student-body-save" type="submit">Salvar dados iniciais</button></div>
         </form>
-        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-theme-form" data-settings-view-panel="theme" hidden>
+        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-language-form" data-settings-view-panel="language" data-settings-group="preferences" hidden>
+          <section class="form-section"><h2>Idioma</h2><div class="field"><label for="social-profile-language">Idioma</label><select id="social-profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select><small>O idioma escolhido será aplicado à interface do aluno.</small></div></section>
+          <p class="status-line" id="social-language-status" aria-live="polite"></p><div class="form-actions"><button class="button" type="submit">Salvar</button></div>
+        </form>
+        <form class="panel social-profile-edit-form social-profile-preferences-form" id="social-theme-form" data-settings-view-panel="theme" data-settings-group="preferences" hidden>
           <section class="form-section"><h2>Tema</h2><div class="field"><label for="social-profile-theme">Tema</label><select id="social-profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select><small>A aparência será aplicada imediatamente e mantida nas próximas telas.</small></div></section>
-          <p class="status-line" id="social-theme-status" aria-live="polite"></p><div class="form-actions"><button class="button" type="submit">Salvar tema</button></div>
+          <p class="status-line" id="social-theme-status" aria-live="polite"></p><div class="form-actions"><a class="button secondary" id="social-export-data" href="#social-profile-export">Exportar dados</a><button class="button" type="submit">Salvar</button></div>
         </form>
         <form class="panel social-profile-edit-form social-profile-security-form" id="student-security-form" data-settings-view-panel="security" hidden>
           <section class="form-section"><h2>Trocar senha</h2><div class="field"><label for="current-password">Senha atual</label><input id="current-password" type="password" autocomplete="current-password" required /></div><div class="field"><label for="new-password">Nova senha</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" required /><small>Use 8 caracteres, 1 letra maiúscula e 1 número.</small></div><div class="field"><label for="password-confirmation">Confirmar nova senha</label><input id="password-confirmation" type="password" autocomplete="new-password" minlength="8" required /></div></section>
@@ -53,6 +48,6 @@
       </div>
     </div>
   </main>
-  <script src="./student-shell.js"></script><script src="./student-social-profile-edit.js"></script>
+  <script src="./student-shell.js?v=20260719-2"></script><script src="./student-social-profile-edit.js?v=20260716-3"></script>
 </body>
 </html>
