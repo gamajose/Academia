@@ -6,6 +6,7 @@ const {
 } = require('../lib/trainingReviewSchema');
 const {
   cleanText,
+  normalizeRestriction,
   anonymizedMemberId
 } = require('../lib/trainingReviewSnapshot');
 const {
@@ -157,6 +158,16 @@ test('minimiza dados pessoais antes de montar o prompt', () => {
   assert.equal(input.subject_id, 'anonimo-123');
   assert.equal(cleanText('jose@example.com (32) 99999-0000 123.456.789-00'), '[removido] [removido] [removido]');
   assert.notEqual(anonymizedMemberId(GYM_ID, MEMBER_ID), anonymizedMemberId(OTHER_GYM_ID, MEMBER_ID));
+});
+
+test('ignora textos que apenas informam ausência de restrições', () => {
+  assert.equal(normalizeRestriction('Sem restrições informadas'), null);
+  assert.equal(normalizeRestriction('Nenhuma restrição cadastrada.'), null);
+  assert.equal(normalizeRestriction('Dor no joelho direito'), 'Dor no joelho direito');
+
+  const data = snapshot({ restrictions: ['Sem restrições informadas'] });
+  const result = rules(data);
+  assert.equal(result.signals.some((item) => item.type === 'restriction'), false);
 });
 
 test('gera análise local com Structured Outputs e sem aplicar mudanças', async () => {
