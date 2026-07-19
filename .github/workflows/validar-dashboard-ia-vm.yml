@@ -1,0 +1,76 @@
+name: Validar dashboard da análise na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validar-dashboard-ia-vm.yml'
+
+jobs:
+  validar:
+    runs-on: [self-hosted, linux, academia]
+    timeout-minutes: 10
+    env:
+      PROJECT_DIR: /mnt/Projetos/Academia
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      WEB_DIR: /mnt/Projetos/Academia/apps/web
+      EXPECTED_SHA: a4e7e08cea5893f0c26fdac4e25a419a799db39f
+    steps:
+      - name: Confirmar deploy automático
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config --global --add safe.directory "$PROJECT_DIR"
+          deployed=""
+          remote=""
+          branch=""
+          for attempt in $(seq 1 48); do
+            git -C "$PROJECT_DIR" fetch --quiet origin main
+            deployed="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
+            remote="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
+            branch="$(git -C "$PROJECT_DIR" branch --show-current)"
+            if [ "$branch" = "main" ] && [ "$deployed" = "$EXPECTED_SHA" ] && [ "$remote" = "$EXPECTED_SHA" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "$branch" = "main"
+          test "$deployed" = "$EXPECTED_SHA"
+          test "$remote" = "$EXPECTED_SHA"
+          test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+          echo "deployed_sha=$deployed"
+
+      - name: Validar serviços e saúde
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(systemctl is-active academia-api.service)" = "active"
+          test "$(systemctl is-active academia-web.service)" = "active"
+          test "$(systemctl is-active ollama.service)" = "active"
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
+          echo "services=active"
+          echo "health=ok"
+
+      - name: Validar dashboard implantado
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -s "$WEB_DIR/training-review-premium.css"
+          grep -q 'A IA está analisando' "$WEB_DIR/training-review-ui.js"
+          grep -q 'Pelos dados coletados' "$WEB_DIR/training-review-ui.js"
+          grep -q 'Solicite revisão do professor' "$WEB_DIR/training-review-ui.js"
+          grep -q 'training-review-ring' "$WEB_DIR/training-review-ui.js"
+          grep -q 'training-review-data-grid' "$WEB_DIR/training-review-premium.css"
+          grep -q 'font-size: 7px' "$WEB_DIR/training-review-premium.css"
+          ! grep -q 'Sinais e evidências' "$WEB_DIR/training-review-ui.js"
+          node --check "$WEB_DIR/training-review-ui.js"
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          node --test test/trainingReviewUi.test.js test/trainingRulesEvidence.test.js
+          echo "dashboard_visual=ok"
+          echo "restriction_details=ok"
+          echo "assessment_details=ok"
