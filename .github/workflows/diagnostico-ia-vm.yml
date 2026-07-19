@@ -1,0 +1,209 @@
+name: Diagnosticar IA local na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/diagnostico-ia-vm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: diagnostico-ia-vm
+  cancel-in-progress: true
+
+jobs:
+  diagnostico:
+    name: Validar deploy, Ollama e fallback
+    runs-on:
+      - self-hosted
+      - linux
+    timeout-minutes: 15
+
+    steps:
+      - name: Validar ambiente implantado
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          trap 'echo "Diagnóstico interrompido na linha $LINENO."' ERR
+
+          PROJECT_DIR="/mnt/Projetos/Academia"
+          API_DIR="$PROJECT_DIR/apps/api"
+
+          echo "=== Commit implantado ==="
+          git config --global --add safe.directory "$PROJECT_DIR"
+          git -C "$PROJECT_DIR" fetch --quiet origin main
+          BRANCH="$(git -C "$PROJECT_DIR" branch --show-current)"
+          HEAD_SHA="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
+          MAIN_SHA="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
+          echo "branch=$BRANCH"
+          echo "head=$HEAD_SHA"
+          echo "origin_main=$MAIN_SHA"
+          test "$BRANCH" = "main"
+          test "$HEAD_SHA" = "$MAIN_SHA"
+          test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+
+          echo "=== Serviços ==="
+          for service in academia-api.service academia-web.service ollama.service; do
+            state="$(systemctl is-active "$service")"
+            echo "$service=$state"
+            test "$state" = "active"
+          done
+          test "$(systemctl is-enabled ollama.service)" = "enabled"
+
+          echo "=== Bind local do Ollama ==="
+          OLLAMA_LISTENERS="$(ss -lntH | awk '$4 ~ /:11434$/ {print $4}')"
+          printf '%s\n' "$OLLAMA_LISTENERS"
+          printf '%s\n' "$OLLAMA_LISTENERS" | grep -Eq '^127\.0\.0\.1:11434$'
+          ! printf '%s\n' "$OLLAMA_LISTENERS" | grep -Eq '(^|\[)(0\.0\.0\.0|::|\*).*:11434$'
+
+          echo "=== Saúde da aplicação ==="
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health
+          echo
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
+          echo "web=ok"
+
+          echo "=== Configuração não sensível ==="
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          for key in LOCAL_TRAINING_AI_ENABLED OLLAMA_BASE_URL OLLAMA_MODEL OLLAMA_TIMEOUT_MS OLLAMA_TEMPERATURE OLLAMA_KEEP_ALIVE OLLAMA_NUM_CTX OLLAMA_NUM_PARALLEL LOCAL_TRAINING_PROMPT_VERSION; do
+            value="${!key-}"
+            test -n "$value"
+            echo "$key=$value"
+          done
+          test "$LOCAL_TRAINING_AI_ENABLED" = "true"
+          test "$OLLAMA_BASE_URL" = "http://127.0.0.1:11434"
+          test "$OLLAMA_MODEL" = "gemma3:4b"
+
+          echo "=== Modelo local ==="
+          ollama list | awk 'NR == 1 || $1 == "gemma3:4b"'
+          ollama list | awk 'NR > 1 && $1 == "gemma3:4b" {found=1} END {exit found ? 0 : 1}'
+
+          echo "=== Migration e tabelas ==="
+          node <<'NODE'
+          const { query, pool } = require('./lib/db');
+          (async () => {
+            const columns = await query(`
+              SELECT column_name
+              FROM information_schema.columns
+              WHERE table_schema = 'public' AND table_name = 'workout_ai_reviews'
+            `);
+            const found = new Set(columns.rows.map((row) => row.column_name));
+            const required = [
+              'source', 'model', 'prompt_version', 'status', 'confidence',
+              'requires_human_review', 'signals', 'student_message', 'trainer_notes',
+              'input_snapshot_hash', 'approved_at', 'approved_by', 'rejected_at',
+              'rejected_by', 'rejection_reason', 'error_code', 'duration_ms', 'token_usage'
+            ];
+            for (const name of required) {
+              if (!found.has(name)) throw new Error(`coluna_ausente:${name}`);
+            }
+            const lockTable = await query(`SELECT to_regclass('public.training_ai_generation_locks') AS name`);
+            if (!lockTable.rows[0]?.name) throw new Error('tabela_lock_ausente');
+            console.log(JSON.stringify({ migration_058: 'ok', columns: required.length, lock_table: 'ok' }));
+          })().finally(() => pool.end());
+          NODE
+
+          echo "=== Saída segura do seed ==="
+          SEED_OUTPUT="$(npm run seed:demo 2>&1)"
+          printf '%s' "$SEED_OUTPUT" | grep -q 'seed_demo_ok'
+          if printf '%s' "$SEED_OUTPUT" | grep -Eiq 'Lobo1234|demo\.[^ ]+@|senha|password|secret_hash'; then
+            echo "seed_output=sensitive_pattern_detected"
+            exit 1
+          fi
+          echo "seed_output=sanitized"
+
+          echo "=== Testes automatizados da análise ==="
+          NODE_ENV=test AUTH_SECRET=test-secret-with-more-than-thirty-two-characters \
+            node --test test/trainingReview.test.js
+
+          echo "=== Teste integrado real e rollback por regras ==="
+          LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 node <<'NODE'
+          const { query, pool } = require('./lib/db');
+          const {
+            reviewTrainingPlan,
+            decideTrainingReview,
+            latestApprovedStudentMessage
+          } = require('./services/trainingReviewService');
+
+          (async () => {
+            const created = [];
+            let plan;
+            try {
+              const planResult = await query(`
+                SELECT wp.id, wp.gym_id, wp.member_id, wp.reviewed_at
+                FROM workout_plans wp
+                WHERE wp.name = 'Ficha Demo - Força' AND wp.status = 'active'
+                ORDER BY wp.created_at
+                LIMIT 1
+              `);
+              if (!planResult.rowCount) throw new Error('ficha_demo_ausente');
+              plan = planResult.rows[0];
+
+              const actorResult = await query(`
+                SELECT id, gym_id, role, access_profile
+                FROM users
+                WHERE gym_id = $1 AND is_active = true AND role IN ('owner', 'admin')
+                ORDER BY created_at
+                LIMIT 1
+              `, [plan.gym_id]);
+              if (!actorResult.rowCount) throw new Error('gestor_ausente');
+              const actorRow = actorResult.rows[0];
+              const actor = {
+                sub: actorRow.id,
+                gym_id: actorRow.gym_id,
+                role: actorRow.role,
+                access_profile: actorRow.access_profile,
+                access_permissions: { training: true }
+              };
+
+              const generative = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
+              created.push(generative.id);
+              if (generative.source !== 'local_generative') {
+                throw new Error(`geracao_local_falhou:${generative.error_code || generative.source}`);
+              }
+              const approved = await decideTrainingReview(query, actor, generative.id, 'approved');
+              if (!approved.approved_at) throw new Error('aprovacao_falhou');
+              const studentView = await latestApprovedStudentMessage(query, {
+                role: 'student', gym_id: plan.gym_id, member_id: plan.member_id
+              });
+              if (studentView?.id !== generative.id) throw new Error('mensagem_aprovada_nao_visivel');
+              const rejected = await decideTrainingReview(query, actor, generative.id, 'rejected', 'Validação automatizada temporária');
+              if (!rejected.rejected_at || rejected.approved_at) throw new Error('rejeicao_falhou');
+
+              const previousEnabled = process.env.LOCAL_TRAINING_AI_ENABLED;
+              process.env.LOCAL_TRAINING_AI_ENABLED = 'false';
+              const fallback = await reviewTrainingPlan({ query, user: actor, planId: plan.id });
+              process.env.LOCAL_TRAINING_AI_ENABLED = previousEnabled;
+              created.push(fallback.id);
+              if (fallback.source !== 'rules_fallback') throw new Error('fallback_nao_acionado');
+
+              console.log(JSON.stringify({
+                generative_source: generative.source,
+                generative_model: generative.model,
+                generative_duration_ms: generative.duration_ms,
+                approval: 'ok',
+                rejection: 'ok',
+                student_visibility: 'ok',
+                fallback_source: fallback.source,
+                fallback_error_code: fallback.error_code
+              }));
+            } finally {
+              if (created.length) {
+                await query('DELETE FROM workout_ai_reviews WHERE id = ANY($1::uuid[])', [created]);
+              }
+              if (plan) {
+                await query('UPDATE workout_plans SET reviewed_at = $2 WHERE id = $1', [plan.id, plan.reviewed_at]);
+              }
+              await query("DELETE FROM training_ai_generation_locks WHERE lock_key = 'global' AND expires_at < now()");
+              await pool.end();
+            }
+          })();
+          NODE
+
+          echo "=== Recursos após análise ==="
+          free -h
+          ollama ps || true
+          echo "diagnostico_ia_vm=ok"
