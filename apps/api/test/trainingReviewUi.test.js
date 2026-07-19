@@ -9,7 +9,10 @@ const {
   humanizeText,
   safeSummary,
   comparisonText,
-  shouldAttemptRecovery
+  shouldAttemptRecovery,
+  cleanEvidence,
+  firstPercentage,
+  firstScaleTen
 } = require('../../web/training-review-ui');
 
 test('normaliza confiança atual e registros legados', () => {
@@ -20,10 +23,10 @@ test('normaliza confiança atual e registros legados', () => {
   assert.equal(confidenceBand(0.57), 'moderada');
 });
 
-test('traduz status técnicos para linguagem clara', () => {
-  assert.equal(statusLabel('professional_review'), 'Revisão do professor necessária');
-  assert.equal(statusLabel('maintain'), 'Manter a ficha atual');
-  assert.equal(statusLabel('replace_partially'), 'Substituir parte da ficha');
+test('traduz status técnicos para ações claras', () => {
+  assert.equal(statusLabel('professional_review'), 'Solicite revisão do professor.');
+  assert.equal(statusLabel('maintain'), 'Mantenha a ficha atual.');
+  assert.equal(statusLabel('replace_partially'), 'Revise parte da ficha.');
 });
 
 test('remove termos técnicos de textos antigos', () => {
@@ -36,33 +39,33 @@ test('comparação não exibe enumerações internas', () => {
     { status: 'professional_review', signals: [{}, {}, {}] },
     { status: 'maintain', signals: [] }
   ]);
-  assert.match(text, /revisão do professor necessária/i);
-  assert.match(text, /manter a ficha atual/i);
-  assert.match(text, /3 pontos de atenção/i);
+  assert.match(text, /solicite revisão do professor/i);
+  assert.match(text, /mantenha a ficha atual/i);
+  assert.match(text, /3 vs\. 0/i);
   assert.doesNotMatch(text, /professional_review|maintain/);
 });
 
-test('substitui resumo cortado por uma mensagem completa', () => {
+test('não mostra resumo cortado no dashboard', () => {
   assert.equal(
     safeSummary({ summary: 'O plano inclui 3 rep', status: 'professional_review', requires_human_review: true }),
-    'A ficha precisa de revisão do professor antes de qualquer progressão.'
+    ''
   );
 });
 
-test('preserva resumo completo da análise', () => {
+test('preserva resumo completo para compatibilidade', () => {
   const summary = 'A ficha está organizada, mas precisa de acompanhamento do professor.';
   assert.equal(safeSummary({ summary, status: 'adjust' }), summary);
 });
 
 test('explica ausência de dados sem mostrar zero como resultado', () => {
   assert.equal(confidenceText(0), 'Dados insuficientes para medir a confiabilidade');
-  assert.equal(confidenceText(0.73), 'Confiabilidade dos dados: 73% (alta)');
+  assert.equal(confidenceText(0.73), '73% de confiabilidade');
 });
 
-test('evita recomendação contraditória quando revisão humana é necessária', () => {
+test('prioriza solicitação de revisão quando necessária', () => {
   assert.equal(
     recommendationLabel({ status: 'maintain', requires_human_review: true }),
-    'Manter a ficha até a revisão do professor'
+    'Solicite revisão do professor.'
   );
 });
 
@@ -71,4 +74,13 @@ test('recupera falhas de transporte, mas respeita bloqueios de negócio', () => 
   assert.equal(shouldAttemptRecovery(new Error('analise_em_andamento')), true);
   assert.equal(shouldAttemptRecovery(new Error('aguarde_nova_analise')), false);
   assert.equal(shouldAttemptRecovery(new Error('limite_horario_atingido')), false);
+});
+
+test('remove evidência genérica e interpreta indicadores visuais', () => {
+  assert.deepEqual(
+    cleanEvidence(['Restrição cadastrada 1', 'Restrição informada: dor no joelho']),
+    ['Restrição informada: dor no joelho']
+  );
+  assert.equal(firstPercentage(['Adesão calculada: 57%']), 57);
+  assert.equal(firstScaleTen(['Esforço médio: 8.5/10']), 8.5);
 });
