@@ -3,10 +3,13 @@ const assert = require('node:assert/strict');
 const {
   confidencePercent,
   confidenceBand,
+  confidenceText,
   statusLabel,
+  recommendationLabel,
   humanizeText,
   safeSummary,
-  comparisonText
+  comparisonText,
+  shouldAttemptRecovery
 } = require('../../web/training-review-ui');
 
 test('normaliza confiança atual e registros legados', () => {
@@ -49,4 +52,23 @@ test('substitui resumo cortado por uma mensagem completa', () => {
 test('preserva resumo completo da análise', () => {
   const summary = 'A ficha está organizada, mas precisa de acompanhamento do professor.';
   assert.equal(safeSummary({ summary, status: 'adjust' }), summary);
+});
+
+test('explica ausência de dados sem mostrar zero como resultado', () => {
+  assert.equal(confidenceText(0), 'Dados insuficientes para medir a confiabilidade');
+  assert.equal(confidenceText(0.73), 'Confiabilidade dos dados: 73% (alta)');
+});
+
+test('evita recomendação contraditória quando revisão humana é necessária', () => {
+  assert.equal(
+    recommendationLabel({ status: 'maintain', requires_human_review: true }),
+    'Manter a ficha até a revisão do professor'
+  );
+});
+
+test('recupera falhas de transporte, mas respeita bloqueios de negócio', () => {
+  assert.equal(shouldAttemptRecovery(new Error('fetch failed')), true);
+  assert.equal(shouldAttemptRecovery(new Error('analise_em_andamento')), true);
+  assert.equal(shouldAttemptRecovery(new Error('aguarde_nova_analise')), false);
+  assert.equal(shouldAttemptRecovery(new Error('limite_horario_atingido')), false);
 });

@@ -1241,10 +1241,7 @@ document.querySelectorAll('input[name="plan-day"]').forEach((input) => {
 });
 t('create-day-button').addEventListener('click', createDay);
 t('add-workout-exercise-button').addEventListener('click', addWorkoutExercise);
-t('review-plan-button').addEventListener('click', reviewPlan);
-t('review-history-button').addEventListener('click', loadReviewHistory);
-t('review-approve-button').addEventListener('click', () => decideCurrentReview('approve'));
-t('review-reject-button').addEventListener('click', () => decideCurrentReview('reject'));
+// A interface de análise é controlada por training-review-ui.js.
 
 function syncTrainingModalState() {
   document.body.classList.toggle('modal-open', Boolean(document.querySelector('.modal:not(.hidden)')));

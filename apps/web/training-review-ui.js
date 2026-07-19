@@ -59,8 +59,21 @@
     return 'alta';
   }
 
+  function confidenceText(value) {
+    const percentage = confidencePercent(value);
+    if (percentage <= 0) return 'Dados insuficientes para medir a confiabilidade';
+    return `Confiabilidade dos dados: ${percentage}% (${confidenceBand(value)})`;
+  }
+
   function statusLabel(value) {
     return STATUS_LABELS[String(value || '')] || 'Acompanhamento do professor recomendado';
+  }
+
+  function recommendationLabel(review) {
+    if (review?.requires_human_review && review?.status === 'maintain') {
+      return 'Manter a ficha até a revisão do professor';
+    }
+    return statusLabel(review?.status);
   }
 
   function sourceLabel(value) {
@@ -102,9 +115,21 @@
     const currentSignals = Array.isArray(rows[0]?.signals) ? rows[0].signals.length : 0;
     const previousSignals = Array.isArray(rows[1]?.signals) ? rows[1].signals.length : 0;
     return [
-      `Comparação com a análise anterior: agora a recomendação é “${statusLabel(rows[0]?.status).toLowerCase()}”; antes era “${statusLabel(rows[1]?.status).toLowerCase()}”.`,
+      `Comparação com a análise anterior: agora a recomendação é “${recommendationLabel(rows[0]).toLowerCase()}”; antes era “${recommendationLabel(rows[1]).toLowerCase()}”.`,
       `A análise atual encontrou ${currentSignals} ${plural(currentSignals, 'ponto de atenção', 'pontos de atenção')}; a anterior encontrou ${previousSignals}.`
     ].join(' ');
+  }
+
+  const NON_RECOVERABLE_ERRORS = new Set([
+    'aguarde_nova_analise',
+    'limite_horario_atingido',
+    'sem_permissao',
+    'ficha_nao_encontrada',
+    'plan_id_obrigatorio'
+  ]);
+
+  function shouldAttemptRecovery(error) {
+    return !NON_RECOVERABLE_ERRORS.has(String(error?.message || error || ''));
   }
 
   function install(windowObject) {
@@ -197,9 +222,8 @@
     function renderReview(review) {
       currentReview = review;
       ensureExplanation();
-      const percentage = confidencePercent(review?.confidence);
       setText('review-source', sourceLabel(review?.source));
-      setText('review-confidence', `Confiabilidade dos dados: ${percentage}% (${confidenceBand(review?.confidence)})`);
+      setText('review-confidence', confidenceText(review?.confidence));
       const confidence = byId('review-confidence');
       if (confidence) confidence.title = 'Quanto maior o percentual, maior a quantidade e consistência dos dados disponíveis para a análise.';
       const human = byId('review-human');
@@ -207,7 +231,7 @@
         human.textContent = 'Revisão do professor necessária';
         human.classList.toggle('hidden', !review?.requires_human_review);
       }
-      setText('review-status-readable', `Recomendação: ${statusLabel(review?.status)}.`);
+      setText('review-status-readable', `Recomendação: ${recommendationLabel(review)}.`);
       setText('review-summary', safeSummary(review));
       setText('review-student-message', review?.student_message || '');
       setText('review-trainer-notes', review?.trainer_notes || '');
@@ -253,13 +277,12 @@
     }
 
     function historyCard(item) {
-      const percentage = confidencePercent(item?.confidence);
       const card = reviewItem(
         `${new Date(item.created_at).toLocaleString('pt-BR')} · ${sourceLabel(item?.source)}`,
         safeSummary(item),
         [
-          `Recomendação: ${statusLabel(item?.status)}`,
-          `Confiabilidade dos dados: ${percentage}% (${confidenceBand(item?.confidence)})`,
+          `Recomendação: ${recommendationLabel(item)}`,
+          confidenceText(item?.confidence),
           item?.requires_human_review ? 'Revisão do professor: necessária' : 'Revisão do professor: acompanhamento normal'
         ]
       );
@@ -285,6 +308,26 @@
         byId('review-history')?.classList.remove('hidden');
       }
       return rows;
+    }
+
+    function wait(milliseconds) {
+      return new Promise((resolve) => windowObject.setTimeout(resolve, milliseconds));
+    }
+
+    async function recoverRecentReview(requestStartedAt) {
+      const deadline = Date.now() + 45000;
+      do {
+        try {
+          const rows = await fetchHistory({ show: false });
+          const recent = rows.find((item) => new Date(item.created_at).getTime() >= requestStartedAt - 5000);
+          if (recent) return recent;
+        } catch (_) {
+          // A consulta será repetida até o limite abaixo.
+        }
+        if (Date.now() >= deadline) break;
+        await wait(2000);
+      } while (Date.now() < deadline);
+      return null;
     }
 
     function errorMessage(error) {
@@ -349,17 +392,14 @@
         const status = byId('training-status');
         if (status) status.textContent = review.source === 'local_generative' ? 'Análise concluída pela IA local.' : 'Análise concluída pelas regras automáticas.';
       } catch (error) {
-        let recovered = null;
-        try {
-          const rows = await fetchHistory({ show: false });
-          recovered = rows.find((item) => new Date(item.created_at).getTime() >= requestStartedAt - 5000) || null;
-        } catch (_) {
-          recovered = null;
-        }
+        const recovered = shouldAttemptRecovery(error)
+          ? await recoverRecentReview(requestStartedAt)
+          : null;
         if (recovered) {
+          errorBox?.classList.add('hidden');
           renderReview(recovered);
           const status = byId('training-status');
-          if (status) status.textContent = 'A análise foi concluída e recuperada do histórico.';
+          if (status) status.textContent = 'Análise concluída pela IA local.';
         } else if (errorBox) {
           errorBox.textContent = errorMessage(error);
           errorBox.classList.remove('hidden');
@@ -407,10 +447,13 @@
     install,
     confidencePercent,
     confidenceBand,
+    confidenceText,
     statusLabel,
+    recommendationLabel,
     sourceLabel,
     humanizeText,
     safeSummary,
-    comparisonText
+    comparisonText,
+    shouldAttemptRecovery
   };
 }));
