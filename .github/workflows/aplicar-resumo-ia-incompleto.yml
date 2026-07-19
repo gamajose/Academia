@@ -1,9 +1,9 @@
 name: Aplicar proteção do resumo da IA
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/resumo-ia-incompleto
+      - main
     paths:
       - '.github/workflows/aplicar-resumo-ia-incompleto.yml'
 
