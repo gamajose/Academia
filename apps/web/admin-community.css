@@ -1,0 +1,53 @@
+.admin-community-page { overflow-x: hidden; }
+.admin-community-layout,
+.admin-community-page .social-main { width: min(760px, 100%); min-width: 0; max-width: 100%; margin: 0 auto; }
+.admin-community-page .social-composer-entry { margin-bottom: 4px; }
+.admin-community-page .social-feed-heading { margin: 0 0 2px; }
+.admin-community-page .social-author { cursor: default; }
+.admin-community-page .social-author:hover { color: #101923; }
+.admin-community-page .social-post-actions span { padding: 8px 4px; color: #5e7081; font-size: 13px; }
+.admin-community-delete { margin-left: auto; color: #b4232d !important; }
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-entry,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-modal-card,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-gallery-modal-card { border-color: #29445d; background: #122235; color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-caption,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-author,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-feed-heading h2,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-modal-header h3,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-identity strong { color: #e8f0f8; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-trigger { border-color: #34536e; background: #0e1b2a; color: #a9bed1; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-trigger span { color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-entry-actions,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-actions { border-color: #29445d; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-textarea { background: transparent; color: #e8f0f8; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-add,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-upload-preview,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-link-field input { border-color: #34536e; background: #0e1b2a; color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-composer-add strong,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-link-field label { color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-actions span { color: #a9bed1; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-menu-trigger { color: #a9bed1; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-menu-trigger:hover,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-menu-trigger:focus-visible { background: #183c5c; color: #8fc9ff; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-menu-dropdown { border-color: #34536e; background: #122235; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-menu-dropdown button { color: #ff9ca7; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-post-media { background: #0b1724; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-body { background: #102033; color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-author { color: #e8f0f8; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-replies { border-color: #29445d; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-actions button { color: #8da5b9; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-actions button:hover,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-actions button.is-liked,
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-mention { color: #8fc9ff; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-input { border-color: #34536e; background: #102033; color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-comment-photo-button { border-color: transparent; background: transparent; color: #55d58d; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-replying { background: #183c5c; color: #dceaf6; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-gallery-card { border-color: #29445d; background: #102033; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-gallery-card span { color: #a9bed1; }
+html[data-admin-theme="dark"][data-admin-shell="true"] .admin-community-page .social-gallery-filters input { border-color: #34536e; background: #102033; color: #dceaf6; }
+
+@media (max-width: 760px) {
+  html[data-admin-shell="true"] .admin-community-page .app-shell { padding-top: 20px; }
+}

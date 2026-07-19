@@ -1,6 +1,15 @@
 const { recordAudit } = require('../lib/audit');
-const { buildTrainingReview } = require('./trainingRules');
 const { resolveTrainingLevel } = require('./trainingRoutes');
+const {
+  reviewTrainingPlan,
+  listTrainingReviews,
+  decideTrainingReview
+} = require('../services/trainingReviewService');
+
+function sendServiceError(send, res, error) {
+  if (error?.statusCode) return send(res, error.statusCode, { error: error.code || error.message });
+  throw error;
+}
 
 async function planExercises(query, gymId, planId) {
   const result = await query(
@@ -169,14 +178,46 @@ async function handleTrainingPlansRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/training/plans/review') {
     const input = await body(req);
-    if (!input.plan_id) return send(res, 400, { error: 'plan_id_obrigatorio' });
-    const plan = await query('SELECT id, member_id, level, current_date - starts_at AS age_days FROM workout_plans WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.plan_id, user.gym_id]);
-    if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
-    const exercises = await planExercises(query, user.gym_id, input.plan_id);
-    const review = buildTrainingReview({ planAgeDays: Number(plan.rows[0].age_days || 0), level: plan.rows[0].level, exercises });
-    const saved = await query('INSERT INTO workout_ai_reviews (gym_id, member_id, plan_id, plan_age_days, recommendation, suggestions) VALUES ($1, $2, $3, $4, $5, $6::jsonb) RETURNING id, recommendation, suggestions, created_at', [user.gym_id, plan.rows[0].member_id, input.plan_id, Number(plan.rows[0].age_days || 0), review.recommendation, JSON.stringify(review.suggestions)]);
-    await query('UPDATE workout_plans SET reviewed_at = now() WHERE id = $1 AND gym_id = $2', [input.plan_id, user.gym_id]);
-    return send(res, 201, saved.rows[0]);
+    try {
+      const review = await reviewTrainingPlan({ query, user, planId: input.plan_id });
+      await recordAudit(user, 'create', 'workout_ai_review', review.id, { plan_id: review.plan_id, source: review.source });
+      return send(res, 201, review);
+    } catch (error) {
+      return sendServiceError(send, res, error);
+    }
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/training/plans/reviews') {
+    const planId = url.searchParams.get('plan_id');
+    if (!planId) return send(res, 400, { error: 'plan_id_obrigatorio' });
+    try {
+      const data = await listTrainingReviews(query, user, planId, url.searchParams.get('limit'));
+      return send(res, 200, { data });
+    } catch (error) {
+      return sendServiceError(send, res, error);
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/plans/review/approve') {
+    const input = await body(req);
+    try {
+      const decision = await decideTrainingReview(query, user, input.review_id, 'approved');
+      await recordAudit(user, 'approve', 'workout_ai_review', input.review_id, {});
+      return send(res, 200, decision);
+    } catch (error) {
+      return sendServiceError(send, res, error);
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/plans/review/reject') {
+    const input = await body(req);
+    try {
+      const decision = await decideTrainingReview(query, user, input.review_id, 'rejected', input.reason);
+      await recordAudit(user, 'reject', 'workout_ai_review', input.review_id, { reason: String(input.reason || '').slice(0, 120) });
+      return send(res, 200, decision);
+    } catch (error) {
+      return sendServiceError(send, res, error);
+    }
   }
 
   return false;

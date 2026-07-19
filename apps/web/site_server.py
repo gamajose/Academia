@@ -173,6 +173,21 @@ class SiteHandler(SimpleHTTPRequestHandler):
             return self.proxy_api()
         self.send_error(405, 'Método não permitido')
 
+    def do_PUT(self):
+        if self.path.split('?', 1)[0].startswith('/api/'):
+            return self.proxy_api()
+        self.send_error(405, 'Método não permitido')
+
+    def do_PATCH(self):
+        if self.path.split('?', 1)[0].startswith('/api/'):
+            return self.proxy_api()
+        self.send_error(405, 'Método não permitido')
+
+    def do_DELETE(self):
+        if self.path.split('?', 1)[0].startswith('/api/'):
+            return self.proxy_api()
+        self.send_error(405, 'Método não permitido')
+
     def do_OPTIONS(self):
         if self.path.split('?', 1)[0].startswith('/api/'):
             return self.proxy_api()

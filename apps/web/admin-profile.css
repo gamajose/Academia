@@ -53,18 +53,20 @@ html[data-admin-theme="dark"] .profile-dropdown button:hover { background: #1830
 .app-shell .profile-page-grid { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .9fr); align-items: start; max-width: 1120px; margin-left: auto; margin-right: auto; }
 .app-shell .profile-side-grid { display: contents; }
 .app-shell .profile-side-grid #gym-profile-panel { min-width: 0; }
-.preferences-modal-card { width: min(560px, 94vw); }
-.preferences-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+html[data-admin-shell="true"] .preferences-modal-card { width: min(620px, calc(100vw - 32px)); max-width: 620px; min-width: 0; overflow-x: hidden; }
+.preferences-modal-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.preferences-modal-grid > *, .accent-options > * { min-width: 0; }
 .accent-picker { display: grid; gap: 12px; margin: 20px 0 0; padding: 0; border: 0; }
-.accent-picker legend { padding: 0; font-size: 13px; font-weight: 800; }
+.accent-picker legend { padding: 0; margin-bottom: 12px; font-size: 13px; font-weight: 800; }
 .accent-options { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
 .accent-option { display: grid; justify-items: center; gap: 6px; padding: 9px 4px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: 11px; cursor: pointer; }
 .accent-option:has(input:checked) { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .accent-option input { position: absolute; opacity: 0; pointer-events: none; }
 .accent-swatch { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--line); }
 .accent-blue { background: #1478d4; } .accent-cyan { background: #0891b2; } .accent-violet { background: #7c3aed; } .accent-green { background: #0f9f6e; } .accent-orange { background: #ea580c; } .accent-rose { background: #db2777; }
-.preferences-modal-actions { margin-top: 22px; }
+.preferences-modal-actions { margin-top: 34px; gap: 14px; }
 html[data-admin-theme="dark"] .accent-option { border-color: #34536e; color: #a9bed1; }
 html[data-admin-theme="dark"] .preferences-modal-card { background: #122235; border-color: #29445d; }
+html[data-admin-shell="true"][data-admin-theme="dark"] .preferences-modal-card .modal-close { border-color: #34536e !important; background: #183047 !important; color: #e8f0f8 !important; }
 @media (max-width: 900px) { .app-shell .profile-page-grid { grid-template-columns: 1fr; } .app-shell .profile-side-grid { display: grid; } }
 @media (max-width: 760px) { .preferences-modal-grid { grid-template-columns: 1fr; } .accent-options { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

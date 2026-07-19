@@ -1,6 +1,7 @@
 const { recordAudit } = require('../lib/audit');
-const { normalizeLevel, buildTrainingReview } = require('./trainingRules');
+const { normalizeLevel } = require('./trainingRules');
 const { hasModulePermission } = require('../lib/accessControl');
+const { reviewTrainingPlan, decideTrainingReview } = require('../services/trainingReviewService');
 
 function canManageTrainingLevels(user) {
   return hasModulePermission(user, 'training');
@@ -140,21 +141,31 @@ async function handleTrainingRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'POST' && url.pathname === '/api/training/advanced/review') {
     const input = await body(req);
-    if (!input.plan_id) return send(res, 400, { error: 'plan_id_obrigatorio' });
-    const plan = await query('SELECT id, member_id, level, current_date - starts_at AS age_days FROM workout_plans WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.plan_id, user.gym_id]);
-    if (!plan.rowCount) return send(res, 404, { error: 'ficha_nao_encontrada' });
-    const exercises = await query(
-      `SELECT we.id, we.sets, we.reps, we.rest_seconds, wd.weekday, e.name AS exercise_name, e.muscle_group
-       FROM workout_exercises we INNER JOIN workout_days wd ON wd.id = we.workout_day_id INNER JOIN exercise_library e ON e.id = we.exercise_id
-       WHERE we.gym_id = $1 AND wd.plan_id = $2 ORDER BY wd.weekday, we.order_index`,
-      [user.gym_id, input.plan_id]
-    );
-    const logs = await query('SELECT perceived_effort, completed_at FROM workout_day_logs WHERE gym_id = $1 AND member_id = $2 AND plan_id = $3 ORDER BY completed_at DESC LIMIT 30', [user.gym_id, plan.rows[0].member_id, input.plan_id]);
-    const assessments = await query('SELECT weight_kg, body_fat_percent, waist_cm, assessment_date FROM member_assessments WHERE gym_id = $1 AND member_id = $2 ORDER BY assessment_date DESC, created_at DESC LIMIT 2', [user.gym_id, plan.rows[0].member_id]);
-    const review = buildTrainingReview({ planAgeDays: Number(plan.rows[0].age_days || 0), level: plan.rows[0].level, exercises: exercises.rows, logs: logs.rows, assessments: assessments.rows });
-    const saved = await query('INSERT INTO workout_ai_reviews (gym_id, member_id, plan_id, plan_age_days, recommendation, suggestions) VALUES ($1, $2, $3, $4, $5, $6::jsonb) RETURNING id, recommendation, suggestions, created_at', [user.gym_id, plan.rows[0].member_id, input.plan_id, Number(plan.rows[0].age_days || 0), review.recommendation, JSON.stringify(review.suggestions)]);
-    await query('UPDATE workout_plans SET reviewed_at = now() WHERE id = $1 AND gym_id = $2', [input.plan_id, user.gym_id]);
-    return send(res, 201, { ...saved.rows[0], signals: review.signals || {} });
+    try {
+      const review = await reviewTrainingPlan({ query, user, planId: input.plan_id });
+      return send(res, 201, review);
+    } catch (error) {
+      if (error?.statusCode) return send(res, error.statusCode, { error: error.code || error.message });
+      throw error;
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/training/advanced/review/feedback') {
+    const input = await body(req);
+    if (!input.review_id || !['accepted', 'rejected'].includes(input.decision)) return send(res, 400, { error: 'dados_invalidos' });
+    if (String(input.recommendation_key || 'plan_review') === 'plan_review') {
+      try {
+        const decision = await decideTrainingReview(query, user, input.review_id, input.decision === 'accepted' ? 'approved' : 'rejected', input.notes);
+        return send(res, 200, decision);
+      } catch (error) {
+        if (error?.statusCode) return send(res, error.statusCode, { error: error.code || error.message });
+        throw error;
+      }
+    }
+    const review = await query('SELECT id, member_id, plan_id FROM workout_ai_reviews WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.review_id, user.gym_id]);
+    if (!review.rowCount) return send(res, 404, { error: 'analise_nao_encontrada' });
+    const saved = await query('INSERT INTO ai_recommendation_feedback (gym_id, review_id, member_id, plan_id, recommendation_key, actor_user_id, decision, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [user.gym_id, input.review_id, review.rows[0].member_id, review.rows[0].plan_id, String(input.recommendation_key || 'review'), user.sub, input.decision, String(input.notes || '').slice(0, 1000) || null]);
+    return send(res, 201, saved.rows[0]);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/training/goals/status') {

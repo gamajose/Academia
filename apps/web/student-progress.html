@@ -1,14 +1,15 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Minha evolução - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./premium-ui.css" />
   <link rel="stylesheet" href="./blue-theme.css" />
-  <link rel="stylesheet" href="./student-shell.css" />
-  <link rel="stylesheet" href="./student-progress.css" />
+  <link rel="stylesheet" href="./student-shell.css?v=20260719-1" />
+  <link rel="stylesheet" href="./student-progress.css?v=20260719-1" />
 </head>
 <body class="student-page" data-student-page="progress">
   <nav class="top-nav student-top-nav">
@@ -20,9 +21,6 @@
   <main class="app-shell">
     <section class="hero"><p class="eyebrow">Acompanhamento</p><h1>Minha evolução</h1><p>Registre suas medições e acompanhe cada nova etapa da sua jornada.</p></section>
 
-    <section class="panel progress-checkin-panel">
-      <div class="toolbar"><div><h3>Evolução</h3><p class="section-help">Registre uma nova medição quando estiver pronto.</p></div><span class="progress-reminder" id="student-progress-reminder" hidden></span><button class="secondary" id="open-student-assessment" type="button">Nova medição</button></div>
-    </section>
 
     <div class="modal hidden" id="student-assessment-modal" role="dialog" aria-modal="true" aria-labelledby="student-assessment-modal-title">
       <article class="modal-card student-assessment-modal-card">
@@ -48,13 +46,28 @@
       </article>
     </div>
 
-    <section class="panel"><div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div></div><div class="student-stat-grid progress-summary-grid" id="student-progress-summary"></div></section>
+    <div class="modal hidden student-goal-celebration" id="student-goal-celebration" role="dialog" aria-modal="true" aria-labelledby="student-goal-celebration-title">
+      <div class="student-confetti" id="student-confetti" aria-hidden="true"></div>
+      <article class="modal-card student-goal-celebration-card">
+        <div class="student-goal-celebration-icon" aria-hidden="true">🏆</div>
+        <p class="eyebrow">Meta alcançada</p>
+        <h2 id="student-goal-celebration-title">Parabéns!</h2>
+        <p id="student-goal-celebration-message">Você atingiu sua meta.</p>
+        <p>Deseja preencher uma nova meta para continuar evoluindo?</p>
+        <div class="form-actions">
+          <button class="secondary" id="student-goal-celebration-later" type="button">Agora não</button>
+          <button id="student-goal-celebration-new" type="button">Criar nova meta</button>
+        </div>
+      </article>
+    </div>
+
+    <section class="panel student-progress-baseline-panel"><div class="toolbar"><div><h3>Você começou com</h3><p class="section-help" id="student-progress-baseline-date">Comparação desde o início.</p></div><div class="toolbar-actions"><span class="progress-reminder" id="student-progress-reminder" hidden></span><button id="open-student-assessment" type="button" aria-label="Nova medição" title="Nova medição"><span aria-hidden="true">+</span></button></div></div><div class="progress-baseline-grid" id="student-progress-baseline"></div></section>
+    <section class="panel student-progress-summary-panel"><div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div></div><div class="student-stat-grid progress-summary-grid" id="student-progress-summary"></div></section>
     <section class="panel progress-analysis-panel" id="student-progress-analysis"></section>
-    <section class="panel"><h3>Histórico de avaliações</h3><p class="section-help">Cada lançamento é uma nova medição. Nada é apagado do seu histórico.</p><ul id="student-progress-list"></ul></section>
-    <section class="panel"><h3>Histórico de fotos</h3><div class="student-photo-grid" id="student-photo-grid"></div></section>
+    <section class="panel"><h3>Histórico de avaliações</h3><ul id="student-progress-list"></ul><nav class="student-history-pagination" id="student-history-pagination" aria-label="Paginação do histórico"></nav></section>
     <p class="status-line" id="student-progress-status" aria-live="polite"></p>
   </main>
-  <script src="./student-shell.js"></script>
-  <script src="./student-progress.js"></script>
+  <script src="./student-shell.js?v=20260719-2"></script>
+  <script src="./student-progress.js?v=20260716-10"></script>
 </body>
 </html>

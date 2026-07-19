@@ -4,6 +4,8 @@
   const initials = (name) => String(name || 'A').trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'A';
   let selectedDate = toDateKey(new Date());
   let currentTraining = null;
+  let currentProfile = null;
+  let editorPhotoPreview = '';
 
   function toDateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -31,6 +33,48 @@
     element.classList.toggle('error', error);
   }
 
+  function hasMeasurement(value) {
+    return value !== undefined && value !== null && value !== '';
+  }
+
+  function measurement(value, suffix = '') {
+    if (!hasMeasurement(value) || !Number.isFinite(Number(value))) return '-';
+    return `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(Number(value))}${suffix}`;
+  }
+
+  function profileDate(value) {
+    if (!value) return '';
+    const date = new Date(`${String(value).slice(0, 10)}T12:00:00`);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('pt-BR');
+  }
+
+  function renderStartSummary(progress, isOwnProfile) {
+    const section = p('social-profile-start-summary');
+    const baseline = progress?.baseline || progress?.assessments?.at(-1) || null;
+    if (!isOwnProfile || !baseline) {
+      section.hidden = true;
+      return;
+    }
+    const assessments = progress.assessments || [];
+    const current = assessments.find((item) => hasMeasurement(item.weight_kg)) || baseline;
+    const startWeight = Number(baseline.weight_kg);
+    const currentWeight = Number(current.weight_kg);
+    const difference = hasMeasurement(baseline.weight_kg) && hasMeasurement(current.weight_kg) && Number.isFinite(startWeight) && Number.isFinite(currentWeight)
+      ? Number((currentWeight - startWeight).toFixed(2))
+      : null;
+    const differenceText = difference === null ? '-' : difference === 0 ? 'Mantido' : `${difference > 0 ? '+' : ''}${measurement(difference, ' kg')}`;
+    const cards = [
+      ['Peso inicial', measurement(baseline.weight_kg, ' kg')],
+      ['Peso atual', measurement(current.weight_kg, ' kg')],
+      ['Diferença total', differenceText],
+      ['Altura inicial', measurement(baseline.height_cm, ' cm')]
+    ];
+    p('social-profile-start-grid').innerHTML = cards.map(([label, value]) => `<div class="social-profile-start-card"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('');
+    const date = profileDate(baseline.assessment_date);
+    p('social-profile-start-date').textContent = date ? `Início registrado em ${date}.` : '';
+    section.hidden = false;
+  }
+
   function fillAvatar(profile) {
     const host = p('social-profile-page-avatar');
     host.replaceChildren();
@@ -42,6 +86,107 @@
       host.appendChild(image);
     } else {
       host.textContent = initials(profile.name);
+    }
+  }
+
+  function fillEditorAvatar(profile, previewUrl = '') {
+    const host = p('social-profile-editor-avatar');
+    host.replaceChildren();
+    const photoUrl = previewUrl || profile?.profile_photo_url;
+    if (photoUrl) {
+      const image = document.createElement('img');
+      image.src = photoUrl;
+      image.alt = '';
+      host.appendChild(image);
+    } else {
+      host.textContent = initials(profile?.name);
+    }
+  }
+
+  function renderProfile(profile) {
+    p('social-profile-page-name').textContent = profile.name || 'Aluno';
+    p('social-profile-page-visibility').textContent = profile.is_private ? 'Perfil privado' : 'Perfil público';
+    p('social-profile-page-bio').textContent = profile.bio || '';
+    p('social-profile-page-followers').textContent = profile.followers_count || 0;
+    p('social-profile-page-following').textContent = profile.following_count || 0;
+    fillAvatar(profile);
+
+    const link = p('social-profile-page-link');
+    link.hidden = !profile.website_url;
+    link.href = profile.website_url || '#';
+    link.textContent = profile.website_url || '';
+  }
+
+  async function uploadProfilePhoto(file) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Escolha JPG, PNG ou WebP.');
+    if (file.size > 5 * 1024 * 1024) throw new Error('A foto não pode ultrapassar 5 MB.');
+    const form = new FormData();
+    form.append('file', file, file.name);
+    const response = await fetch(`${StudentPortal.apiBase}/api/editor/images`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${StudentPortal.getToken()}` },
+      body: form
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a foto.');
+    return data.location || '';
+  }
+
+  function openProfileEditor() {
+    if (!currentProfile) return;
+    p('social-profile-editor-name').value = currentProfile.name || '';
+    p('social-profile-editor-bio').value = currentProfile.bio || '';
+    p('social-profile-editor-link').value = currentProfile.website_url || '';
+    p('social-profile-editor-private').checked = Boolean(currentProfile.is_private);
+    p('social-profile-editor-photo').value = '';
+    p('social-profile-editor-status').textContent = '';
+    fillEditorAvatar(currentProfile);
+    p('social-profile-editor-modal').classList.remove('hidden');
+    p('social-profile-editor-name').focus();
+  }
+
+  function closeProfileEditor() {
+    p('social-profile-editor-modal').classList.add('hidden');
+    if (editorPhotoPreview) URL.revokeObjectURL(editorPhotoPreview);
+    editorPhotoPreview = '';
+  }
+
+  async function saveProfileEditor(event) {
+    event.preventDefault();
+    const button = p('social-profile-editor-save');
+    const status = p('social-profile-editor-status');
+    try {
+      button.disabled = true;
+      status.textContent = '';
+      status.classList.remove('error');
+      const file = p('social-profile-editor-photo').files?.[0];
+      const photo = file ? await uploadProfilePhoto(file) : currentProfile.profile_photo_url || '';
+      const result = await StudentPortal.api('/api/student/social/profile', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: p('social-profile-editor-name').value.trim(),
+          bio: p('social-profile-editor-bio').value.trim(),
+          website_url: p('social-profile-editor-link').value.trim(),
+          profile_photo_url: photo,
+          is_private: p('social-profile-editor-private').checked,
+          weight_unit: currentProfile.weight_unit || 'kg',
+          distance_unit: currentProfile.distance_unit || 'km',
+          theme: currentProfile.theme || 'light',
+          language: currentProfile.language || 'pt-BR'
+        })
+      });
+      currentProfile = result.profile;
+      renderProfile(currentProfile);
+      localStorage.setItem('studentName', currentProfile.name || 'Aluno');
+      document.querySelectorAll('[data-student-name]').forEach((element) => { element.textContent = currentProfile.name || 'Aluno'; });
+      document.querySelectorAll('[data-student-avatar]').forEach((element) => { element.textContent = initials(currentProfile.name).charAt(0); });
+      closeProfileEditor();
+      setStatus('Perfil atualizado.');
+    } catch (error) {
+      status.textContent = `Não foi possível salvar: ${error.message}`;
+      status.classList.add('error');
+    } finally {
+      button.disabled = false;
     }
   }
 
@@ -247,56 +392,50 @@
     try {
       await StudentPortal.init();
       const queryMember = new URLSearchParams(window.location.search).get('member_id');
-      const current = await StudentPortal.api('/api/student/social/profile');
+      const [current, progress] = await Promise.all([
+        StudentPortal.api('/api/student/social/profile'),
+        StudentPortal.api('/api/student/progress').catch(() => null)
+      ]);
       const memberId = queryMember || current.profile.id;
       const result = queryMember ? await StudentPortal.api(`/api/student/social/profile?member_id=${encodeURIComponent(queryMember)}`) : current;
       const profile = result.profile;
       const isOwnProfile = String(memberId) === String(current.profile.id);
-      p('social-profile-page-name').textContent = profile.name || 'Aluno';
-      p('social-profile-page-visibility').textContent = profile.is_private ? 'Perfil privado' : 'Perfil público';
-      p('social-profile-page-bio').textContent = profile.bio || '';
-      p('social-profile-page-posts').textContent = profile.posts_count || 0;
-      p('social-profile-page-followers').textContent = profile.followers_count || 0;
-      p('social-profile-page-following').textContent = profile.following_count || 0;
-      fillAvatar(profile);
+      currentProfile = isOwnProfile ? profile : null;
+      renderProfile(profile);
+      renderStartSummary(progress, isOwnProfile);
+      if (!isOwnProfile) document.querySelector('.social-profile-edit-button')?.remove();
 
-      const link = p('social-profile-page-link');
-      link.hidden = !profile.website_url;
-      link.href = profile.website_url || '#';
-      link.textContent = profile.website_url || '';
-
-      const stats = result.stats || {};
-      p('social-profile-completed').textContent = stats.completed_training_count || 0;
-      p('social-profile-exercises').textContent = stats.planned_exercise_count || 0;
-      p('social-profile-checkins').textContent = stats.checkins_count || 0;
-      p('social-profile-scheduled').textContent = stats.scheduled_training_count || 0;
-
-      const progress = isOwnProfile ? await StudentPortal.api('/api/student/progress').catch(() => ({ assessments: [] })) : { assessments: [] };
-      renderChart(progress.assessments || []);
       if (profile.restricted) {
-        p('social-profile-workout').textContent = 'Este perfil é privado.';
-        p('social-profile-posts').textContent = 'Este perfil é privado.';
         return;
       }
-
-      currentTraining = isOwnProfile ? await StudentPortal.api('/api/student/training/current').catch(() => null) : null;
-      updateProfileDayLabel();
-      renderWorkout(currentTraining, selectedDate);
-      renderPosts(result.posts || []);
-      if (!isOwnProfile) document.querySelectorAll('.social-profile-page-actions a:first-child').forEach((element) => element.remove());
     } catch (error) {
       setStatus(`Não foi possível carregar o perfil: ${error.message}`, true);
     }
   }
 
-  p('social-profile-day-previous')?.addEventListener('click', () => changeProfileDay(-1));
-  p('social-profile-day-next')?.addEventListener('click', () => changeProfileDay(1));
-  p('social-profile-training-close')?.addEventListener('click', closeTrainingModal);
-  p('social-profile-training-modal')?.addEventListener('click', (event) => {
-    if (event.target === event.currentTarget) closeTrainingModal();
+  p('social-profile-edit-open')?.addEventListener('click', openProfileEditor);
+  p('social-profile-editor-close')?.addEventListener('click', closeProfileEditor);
+  p('social-profile-editor-cancel')?.addEventListener('click', closeProfileEditor);
+  p('social-profile-editor-form')?.addEventListener('submit', saveProfileEditor);
+  p('social-profile-editor-avatar')?.addEventListener('click', () => p('social-profile-editor-photo').click());
+  p('social-profile-editor-avatar')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      p('social-profile-editor-photo').click();
+    }
+  });
+  p('social-profile-editor-photo')?.addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (editorPhotoPreview) URL.revokeObjectURL(editorPhotoPreview);
+    editorPhotoPreview = URL.createObjectURL(file);
+    fillEditorAvatar(currentProfile, editorPhotoPreview);
+  });
+  p('social-profile-editor-modal')?.addEventListener('click', (event) => {
+    if (event.target === p('social-profile-editor-modal')) closeProfileEditor();
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeTrainingModal();
+    if (event.key === 'Escape' && !p('social-profile-editor-modal')?.classList.contains('hidden')) closeProfileEditor();
   });
   load();
 }());

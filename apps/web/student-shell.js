@@ -1,4 +1,9 @@
 (function () {
+  if (!window.AcademiaModules) {
+    const script = document.createElement('script');
+    script.src = './module-settings.js?v=20260716-1';
+    document.head.appendChild(script);
+  }
   const apiBase = localStorage.getItem('studentApiBaseUrl') || localStorage.getItem('apiBaseUrl') || `http://${window.location.hostname || 'localhost'}:3004`;
   function getCookie(name) {
     const entry = document.cookie.split('; ').find((value) => value.startsWith(`${name}=`));
@@ -19,11 +24,11 @@
   const translations = {
     en: {
       'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Compartilhar': 'Share', 'Histórico': 'History', 'Acesso': 'Access', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
-      'Editar perfil': 'Edit profile', 'Conta': 'Account', 'Dados da conta': 'Account details', 'Segurança': 'Security', 'Preferências': 'Preferences', 'Idioma': 'Language', 'Tema': 'Theme', 'Exportar dados': 'Export data', 'Foto visível no seu perfil': 'Profile photo', 'Nome': 'Name', 'Bio': 'Bio', 'Link': 'Link', 'Deixar meu perfil privado': 'Make my profile private', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'On a private profile, only approved followers can see your posts.', 'Salvar alterações': 'Save changes', 'Cancelar': 'Cancel', 'Dados pessoais': 'Personal details', 'Contato': 'Contact', 'Endereço': 'Address', 'Sobre você': 'About you', 'Nome completo': 'Full name', 'Data de nascimento': 'Date of birth', 'CPF': 'Tax ID', 'RG': 'ID document', 'E-mail': 'Email', 'Telefone': 'Phone', 'Rua': 'Street', 'Número': 'Number', 'Bairro': 'Neighborhood', 'Cidade': 'City', 'Estado': 'State', 'Objetivo': 'Goal', 'Alergias e restrições': 'Allergies and restrictions', 'Observações': 'Notes', 'Salvar preferências': 'Save preferences', 'Salvar idioma': 'Save language', 'Salvar tema': 'Save theme', 'O idioma escolhido será aplicado à interface do aluno.': 'The selected language will be applied to the student interface.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'The appearance is applied immediately and kept on future screens.', 'Trocar senha': 'Change password', 'Senha atual': 'Current password', 'Nova senha': 'New password', 'Confirmar nova senha': 'Confirm new password', 'Atualizar senha': 'Update password', 'Português': 'Portuguese', 'Inglês': 'English', 'Espanhol': 'Spanish', 'Español': 'Spanish', 'Claro': 'Light', 'Escuro': 'Dark', 'Automático': 'System'
+      'Editar perfil': 'Edit profile', 'Conta': 'Account', 'Dados da conta': 'Account details', 'Dados corporais': 'Body data', 'Segurança': 'Security', 'Preferências': 'Preferences', 'Idioma': 'Language', 'Tema': 'Theme', 'Exportar dados': 'Export data', 'Foto visível no seu perfil': 'Profile photo', 'Nome': 'Name', 'Bio': 'Bio', 'Link': 'Link', 'Deixar meu perfil privado': 'Make my profile private', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'On a private profile, only approved followers can see your posts.', 'Salvar alterações': 'Save changes', 'Cancelar': 'Cancel', 'Dados pessoais': 'Personal details', 'Contato': 'Contact', 'Endereço': 'Address', 'Sobre você': 'About you', 'Nome completo': 'Full name', 'Data de nascimento': 'Date of birth', 'CPF': 'Tax ID', 'RG': 'ID document', 'E-mail': 'Email', 'Telefone': 'Phone', 'Rua': 'Street', 'Número': 'Number', 'Bairro': 'Neighborhood', 'Cidade': 'City', 'Estado': 'State', 'Objetivo': 'Goal', 'Alergias e restrições': 'Allergies and restrictions', 'Observações': 'Notes', 'Salvar preferências': 'Save preferences', 'Salvar idioma': 'Save language', 'Salvar tema': 'Save theme', 'O idioma escolhido será aplicado à interface do aluno.': 'The selected language will be applied to the student interface.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'The appearance is applied immediately and kept on future screens.', 'Trocar senha': 'Change password', 'Senha atual': 'Current password', 'Nova senha': 'New password', 'Confirmar nova senha': 'Confirm new password', 'Atualizar senha': 'Update password', 'Português': 'Portuguese', 'Inglês': 'English', 'Espanhol': 'Spanish', 'Español': 'Spanish', 'Claro': 'Light', 'Escuro': 'Dark', 'Automático': 'System'
     },
     es: {
       'Comunidade': 'Comunidad', 'Treino': 'Entrenamiento', 'Evolução': 'Progreso', 'Metas': 'Metas', 'Compartilhar': 'Compartir', 'Histórico': 'Historial', 'Acesso': 'Acceso', 'Perfil': 'Perfil', 'Minha conta': 'Mi cuenta', 'Meu perfil': 'Mi perfil', 'Sair': 'Cerrar sesión',
-      'Editar perfil': 'Editar perfil', 'Conta': 'Cuenta', 'Dados da conta': 'Datos de la cuenta', 'Segurança': 'Seguridad', 'Preferências': 'Preferencias', 'Idioma': 'Idioma', 'Tema': 'Tema', 'Exportar dados': 'Exportar datos', 'Foto visível no seu perfil': 'Foto visible en tu perfil', 'Nome': 'Nombre', 'Bio': 'Biografía', 'Link': 'Enlace', 'Deixar meu perfil privado': 'Hacer mi perfil privado', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'En un perfil privado, solo los seguidores aprobados ven tus publicaciones.', 'Salvar alterações': 'Guardar cambios', 'Cancelar': 'Cancelar', 'Dados pessoais': 'Datos personales', 'Contato': 'Contacto', 'Endereço': 'Dirección', 'Sobre você': 'Sobre ti', 'Nome completo': 'Nombre completo', 'Data de nascimento': 'Fecha de nacimiento', 'CPF': 'Documento fiscal', 'RG': 'Documento de identidad', 'E-mail': 'Correo electrónico', 'Telefone': 'Teléfono', 'Rua': 'Calle', 'Número': 'Número', 'Bairro': 'Barrio', 'Cidade': 'Ciudad', 'Estado': 'Estado', 'Objetivo': 'Objetivo', 'Alergias e restrições': 'Alergias y restricciones', 'Observações': 'Observaciones', 'Salvar preferências': 'Guardar preferencias', 'Salvar idioma': 'Guardar idioma', 'Salvar tema': 'Guardar tema', 'O idioma escolhido será aplicado à interface do aluno.': 'El idioma elegido se aplicará a la interfaz del alumno.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'La apariencia se aplica inmediatamente y se mantiene en las próximas pantallas.', 'Trocar senha': 'Cambiar contraseña', 'Senha atual': 'Contraseña actual', 'Nova senha': 'Nueva contraseña', 'Confirmar nova senha': 'Confirmar nueva contraseña', 'Atualizar senha': 'Actualizar contraseña', 'Português': 'Portugués', 'Inglês': 'Inglés', 'Espanhol': 'Español', 'Español': 'Español', 'Claro': 'Claro', 'Escuro': 'Oscuro', 'Automático': 'Sistema'
+      'Editar perfil': 'Editar perfil', 'Conta': 'Cuenta', 'Dados da conta': 'Datos de la cuenta', 'Dados corporais': 'Datos corporales', 'Segurança': 'Seguridad', 'Preferências': 'Preferencias', 'Idioma': 'Idioma', 'Tema': 'Tema', 'Exportar dados': 'Exportar datos', 'Foto visível no seu perfil': 'Foto visible en tu perfil', 'Nome': 'Nombre', 'Bio': 'Biografía', 'Link': 'Enlace', 'Deixar meu perfil privado': 'Hacer mi perfil privado', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'En un perfil privado, solo los seguidores aprobados ven tus publicaciones.', 'Salvar alterações': 'Guardar cambios', 'Cancelar': 'Cancelar', 'Dados pessoais': 'Datos personales', 'Contato': 'Contacto', 'Endereço': 'Dirección', 'Sobre você': 'Sobre ti', 'Nome completo': 'Nombre completo', 'Data de nascimento': 'Fecha de nacimiento', 'CPF': 'Documento fiscal', 'RG': 'Documento de identidad', 'E-mail': 'Correo electrónico', 'Telefone': 'Teléfono', 'Rua': 'Calle', 'Número': 'Número', 'Bairro': 'Barrio', 'Cidade': 'Ciudad', 'Estado': 'Estado', 'Objetivo': 'Objetivo', 'Alergias e restrições': 'Alergias y restricciones', 'Observações': 'Observaciones', 'Salvar preferências': 'Guardar preferencias', 'Salvar idioma': 'Guardar idioma', 'Salvar tema': 'Guardar tema', 'O idioma escolhido será aplicado à interface do aluno.': 'El idioma elegido se aplicará a la interfaz del alumno.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'La apariencia se aplica inmediatamente y se mantiene en las próximas pantallas.', 'Trocar senha': 'Cambiar contraseña', 'Senha atual': 'Contraseña actual', 'Nova senha': 'Nueva contraseña', 'Confirmar nova senha': 'Confirmar nueva contraseña', 'Atualizar senha': 'Actualizar contraseña', 'Português': 'Portugués', 'Inglês': 'Inglés', 'Espanhol': 'Español', 'Español': 'Español', 'Claro': 'Claro', 'Escuro': 'Oscuro', 'Automático': 'Sistema'
     }
   };
   const validThemes = ['light', 'dark', 'system'];
@@ -62,6 +67,8 @@
   }
 
   applyTheme(localStorage.getItem('studentTheme') || 'light');
+  window.clearTimeout(window.__uiBootFallback);
+  document.documentElement.classList.remove('ui-booting');
 
   function iconSvg(name) {
     const paths = {
@@ -119,6 +126,30 @@
     window.location.href = './student-login.html';
   }
 
+  function renderAccountMenu(dropdown) {
+    if (!dropdown) return;
+    const items = [
+      ['./student-social-profile.html', 'Meu perfil'],
+      ['./student-social-profile-edit.html#social-account', 'Dados da conta'],
+      ['./student-social-profile-edit.html#social-body', 'Dados corporais'],
+      ['./student-social-profile-edit.html#social-security', 'Segurança'],
+      ['./student-social-profile-edit.html#social-preferences', 'Preferências']
+    ];
+    dropdown.replaceChildren();
+    items.forEach(([href, label]) => {
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = translations[getLocale()]?.[label] || label;
+      dropdown.appendChild(link);
+    });
+    const logoutButton = document.createElement('button');
+    logoutButton.className = 'logout-item';
+    logoutButton.id = 'student-profile-logout';
+    logoutButton.type = 'button';
+    logoutButton.textContent = translations[getLocale()]?.Sair || 'Sair';
+    dropdown.appendChild(logoutButton);
+  }
+
   function setActiveLink() {
     createMobileNavigation();
     const desktopNav = document.querySelector('.student-module-nav');
@@ -155,6 +186,25 @@
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 
+  async function applyEnabledModules(token) {
+    for (let attempt = 0; attempt < 20 && !window.AcademiaModules; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 25));
+    const modules = window.AcademiaModules?.load ? await window.AcademiaModules.load(token) : {};
+    const linkModules = { community: 'community', share: 'community', training: 'training', complete: 'training', history: 'training', progress: 'assessments', goals: 'assessments', access: 'access' };
+    document.querySelectorAll('[data-student-link], [data-mobile-student-link]').forEach((link) => {
+      const key = link.dataset.studentLink || link.dataset.mobileStudentLink;
+      const module = linkModules[key];
+      link.hidden = Boolean(module && modules[module] === false);
+    });
+    const current = document.body.dataset.studentPage || 'training';
+    const currentModule = linkModules[current];
+    if (currentModule && modules[currentModule] === false) {
+      const fallback = modules.community !== false ? './student-feed.html' : modules.training !== false ? './student-portal.html' : './student-social-profile.html';
+      window.location.replace(fallback);
+      return false;
+    }
+    return true;
+  }
+
   async function init() {
     const token = getToken();
     if (!token) {
@@ -163,13 +213,11 @@
     }
     if (!localStorage.getItem('studentToken')) localStorage.setItem('studentToken', token);
     setActiveLink();
+    if (!await applyEnabledModules(token)) return null;
     translatePage();
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
-    document.querySelectorAll('.profile-dropdown a').forEach((link) => {
-      if (['Meu perfil', 'My profile', 'Mi perfil'].includes(link.textContent.trim())) link.href = './student-social-profile.html';
-      if (['Segurança', 'Security', 'Seguridad'].includes(link.textContent.trim())) link.href = './student-social-profile-edit.html#social-security';
-    });
+    renderAccountMenu(dropdown);
     if (trigger && dropdown) {
       trigger.addEventListener('click', (event) => {
         event.stopPropagation();

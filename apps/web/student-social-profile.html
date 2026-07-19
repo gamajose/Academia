@@ -1,15 +1,16 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Perfil - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./premium-ui.css" />
   <link rel="stylesheet" href="./blue-theme.css" />
-  <link rel="stylesheet" href="./student-shell.css" />
+  <link rel="stylesheet" href="./student-shell.css?v=20260719-1" />
   <link rel="stylesheet" href="./student-feed.css" />
-  <link rel="stylesheet" href="./student-social-profile.css" />
+  <link rel="stylesheet" href="./student-social-profile.css?v=20260719-2" />
 </head>
 <body class="student-page social-profile-page" data-student-page="profile">
   <nav class="top-nav student-top-nav">
@@ -28,35 +29,36 @@
     <section class="social-profile-page-hero">
       <div class="social-profile-page-header panel">
         <div class="social-avatar" id="social-profile-page-avatar">A</div>
-        <div class="social-profile-page-identity"><h1 id="social-profile-page-name">Aluno</h1><small id="social-profile-page-visibility">Perfil público</small></div>
-        <div class="social-profile-page-actions"><a class="button secondary" href="./student-social-profile-edit.html">Editar perfil</a></div>
+        <div class="social-profile-page-identity"><div class="social-profile-page-identity-row"><h1 id="social-profile-page-name">Aluno</h1><button class="button secondary social-profile-edit-button" id="social-profile-edit-open" type="button">Editar</button></div><small id="social-profile-page-visibility">Perfil público</small></div>
         <p class="social-profile-page-bio" id="social-profile-page-bio"></p>
         <a class="social-profile-page-link" id="social-profile-page-link" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
-        <div class="social-profile-page-stats"><span><strong id="social-profile-page-posts">0</strong><small>publicações</small></span><span><strong id="social-profile-page-followers">0</strong><small>seguidores</small></span><span><strong id="social-profile-page-following">0</strong><small>seguindo</small></span></div>
+        <div class="social-profile-page-stats"><span><strong id="social-profile-page-followers">0</strong><small>seguidores</small></span><span><strong id="social-profile-page-following">0</strong><small>seguindo</small></span></div>
+        <section class="social-profile-start-summary" id="social-profile-start-summary" hidden>
+          <div class="social-profile-start-heading"><strong>Você começou com</strong><small id="social-profile-start-date"></small></div>
+          <div class="social-profile-start-grid" id="social-profile-start-grid"></div>
+        </section>
       </div>
     </section>
 
-    <section class="panel social-profile-section social-profile-statistics-section"><h2>Estatísticas</h2><div class="social-profile-overview-grid"><div class="social-profile-overview-card"><strong id="social-profile-completed">0</strong><small>treinos concluídos</small></div><div class="social-profile-overview-card"><strong id="social-profile-exercises">0</strong><small>exercícios planejados</small></div><div class="social-profile-overview-card"><strong id="social-profile-checkins">0</strong><small>check-ins</small></div><div class="social-profile-overview-card"><strong id="social-profile-scheduled">0</strong><small>treinos agendados</small></div></div></section>
-
-    <div class="social-profile-content-grid">
-      <section class="panel social-profile-section"><h2>Evolução recente</h2><div class="social-profile-chart-legend"><span><i></i>Peso</span><span><i></i>Gordura corporal</span></div><div class="social-profile-chart-grid" id="social-profile-chart"><p class="social-profile-empty">Carregando histórico...</p></div></section>
-      <section class="panel social-profile-section"><div class="social-profile-section-heading"><h2>Ficha atual</h2><div class="social-profile-day-controls"><button class="social-profile-day-button" id="social-profile-day-previous" type="button" aria-label="Dia anterior">‹</button><span id="social-profile-day-label">Hoje</span><button class="social-profile-day-button" id="social-profile-day-next" type="button" aria-label="Próximo dia">›</button></div></div><div id="social-profile-workout"><p class="social-profile-empty">Carregando sua ficha...</p></div></section>
-    </div>
-    <section class="panel social-profile-section social-profile-publications-section"><h2>Publicações</h2><div class="social-profile-post-grid" id="social-profile-posts"><p class="social-profile-empty">Carregando publicações...</p></div></section>
     <p class="status-line" id="social-profile-page-status" aria-live="polite"></p>
   </main>
 
-  <div class="modal hidden" id="social-profile-training-modal" role="dialog" aria-modal="true" aria-labelledby="social-profile-training-title">
-    <article class="modal-card social-profile-training-modal-card">
-      <div class="modal-header">
-        <div><h3 id="social-profile-training-title">Ficha atual</h3><p>Confira os exercícios e ajuste sua ficha na tela de treinos.</p></div>
-        <button class="modal-close" id="social-profile-training-close" type="button" aria-label="Fechar">×</button>
-      </div>
-      <div id="social-profile-training-modal-content"></div>
+  <div class="modal hidden" id="social-profile-editor-modal" role="dialog" aria-modal="true" aria-labelledby="social-profile-editor-title">
+    <article class="modal-card social-profile-editor-modal-card">
+      <div class="modal-header"><h3 id="social-profile-editor-title">Editar perfil</h3><button class="modal-close" id="social-profile-editor-close" type="button" aria-label="Fechar">×</button></div>
+      <form class="social-profile-editor-form" id="social-profile-editor-form">
+        <div class="social-profile-editor-photo"><div class="social-avatar" id="social-profile-editor-avatar" role="button" tabindex="0" aria-label="Alterar foto do perfil" title="Alterar foto do perfil">A</div><input id="social-profile-editor-photo" type="file" accept="image/jpeg,image/png,image/webp" hidden /></div>
+        <div class="field"><label for="social-profile-editor-name">Nome</label><input id="social-profile-editor-name" maxlength="160" required /></div>
+        <div class="field"><label for="social-profile-editor-bio">Bio</label><textarea id="social-profile-editor-bio" maxlength="500" placeholder="Conte um pouco sobre sua jornada."></textarea></div>
+        <div class="field"><label for="social-profile-editor-link">Link</label><input id="social-profile-editor-link" type="url" maxlength="500" placeholder="https://instagram.com/seu-perfil" /></div>
+        <label class="social-check"><input id="social-profile-editor-private" type="checkbox" /><span>Deixar meu perfil privado</span></label>
+        <p class="status-line" id="social-profile-editor-status" aria-live="polite"></p>
+        <div class="form-actions"><button class="secondary" id="social-profile-editor-cancel" type="button">Cancelar</button><button id="social-profile-editor-save" type="submit">Salvar</button></div>
+      </form>
     </article>
   </div>
 
-  <script src="./student-shell.js"></script>
-  <script src="./student-social-profile.js"></script>
+  <script src="./student-shell.js?v=20260719-2"></script>
+  <script src="./student-social-profile.js?v=20260719-2"></script>
 </body>
 </html>

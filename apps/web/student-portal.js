@@ -13,6 +13,39 @@
   let activeWeekday = weekdayForDate(selectedDate);
   let weeklyExerciseDrafts = new Map();
 
+  function revealTrainingContent() {
+    const shell = document.querySelector('main.app-shell');
+    const workspace = p('student-event-detail-panel');
+    if (shell) {
+      shell.hidden = false;
+      shell.classList.remove('hidden');
+      shell.style.setProperty('display', 'block', 'important');
+      shell.style.setProperty('visibility', 'visible', 'important');
+      shell.style.setProperty('opacity', '1', 'important');
+    }
+    if (workspace) {
+      workspace.hidden = false;
+      workspace.classList.remove('hidden');
+      workspace.style.setProperty('display', 'grid', 'important');
+      workspace.style.setProperty('visibility', 'visible', 'important');
+      workspace.style.setProperty('opacity', '1', 'important');
+    }
+  }
+
+  async function loadApprovedAnalysis() {
+    try {
+      const result = await StudentPortal.api('/api/student/training/analysis');
+      const analysis = result.analysis;
+      if (!analysis?.student_message) return;
+      p('student-approved-analysis-message').textContent = analysis.student_message;
+      p('student-approved-analysis').classList.remove('hidden');
+    } catch (_) {
+      // A orientação é opcional e nunca bloqueia o carregamento do treino.
+    }
+  }
+
+  revealTrainingContent();
+
   function toDateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
@@ -30,6 +63,7 @@
   function text(value) { return StudentPortal.escapeHtml(value ?? ''); }
   function normalize(value) { return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
   function status(id, message, error = false) { const element = p(id); if (!element) return; element.textContent = message || ''; element.classList.toggle('error', error); }
+  function on(id, eventName, handler) { p(id)?.addEventListener(eventName, handler); }
   function eventForDate(dateKey) { return events.filter((event) => String(event.scheduled_date).slice(0, 10) === dateKey); }
   function currentMonth() { return selectedDate.slice(0, 7); }
   function weekdayForDate(dateKey) { const day = fromDateKey(dateKey).getDay(); return day === 0 ? 7 : day; }
@@ -341,21 +375,32 @@
 
   async function moveDay(offset) { const date = fromDateKey(selectedDate); date.setDate(date.getDate() + offset); selectedDate = toDateKey(date); selectedEvent = null; await loadCalendar(); }
 
-  async function load() {
-    try { await StudentPortal.init(); const me = await StudentPortal.api('/api/student/me'); p('student-portal-title').textContent = `Meu treino, ${(me.name || 'Aluno').split(' ')[0]}`; const result = await StudentPortal.api('/api/student/training/catalog'); catalog = [...(result.public || []).map((item) => ({ ...item, is_private: false })), ...(result.private || []).map((item) => ({ ...item, is_private: true }))]; populateMuscleFilters(); await loadCalendar(); }
-    catch (error) { status('student-portal-status', `Erro: ${error.message}`, true); }
+  async function openMyPlan() {
+    if (!events.length) await loadCalendar();
+    const planEvent = events.find((event) => event.is_weekly && event.exercises?.length) || events.find((event) => event.exercises?.length);
+    if (!planEvent) { status('student-portal-status', 'Nenhuma ficha cadastrada no momento.', true); return; }
+    selectedDate = String(planEvent.scheduled_date).slice(0, 10);
+    selectedEvent = planEvent;
+    renderSelectedDate(); renderEventDetail();
+    p('student-event-detail-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  p('student-day-previous').addEventListener('click', () => moveDay(-1)); p('student-day-next').addEventListener('click', () => moveDay(1)); p('student-new-event-button').addEventListener('click', () => openEventEditor());
-  p('student-event-exercise-search-inline').addEventListener('focus', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); });
-  p('student-event-exercise-search-inline').addEventListener('input', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); });
-  p('student-event-exercise-search-inline').addEventListener('blur', () => setTimeout(() => { if (!p('student-event-form-exercise-list').contains(document.activeElement)) p('student-event-form-exercise-list').classList.remove('is-open'); }, 120));
-  ['student-event-muscle-primary', 'student-event-muscle-secondary'].forEach((id) => p(id).addEventListener('change', () => { p('student-event-form-exercise-list').classList.add('is-open'); renderEventExerciseOptions(); }));
-  ['student-picker-muscle-primary', 'student-picker-muscle-secondary'].forEach((id) => p(id).addEventListener('change', () => { p('student-exercise-results').classList.add('is-open'); renderExerciseResults(); }));
+  async function load() {
+    try { revealTrainingContent(); await StudentPortal.init(); const me = await StudentPortal.api('/api/student/me'); p('student-portal-title').textContent = `Meu treino, ${(me.name || 'Aluno').split(' ')[0]}`; const result = await StudentPortal.api('/api/student/training/catalog'); catalog = [...(result.public || []).map((item) => ({ ...item, is_private: false })), ...(result.private || []).map((item) => ({ ...item, is_private: true }))]; populateMuscleFilters(); await Promise.all([loadCalendar(), loadApprovedAnalysis()]); }
+    catch (error) { status('student-portal-status', `Erro: ${error.message}`, true); }
+    finally { revealTrainingContent(); }
+  }
+
+  on('student-day-previous', 'click', () => moveDay(-1)); on('student-day-next', 'click', () => moveDay(1)); on('student-my-plan-button', 'click', openMyPlan); on('student-new-event-button', 'click', () => openEventEditor());
+  on('student-event-exercise-search-inline', 'focus', () => { p('student-event-form-exercise-list')?.classList.add('is-open'); renderEventExerciseOptions(); });
+  on('student-event-exercise-search-inline', 'input', () => { p('student-event-form-exercise-list')?.classList.add('is-open'); renderEventExerciseOptions(); });
+  on('student-event-exercise-search-inline', 'blur', () => setTimeout(() => { const list = p('student-event-form-exercise-list'); if (list && !list.contains(document.activeElement)) list.classList.remove('is-open'); }, 120));
+  ['student-event-muscle-primary', 'student-event-muscle-secondary'].forEach((id) => on(id, 'change', () => { p('student-event-form-exercise-list')?.classList.add('is-open'); renderEventExerciseOptions(); }));
+  ['student-picker-muscle-primary', 'student-picker-muscle-secondary'].forEach((id) => on(id, 'change', () => { p('student-exercise-results')?.classList.add('is-open'); renderExerciseResults(); }));
   document.querySelectorAll('#student-weekday-picker [data-weekday]').forEach((button) => button.addEventListener('click', () => selectWeekday(button.dataset.weekday)));
-  p('student-event-form').addEventListener('submit', saveEvent); p('student-event-editor-close').addEventListener('click', closeEventEditor); p('student-event-editor-cancel').addEventListener('click', closeEventEditor); p('student-edit-event-button').addEventListener('click', () => openEventEditor(selectedEvent)); p('student-add-event-exercise-button').addEventListener('click', () => openExercisePicker()); p('student-import-calendar-button').addEventListener('click', importToCalendar); p('student-delete-event-button').addEventListener('click', removeEvent);
-  p('student-exercise-search').addEventListener('focus', () => { p('student-exercise-results').classList.add('is-open'); renderExerciseResults(); }); p('student-exercise-search').addEventListener('input', () => { p('student-exercise-results').classList.add('is-open'); renderExerciseResults(); }); p('student-exercise-search').addEventListener('blur', () => setTimeout(() => { if (!p('student-exercise-results').contains(document.activeElement)) p('student-exercise-results').classList.remove('is-open'); }, 120)); p('student-event-exercise-form').addEventListener('submit', saveEventExercise); p('student-clear-picked-exercise').addEventListener('click', () => clearPickedExercise(false)); p('student-exercise-picker-close').addEventListener('click', closeExercisePicker); p('student-private-exercise-form').addEventListener('submit', savePrivateExercise); p('student-private-exercise-close').addEventListener('click', closePrivateExercise); p('student-private-exercise-cancel').addEventListener('click', closePrivateExercise); p('student-exercise-close').addEventListener('click', () => p('student-exercise-modal').classList.add('hidden'));
-  [p('student-event-editor-modal'), p('student-exercise-picker-modal'), p('student-private-exercise-modal'), p('student-exercise-modal')].forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); }));
+  on('student-event-form', 'submit', saveEvent); on('student-event-editor-close', 'click', closeEventEditor); on('student-event-editor-cancel', 'click', closeEventEditor); on('student-edit-event-button', 'click', () => openEventEditor(selectedEvent)); on('student-add-event-exercise-button', 'click', () => openExercisePicker()); on('student-import-calendar-button', 'click', importToCalendar); on('student-delete-event-button', 'click', removeEvent);
+  on('student-exercise-search', 'focus', () => { p('student-exercise-results')?.classList.add('is-open'); renderExerciseResults(); }); on('student-exercise-search', 'input', () => { p('student-exercise-results')?.classList.add('is-open'); renderExerciseResults(); }); on('student-exercise-search', 'blur', () => setTimeout(() => { const list = p('student-exercise-results'); if (list && !list.contains(document.activeElement)) list.classList.remove('is-open'); }, 120)); on('student-event-exercise-form', 'submit', saveEventExercise); on('student-clear-picked-exercise', 'click', () => clearPickedExercise(false)); on('student-exercise-picker-close', 'click', closeExercisePicker); on('student-private-exercise-form', 'submit', savePrivateExercise); on('student-private-exercise-close', 'click', closePrivateExercise); on('student-private-exercise-cancel', 'click', closePrivateExercise); on('student-exercise-close', 'click', () => p('student-exercise-modal')?.classList.add('hidden'));
+  [p('student-event-editor-modal'), p('student-exercise-picker-modal'), p('student-private-exercise-modal'), p('student-exercise-modal')].filter(Boolean).forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); }));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') document.querySelectorAll('.modal:not(.hidden)').forEach((modal) => modal.classList.add('hidden')); });
   window.StudentWorkout = { getEvents: () => events };
   load();

@@ -5,6 +5,7 @@
 }
 
 .membership-filter-panel { display: grid; gap: 14px; margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
+html[data-admin-shell="true"] body.admin-memberships-page .panel > .membership-filter-panel.inline-filter-panel:not(.hidden) { display: grid !important; }
 .membership-filter-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .membership-filter-grid .field { display: grid; gap: 6px; }
 .membership-filter-grid label { color: var(--muted); font-size: 12px; font-weight: 800; }
@@ -13,6 +14,8 @@
 .membership-table { width: 100%; min-width: 860px; border-collapse: collapse; }
 .membership-table th { padding: 12px 10px; text-align: left; color: var(--text); background: #edf5fc; font-size: 12px; font-weight: 850; }
 .membership-table td { padding: 13px 10px; border-bottom: 1px solid var(--line); color: var(--text); vertical-align: middle; }
+.membership-action-row { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.membership-action-row .icon-button { align-self: center; margin: 0 !important; vertical-align: middle; }
 .membership-table td:first-child { color: #111827; font-weight: 500; }
 .membership-table td:nth-child(2) { color: #1f2937 !important; font-weight: 400; }
 .membership-member-name { font-weight: 600; }

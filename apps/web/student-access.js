@@ -17,12 +17,6 @@
       badge.textContent = allowed ? 'Liberado' : 'Bloqueado';
       badge.className = `badge ${allowed ? 'ok' : 'bad'}`;
     }
-    setText(
-      'student-access-status',
-      allowed
-        ? 'Pagamento e matrícula conferidos. Seu acesso está pronto.'
-        : (access?.message || 'Seu acesso está bloqueado no momento.')
-    );
   }
 
   function updateCountdown() {
@@ -34,7 +28,6 @@
   async function loadCredential(silent = false) {
     if (loading) return;
     loading = true;
-    if (!silent) setText('student-access-status', 'Gerando seu QR Code...');
     try {
       const result = await StudentPortal.api('/api/student/access/credential', { method: 'POST', body: JSON.stringify({}) });
       setAccessState(result.access);
@@ -67,7 +60,7 @@
       const result = await StudentPortal.api('/api/student/access/offline-credential');
       setText('student-access-registration', result.registration_number || '------');
       setText('student-access-pin', result.offline_pin || '----');
-      if (!get('student-access-status').textContent || get('student-access-status').textContent === 'Verificando seu acesso...') setAccessState(result.access);
+      setAccessState(result.access);
       setText('student-access-page-status', '');
     } catch (error) {
       setText('student-access-page-status', `Não foi possível carregar sua matrícula e PIN: ${error.message}`);

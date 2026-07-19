@@ -115,12 +115,12 @@ jobs:
           ! grep -q 'id="logout-button"' apps/web/painel.html
           ! grep -q 'student-refresh-button' apps/web/student-portal.html
           ! grep -q 'student-logout-button' apps/web/student-portal.html
-          grep -q 'open-assessment-modal' apps/web/assessments.html
+          grep -q 'student-assessment-modal' apps/web/alunos.html
           grep -q 'dashboard-session-stability.js' apps/web/painel.html
           grep -q '.modal-close' apps/web/premium-ui.css
           grep -q 'student-cpf' apps/web/alunos.html
           grep -q 'credential-preview-modal' apps/web/alunos.html
-          grep -q 'Ver credencial' apps/web/alunos.js
+          grep -q 'Abrir QR Code e credencial' apps/web/alunos.js
           grep -q 'offline-registration-number' apps/web/alunos.html
           grep -q 'access-credential.css' apps/web/alunos.html
           grep -q 'plan-price-page' apps/web/planos.html

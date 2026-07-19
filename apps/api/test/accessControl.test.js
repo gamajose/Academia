@@ -39,6 +39,20 @@ test('perfil de administrador tambem pode ser restringido pelo cadastro', () => 
   assert.equal(canAccess({ role: 'owner' }, 'GET', '/api/users', permissions), true);
 });
 
+test('qualquer usuario autenticado pode enviar imagens', () => {
+  const permissions = { student_access: true };
+  ['owner', 'admin', 'staff', 'operator', 'student', 'visitor'].forEach((role) => {
+    assert.equal(canAccess({ role }, 'POST', '/api/editor/images', permissions), true);
+  });
+  assert.equal(canAccess(null, 'POST', '/api/editor/images', permissions), false);
+  assert.equal(canAccess({ role: 'staff' }, 'GET', '/api/editor/images', permissions), false);
+});
+
+test('administrador com perfil configurado pode enviar videos da comunidade', () => {
+  const permissions = { student_access: true };
+  assert.equal(canAccess({ role: 'admin' }, 'POST', '/api/editor/videos', permissions), true);
+});
+
 test('aluno pode enviar foto de evolucao sem acessar rotas administrativas', () => {
   const user = { role: 'student', member_id: 'member-1' };
   assert.equal(canAccess(user, 'POST', '/api/editor/images'), true);

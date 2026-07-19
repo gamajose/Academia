@@ -1,31 +1,26 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Matrículas - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
-  <link rel="stylesheet" href="./membership.css" />
+  <link rel="stylesheet" href="./membership.css?v=20260719-1" />
 </head>
-<body>
+<body class="admin-memberships-page">
   <main class="app-shell">
-    <section class="hero">
-      <div>
-        <h1>Matrículas</h1>
-      </div>
-    </section>
-
     <section class="panel">
       <div class="toolbar">
         <div><h2>Lista de matrículas</h2></div>
         <div class="toolbar-actions compact-toolbar-actions">
           <button id="new-link-button" class="icon-button" type="button" aria-label="Nova matrícula" title="Nova matrícula">+</button>
-          <button id="link-filter-toggle" class="icon-button" type="button" aria-label="Pesquisar matrículas" title="Pesquisar matrículas"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
+          <button id="link-filter-toggle" class="icon-button" type="button" aria-label="Pesquisar matrículas" title="Pesquisar matrículas" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
         </div>
       </div>
-      <div class="membership-filter-panel">
+      <div class="membership-filter-panel inline-filter-panel hidden" id="link-filter-panel">
         <div class="membership-filter-grid">
           <div class="field"><label for="link-search">Aluno</label><input id="link-search" placeholder="Nome do aluno" /></div>
           <div class="field"><label for="link-filter-plan">Plano</label><select id="link-filter-plan"><option value="">Todos os planos</option></select></div>
@@ -40,27 +35,16 @@
     </section>
   </main>
 
-  <div class="modal hidden" id="link-filter-modal" role="dialog" aria-modal="true" aria-labelledby="link-filter-title">
-    <div class="modal-card membership-filter-modal-card">
-      <div class="toolbar"><h3 id="link-filter-title">Pesquisar matrículas</h3><button class="secondary modal-close" id="close-link-filter-modal" type="button" aria-label="Fechar" title="Fechar">×</button></div>
-      <div id="link-filter-modal-body"></div>
-    </div>
-  </div>
-
   <div class="modal hidden" id="link-modal" role="dialog" aria-modal="true" aria-labelledby="link-modal-title">
     <form class="modal-card membership-modal-card" id="link-form">
       <div class="modal-header">
         <div>
-          <p class="eyebrow">Vínculo de acesso</p>
-          <h3 id="link-modal-title">Nova matrícula</h3>
-          <p>Associe um aluno ativo a um plano vigente.</p>
+          <h3 id="link-modal-title">Dados da matrícula</h3>
         </div>
         <button class="secondary modal-close" type="button" id="close-link-modal" aria-label="Fechar" title="Fechar">×</button>
       </div>
 
       <section class="form-section membership-form-section">
-        <h4>Dados da matrícula</h4>
-        <p class="section-help">A matrícula cria o vínculo oficial entre o aluno e o plano.</p>
         <div class="membership-form-fields">
           <div class="field">
             <label for="link-member">Aluno *</label>
@@ -82,14 +66,14 @@
 
       <div class="form-actions membership-form-actions">
         <button class="secondary" type="button" id="cancel-link-button">Cancelar</button>
-        <button id="save-link-button" type="submit">Salvar matrícula</button>
+        <button id="save-link-button" type="submit">Salvar</button>
       </div>
     </form>
   </div>
 
   <script src="./guard.js"></script>
-<script src="./nav.js"></script>
+<script src="./nav.js?v=20260719-1"></script>
 <script src="./icon-utils.js"></script>
-<script src="./vinculos.js"></script>
+<script src="./vinculos.js?v=20260719-1"></script>
 </body>
 </html>

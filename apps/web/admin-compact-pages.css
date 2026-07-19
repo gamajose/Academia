@@ -1,0 +1,408 @@
+/* Compact admin workspaces: keep the useful section headings and remove wasted height. */
+body.admin-compact-page .app-shell {
+  padding-top: 26px;
+}
+
+body.admin-compact-page .panel h2,
+body.admin-compact-page .panel h3 {
+  letter-spacing: -.015em;
+}
+
+body.admin-training-page .training-ai-button {
+  flex: 0 0 34px;
+  width: 34px !important;
+  min-width: 34px;
+  min-height: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 9px;
+}
+
+body.admin-training-page .training-ai-icon {
+  font-size: 17px;
+}
+
+.mobile-card-menu {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  body.admin-assessments-page .goals-only-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  body.admin-assessments-page .assessment-dashboard > .panel:first-child {
+    min-height: 0;
+    height: fit-content;
+    align-self: start;
+  }
+
+  body.admin-assessments-page #goal-list {
+    align-content: start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 760px) {
+  body.admin-compact-page .app-shell {
+    width: calc(100% - 18px);
+    padding-top: 12px;
+  }
+
+  body.admin-compact-page .panel {
+    gap: 10px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  body.admin-compact-page .toolbar {
+    gap: 8px;
+  }
+
+  body.admin-compact-page .panel h2,
+  body.admin-compact-page .panel h3 {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  body.admin-compact-page .icon-button {
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    border-radius: 9px !important;
+  }
+
+  /* Students */
+  body.admin-students-page .student-search-wrap,
+  body.admin-students-page .student-pagination {
+    margin-top: 10px;
+  }
+
+  body.admin-students-page .student-count,
+  body.admin-students-page .status-line {
+    font-size: 11px;
+  }
+
+  body.admin-students-page #students-list {
+    gap: 8px;
+  }
+
+  body.admin-students-page #students-list > li {
+    position: relative;
+    gap: 9px;
+    padding: 11px 12px;
+    border-radius: 11px;
+  }
+
+  body.admin-students-page #students-list .entity-main {
+    width: 100%;
+    padding-right: 30px;
+    gap: 3px;
+  }
+
+  body.admin-students-page #students-list .entity-main strong {
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  body.admin-students-page #students-list .entity-main > span:not(.student-card-tags) {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body.admin-students-page .student-card-tags,
+  body.admin-students-page .entity-actions {
+    gap: 5px;
+  }
+
+  body.admin-students-page .student-card-tags > span,
+  body.admin-students-page .student-card-tags .badge,
+  body.admin-students-page .student-card-tags .student-info-chip {
+    padding: 4px 7px;
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  body.admin-students-page #students-list .entity-actions {
+    display: none;
+  }
+
+  /* Training */
+  body.admin-training-page .lists-grid {
+    gap: 10px;
+  }
+
+  body.admin-training-page .exercise-library-actions {
+    gap: 5px;
+  }
+
+  body.admin-training-page .training-status,
+  body.admin-training-page .exercise-library-status {
+    min-height: 0;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body.admin-training-page #exercise-list,
+  body.admin-training-page #plan-list {
+    gap: 8px;
+  }
+
+  body.admin-training-page #exercise-list > li,
+  body.admin-training-page #plan-list > li {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start !important;
+    justify-content: stretch !important;
+    gap: 9px;
+    padding: 11px 12px;
+    border-radius: 11px;
+  }
+
+  body.admin-training-page .entity-main {
+    width: 100%;
+    padding-right: 30px;
+    gap: 3px;
+  }
+
+  body.admin-training-page .entity-main strong {
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  body.admin-training-page .entity-main span {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body.admin-training-page .entity-card .video-preview-slot {
+    justify-self: center;
+    flex-basis: 72px;
+    width: 72px;
+    height: 72px;
+    margin: 2px auto 0;
+  }
+
+  body.admin-training-page #exercise-list .entity-actions,
+  body.admin-training-page #plan-list .entity-actions {
+    display: none;
+  }
+
+  /* Assessments */
+  body.admin-assessments-page .workspace-panel {
+    gap: 8px;
+  }
+
+  body.admin-assessments-page .workspace-toolbar {
+    align-items: center;
+  }
+
+  body.admin-assessments-page .workspace-toolbar-copy {
+    gap: 2px;
+  }
+
+  body.admin-assessments-page .workspace-toolbar-copy p,
+  body.admin-assessments-page .panel-header-copy p {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body.admin-assessments-page .workspace-actions {
+    width: auto;
+    gap: 5px;
+    justify-content: flex-end;
+  }
+
+  body.admin-assessments-page .workspace-actions > * {
+    width: 34px !important;
+  }
+
+  body.admin-assessments-page .assessment-dashboard {
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  body.admin-assessments-page .workflow-list {
+    gap: 7px;
+  }
+
+  body.admin-assessments-page .workflow-list > li {
+    position: relative;
+    padding: 10px 11px;
+    border-radius: 10px;
+  }
+
+  body.admin-assessments-page .workflow-record {
+    gap: 7px;
+  }
+
+  body.admin-assessments-page .workflow-record-main {
+    padding-right: 30px;
+    gap: 2px;
+  }
+
+  body.admin-assessments-page .workflow-record-main strong {
+    font-size: 13px;
+  }
+
+  body.admin-assessments-page .workflow-record-main span,
+  body.admin-assessments-page .workflow-record-main small {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body.admin-assessments-page .workflow-record-actions .action-icon-button {
+    display: none;
+  }
+
+  body.admin-assessments-page .workflow-record-actions:not(:has(.assessment-photo-thumb)) {
+    display: none;
+  }
+
+  body.admin-students-page .mobile-card-menu,
+  body.admin-training-page .mobile-card-menu,
+  body.admin-assessments-page .mobile-card-menu {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    z-index: 6;
+    display: block;
+  }
+
+  body.admin-compact-page .mobile-card-menu-trigger {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 0 !important;
+    border: 1px solid #34536e;
+    border-radius: 8px !important;
+    background: transparent;
+    color: #dceaf6;
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  body.admin-compact-page .mobile-card-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    width: 132px;
+    overflow: hidden;
+    padding: 4px;
+    border: 1px solid #34536e;
+    border-radius: 9px;
+    background: #122235;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .3);
+  }
+
+  body.admin-compact-page .mobile-card-menu-dropdown button,
+  body.admin-compact-page .mobile-card-menu-dropdown a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100% !important;
+    min-height: 32px;
+    padding: 7px 9px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #dceaf6;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  body.admin-compact-page .mobile-card-menu-dropdown button:hover,
+  body.admin-compact-page .mobile-card-menu-dropdown button:focus-visible,
+  body.admin-compact-page .mobile-card-menu-dropdown a:hover,
+  body.admin-compact-page .mobile-card-menu-dropdown a:focus-visible {
+    background: #183c5c;
+    transform: none;
+  }
+
+  body.admin-compact-page .mobile-card-menu-dropdown button.danger {
+    color: #ff9ca7;
+  }
+
+  /* Access */
+  body.admin-access-page .access-overview-panel,
+  body.admin-access-page .access-members-panel,
+  body.admin-access-page .access-decisions-panel {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  body.admin-access-page .access-overview-copy h2,
+  body.admin-access-page .access-members-panel h2,
+  body.admin-access-page .access-decisions-panel h2 {
+    margin-bottom: 0;
+  }
+
+  body.admin-access-page .access-decisions-panel > div p {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  body.admin-access-page .access-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  body.admin-access-page .access-metrics article {
+    min-width: 0;
+    padding: 8px;
+    border-radius: 9px;
+  }
+
+  body.admin-access-page .access-metrics span {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  body.admin-access-page .access-metrics strong {
+    margin-top: 4px;
+    font-size: 17px;
+    line-height: 1.15;
+  }
+
+  body.admin-access-page .access-member-list,
+  body.admin-access-page .access-decision-list {
+    gap: 7px;
+  }
+
+  body.admin-access-page .access-member-row,
+  body.admin-access-page .access-decision-row {
+    gap: 7px;
+    padding: 10px 11px;
+    border-radius: 10px;
+  }
+
+  body.admin-access-page .access-member-main,
+  body.admin-access-page .access-decision-row > div {
+    gap: 2px;
+  }
+
+  body.admin-access-page .access-member-main strong,
+  body.admin-access-page .access-decision-row strong {
+    font-size: 13px;
+  }
+
+  body.admin-access-page .access-member-main span,
+  body.admin-access-page .access-decision-row span,
+  body.admin-access-page .access-member-main small {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  body.admin-access-page .access-member-meta,
+  body.admin-access-page .access-decision-actions {
+    gap: 6px;
+  }
+}

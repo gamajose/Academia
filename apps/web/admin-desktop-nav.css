@@ -1,0 +1,22 @@
+/* Mantem os atalhos administrativos realmente centralizados no desktop,
+   independentemente das larguras da marca e do perfil nas extremidades. */
+@media (min-width: 1021px) {
+  html[data-admin-shell="true"] .top-nav {
+    grid-template-columns: minmax(56px, 1fr) auto minmax(56px, 1fr);
+    column-gap: 14px;
+  }
+
+  html[data-admin-shell="true"] .top-nav-brand {
+    justify-self: start;
+  }
+
+  html[data-admin-shell="true"] .top-nav-links {
+    width: max-content;
+    max-width: calc(100vw - 176px);
+    justify-self: center;
+  }
+
+  html[data-admin-shell="true"] .top-nav > .profile-menu {
+    justify-self: end;
+  }
+}

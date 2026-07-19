@@ -11,6 +11,7 @@ let permissionKeys = [];
 let usersRequestInFlight = false;
 let usersRefreshTimer = null;
 let lastUsersSignature = '';
+let userRows = [];
 
 const moduleLabels = {
   dashboard: 'Painel', members: 'Alunos', plans: 'Planos', memberships: 'Matrículas',
@@ -119,8 +120,50 @@ function createPresenceCell(user) {
   dot.setAttribute('role', 'img');
   dot.setAttribute('aria-label', presence.label);
   dot.title = presence.label;
-  cell.appendChild(dot);
+  const label = document.createElement('span');
+  label.className = 'presence-label';
+  label.textContent = presence.label;
+  cell.append(dot, label);
   return cell;
+}
+
+function closeEmployeeMenus() {
+  document.querySelectorAll('.employee-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.employee-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+}
+
+function employeeRowMenu(user) {
+  const wrap = document.createElement('div');
+  wrap.className = 'employee-row-mobile-menu';
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'employee-menu-trigger';
+  trigger.textContent = '⋮';
+  trigger.setAttribute('aria-label', `Opções de ${user.name || 'funcionário'}`);
+  trigger.setAttribute('aria-expanded', 'false');
+  const dropdown = document.createElement('div');
+  dropdown.className = 'employee-menu-dropdown hidden';
+  const details = document.createElement('button');
+  details.type = 'button';
+  details.textContent = 'Ver ou editar informações';
+  details.addEventListener('click', () => { closeEmployeeMenus(); editUser(user); });
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = user.is_active ? 'danger' : '';
+  toggle.textContent = user.is_active ? 'Desativar funcionário' : 'Ativar funcionário';
+  toggle.addEventListener('click', () => { closeEmployeeMenus(); void toggleUser(user); });
+  trigger.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const opening = dropdown.classList.contains('hidden');
+    closeEmployeeMenus();
+    dropdown.classList.toggle('hidden', !opening);
+    trigger.setAttribute('aria-expanded', String(opening));
+  });
+  wrap.addEventListener('click', (event) => event.stopPropagation());
+  wrap.addEventListener('keydown', (event) => event.stopPropagation());
+  dropdown.append(details, toggle);
+  wrap.append(trigger, dropdown);
+  return wrap;
 }
 
 function usersSignature(rows) {
@@ -141,7 +184,7 @@ function usersSignature(rows) {
   });
 }
 
-function renderUsers(rows) {
+function renderUsers(rows, emptyMessage = 'Nenhum funcionário cadastrado.') {
   const table = get('users-table');
   if (!table) return;
   table.innerHTML = '';
@@ -151,7 +194,7 @@ function renderUsers(rows) {
     const cell = document.createElement('td');
     cell.colSpan = 7;
     cell.className = 'employee-empty-row';
-    cell.textContent = 'Nenhum funcionário cadastrado.';
+    cell.textContent = emptyMessage;
     row.appendChild(cell);
     table.appendChild(row);
     return;
@@ -195,10 +238,12 @@ function renderUsers(rows) {
 
     const actions = document.createElement('td');
     actions.className = 'employee-row-actions';
+    const actionButtons = document.createElement('div');
+    actionButtons.className = 'employee-action-buttons';
 
     const edit = window.AcademiaIcons.button('edit', 'Editar funcionário');
     edit.addEventListener('click', () => editUser(user));
-    actions.appendChild(edit);
+    actionButtons.appendChild(edit);
 
     const toggle = document.createElement('button');
     toggle.className = 'mini-button';
@@ -208,11 +253,77 @@ function renderUsers(rows) {
     toggle.setAttribute('aria-label', toggle.title);
     toggle.className = 'icon-button';
     toggle.addEventListener('click', () => toggleUser(user));
-    actions.appendChild(toggle);
+    actionButtons.appendChild(toggle);
+    actions.appendChild(actionButtons);
+    actions.appendChild(employeeRowMenu(user));
 
     row.appendChild(actions);
     table.appendChild(row);
   }
+}
+
+function normalizeEmployeeSearch(value) {
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').trim();
+}
+
+function setEmployeeFilterOptions(id, label, options) {
+  const select = get(id);
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = '';
+  const all = document.createElement('option');
+  all.value = '';
+  all.textContent = label;
+  select.appendChild(all);
+  for (const option of options) {
+    const element = document.createElement('option');
+    element.value = option.value;
+    element.textContent = option.label;
+    select.appendChild(element);
+  }
+  if ([...select.options].some((option) => option.value === current)) select.value = current;
+}
+
+function syncEmployeeFilterOptions(rows) {
+  const jobs = [...new Set(rows.map((user) => String(user.job_title || '').trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'))
+    .map((value) => ({ value, label: value }));
+  const profiles = new Map();
+  for (const user of rows) {
+    if (!user.access_profile) continue;
+    profiles.set(user.access_profile, user.access_profile_name || profileFor(user.access_profile)?.name || user.access_profile);
+  }
+  setEmployeeFilterOptions('employee-filter-job', 'Todos', jobs);
+  setEmployeeFilterOptions('employee-filter-profile', 'Todas', [...profiles.entries()]
+    .map(([value, label]) => ({ value, label }))
+    .sort((left, right) => left.label.localeCompare(right.label, 'pt-BR')));
+}
+
+function employeeFiltersActive() {
+  return ['employee-filter-term', 'employee-filter-job', 'employee-filter-profile', 'employee-filter-status']
+    .some((id) => Boolean(get(id)?.value));
+}
+
+function renderFilteredUsers() {
+  const term = normalizeEmployeeSearch(get('employee-filter-term')?.value);
+  const job = get('employee-filter-job')?.value || '';
+  const profile = get('employee-filter-profile')?.value || '';
+  const status = get('employee-filter-status')?.value || '';
+  const filtered = userRows.filter((user) => {
+    const searchText = normalizeEmployeeSearch(`${user.name || ''} ${user.email || ''} ${user.phone || ''}`);
+    return (!term || searchText.includes(term) || (digits(term) && digits(searchText).includes(digits(term))))
+      && (!job || user.job_title === job)
+      && (!profile || user.access_profile === profile)
+      && (!status || presenceFor(user).key === status);
+  });
+  renderUsers(filtered, employeeFiltersActive() ? 'Nenhum funcionário encontrado.' : 'Nenhum funcionário cadastrado.');
+}
+
+function toggleEmployeeFilters() {
+  const panel = get('employee-filter-panel');
+  const hidden = panel.classList.toggle('hidden');
+  get('employee-filter-toggle')?.setAttribute('aria-expanded', String(!hidden));
+  if (!hidden) setTimeout(() => get('employee-filter-term')?.focus(), 40);
 }
 
 function renderProfileSelect(selected = '') {
@@ -486,7 +597,9 @@ async function loadUsers({ silent = false, force = false } = {}) {
     const rows = result.data || [];
     const signature = usersSignature(rows);
     if (force || signature !== lastUsersSignature) {
-      renderUsers(rows);
+      userRows = rows;
+      syncEmployeeFilterOptions(rows);
+      renderFilteredUsers();
       lastUsersSignature = signature;
     }
     if (!silent) setStatus('');
@@ -654,6 +767,21 @@ function bindEvents() {
   get('user-access-profile')?.addEventListener('change', updateProfileHelp);
   get('employee-form')?.addEventListener('submit', saveUser);
   get('new-user-button')?.addEventListener('click', newUser);
+  get('employee-filter-toggle')?.addEventListener('click', toggleEmployeeFilters);
+  get('employee-filter-term')?.addEventListener('input', renderFilteredUsers);
+  ['employee-filter-job', 'employee-filter-profile', 'employee-filter-status'].forEach((id) => get(id)?.addEventListener('change', renderFilteredUsers));
+  get('employee-toolbar-menu-trigger')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const dropdown = get('employee-toolbar-menu-dropdown');
+    const opening = dropdown?.classList.contains('hidden');
+    closeEmployeeMenus();
+    dropdown?.classList.toggle('hidden', !opening);
+    event.currentTarget.setAttribute('aria-expanded', String(Boolean(opening)));
+  });
+  get('employee-toolbar-new')?.addEventListener('click', () => { closeEmployeeMenus(); newUser(); });
+  get('employee-toolbar-search')?.addEventListener('click', () => { closeEmployeeMenus(); toggleEmployeeFilters(); });
+  get('employee-toolbar-permissions')?.addEventListener('click', () => { closeEmployeeMenus(); void openPermissionsModal(); });
+  document.addEventListener('click', closeEmployeeMenus);
   get('close-employee-modal')?.addEventListener('click', closeUserModal);
   get('cancel-user-button')?.addEventListener('click', closeUserModal);
   get('employee-form-panel')?.addEventListener('click', (event) => {

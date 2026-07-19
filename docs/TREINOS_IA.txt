@@ -1,43 +1,161 @@
-Modulo de Treinos e Analise Inteligente
+Módulo de Treinos e Análise Inteligente Local
 
-Objetivo:
-Adicionar fichas de treino completas dentro da Academia Platform.
+Arquitetura
+------------
+O sistema usa uma arquitetura híbrida e totalmente local:
 
-Entregas:
-- Biblioteca de exercicios.
-- Nome do exercicio.
-- Grupo muscular.
-- Equipamento.
-- Nivel do exercicio.
-- Instrucoes de execucao.
-- Link de video demonstrativo.
-- Perfil de treino do aluno.
-- Nivel do aluno: frango, intermediario ou avancado.
-- Objetivo do aluno.
-- Restricoes e observacoes.
-- Quantidade de dias de treino por semana.
-- Ficha de treino semanal.
-- Dias da ficha.
-- Exercicios por dia.
-- Series, repeticoes, descanso, carga sugerida e observacoes.
-- Analise inteligente da ficha.
+1. O professor ou administrador solicita manualmente a análise de uma ficha.
+2. O backend carrega apenas dados necessários da academia e da ficha solicitada.
+3. Dados identificáveis são removidos ou pseudonimizados antes da inferência.
+4. O motor de regras calcula sinais obrigatórios de segurança.
+5. Quando habilitado, o backend chama o Ollama local em 127.0.0.1:11434.
+6. O gemma3:4b responde usando Structured Outputs (JSON Schema).
+7. O backend valida tipos, limites e IDs de exercícios contra a ficha e o catálogo da mesma academia.
+8. Qualquer falha usa imediatamente o motor de regras.
+9. A análise é salva como sugestão. Nenhuma ficha é alterada automaticamente.
+10. O aluno recebe somente student_message depois de aprovação explícita do profissional.
 
-Rotas principais:
-GET /api/training/exercises
-POST /api/training/exercises
-GET /api/training/profile
-POST /api/training/profile
-GET /api/training/plans
-POST /api/training/plans
-POST /api/training/plans/day
-POST /api/training/plans/exercise
-GET /api/training/plans/detail
+Origens salvas:
+- local_generative: saída válida do modelo local.
+- rules_fallback: resultado do motor de regras em desativação, indisponibilidade,
+  timeout, modelo ausente, recusa, JSON inválido ou schema incompleto.
+
+Segurança e privacidade
+----------------------
+- Não há integração com OpenAI, Gemini, Anthropic, Ollama Cloud ou outro provedor.
+- O serviço Ollama escuta exclusivamente em 127.0.0.1:11434.
+- Somente o backend Node.js acessa o Ollama.
+- Não são enviados nome, e-mail, telefone, CPF, endereço, fotos, pagamento ou
+  identificadores reais do aluno ao modelo.
+- Textos livres removem e-mail, telefone, CPF e links antes da inferência.
+- O ID do aluno é pseudonimizado por academia.
+- Logs registram apenas origem, modelo, duração, erro técnico e contagem de tokens.
+- Prompts, respostas completas e informações pessoais não são registrados.
+- IDs sugeridos são aceitos somente quando pertencem ao catálogo da academia.
+- IDs atuais são aceitos somente quando pertencem à ficha analisada.
+- Dor, lesão, restrições, esforço excessivo e poucos dados nunca podem ser
+  rebaixados pelo modelo e exigem revisão humana.
+- A análise não diagnostica, trata ou recomenda medicamentos, hormônios ou substâncias.
+
+Execução controlada
+-------------------
+- A geração ocorre apenas mediante clique de professor/administrador autorizado.
+- Não ocorre no login, abertura do painel ou sincronização.
+- Uma trava no PostgreSQL permite uma única geração por vez em toda a instalação.
+- A trava expira e também é liberada em finally.
+- Há limite por academia/hora e intervalo mínimo por ficha.
+- Timeout e tentativas são limitados.
+- keep_alive=0 descarrega o modelo depois da resposta.
+- O modelo usa temperatura zero e contexto limitado.
+
+Variáveis do backend
+--------------------
+LOCAL_TRAINING_AI_ENABLED=true
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=gemma3:4b
+OLLAMA_TIMEOUT_MS=120000
+OLLAMA_TEMPERATURE=0
+OLLAMA_KEEP_ALIVE=0
+OLLAMA_NUM_CTX=2048
+OLLAMA_NUM_PARALLEL=1
+LOCAL_TRAINING_PROMPT_VERSION=v1
+
+Controles adicionais opcionais:
+LOCAL_TRAINING_MAX_RETRIES=1
+LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=10
+LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=60
+
+Instalação da VM
+----------------
+Usar somente o instalador oficial:
+  curl -fsSL https://ollama.com/install.sh | sh
+
+Override esperado em /etc/systemd/system/ollama.service.d/override.conf:
+  [Service]
+  Environment="OLLAMA_HOST=127.0.0.1:11434"
+  Environment="OLLAMA_NUM_PARALLEL=1"
+  Environment="OLLAMA_KEEP_ALIVE=0"
+  Environment="OLLAMA_NO_CLOUD=1"
+
+Aplicar e baixar o modelo:
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now ollama
+  ollama pull gemma3:4b
+
+Validar:
+  systemctl is-active ollama
+  systemctl is-enabled ollama
+  ss -ltnp | grep ':11434'
+  ollama list
+
+Rotas
+-----
 POST /api/training/plans/review
+  Gera uma análise para plan_id. Somente owner, admin ou profissional com
+  permissão de treino.
 
-Regra da IA inicial:
-- Ficha com menos de 30 dias: manter e acompanhar execucao.
-- Ficha entre 45 e 89 dias: ajustar volume, carga, repeticoes ou descanso.
-- Ficha com 90 dias ou mais: sugerir troca parcial de exercicios por grupo muscular.
+GET /api/training/plans/reviews?plan_id=...&limit=20
+  Histórico isolado pela academia.
 
-Observacao:
-A IA atual e uma camada inicial baseada em regras do proprio sistema. Depois pode ser conectada a um modelo externo para gerar recomendacoes mais completas e personalizadas.
+POST /api/training/plans/review/approve
+POST /api/training/plans/review/reject
+  Registra a decisão humana sem alterar a ficha.
+
+GET /api/student/training/analysis
+  Retorna apenas id, plan_id, student_message e approved_at da análise aprovada
+  mais recente do próprio aluno. Notas internas, sinais e sugestões não saem
+  por esta rota.
+
+Banco
+-----
+Migration: database/058_local_training_ai_reviews.sql
+
+workout_ai_reviews guarda a saída estruturada, origem, modelo, versão do prompt,
+confiança, necessidade de revisão, decisão humana, hash do snapshot, duração,
+erro técnico e contagem de tokens.
+
+training_ai_generation_locks implementa a trava global. A migration não remove
+análises antigas e preserva o funcionamento do motor de regras.
+
+Testes mínimos
+--------------
+Na API:
+  npm run check
+
+Os testes cobrem saída estruturada, minimização de dados, sucesso local, timeout,
+resposta HTTP inválida, JSON incompleto, modelo ausente, fallback, trava,
+restrições/dor, permissões, isolamento entre academias, aprovação, rejeição e
+visibilidade restrita do aluno.
+
+Na VM também validar:
+- análise real com Ollama disponível;
+- análise com Ollama parado retornando rules_fallback;
+- nenhuma alteração nas tabelas da ficha;
+- mensagem invisível antes da aprovação e visível depois;
+- API e web saudáveis durante e depois da inferência;
+- consumo de CPU e memória do ollama.
+
+Rollback
+--------
+Rollback operacional, sem perder análises:
+
+1. Definir LOCAL_TRAINING_AI_ENABLED=false no ambiente real do backend.
+2. Reiniciar apenas academia-api.
+3. Confirmar que uma nova análise retorna source=rules_fallback.
+4. Se necessário, parar e desabilitar o Ollama:
+     sudo systemctl disable --now ollama
+5. Para liberar disco depois de confirmar o rollback:
+     ollama rm gemma3:4b
+6. Restaurar o override do systemd a partir do backup preparado antes da instalação.
+7. Qualquer reversão de código deve ocorrer por novo PR.
+
+A migration deve permanecer aplicada: ela é compatível com o fallback e preserva
+o histórico. Em caso de instabilidade, desabilitar a IA local é suficiente para
+manter o módulo funcionando pelo motor de regras.
+
+Limitações
+----------
+- A VM executa o modelo em CPU; a primeira análise pode levar mais tempo.
+- A saída é apoio ao profissional, não decisão autônoma.
+- Qualidade depende da regularidade dos registros de execução e avaliações.
+- Alterações de ficha continuam sendo uma ação separada e exclusivamente humana.

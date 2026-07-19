@@ -2,25 +2,50 @@ const NAV_BUILD_VERSION = '20260713-0140';
 const pageName = (value) => String(value || '').split('/').pop().split('?')[0].split('#')[0];
 const pageUrl = (href) => `./${href}?v=${NAV_BUILD_VERSION}`;
 
+if (!window.AcademiaModules) {
+  const moduleScript = document.createElement('script');
+  moduleScript.src = './module-settings.js?v=20260716-1';
+  document.head.appendChild(moduleScript);
+}
+
 if (['permissions.html', 'student-accounts.html'].includes(pageName(window.location.pathname))) {
   window.location.replace(pageUrl(pageName(window.location.pathname) === 'permissions.html' ? 'users.html' : 'alunos.html'));
 }
 
 function loadStyle(href) {
-  if (document.querySelector(`link[href="${href}"]`)) return;
+  const existing = document.querySelector(`link[href="${href}"]`);
+  if (existing) {
+    if (existing.sheet || existing.dataset.loaded) return Promise.resolve();
+    return new Promise((resolve) => {
+      const finish = () => resolve();
+      existing.addEventListener('load', finish, { once: true });
+      existing.addEventListener('error', finish, { once: true });
+      window.setTimeout(finish, 2500);
+    });
+  }
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = href;
   document.head.appendChild(link);
+  return new Promise((resolve) => {
+    const finish = () => resolve();
+    link.addEventListener('load', finish, { once: true });
+    link.addEventListener('error', finish, { once: true });
+    window.setTimeout(finish, 2500);
+  });
 }
 
 function loadNavigationStyles() {
-  loadStyle('./professional.css');
-  loadStyle('./premium-ui.css');
-  loadStyle('./blue-theme.css');
-  loadStyle('./admin-nav-icons.css');
-  loadStyle('./admin-profile.css');
-  loadStyle('./admin-dark-theme.css?v=20260715-1015');
+  return Promise.all([
+    loadStyle('./professional.css'),
+    loadStyle('./premium-ui.css'),
+    loadStyle('./blue-theme.css'),
+    loadStyle('./admin-nav-icons.css'),
+    loadStyle('./admin-mobile-nav.css?v=20260716-2'),
+    loadStyle('./admin-profile.css'),
+    loadStyle('./admin-dark-theme.css?v=20260715-1015'),
+    loadStyle('./admin-desktop-nav.css?v=20260716-1')
+  ]);
 }
 
 function applyAdminPreferences(preferences = {}) {
@@ -41,9 +66,9 @@ function applyAdminPreferences(preferences = {}) {
 }
 
 const adminNavLabels = {
-  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acesso', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', sair: 'Sair' },
-  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', sair: 'Sign out' },
-  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Acceso', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', sair: 'Salir' }
+  'pt-BR': { comunidade: 'Comunidade', painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acessos', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', configuracoes: 'Configurações', sair: 'Sair', mais: 'Mais' },
+  en: { comunidade: 'Community', painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', configuracoes: 'Settings', sair: 'Sign out', mais: 'More' },
+  es: { comunidade: 'Comunidad', painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Accesos', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', configuracoes: 'Configuración', sair: 'Salir', mais: 'Más' }
 };
 
 function applyAdminLanguage(language = 'pt-BR') {
@@ -56,8 +81,12 @@ function applyAdminLanguage(language = 'pt-BR') {
   if (profileLinks[0]) profileLinks[0].textContent = labels.perfil;
   if (profileLinks[1]) profileLinks[1].textContent = labels.seguranca;
   if (profileLinks[2]) profileLinks[2].textContent = labels.preferencias;
+  if (profileLinks[3]) profileLinks[3].textContent = labels.configuracoes;
   const logout = document.getElementById('profile-logout');
   if (logout) logout.textContent = labels.sair;
+  document.querySelectorAll('[data-mobile-nav-key]').forEach((element) => {
+    if (labels[element.dataset.mobileNavKey]) element.textContent = labels[element.dataset.mobileNavKey];
+  });
 }
 
 function renderAvatar(host, name, photoUrl = '') {
@@ -97,7 +126,7 @@ function roleLabel(role, accessProfile = '', accessProfileName = '') {
 function canSeePage(href, role, accessProfile, permissions = null) {
   if (role === 'owner' || (role === 'admin' && !permissions)) return true;
   const pageModules = {
-    'painel.html': 'dashboard', 'alunos.html': 'members', 'planos.html': 'plans',
+    'painel.html': 'dashboard', 'admin-community.html': 'student_access', 'alunos.html': 'members', 'planos.html': 'plans',
     'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments',
     'financeiro.html': 'finance', 'alerts.html': 'alerts', 'training.html': 'training',
     'assessments.html': 'assessments', 'access.html': 'access', 'users.html': 'users'
@@ -112,9 +141,26 @@ function canSeePage(href, role, accessProfile, permissions = null) {
 function applyNavPermissions(user) {
   const role = user.role || '';
   const accessProfile = user.access_profile || (role === 'staff' ? 'reception' : role === 'operator' ? 'operator' : 'admin');
-  document.querySelectorAll('.top-nav-links a').forEach((link) => {
-    link.hidden = !canSeePage(link.dataset.page || pageName(link.getAttribute('href')), role, accessProfile, user.access_permissions || null);
+  document.querySelectorAll('.top-nav-links a, .admin-mobile-nav a[data-page], .admin-more-menu a[data-page]').forEach((link) => {
+    const href = link.dataset.page || pageName(link.getAttribute('href'));
+    const module = pageModule(href);
+    const enabled = !module || (user.enabled_modules || window.AcademiaModules?.cached?.() || {})[module] !== false;
+    link.hidden = !enabled || !canSeePage(href, role, accessProfile, user.access_permissions || null);
   });
+  const settingsLinks = document.querySelectorAll('#profile-settings, .admin-more-account a[href*="settings.html"]');
+  settingsLinks.forEach((link) => { link.hidden = !['owner', 'admin'].includes(role); });
+  document.querySelectorAll('[data-module-feature]').forEach((element) => {
+    element.hidden = (user.enabled_modules || window.AcademiaModules?.cached?.() || {})[element.dataset.moduleFeature] === false;
+  });
+}
+
+function pageModule(href) {
+  return {
+    'painel.html': 'dashboard', 'admin-community.html': 'community', 'alunos.html': 'members', 'planos.html': 'plans',
+    'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments', 'financeiro.html': 'finance',
+    'alerts.html': 'alerts', 'training.html': 'training', 'assessments.html': 'assessments',
+    'access.html': 'access', 'users.html': 'users'
+  }[href] || '';
 }
 
 function adminIconSvg(name) {
@@ -139,16 +185,16 @@ function renderNavigation() {
   document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
 
   const current = pageName(window.location.pathname) || 'painel.html';
-  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
+  const adminPages = ['painel.html', 'admin-community.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
   if (adminPages.includes(current)) document.documentElement.dataset.adminShell = 'true';
   const pages = [
-    ['painel.html', 'Painel', 'painel'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
+    ['painel.html', 'Painel', 'painel'], ['admin-community.html', 'Comunidade', 'comunidade'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
     ['vinculos.html', 'Matrículas', 'matriculas'], ['solicitacoes.html', 'Pré-matrículas', 'pre'],
-    ['financeiro.html', 'Financeiro', 'financeiro'], ['alerts.html', 'Alertas', 'alertas'], ['training.html', 'Treinos', 'treinos'],
-    ['assessments.html', 'Avaliações', 'avaliacoes'], ['access.html', 'Acesso', 'acesso'], ['users.html', 'Funcionários', 'funcionarios']
+    ['financeiro.html', 'Financeiro', 'financeiro'], ['training.html', 'Treinos', 'treinos'],
+    ['access.html', 'Acesso', 'acesso'], ['users.html', 'Funcionários', 'funcionarios']
   ];
   const icons = {
-    'painel.html': 'home', 'alunos.html': 'members', 'planos.html': 'plans', 'vinculos.html': 'membership',
+    'painel.html': 'home', 'admin-community.html': 'users', 'alunos.html': 'members', 'planos.html': 'plans', 'vinculos.html': 'membership',
     'solicitacoes.html': 'spark', 'financeiro.html': 'finance', 'alerts.html': 'alert',
     'training.html': 'dumbbell', 'assessments.html': 'chart', 'access.html': 'access', 'users.html': 'users'
   };
@@ -169,10 +215,12 @@ function renderNavigation() {
         <a href="${pageUrl('account.html')}">Perfil</a>
         <a href="${pageUrl('security.html')}">Segurança</a>
         <a id="profile-preferences" href="${pageUrl('account.html')}&view=preferences">Preferências</a>
+        <a id="profile-settings" href="${pageUrl('settings.html')}">Configurações</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
       </div>
     </div>`;
   document.body.prepend(nav);
+  renderAdminMobileNavigation(current, pages, icons);
 
   const trigger = document.getElementById('profile-trigger');
   const dropdown = document.getElementById('profile-dropdown');
@@ -186,6 +234,52 @@ function renderNavigation() {
   loadProfile();
 }
 
+function renderAdminMobileNavigation(current, pages, icons) {
+  const bottomItems = [
+    ['admin-community.html', 'comunidade', 'users'],
+    ['alunos.html', 'alunos', 'members'],
+    ['training.html', 'treinos', 'dumbbell'],
+    ['access.html', 'acesso', 'access']
+  ];
+  const labels = adminNavLabels[localStorage.getItem('adminLanguage') || 'pt-BR'] || adminNavLabels['pt-BR'];
+  const mobile = document.createElement('nav');
+  mobile.className = 'admin-mobile-nav';
+  mobile.setAttribute('aria-label', 'Navegação principal do administrador');
+  mobile.innerHTML = bottomItems.map(([href, key, icon]) => `<a data-page="${href}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icon)}</span><span class="nav-label" data-mobile-nav-key="${key}">${labels[key]}</span></a>`).join('');
+  document.body.appendChild(mobile);
+
+  const more = document.createElement('div');
+  more.className = 'admin-more';
+  const extraPages = pages.filter(([href]) => !bottomItems.some(([mobileHref]) => mobileHref === href));
+  more.innerHTML = `
+    <button class="admin-more-trigger" id="admin-more-trigger" type="button" aria-label="Abrir mais opções" aria-expanded="false" aria-controls="admin-more-menu"><span aria-hidden="true">⋮</span></button>
+    <div class="admin-more-menu hidden" id="admin-more-menu" role="menu">
+      <div class="admin-more-heading"><span>${labels.mais}</span><button type="button" id="admin-more-close" aria-label="Fechar">×</button></div>
+      <div class="admin-more-links">${extraPages.map(([href, , key]) => `<a data-page="${href}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span data-mobile-nav-key="${key}">${labels[key]}</span></a>`).join('')}</div>
+      <div class="admin-more-account">
+        <a href="${pageUrl('account.html')}">${labels.perfil}</a>
+        <a href="${pageUrl('security.html')}">${labels.seguranca}</a>
+        <a href="${pageUrl('account.html')}&view=preferences">${labels.preferencias}</a>
+        <a href="${pageUrl('settings.html')}">${labels.configuracoes || 'Configurações'}</a>
+        <button class="logout-item" id="admin-mobile-logout" type="button">${labels.sair}</button>
+      </div>
+    </div>`;
+  document.querySelector('.top-nav')?.appendChild(more);
+  const trigger = document.getElementById('admin-more-trigger');
+  const menu = document.getElementById('admin-more-menu');
+  const close = () => { menu?.classList.add('hidden'); trigger?.setAttribute('aria-expanded', 'false'); };
+  trigger?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const opening = menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', !opening);
+    trigger.setAttribute('aria-expanded', String(opening));
+  });
+  document.getElementById('admin-more-close')?.addEventListener('click', close);
+  document.getElementById('admin-mobile-logout')?.addEventListener('click', clearSession);
+  menu?.addEventListener('click', (event) => event.stopPropagation());
+  document.addEventListener('click', close);
+}
+
 async function loadProfile() {
   const token = localStorage.getItem('academiaToken') || '';
   if (!token) return;
@@ -195,6 +289,14 @@ async function loadProfile() {
     const response = await fetch(`${api}/api/me`, { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) return;
     const user = await response.json();
+    user.enabled_modules = await waitForModuleSettings(token);
+    const currentModule = pageModule(pageName(window.location.pathname));
+    if (currentModule && user.enabled_modules[currentModule] === false) {
+      const fallback = ['dashboard', 'community', 'members', 'training'].find((key) => user.enabled_modules[key] !== false);
+      const fallbackPages = { dashboard: 'painel.html', community: 'admin-community.html', members: 'alunos.html', training: 'training.html' };
+      window.location.replace(pageUrl(fallbackPages[fallback] || 'settings.html'));
+      return;
+    }
     localStorage.setItem('academiaUserName', user.name || 'Meu perfil');
     localStorage.setItem('academiaRole', user.role || '');
     localStorage.setItem('academiaAccessProfile', user.access_profile || '');
@@ -228,6 +330,11 @@ async function loadProfile() {
   }
 }
 
+async function waitForModuleSettings(token) {
+  for (let attempt = 0; attempt < 20 && !window.AcademiaModules; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 25));
+  return window.AcademiaModules?.load ? window.AcademiaModules.load(token) : {};
+}
+
 function requireSession() {
   const publicPages = ['home.html', 'index.html', 'plans.html', 'matricula-publica.html', 'student-login.html', 'admin.html'];
   const current = pageName(window.location.pathname) || 'index.html';
@@ -258,8 +365,19 @@ function upgradeModals() {
   });
 }
 
-loadNavigationStyles();
-applyAdminPreferences();
-requireSession();
-renderNavigation();
-upgradeModals();
+async function initializeNavigation() {
+  applyAdminPreferences();
+  requireSession();
+  try {
+    await loadNavigationStyles();
+  } finally {
+    renderNavigation();
+    upgradeModals();
+    window.requestAnimationFrame(() => {
+      window.clearTimeout(window.__uiBootFallback);
+      document.documentElement.classList.remove('ui-booting');
+    });
+  }
+}
+
+initializeNavigation();

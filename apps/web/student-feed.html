@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Comunidade - BlueREC Academia</title>
@@ -8,8 +9,8 @@
   <link rel="stylesheet" href="./premium-ui.css" />
   <link rel="stylesheet" href="./blue-theme.css" />
   <link rel="stylesheet" href="./training-media.css" />
-  <link rel="stylesheet" href="./student-shell.css" />
-  <link rel="stylesheet" href="./student-feed.css" />
+  <link rel="stylesheet" href="./student-shell.css?v=20260719-1" />
+  <link rel="stylesheet" href="./student-feed.css?v=20260719-3" />
 </head>
 <body class="student-page student-feed-page" data-student-page="community">
   <nav class="top-nav student-top-nav">
@@ -98,8 +99,9 @@
     <article class="modal-card social-modal-card"><div class="modal-header"><div><p class="eyebrow">Meu perfil</p><h3 id="social-profile-editor-title">Editar perfil</h3></div><button class="modal-close" id="social-profile-editor-close" type="button" aria-label="Fechar">×</button></div><form id="social-profile-form" class="social-profile-form"><div class="field"><label for="social-profile-name">Nome</label><input id="social-profile-name" maxlength="160" required /></div><div class="field"><label for="social-profile-bio">Bio</label><textarea id="social-profile-bio" maxlength="500" placeholder="Conte um pouco sobre sua jornada."></textarea></div><div class="field"><label for="social-profile-link">Link</label><input id="social-profile-link" type="url" maxlength="500" placeholder="https://instagram.com/seu-perfil" /></div><div class="form-grid"><div class="field"><label for="social-profile-photo-url">Foto por link</label><input id="social-profile-photo-url" type="url" maxlength="1000" placeholder="https://.../foto.jpg" /></div><div class="field"><label for="social-profile-photo-file">Ou escolha uma foto</label><input id="social-profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" /></div></div><div class="form-grid three"><div class="field"><label for="social-profile-weight">Peso</label><select id="social-profile-weight"><option value="kg">Quilogramas (kg)</option><option value="lb">Libras (lb)</option></select></div><div class="field"><label for="social-profile-distance">Distância</label><select id="social-profile-distance"><option value="km">Quilômetros (km)</option><option value="mi">Milhas (mi)</option></select></div><div class="field"><label for="social-profile-theme">Tema</label><select id="social-profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div></div><div class="field"><label for="social-profile-language">Idioma</label><select id="social-profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div><label class="social-check"><input id="social-profile-private" type="checkbox" /> <span>Deixar meu perfil privado</span></label><small>Em um perfil privado, somente seguidores aprovados veem suas publicações.</small><div class="social-profile-account-actions"><a class="button secondary" href="./student-profile.html">Dados da conta</a><a class="button secondary" href="./student-security.html">Segurança</a><button class="button secondary" id="social-export-data" type="button">Exportar CSV</button></div><p class="status-line" id="social-profile-status" aria-live="polite"></p><div class="form-actions"><button class="button secondary" id="social-profile-cancel" type="button">Cancelar</button><button class="button" type="submit">Salvar perfil</button></div></form></article>
   </div>
 
-  <script src="./student-shell.js"></script>
+  <script src="./student-shell.js?v=20260719-2"></script>
   <script src="./training-media.js"></script>
-  <script src="./student-feed.js"></script>
+  <script src="./community-media.js?v=20260716-2"></script>
+  <script src="./student-feed.js?v=20260719-2"></script>
 </body>
 </html>

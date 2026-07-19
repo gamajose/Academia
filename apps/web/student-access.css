@@ -1,4 +1,4 @@
-.student-access-header { max-width: 720px; margin: 0 auto 24px; text-align: center; }
+.student-access-header { max-width: 720px; margin: 0 auto 16px; text-align: center; }
 .student-access-header h1 { margin: 5px 0 8px; }
 .student-access-header p:last-child { margin: 0 auto; }
 .student-access-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); gap: 18px; width: min(900px, 100%); margin: 0 auto; }

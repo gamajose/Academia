@@ -6,7 +6,6 @@ let links = [];
 let members = [];
 let plans = [];
 let editingLinkId = '';
-let linkFilterPlaceholder = null;
 let currentPage = 1;
 let pageSize = 10;
 
@@ -100,13 +99,16 @@ function render() {
     tr.addEventListener('click', () => openModal(item));
     tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
     const actions = tr.lastElementChild;
+    const actionRow = document.createElement('div');
+    actionRow.className = 'membership-action-row';
     const editButton = window.AcademiaIcons.button('edit', 'Editar matrícula');
     editButton.addEventListener('click', (event) => { event.stopPropagation(); openModal(item); });
-    actions.appendChild(editButton);
-    actions.appendChild(mini(status === 'active' ? '⊘' : '●', (event) => { event.stopPropagation(); if (status === 'active') return cancelLink(item); }, status !== 'active'));
-    actions.lastElementChild.className = 'icon-button';
-    actions.lastElementChild.title = status === 'active' ? 'Cancelar matrícula' : 'Matrícula encerrada';
-    actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);
+    actionRow.appendChild(editButton);
+    actionRow.appendChild(mini(status === 'active' ? '⊘' : '●', (event) => { event.stopPropagation(); if (status === 'active') return cancelLink(item); }, status !== 'active'));
+    actionRow.lastElementChild.className = 'icon-button';
+    actionRow.lastElementChild.title = status === 'active' ? 'Cancelar matrícula' : 'Matrícula encerrada';
+    actionRow.lastElementChild.setAttribute('aria-label', actionRow.lastElementChild.title);
+    actions.appendChild(actionRow);
     list.appendChild(tr);
   }
   if (!list.children.length) list.innerHTML = '<tr><td colspan="7">Nenhuma matrícula corresponde aos filtros.</td></tr>';
@@ -222,34 +224,15 @@ async function cancelLink(item) {
   await load();
 }
 
-function openLinkFilters() {
-  const panel = document.querySelector('.membership-filter-panel');
-  const body = v('link-filter-modal-body');
-  const modal = v('link-filter-modal');
-  if (!panel || !body || !modal) return;
-  linkFilterPlaceholder = document.createComment('link-filter-placeholder');
-  panel.parentElement.insertBefore(linkFilterPlaceholder, panel);
-  body.appendChild(panel);
-  modal.classList.remove('hidden');
-  document.body.classList.add('modal-open');
-  setTimeout(() => v('link-search')?.focus(), 40);
-}
-
-function closeLinkFilters() {
-  const panel = document.querySelector('#link-filter-modal .membership-filter-panel');
-  if (panel && linkFilterPlaceholder?.parentElement) {
-    linkFilterPlaceholder.parentElement.insertBefore(panel, linkFilterPlaceholder.nextSibling);
-  }
-  linkFilterPlaceholder?.remove();
-  linkFilterPlaceholder = null;
-  v('link-filter-modal')?.classList.add('hidden');
-  if (v('link-modal')?.classList.contains('hidden')) document.body.classList.remove('modal-open');
+function toggleLinkFilters() {
+  const panel = v('link-filter-panel');
+  const hidden = panel.classList.toggle('hidden');
+  v('link-filter-toggle').setAttribute('aria-expanded', String(!hidden));
+  if (!hidden) setTimeout(() => v('link-search')?.focus(), 40);
 }
 
 v('new-link-button').onclick = openModal;
-v('link-filter-toggle').onclick = openLinkFilters;
-v('close-link-filter-modal').onclick = closeLinkFilters;
-v('link-filter-modal').onclick = (event) => { if (event.target === v('link-filter-modal')) closeLinkFilters(); };
+v('link-filter-toggle').onclick = toggleLinkFilters;
 v('close-link-modal').onclick = closeModal;
 v('cancel-link-button').onclick = closeModal;
 v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });

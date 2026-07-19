@@ -76,8 +76,13 @@
 .student-calendar-panel { overflow: hidden; }
 .student-training-day-panel { max-width: 900px; margin-inline: auto; }
 .student-training-workspace { max-width: 900px; margin-inline: auto; }
+.student-my-plan-button { min-height: 36px; padding: 8px 12px; font-size: 13px; }
 .student-training-workspace > .student-detail-day-switcher { margin-top: 24px; padding-top: 24px; border-top: 1px solid #d7e3ef; }
 html[data-student-theme="dark"] body.student-page .student-training-workspace > .student-detail-day-switcher { border-color: #29445d; }
+@media (max-width: 760px) {
+  .student-training-workspace > .toolbar:first-child { flex-direction: row; align-items: center; }
+  .student-training-workspace > .toolbar:first-child .toolbar-actions { width: auto; flex-direction: row; }
+}
 .student-day-switcher { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 14px; padding: 18px 0 8px; }
 .student-day-switcher > div { display: grid; gap: 3px; text-align: center; text-transform: capitalize; }
 .student-day-switcher span { color: #1478d4; font-size: 13px; font-weight: 700; }
@@ -188,11 +193,16 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 .student-goal-new {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
-  min-height: 40px;
-  padding: 0;
+  flex: 0 0 40px;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  padding: 0 !important;
   border-radius: 8px;
 }
 
@@ -347,6 +357,12 @@ html[data-student-theme="dark"] body.student-page .modal-card { border-color: #2
 html[data-student-theme="dark"] body.student-page .modal-card .modal-header p,
 html[data-student-theme="dark"] body.student-page .modal-card .field small { color: #a9bed1; }
 html[data-student-theme="dark"] body.student-page .modal-card .modal-close { border-color: #34536e; background: #183047; color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-page .profile-dropdown { border-color: #34536e; background: #122235; color: #e8f0f8; }
+html[data-student-theme="dark"] body.student-page .profile-dropdown a,
+html[data-student-theme="dark"] body.student-page .profile-dropdown button { color: #dceaf6; }
+html[data-student-theme="dark"] body.student-page .profile-dropdown a:hover,
+html[data-student-theme="dark"] body.student-page .profile-dropdown button:hover { background: #183c5c; }
+html[data-student-theme="dark"] body.student-page .profile-dropdown .logout-item { color: #ff9ca7; }
 
 @media (max-width: 760px) {
   .student-page { padding-bottom: 82px; }

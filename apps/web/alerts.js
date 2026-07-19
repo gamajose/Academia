@@ -2,6 +2,7 @@ const alertsHost = window.location.hostname || 'localhost';
 const ALERTS_API = localStorage.getItem('apiBaseUrl') || `http://${alertsHost}:3004`;
 const ALERTS_TOKEN = localStorage.getItem('academiaToken') || '';
 const g = (id) => document.getElementById(id);
+let evolutionAlerts = [];
 
 async function api(path) {
   const response = await fetch(`${ALERTS_API}${path}`, {
@@ -43,6 +44,7 @@ function renderList(id, rows, formatter, emptyText) {
 }
 
 function renderAssessmentAlerts(rows) {
+  evolutionAlerts = rows;
   const list = g('assessment-alert-list');
   list.innerHTML = '';
   if (!rows.length) {
@@ -79,6 +81,53 @@ function renderAssessmentAlerts(rows) {
     row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openAssessment(); } });
     list.appendChild(row);
   }
+}
+
+function renderEvolutionModalList() {
+  const list = g('evolution-alerts-list');
+  list.replaceChildren();
+  if (!evolutionAlerts.length) {
+    const empty = document.createElement('li');
+    empty.className = 'alert-empty';
+    empty.textContent = 'Nenhum aluno com evolução pendente.';
+    list.appendChild(empty);
+    return;
+  }
+  for (const item of evolutionAlerts) {
+    const row = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'evolution-alert-person';
+    const name = document.createElement('strong');
+    name.textContent = item.member_name || 'Aluno';
+    const detail = document.createElement('span');
+    detail.textContent = item.last_assessment_date
+      ? `Última avaliação há ${item.days_since_last_assessment} dias`
+      : 'Nunca realizou uma avaliação';
+    const action = document.createElement('small');
+    action.textContent = 'Fazer avaliação';
+    button.append(name, detail, action);
+    button.addEventListener('click', () => {
+      closeEvolutionAlertsModal();
+      openAssessmentModal(item);
+    });
+    row.appendChild(button);
+    list.appendChild(row);
+  }
+}
+
+function openEvolutionAlertsModal(event) {
+  event?.preventDefault();
+  renderEvolutionModalList();
+  const modal = g('evolution-alerts-modal');
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeEvolutionAlertsModal() {
+  const modal = g('evolution-alerts-modal');
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
 }
 
 function localDate() {
@@ -162,6 +211,12 @@ async function loadAlerts() {
   renderList('membership-list', data.memberships_due_soon || [], (item) => `${item.member_name} · vence em ${item.days_remaining} dias`, 'Nenhuma matrícula vencendo nos próximos 7 dias.');
   renderList('training-list', data.training_reviews_due || [], (item) => `${item.member_name} · ${item.plan_name} · ${item.age_days} dias de ficha`, 'Nenhuma ficha precisando de revisão.');
   renderAssessmentAlerts(data.assessments_due || []);
+  const requestedMember = new URLSearchParams(window.location.search).get('avaliar');
+  if (requestedMember) {
+    const item = (data.assessments_due || []).find((entry) => String(entry.member_id) === requestedMember);
+    window.history.replaceState({}, '', './alerts.html');
+    if (item) openAssessmentModal(item);
+  }
 }
 
 loadAlerts().catch((error) => {
@@ -173,3 +228,6 @@ g('alert-assessment-form')?.addEventListener('submit', saveAssessment);
 g('close-alert-assessment')?.addEventListener('click', closeAssessmentModal);
 g('cancel-alert-assessment')?.addEventListener('click', closeAssessmentModal);
 g('alert-assessment-modal')?.addEventListener('click', (event) => { if (event.target === g('alert-assessment-modal')) closeAssessmentModal(); });
+g('open-evolution-alerts')?.addEventListener('click', openEvolutionAlertsModal);
+g('close-evolution-alerts')?.addEventListener('click', closeEvolutionAlertsModal);
+g('evolution-alerts-modal')?.addEventListener('click', (event) => { if (event.target === g('evolution-alerts-modal')) closeEvolutionAlertsModal(); });

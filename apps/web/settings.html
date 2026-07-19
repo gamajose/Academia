@@ -1,38 +1,24 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Configuracoes - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./settings.css" />
 </head>
 <body>
-  <main class="app-shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Ambiente</p>
-        <h1>Configuracoes</h1>
-        <p>Ajuste a URL da API e encerre o acesso salvo no navegador.</p>
-      </div>
+  <main class="app-shell settings-shell">
+    <section class="panel module-settings-panel">
+      <div class="module-settings-heading"><div><h2>Módulos do sistema</h2><p>Ao desativar um módulo, ele e suas ações deixam de aparecer para todos os usuários. Os dados existentes são preservados.</p></div><button id="save-modules-button" type="button">Salvar</button></div>
+      <div class="module-settings-grid" id="module-settings-grid"></div>
+      <p class="status-line" id="module-settings-status" aria-live="polite"></p>
     </section>
 
-    <section class="grid">
-      <article class="panel">
-        <h3>URL da API</h3>
-        <input id="api-base-url" placeholder="http://IP_DA_VM:3004" />
-        <button id="save-api-button">Salvar URL</button>
-        <button id="test-api-button" class="secondary">Testar conexao</button>
-        <p class="status-line" id="settings-status">Aguardando acao.</p>
-      </article>
-
-      <article class="panel">
-        <h3>Sessao</h3>
-        <p>Limpe o token salvo neste navegador.</p>
-        <button id="logout-settings-button" class="secondary">Sair e limpar sessao</button>
-      </article>
-    </section>
   </main>
-  <script src="./nav.js"></script>
-  <script src="./settings-client.js"></script>
+  <script src="./nav.js?v=20260719-1"></script>
+  <script src="./module-settings.js?v=20260716-3"></script>
+  <script src="./settings-client.js?v=20260716-3"></script>
 </body>
 </html>

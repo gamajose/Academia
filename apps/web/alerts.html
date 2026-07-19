@@ -1,26 +1,20 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Alertas - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./alerts.css" />
+  <link rel="stylesheet" href="./alerts.css?v=20260716-2" />
 </head>
 <body>
   <main class="app-shell">
-    <section class="hero">
-      <div>
-        <h1>Alertas e pendências</h1>
-      </div>
-    </section>
-
     <section class="cards alert-summary">
-      <a class="alert-summary-card total" href="./alertas.html"><span>Total</span><strong id="alerts-total">0</strong><small>pendências abertas</small></a>
       <a class="alert-summary-card finance" href="./financeiro.html"><span>Financeiro</span><strong id="overdue-count">0</strong><small>pagamentos vencidos</small></a>
       <a class="alert-summary-card membership" href="./vinculos.html"><span>Matrículas</span><strong id="membership-count">0</strong><small>vencendo em 7 dias</small></a>
       <a class="alert-summary-card training" href="./training.html"><span>Treinos</span><strong id="training-count">0</strong><small>fichas para revisar</small></a>
-      <a class="alert-summary-card evolution" href="./assessments.html"><span>Evolução</span><strong id="assessment-count">0</strong><small>avaliações pendentes</small></a>
+      <a class="alert-summary-card evolution" id="open-evolution-alerts" href="#evolucoes-pendentes"><span>Evolução</span><strong id="assessment-count">0</strong><small>avaliações pendentes</small></a>
     </section>
 
     <section class="grid lists-grid">
@@ -33,6 +27,16 @@
       <article class="panel"><h3>Avaliações pendentes</h3><ul id="assessment-alert-list"></ul></article>
     </section>
   </main>
+
+  <div class="modal hidden" id="evolution-alerts-modal" role="dialog" aria-modal="true" aria-labelledby="evolution-alerts-title" aria-hidden="true">
+    <div class="modal-card evolution-alerts-card">
+      <div class="modal-header">
+        <div><h3 id="evolution-alerts-title">Evoluções pendentes</h3></div>
+        <button type="button" id="close-evolution-alerts" class="secondary modal-close" aria-label="Fechar">×</button>
+      </div>
+      <ul class="evolution-alerts-list" id="evolution-alerts-list"></ul>
+    </div>
+  </div>
 
   <div class="modal hidden" id="alert-assessment-modal" role="dialog" aria-modal="true" aria-labelledby="alert-assessment-title" aria-hidden="true">
     <form class="modal-card alert-assessment-card" id="alert-assessment-form">
@@ -55,10 +59,10 @@
         <label class="full">Observações<textarea id="alert-assessment-notes" rows="4" placeholder="Observações da avaliação"></textarea></label>
       </div>
       <p class="status-line" id="alert-assessment-status" aria-live="polite"></p>
-      <div class="modal-actions"><button type="button" class="secondary" id="cancel-alert-assessment">Cancelar</button><button type="submit" class="primary" id="save-alert-assessment">Salvar avaliação</button></div>
+      <div class="modal-actions"><button type="button" class="secondary" id="cancel-alert-assessment">Cancelar</button><button type="submit" class="primary" id="save-alert-assessment">Salvar</button></div>
     </form>
   </div>
-  <script src="./nav.js"></script>
-  <script src="./alerts.js"></script>
+  <script src="./nav.js?v=20260719-1"></script>
+  <script src="./alerts.js?v=20260716-2"></script>
 </body>
 </html>

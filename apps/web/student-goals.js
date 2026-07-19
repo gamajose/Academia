@@ -7,6 +7,7 @@
   const formError = document.getElementById('student-goal-form-error');
   const saveButton = document.getElementById('student-goal-save');
   const goalsById = new Map();
+  let handledNewGoalRequest = false;
 
   const icon = (name) => {
     const paths = {
@@ -86,6 +87,11 @@
       const response = await StudentPortal.api('/api/student/goals');
       render(Array.isArray(response.data) ? response.data : []);
       status.textContent = '';
+      if (!handledNewGoalRequest && new URLSearchParams(window.location.search).get('new') === '1') {
+        handledNewGoalRequest = true;
+        window.history.replaceState({}, '', window.location.pathname);
+        openModal();
+      }
     } catch (error) {
       status.textContent = `Não foi possível carregar suas metas: ${error.message}`;
     }

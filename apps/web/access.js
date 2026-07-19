@@ -8,6 +8,8 @@ let accessExpiresAt = null;
 let accessTtlSeconds = 30;
 let accessTimer = null;
 let accessRequestInFlight = false;
+let accessMemberPage = 1;
+const ACCESS_PAGE_SIZE = 5;
 
 async function accessApi(path, options = {}) {
   const response = await fetch(`${ACCESS_API}${path}`, { ...options, cache: 'no-store', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ACCESS_TOKEN}`, ...(options.headers || {}) } });
@@ -48,11 +50,20 @@ function renderMembers() {
       || (filter === 'inactive' && member.status !== 'active')
       || (filter === 'blocked' && member.access_status === 'blocked')
       || (filter === 'pending' && !member.access_status)));
+  const pages = Math.max(1, Math.ceil(rows.length / ACCESS_PAGE_SIZE));
+  accessMemberPage = Math.min(pages, Math.max(1, accessMemberPage));
+  const visibleRows = rows.slice((accessMemberPage - 1) * ACCESS_PAGE_SIZE, accessMemberPage * ACCESS_PAGE_SIZE);
+  window.AdminPagination?.render(accessEl('access-member-pagination'), {
+    page: accessMemberPage,
+    total: rows.length,
+    pageSize: ACCESS_PAGE_SIZE,
+    onChange: (page) => { accessMemberPage = page; renderMembers(); }
+  });
   accessEl('access-member-count').textContent = String(accessMembers.length);
   if (!rows.length) {
     const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = term ? 'Nenhum aluno encontrado.' : 'Nenhum aluno cadastrado.'; list.appendChild(empty); return;
   }
-  for (const member of rows) {
+  for (const member of visibleRows) {
     const row = document.createElement('li'); row.className = 'access-member-row'; row.setAttribute('role', 'button'); row.tabIndex = 0; row.title = 'Abrir credencial do aluno';
     row.addEventListener('click', () => openCredential(member));
     row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCredential(member); } });
@@ -125,27 +136,15 @@ async function resetPin() { if (!accessMemberId || !window.confirm('Gerar um nov
 
 async function loadPage() { try { const [members, decisions] = await Promise.all([accessApi('/api/access/members'), accessApi('/api/access/decisions/recent')]); accessMembers = members.data || []; renderMembers(); renderDecisions(decisions.data || []); accessEl('access-last-update').textContent = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date()); setStatus(''); } catch (error) { setStatus(`Erro ao carregar acesso: ${error.message}`); } }
 
-let accessFilterPlaceholder = null;
-accessEl('access-filter-toggle')?.addEventListener('click', () => {
-  const panel = document.querySelector('.access-member-filters');
-  const body = accessEl('access-filter-modal-body');
-  if (!panel || !body) return;
-  accessFilterPlaceholder = document.createComment('access-filter-placeholder');
-  panel.parentElement.insertBefore(accessFilterPlaceholder, panel);
-  body.appendChild(panel);
-  accessEl('access-filter-modal').classList.remove('hidden');
-  accessEl('access-member-search').focus();
-});
-function closeAccessFilters() {
-  const panel = document.querySelector('#access-filter-modal .access-member-filters');
-  if (panel && accessFilterPlaceholder?.parentElement) accessFilterPlaceholder.parentElement.insertBefore(panel, accessFilterPlaceholder.nextSibling);
-  accessFilterPlaceholder?.remove(); accessFilterPlaceholder = null;
-  accessEl('access-filter-modal')?.classList.add('hidden');
+function toggleAccessFilters() {
+  const panel = accessEl('access-filter-panel');
+  const hidden = panel.classList.toggle('hidden');
+  accessEl('access-filter-toggle').setAttribute('aria-expanded', String(!hidden));
+  if (!hidden) setTimeout(() => accessEl('access-member-search')?.focus(), 40);
 }
-accessEl('close-access-filter-modal')?.addEventListener('click', closeAccessFilters);
-accessEl('access-filter-modal')?.addEventListener('click', (event) => { if (event.target === accessEl('access-filter-modal')) closeAccessFilters(); });
-accessEl('access-member-search').addEventListener('input', renderMembers);
-accessEl('access-member-filter').addEventListener('change', renderMembers);
+accessEl('access-filter-toggle')?.addEventListener('click', toggleAccessFilters);
+accessEl('access-member-search').addEventListener('input', () => { accessMemberPage = 1; renderMembers(); });
+accessEl('access-member-filter').addEventListener('change', () => { accessMemberPage = 1; renderMembers(); });
 accessEl('close-access-credential').addEventListener('click', closeCredential);
 accessEl('access-reset-pin').addEventListener('click', resetPin);
 accessEl('access-credential-modal').addEventListener('click', (event) => { if (event.target === accessEl('access-credential-modal')) closeCredential(); });

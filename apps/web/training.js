@@ -14,6 +14,11 @@ let activePlanWeekday = null;
 let exerciseLibraryQuery = '';
 let exercisePrimaryFilter = '';
 let exerciseSecondaryFilter = '';
+let planLibraryQuery = '';
+let exercisePage = 1;
+let planPage = 1;
+let currentTrainingReview = null;
+const TRAINING_PAGE_SIZE = 5;
 
 const t = (id) => document.getElementById(id);
 
@@ -30,6 +35,49 @@ function trainingActionIcon(type, label, className = '') {
     : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6v14H5V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>';
   return button;
 }
+
+function trainingMobileMenu(label, items) {
+  const wrap = document.createElement('div');
+  wrap.className = 'mobile-card-menu';
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'mobile-card-menu-trigger';
+  trigger.textContent = '⋮';
+  trigger.setAttribute('aria-label', label);
+  trigger.setAttribute('aria-expanded', 'false');
+  const dropdown = document.createElement('div');
+  dropdown.className = 'mobile-card-menu-dropdown hidden';
+  for (const item of items) {
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.textContent = item.label;
+    if (item.danger) action.classList.add('danger');
+    action.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      await item.run(action);
+    });
+    dropdown.appendChild(action);
+  }
+  trigger.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const willOpen = dropdown.classList.contains('hidden');
+    document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+    document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+    dropdown.classList.toggle('hidden', !willOpen);
+    trigger.setAttribute('aria-expanded', String(willOpen));
+  });
+  wrap.addEventListener('click', (event) => event.stopPropagation());
+  wrap.addEventListener('keydown', (event) => event.stopPropagation());
+  wrap.append(trigger, dropdown);
+  return wrap;
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+});
 
 function setTrainingStatus(text) {
   t('training-status').textContent = text;
@@ -270,11 +318,19 @@ function renderAll({ libraryOnly = false } = {}) {
   const exerciseList = t('exercise-list');
   exerciseList.innerHTML = '';
   const visibleExercises = getVisibleExercises();
-  const renderedExercises = visibleExercises.slice(0, 4);
+  const exercisePages = Math.max(1, Math.ceil(visibleExercises.length / TRAINING_PAGE_SIZE));
+  exercisePage = Math.min(exercisePages, Math.max(1, exercisePage));
+  const renderedExercises = visibleExercises.slice((exercisePage - 1) * TRAINING_PAGE_SIZE, exercisePage * TRAINING_PAGE_SIZE);
+  window.AdminPagination?.render(t('exercise-pagination'), {
+    page: exercisePage,
+    total: visibleExercises.length,
+    pageSize: TRAINING_PAGE_SIZE,
+    onChange: (page) => { exercisePage = page; renderAll({ libraryOnly: true }); }
+  });
   const libraryStatus = t('exercise-library-status');
   if (libraryStatus) {
-    libraryStatus.textContent = visibleExercises.length > renderedExercises.length
-      ? `Mostrando ${renderedExercises.length} de ${visibleExercises.length} exercícios. Use a pesquisa para encontrar outros.`
+    libraryStatus.textContent = visibleExercises.length > TRAINING_PAGE_SIZE
+      ? `Mostrando ${((exercisePage - 1) * TRAINING_PAGE_SIZE) + 1}-${Math.min(exercisePage * TRAINING_PAGE_SIZE, visibleExercises.length)} de ${visibleExercises.length} exercícios.`
       : `${visibleExercises.length} exercício(s) encontrado(s).`;
   }
   for (const item of renderedExercises) {
@@ -334,6 +390,10 @@ function renderAll({ libraryOnly = false } = {}) {
       });
       actions.append(edit, remove);
       row.appendChild(actions);
+      row.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
+        { label: 'Editar', run: () => openExerciseForm(item) },
+        { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
+      ]));
     }
     exerciseList.appendChild(row);
   }
@@ -348,7 +408,18 @@ function renderAll({ libraryOnly = false } = {}) {
 
   const planList = t('plan-list');
   planList.innerHTML = '';
-  for (const item of plans) {
+  const normalizedPlanQuery = normalizeExerciseFilterValue(planLibraryQuery);
+  const visiblePlans = plans.filter((item) => !normalizedPlanQuery || normalizeExerciseFilterValue(`${item.member_name || ''} ${item.name || ''}`).includes(normalizedPlanQuery));
+  const planPages = Math.max(1, Math.ceil(visiblePlans.length / TRAINING_PAGE_SIZE));
+  planPage = Math.min(planPages, Math.max(1, planPage));
+  const renderedPlans = visiblePlans.slice((planPage - 1) * TRAINING_PAGE_SIZE, planPage * TRAINING_PAGE_SIZE);
+  window.AdminPagination?.render(t('plan-pagination'), {
+    page: planPage,
+    total: visiblePlans.length,
+    pageSize: TRAINING_PAGE_SIZE,
+    onChange: (page) => { planPage = page; renderAll(); }
+  });
+  for (const item of renderedPlans) {
     const row = document.createElement('li');
     row.className = 'entity-card';
     row.tabIndex = 0;
@@ -380,8 +451,18 @@ function renderAll({ libraryOnly = false } = {}) {
       });
       actions.append(edit, remove);
       row.appendChild(actions);
+      row.appendChild(trainingMobileMenu(`Opções da ficha de ${item.member_name}`, [
+        { label: 'Editar', run: () => openPlanForm(item) },
+        { label: 'Excluir', danger: true, run: (button) => deletePlan(item, button) }
+      ]));
     }
     planList.appendChild(row);
+  }
+  if (!renderedPlans.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.textContent = planLibraryQuery ? 'Nenhuma ficha encontrada para esse aluno.' : 'Nenhuma ficha cadastrada.';
+    planList.appendChild(empty);
   }
 }
 
@@ -454,7 +535,7 @@ function openExerciseForm(item = null) {
   editingExerciseId = item?.id || null;
   editingOriginalVideoUrl = item?.video_url || '';
   t('exercise-title').textContent = item ? 'Editar exercício' : 'Novo exercício';
-  t('create-exercise-button').textContent = item ? 'Salvar alterações' : 'Cadastrar exercício';
+  t('create-exercise-button').textContent = 'Salvar';
   t('exercise-name').value = item?.name || '';
   t('exercise-group').value = item?.muscle_group_primary || item?.muscle_group || '';
   t('exercise-secondary-muscles').value = item?.muscle_group_secondary || '';
@@ -671,7 +752,7 @@ async function createExercise() {
     editingExerciseId = null;
     editingOriginalVideoUrl = '';
     t('exercise-title').textContent = 'Novo exercício';
-    t('create-exercise-button').textContent = 'Cadastrar exercício';
+    t('create-exercise-button').textContent = 'Salvar';
     t('exercise-video-file').value = '';
     t('exercise-video-url').value = '';
     setVideoSourceMode();
@@ -726,7 +807,7 @@ function resetPlanBuilder() {
   activePlanWeekday = null;
   document.querySelectorAll('input[name="plan-day"]').forEach((input) => { input.checked = false; });
   if (t('plan-title')) t('plan-title').textContent = 'Nova ficha';
-  if (t('create-plan-button')) t('create-plan-button').textContent = 'Criar ficha';
+  if (t('create-plan-button')) t('create-plan-button').textContent = 'Salvar';
   if (t('plan-member')) {
     t('plan-member').value = '';
     t('plan-member').disabled = false;
@@ -750,7 +831,7 @@ async function openPlanForm(item) {
     const detail = await api(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.id)}`);
     editingPlanId = item.id;
     t('plan-title').textContent = 'Editar ficha';
-    t('create-plan-button').textContent = 'Salvar alterações';
+    t('create-plan-button').textContent = 'Salvar';
     t('plan-member').value = detail.plan?.member_id || item.member_id || '';
     t('plan-member').disabled = false;
     t('plan-level').value = detail.plan?.level || item.level || '';
@@ -1033,21 +1114,114 @@ async function addWorkoutExercise() {
 }
 
 async function reviewPlan() {
-  const result = await api('/api/training/plans/review', {
-    method: 'POST',
-    body: JSON.stringify({ plan_id: t('review-plan').value })
-  });
-  const list = t('review-list');
-  list.innerHTML = '';
-  const title = document.createElement('li');
-  title.textContent = result.recommendation;
-  list.appendChild(title);
-  for (const suggestion of result.suggestions || []) {
-    const row = document.createElement('li');
-    row.textContent = `${suggestion.type}: ${suggestion.reason || ''}`;
-    list.appendChild(row);
+  const button = t('review-plan-button');
+  const loading = t('review-loading');
+  const error = t('review-error');
+  button.disabled = true;
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  t('review-result').classList.add('hidden');
+  t('review-history').classList.add('hidden');
+  try {
+    currentTrainingReview = await api('/api/training/plans/review', {
+      method: 'POST',
+      body: JSON.stringify({ plan_id: t('review-plan').value })
+    });
+    renderTrainingReview(currentTrainingReview);
+    setTrainingStatus(currentTrainingReview.source === 'local_generative' ? 'Análise local gerada.' : 'Análise gerada pelo motor de regras.');
+  } catch (requestError) {
+    error.textContent = trainingReviewErrorMessage(requestError);
+    error.classList.remove('hidden');
+  } finally {
+    button.disabled = false;
+    loading.classList.add('hidden');
   }
-  setTrainingStatus('Analise gerada.');
+}
+
+function trainingReviewErrorMessage(error) {
+  const text = String(error?.message || error || '');
+  if (text.includes('analise_em_andamento')) return 'Já existe uma análise em andamento. Aguarde a conclusão.';
+  if (text.includes('aguarde_nova_analise')) return 'Esta ficha foi analisada há pouco. Aguarde antes de gerar novamente.';
+  if (text.includes('limite_horario_atingido')) return 'O limite de análises desta hora foi atingido.';
+  return 'Não foi possível concluir a análise. Tente novamente.';
+}
+
+function reviewItem(title, description, evidence = []) {
+  const item = document.createElement('article');
+  item.className = 'training-review-item';
+  const strong = document.createElement('strong');
+  strong.textContent = title;
+  const body = document.createElement('div');
+  body.textContent = description;
+  item.append(strong, body);
+  if (evidence.length) {
+    const list = document.createElement('ul');
+    list.className = 'training-review-evidence';
+    evidence.forEach((value) => {
+      const row = document.createElement('li');
+      row.textContent = value;
+      list.appendChild(row);
+    });
+    item.appendChild(list);
+  }
+  return item;
+}
+
+function renderTrainingReview(review) {
+  t('review-source').textContent = review.source === 'local_generative' ? 'IA local' : 'Motor de regras';
+  t('review-confidence').textContent = `Confiança ${Math.round(Number(review.confidence || 0) * 100)}%`;
+  t('review-human').classList.toggle('hidden', !review.requires_human_review);
+  t('review-summary').textContent = review.summary || '';
+  t('review-student-message').textContent = review.student_message || '';
+  t('review-trainer-notes').textContent = review.trainer_notes || '';
+  const signals = t('review-signals');
+  signals.replaceChildren(...(review.signals || []).map((item) => reviewItem(`${item.severity} · ${item.type}`, item.description, item.evidence || [])));
+  const suggestions = t('review-suggestions');
+  suggestions.replaceChildren(...(review.suggestions || []).map((item) => reviewItem(`${item.priority} · ${item.type}`, item.suggested_action, [item.reason])));
+  t('review-decision').classList.toggle('hidden', Boolean(review.approved_at || review.rejected_at));
+  t('review-decision-status').textContent = review.approved_at
+    ? 'Análise aprovada. A mensagem está disponível para o aluno.'
+    : review.rejected_at
+      ? 'Análise rejeitada.'
+      : '';
+  t('review-decision-status').classList.toggle('hidden', !review.approved_at && !review.rejected_at);
+  t('review-result').classList.remove('hidden');
+}
+
+async function decideCurrentReview(decision) {
+  if (!currentTrainingReview) return;
+  const reason = decision === 'reject' ? t('review-rejection-reason').value.trim() : '';
+  const review = await api(`/api/training/plans/review/${decision}`, {
+    method: 'POST',
+    body: JSON.stringify({ review_id: currentTrainingReview.id, reason })
+  });
+  currentTrainingReview = review;
+  renderTrainingReview(review);
+  await loadReviewHistory();
+}
+
+async function loadReviewHistory() {
+  const planId = t('review-plan').value;
+  const result = await api(`/api/training/plans/reviews?plan_id=${encodeURIComponent(planId)}&limit=20`);
+  const rows = result.data || [];
+  const list = t('review-history-list');
+  list.replaceChildren(...rows.map((item) => {
+    const card = reviewItem(`${new Date(item.created_at).toLocaleString('pt-BR')} · ${item.source === 'local_generative' ? 'IA local' : 'Regras'}`, item.summary || '', [`Status: ${item.status}`, `Confiança: ${Math.round(Number(item.confidence || 0) * 100)}%`]);
+    card.classList.add('training-review-history-item');
+    card.addEventListener('click', () => {
+      currentTrainingReview = item;
+      renderTrainingReview(item);
+    });
+    return card;
+  }));
+  const comparison = t('review-comparison');
+  if (rows.length >= 2) {
+    comparison.textContent = `Comparação: ${rows[0].status} agora; ${rows[1].status} na análise anterior. Sinais: ${(rows[0].signals || []).length} agora e ${(rows[1].signals || []).length} antes.`;
+    comparison.classList.remove('hidden');
+  } else {
+    comparison.classList.add('hidden');
+  }
+  t('review-history').classList.remove('hidden');
 }
 
 t('create-exercise-button').addEventListener('click', createExercise);
@@ -1068,6 +1242,9 @@ document.querySelectorAll('input[name="plan-day"]').forEach((input) => {
 t('create-day-button').addEventListener('click', createDay);
 t('add-workout-exercise-button').addEventListener('click', addWorkoutExercise);
 t('review-plan-button').addEventListener('click', reviewPlan);
+t('review-history-button').addEventListener('click', loadReviewHistory);
+t('review-approve-button').addEventListener('click', () => decideCurrentReview('approve'));
+t('review-reject-button').addEventListener('click', () => decideCurrentReview('reject'));
 
 function syncTrainingModalState() {
   document.body.classList.toggle('modal-open', Boolean(document.querySelector('.modal:not(.hidden)')));
@@ -1108,16 +1285,32 @@ t('toggle-exercise-search')?.addEventListener('click', () => {
 });
 t('exercise-search')?.addEventListener('input', (event) => {
   exerciseLibraryQuery = event.target.value;
+  exercisePage = 1;
   renderAll({ libraryOnly: true });
   t('exercise-search')?.focus();
 });
 t('exercise-primary-filter')?.addEventListener('change', (event) => {
   exercisePrimaryFilter = event.target.value;
+  exercisePage = 1;
   renderAll({ libraryOnly: true });
 });
 t('exercise-secondary-filter')?.addEventListener('change', (event) => {
   exerciseSecondaryFilter = event.target.value;
+  exercisePage = 1;
   renderAll({ libraryOnly: true });
+});
+t('toggle-plan-search')?.addEventListener('click', () => {
+  const filters = t('plan-library-filters');
+  const isOpen = filters?.classList.toggle('hidden') === false;
+  filters?.setAttribute('aria-hidden', String(!isOpen));
+  t('toggle-plan-search')?.setAttribute('aria-expanded', String(isOpen));
+  if (isOpen) t('plan-search')?.focus();
+});
+t('plan-search')?.addEventListener('input', (event) => {
+  planLibraryQuery = event.target.value;
+  planPage = 1;
+  renderAll();
+  t('plan-search')?.focus();
 });
 
 [

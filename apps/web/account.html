@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meu perfil - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./admin-profile.css" />
+  <link rel="stylesheet" href="./admin-profile.css?v=20260716-2" />
 </head>
 <body>
   <main class="app-shell">
@@ -42,7 +43,7 @@
             <div class="field"><label for="profile-country">País</label><input id="profile-country" value="Brasil" /></div>
           </div>
         </section>
-        <div class="form-actions"><button type="submit">Salvar perfil</button></div>
+        <div class="form-actions"><button type="submit">Salvar</button></div>
         <p class="status-line" id="profile-status"></p>
       </form>
 
@@ -54,7 +55,7 @@
           <div class="field"><label for="gym-document">CNPJ / documento da academia</label><input id="gym-document" /></div>
           <div class="field"><label for="gym-address">Endereço da academia</label><input id="gym-address" /></div>
           <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
-          <div class="form-actions"><button id="save-gym-button" type="button">Salvar dados da academia</button></div>
+          <div class="form-actions"><button id="save-gym-button" type="button">Salvar</button></div>
         </section>
       </div>
     </section>
@@ -62,7 +63,7 @@
   <div class="modal hidden" id="preferences-modal" role="dialog" aria-modal="true" aria-labelledby="preferences-title">
     <div class="modal-card preferences-modal-card">
       <div class="modal-header">
-        <div><h3 id="preferences-title">Preferências</h3><p>Escolha como o sistema aparece para você.</p></div>
+        <div><h3 id="preferences-title">Preferências</h3></div>
         <button class="modal-close" id="close-preferences-button" type="button" aria-label="Fechar">×</button>
       </div>
       <div class="preferences-modal-grid">
@@ -80,11 +81,11 @@
           <label class="accent-option"><input type="radio" name="profile-accent" value="rose"><span class="accent-swatch accent-rose"></span><span>Rosa</span></label>
         </div>
       </fieldset>
-      <div class="form-actions preferences-modal-actions"><button class="secondary" id="cancel-preferences-button" type="button">Cancelar</button><button id="save-preferences-button" type="button">Salvar preferências</button></div>
+      <div class="form-actions preferences-modal-actions"><button class="secondary" id="cancel-preferences-button" type="button">Cancelar</button><button id="save-preferences-button" type="button">Salvar</button></div>
       <p class="status-line" id="preferences-status"></p>
     </div>
   </div>
-  <script src="./nav.js"></script>
+  <script src="./nav.js?v=20260719-1"></script>
   <script src="./account.js"></script>
 </body>
 </html>

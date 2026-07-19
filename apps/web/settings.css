@@ -1,0 +1,12 @@
+.settings-shell { padding-top: 28px; }
+.module-settings-panel { margin-bottom: 24px; }
+.module-settings-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.module-settings-heading h2, .module-settings-heading p { margin: 0; }
+.module-settings-heading p { margin-top: 6px; color: var(--muted, #9fb2c9); max-width: 760px; }
+.module-settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.module-toggle { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 14px 16px; border: 1px solid var(--line, #294761); border-radius: 14px; cursor: pointer; }
+.module-toggle:hover { border-color: #339cff; }
+.module-toggle input { width: 20px; height: 20px; accent-color: #218cff; flex: 0 0 auto; }
+.module-toggle strong, .module-toggle small { display: block; }
+.module-toggle small { margin-top: 3px; color: var(--muted, #9fb2c9); }
+@media (max-width: 640px) { .module-settings-heading { align-items: stretch; flex-direction: column; } .module-settings-heading button { width: 100%; } }

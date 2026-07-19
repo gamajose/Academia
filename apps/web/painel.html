@@ -1,19 +1,19 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./product-layout.css" />
+  <link rel="stylesheet" href="./product-layout.css?v=20260719-2" />
+  <link rel="stylesheet" href="./dashboard-evolution.css?v=20260719-1" />
 </head>
 <body>
   <main class="app-shell">
     <section class="hero">
-      <p class="eyebrow">Administração</p>
       <h1>Painel</h1>
-      <p>Visão geral da academia, atualizada automaticamente para você acompanhar a operação.</p>
     </section>
 
     <section class="login-card hidden" id="login-card">
@@ -24,24 +24,58 @@
     </section>
 
     <section class="dashboard" id="dashboard">
-      <div class="toolbar">
-        <div>
-          <h2>Resumo da academia</h2>
-        </div>
-      </div>
-      <div class="cards dashboard-summary-cards">
+      <div class="cards dashboard-summary-cards dashboard-core-cards">
         <a class="dashboard-summary-card members" href="./alunos.html"><span>Alunos ativos</span><strong id="active-members">0</strong><small>Ver cadastro e histórico</small></a>
         <a class="dashboard-summary-card plans" href="./planos.html"><span>Planos ativos</span><strong id="active-plans">0</strong><small>Ver planos comerciais</small></a>
         <a class="dashboard-summary-card memberships" href="./vinculos.html"><span>Matrículas ativas</span><strong id="active-memberships">0</strong><small>Ver vínculos</small></a>
-        <a class="dashboard-summary-card assessments" href="./alerts.html"><span>Avaliações pendentes</span><strong id="pending-assessments">0</strong><small>Ver alertas</small></a>
-        <a class="dashboard-summary-card finance" href="./financeiro.html"><span>Financeiro em aberto</span><strong id="pending-payments">0</strong><small>Ver recebimentos</small></a>
       </div>
+      <div class="cards dashboard-summary-cards dashboard-alert-cards">
+        <a class="dashboard-summary-card finance dashboard-alert-trigger" data-dashboard-alert="finance" href="#pagamentos-vencidos" role="button" aria-haspopup="dialog"><span>Financeiro</span><strong id="dashboard-overdue-count">0</strong><small>Pagamentos vencidos</small></a>
+        <a class="dashboard-summary-card alert-membership dashboard-alert-trigger" data-dashboard-alert="membership" href="#matriculas-vencendo" role="button" aria-haspopup="dialog"><span>Matrículas</span><strong id="dashboard-membership-due-count">0</strong><small>Vencendo em 7 dias</small></a>
+        <a class="dashboard-summary-card alert-training dashboard-alert-trigger" data-dashboard-alert="training" href="#fichas-para-revisar" role="button" aria-haspopup="dialog"><span>Treinos</span><strong id="dashboard-training-review-count">0</strong><small>Fichas para revisar</small></a>
+        <a class="dashboard-summary-card assessments dashboard-alert-trigger" data-dashboard-alert="evolution" href="#avaliacoes-pendentes" role="button" aria-haspopup="dialog"><span>Evolução</span><strong id="dashboard-assessment-due-count">0</strong><small>Avaliações pendentes</small></a>
+      </div>
+      <p class="status-line dashboard-alerts-status" id="dashboard-alerts-status" aria-live="polite"></p>
     </section>
   </main>
+
+  <div class="modal hidden" id="dashboard-alert-modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-alert-title" aria-hidden="true">
+    <div class="modal-card dashboard-alert-modal-card">
+      <div class="modal-header"><h3 id="dashboard-alert-title">Pendências</h3><button class="secondary modal-close" id="close-dashboard-alert" type="button" aria-label="Fechar">×</button></div>
+      <ul id="dashboard-alert-list" class="dashboard-alert-list"></ul>
+      <p class="status-line" id="dashboard-alert-modal-status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="dashboard-assessment-modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-assessment-title" aria-hidden="true">
+    <form class="modal-card dashboard-assessment-card" id="dashboard-assessment-form">
+      <div class="modal-header">
+        <div><h3 id="dashboard-assessment-title">Nova avaliação</h3><p id="dashboard-assessment-member-name">Aluno</p></div>
+        <button type="button" id="close-dashboard-assessment" class="secondary modal-close" aria-label="Fechar">×</button>
+      </div>
+      <input type="hidden" id="dashboard-assessment-member" />
+      <div class="dashboard-assessment-grid">
+        <label>Data da avaliação<input type="date" id="dashboard-assessment-date" required /></label>
+        <label>Peso (kg)<input type="number" id="dashboard-assessment-weight" min="0" step="0.01" /></label>
+        <label>Altura (cm)<input type="number" id="dashboard-assessment-height" min="0" step="0.01" /></label>
+        <label>Gordura corporal (%)<input type="number" id="dashboard-assessment-fat" min="0" step="0.01" /></label>
+        <label>Massa muscular (kg)<input type="number" id="dashboard-assessment-muscle" min="0" step="0.01" /></label>
+        <label>Cintura (cm)<input type="number" id="dashboard-assessment-waist" min="0" step="0.01" /></label>
+        <label>Peito (cm)<input type="number" id="dashboard-assessment-chest" min="0" step="0.01" /></label>
+        <label>Quadril (cm)<input type="number" id="dashboard-assessment-hip" min="0" step="0.01" /></label>
+        <label>Bíceps (cm)<input type="number" id="dashboard-assessment-biceps" min="0" step="0.01" /></label>
+        <label>Costas (cm)<input type="number" id="dashboard-assessment-back" min="0" step="0.01" /></label>
+        <label class="full">Observações<textarea id="dashboard-assessment-notes" rows="4" placeholder="Observações da avaliação"></textarea></label>
+      </div>
+      <p class="status-line" id="dashboard-assessment-status" aria-live="polite"></p>
+      <div class="form-actions"><button type="button" class="secondary" id="cancel-dashboard-assessment">Cancelar</button><button type="submit" id="save-dashboard-assessment">Salvar</button></div>
+    </form>
+  </div>
   <script src="./guard.js"></script>
-  <script src="./nav.js"></script>
+  <script src="./nav.js?v=20260719-1"></script>
   <script src="./app.js"></script>
   <script src="./dashboard-session-stability.js?v=20260712-2158"></script>
   <script src="./dashboard-auto-refresh.js"></script>
+  <script src="./dashboard-evolution.js?v=20260719-1"></script>
 </body>
 </html>
