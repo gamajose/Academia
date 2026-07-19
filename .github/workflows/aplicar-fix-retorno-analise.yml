@@ -1,0 +1,285 @@
+name: Aplicar correção do retorno da análise
+
+on:
+  push:
+    branches:
+      - fix/retorno-analise-ia-sem-erro
+    paths:
+      - '.github/workflows/aplicar-fix-retorno-analise.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/retorno-analise-ia-sem-erro
+          fetch-depth: 0
+
+      - name: Corrigir retorno e mensagens da análise
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          ui_path = Path('apps/web/training-review-ui.js')
+          ui = ui_path.read_text(encoding='utf-8')
+
+          confidence_marker = """  function confidenceBand(value) {
+            const percentage = confidencePercent(value);
+            if (percentage < 40) return 'baixa';
+            if (percentage < 70) return 'moderada';
+            return 'alta';
+          }
+
+          function statusLabel(value) {
+          """
+          confidence_replacement = """  function confidenceBand(value) {
+            const percentage = confidencePercent(value);
+            if (percentage < 40) return 'baixa';
+            if (percentage < 70) return 'moderada';
+            return 'alta';
+          }
+
+          function confidenceText(value) {
+            const percentage = confidencePercent(value);
+            if (percentage <= 0) return 'Dados insuficientes para medir a confiabilidade';
+            return `Confiabilidade dos dados: ${percentage}% (${confidenceBand(value)})`;
+          }
+
+          function statusLabel(value) {
+          """
+          if confidence_marker not in ui:
+              raise SystemExit('marcador_confidence_nao_encontrado')
+          ui = ui.replace(confidence_marker, confidence_replacement, 1)
+
+          status_marker = """  function statusLabel(value) {
+            return STATUS_LABELS[String(value || '')] || 'Acompanhamento do professor recomendado';
+          }
+
+          function sourceLabel(value) {
+          """
+          status_replacement = """  function statusLabel(value) {
+            return STATUS_LABELS[String(value || '')] || 'Acompanhamento do professor recomendado';
+          }
+
+          function recommendationLabel(review) {
+            if (review?.requires_human_review && review?.status === 'maintain') {
+              return 'Manter a ficha até a revisão do professor';
+            }
+            return statusLabel(review?.status);
+          }
+
+          function sourceLabel(value) {
+          """
+          if status_marker not in ui:
+              raise SystemExit('marcador_status_nao_encontrado')
+          ui = ui.replace(status_marker, status_replacement, 1)
+
+          ui = ui.replace(
+              "`Comparação com a análise anterior: agora a recomendação é “${statusLabel(rows[0]?.status).toLowerCase()}”; antes era “${statusLabel(rows[1]?.status).toLowerCase()}”.`,",
+              "`Comparação com a análise anterior: agora a recomendação é “${recommendationLabel(rows[0]).toLowerCase()}”; antes era “${recommendationLabel(rows[1]).toLowerCase()}”.`,",
+              1
+          )
+
+          ui = ui.replace(
+              "      const percentage = confidencePercent(review?.confidence);\n      setText('review-source', sourceLabel(review?.source));\n      setText('review-confidence', `Confiabilidade dos dados: ${percentage}% (${confidenceBand(review?.confidence)})`);",
+              "      setText('review-source', sourceLabel(review?.source));\n      setText('review-confidence', confidenceText(review?.confidence));",
+              1
+          )
+          ui = ui.replace(
+              "      setText('review-status-readable', `Recomendação: ${statusLabel(review?.status)}.`);",
+              "      setText('review-status-readable', `Recomendação: ${recommendationLabel(review)}.`);",
+              1
+          )
+          ui = ui.replace(
+              "      const percentage = confidencePercent(item?.confidence);\n      const card = reviewItem(",
+              "      const card = reviewItem(",
+              1
+          )
+          ui = ui.replace(
+              "          `Recomendação: ${statusLabel(item?.status)}`,\n          `Confiabilidade dos dados: ${percentage}% (${confidenceBand(item?.confidence)})`,",
+              "          `Recomendação: ${recommendationLabel(item)}`,\n          confidenceText(item?.confidence),",
+              1
+          )
+
+          history_marker = """      return rows;
+            }
+
+            function errorMessage(error) {
+          """
+          history_replacement = """      return rows;
+            }
+
+            const NON_RECOVERABLE_ERRORS = new Set([
+              'aguarde_nova_analise',
+              'limite_horario_atingido',
+              'sem_permissao',
+              'ficha_nao_encontrada',
+              'plan_id_obrigatorio'
+            ]);
+
+            function shouldAttemptRecovery(error) {
+              return !NON_RECOVERABLE_ERRORS.has(String(error?.message || error || ''));
+            }
+
+            function wait(milliseconds) {
+              return new Promise((resolve) => windowObject.setTimeout(resolve, milliseconds));
+            }
+
+            async function recoverRecentReview(requestStartedAt) {
+              const deadline = Date.now() + 45000;
+              do {
+                try {
+                  const rows = await fetchHistory({ show: false });
+                  const recent = rows.find((item) => new Date(item.created_at).getTime() >= requestStartedAt - 5000);
+                  if (recent) return recent;
+                } catch (_) {
+                  // A consulta será repetida até o limite abaixo.
+                }
+                if (Date.now() >= deadline) break;
+                await wait(2000);
+              } while (Date.now() < deadline);
+              return null;
+            }
+
+            function errorMessage(error) {
+          """
+          if history_marker not in ui:
+              raise SystemExit('marcador_history_nao_encontrado')
+          ui = ui.replace(history_marker, history_replacement, 1)
+
+          old_catch = """      } catch (error) {
+                let recovered = null;
+                try {
+                  const rows = await fetchHistory({ show: false });
+                  recovered = rows.find((item) => new Date(item.created_at).getTime() >= requestStartedAt - 5000) || null;
+                } catch (_) {
+                  recovered = null;
+                }
+                if (recovered) {
+                  renderReview(recovered);
+                  const status = byId('training-status');
+                  if (status) status.textContent = 'A análise foi concluída e recuperada do histórico.';
+                } else if (errorBox) {
+                  errorBox.textContent = errorMessage(error);
+                  errorBox.classList.remove('hidden');
+                }
+              } finally {
+          """
+          new_catch = """      } catch (error) {
+                const recovered = shouldAttemptRecovery(error)
+                  ? await recoverRecentReview(requestStartedAt)
+                  : null;
+                if (recovered) {
+                  errorBox?.classList.add('hidden');
+                  renderReview(recovered);
+                  const status = byId('training-status');
+                  if (status) status.textContent = 'Análise concluída pela IA local.';
+                } else if (errorBox) {
+                  errorBox.textContent = errorMessage(error);
+                  errorBox.classList.remove('hidden');
+                }
+              } finally {
+          """
+          if old_catch not in ui:
+              raise SystemExit('bloco_catch_nao_encontrado')
+          ui = ui.replace(old_catch, new_catch, 1)
+
+          export_marker = """    confidencePercent,
+              confidenceBand,
+              statusLabel,
+              sourceLabel,
+              humanizeText,
+              safeSummary,
+              comparisonText
+          """
+          export_replacement = """    confidencePercent,
+              confidenceBand,
+              confidenceText,
+              statusLabel,
+              recommendationLabel,
+              sourceLabel,
+              humanizeText,
+              safeSummary,
+              comparisonText,
+              shouldAttemptRecovery
+          """
+          if export_marker not in ui:
+              raise SystemExit('marcador_export_nao_encontrado')
+          ui = ui.replace(export_marker, export_replacement, 1)
+          ui_path.write_text(ui, encoding='utf-8')
+
+          training_path = Path('apps/web/training.js')
+          training = training_path.read_text(encoding='utf-8')
+          listener_block = """t('review-plan-button').addEventListener('click', reviewPlan);
+          t('review-history-button').addEventListener('click', loadReviewHistory);
+          t('review-approve-button').addEventListener('click', () => decideCurrentReview('approve'));
+          t('review-reject-button').addEventListener('click', () => decideCurrentReview('reject'));
+          """
+          if listener_block not in training:
+              raise SystemExit('listeners_legados_nao_encontrados')
+          training = training.replace(listener_block, "// A interface de análise é controlada por training-review-ui.js.\n", 1)
+          training_path.write_text(training, encoding='utf-8')
+
+          html_path = Path('apps/web/training.html')
+          html = html_path.read_text(encoding='utf-8')
+          html = html.replace('training.js?v=20260719-3', 'training.js?v=20260719-4', 1)
+          html = html.replace('training-review-ui.js?v=20260719-1', 'training-review-ui.js?v=20260719-2', 1)
+          html_path.write_text(html, encoding='utf-8')
+
+          test_path = Path('apps/api/test/trainingReviewUi.test.js')
+          test = test_path.read_text(encoding='utf-8')
+          test = test.replace(
+              "  confidenceBand,\n  statusLabel,",
+              "  confidenceBand,\n  confidenceText,\n  statusLabel,\n  recommendationLabel,",
+              1
+          )
+          test = test.replace(
+              "  safeSummary,\n  comparisonText",
+              "  safeSummary,\n  comparisonText,\n  shouldAttemptRecovery",
+              1
+          )
+          test += """
+
+          test('explica ausência de dados sem mostrar zero como resultado', () => {
+            assert.equal(confidenceText(0), 'Dados insuficientes para medir a confiabilidade');
+            assert.equal(confidenceText(0.73), 'Confiabilidade dos dados: 73% (alta)');
+          });
+
+          test('evita recomendação contraditória quando revisão humana é necessária', () => {
+            assert.equal(
+              recommendationLabel({ status: 'maintain', requires_human_review: true }),
+              'Manter a ficha até a revisão do professor'
+            );
+          });
+
+          test('recupera falhas de transporte, mas respeita bloqueios de negócio', () => {
+            assert.equal(shouldAttemptRecovery(new Error('fetch failed')), true);
+            assert.equal(shouldAttemptRecovery(new Error('analise_em_andamento')), true);
+            assert.equal(shouldAttemptRecovery(new Error('aguarde_nova_analise')), false);
+            assert.equal(shouldAttemptRecovery(new Error('limite_horario_atingido')), false);
+          });
+          """
+          test_path.write_text(test, encoding='utf-8')
+
+          Path('.github/workflows/aplicar-fix-retorno-analise.yml').unlink()
+          PY
+
+      - name: Validar e registrar alteração
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node --check apps/web/training-review-ui.js
+          node --check apps/web/training.js
+          node --test apps/api/test/trainingReviewUi.test.js
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/training-review-ui.js apps/web/training.js apps/web/training.html apps/api/test/trainingReviewUi.test.js .github/workflows/aplicar-fix-retorno-analise.yml
+          git commit -m 'fix(web): recuperar análise sem exibir falso erro'
+          git push origin HEAD:fix/retorno-analise-ia-sem-erro
