@@ -14,6 +14,7 @@ let credentialTtlSeconds = 30;
 let activeStudentView = null;
 let studentAiRefreshTimer = null;
 let studentAiLoading = false;
+let studentAiHistoryLoading = false;
 
 async function req(path, options = {}) {
   const response = await fetch(`${API}${path}`, {
@@ -157,6 +158,7 @@ function setStudentViewTab(tabName = 'registration') {
   document.querySelectorAll('[data-student-view-panel]').forEach((panel) => panel.classList.toggle('hidden', panel.dataset.studentViewPanel !== tabName));
   clearInterval(studentAiRefreshTimer);
   studentAiRefreshTimer = null;
+  if (tabName === 'history' && activeStudentView) void loadStudentAiHistory(activeStudentView.id);
   if (tabName === 'ai' && activeStudentView) {
     void loadStudentAi(activeStudentView.id);
     studentAiRefreshTimer = setInterval(() => {
@@ -215,7 +217,7 @@ async function saveStudentAssessment(event) {
     }) });
     setStudentContextModal('student-assessment-modal', false);
     await openStudentView(activeStudentView);
-    setStudentViewTab('history');
+    setStudentViewTab('ai');
   } catch (error) { $('student-assessment-status').textContent = `Não foi possível salvar: ${error.message}`; }
   finally { button.disabled = false; }
 }
@@ -251,17 +253,16 @@ async function openStudentSummary() {
   } catch (error) { $('student-summary-status').textContent = `Não foi possível carregar: ${error.message}`; }
 }
 
-function renderStudentAi(result) {
-  const host = $('student-view-ai-content');
+function renderStudentAi(result, host = $('student-view-ai-content')) {
   host.replaceChildren();
   const analysis = result.recent_analysis || result.analysis;
   const currentAssessment = result.assessments?.[0] || result.baseline || {};
 
   const facts = document.createElement('div'); facts.className = 'student-admin-ai-facts';
   const factItems = [
-    ['Avaliações', result.assessments?.length || 0],
+    ['Avaliações', result.assessment_count ?? result.assessments?.length ?? 0],
     ['Treinos no período', result.training_sessions || 0],
-    ['Metas ativas', (result.goals || []).filter((goal) => !['completed', 'closed'].includes(goal.status)).length]
+    ['Metas ativas', result.active_goal_count ?? (result.goals || []).filter((goal) => !['completed', 'closed'].includes(goal.status)).length]
   ];
   for (const [label, value] of factItems) { const card = document.createElement('div'); const name = document.createElement('span'); name.textContent = label; const content = document.createElement('strong'); content.textContent = String(value); card.append(name, content); facts.appendChild(card); }
   host.appendChild(facts);
@@ -314,6 +315,80 @@ function renderStudentAi(result) {
   }
 }
 
+function studentAiHistoryEntry(review) {
+  const details = document.createElement('details');
+  details.className = 'student-ai-history-entry';
+  const summary = document.createElement('summary');
+  const copy = document.createElement('div');
+  const analysis = review.recent_analysis || review.analysis || {};
+  const title = document.createElement('strong');
+  title.textContent = analysis.title || 'Análise do progresso';
+  const meta = document.createElement('span');
+  const date = review.created_at ? new Date(review.created_at).toLocaleString('pt-BR') : 'Data não informada';
+  meta.textContent = `${date} · ${review.assessment_count || 0} avaliação(ões) · ${review.training_sessions || 0} treino(s)`;
+  copy.append(title, meta);
+  const indicator = document.createElement('span');
+  indicator.className = 'student-ai-history-toggle';
+  indicator.textContent = 'Ver detalhes';
+  summary.append(copy, indicator);
+  const body = document.createElement('div');
+  body.className = 'student-ai-history-body';
+  renderStudentAi(review, body);
+  details.append(summary, body);
+  details.addEventListener('toggle', () => {
+    indicator.textContent = details.open ? 'Ocultar detalhes' : 'Ver detalhes';
+    if (!details.open) return;
+    details.parentElement?.querySelectorAll('details[open]').forEach((item) => {
+      if (item !== details) item.removeAttribute('open');
+    });
+  });
+  return details;
+}
+
+function renderStudentAiHistory(rows, target) {
+  if (!target) return;
+  target.replaceChildren();
+  if (!rows.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'Nenhuma análise com IA registrada para este aluno.';
+    target.appendChild(empty);
+    return;
+  }
+  rows.forEach((review) => target.appendChild(studentAiHistoryEntry(review)));
+}
+
+async function loadStudentAiHistory(memberId = activeStudentView?.id) {
+  if (!memberId || studentAiHistoryLoading) return;
+  studentAiHistoryLoading = true;
+  const profileStatus = $('student-view-ai-history-status');
+  const modalStatus = $('student-ai-history-modal-status');
+  if (profileStatus) profileStatus.textContent = 'Carregando histórico...';
+  if (modalStatus && !$('student-ai-history-modal').classList.contains('hidden')) modalStatus.textContent = 'Carregando histórico...';
+  try {
+    const result = await req(`/api/assessments/analysis/history?member_id=${encodeURIComponent(memberId)}&limit=50`);
+    if (String(activeStudentView?.id || '') !== String(memberId)) return;
+    const records = Array.isArray(result.data) ? result.data : [];
+    renderStudentAiHistory(records, $('student-view-ai-history-list'));
+    renderStudentAiHistory(records, $('student-ai-history-modal-list'));
+    if (profileStatus) profileStatus.textContent = '';
+    if (modalStatus) modalStatus.textContent = '';
+  } catch (error) {
+    const message = `Não foi possível carregar o histórico: ${error.message}`;
+    if (profileStatus) profileStatus.textContent = message;
+    if (modalStatus) modalStatus.textContent = message;
+  } finally {
+    studentAiHistoryLoading = false;
+  }
+}
+
+function openStudentAiHistoryModal() {
+  if (!activeStudentView) return;
+  $('student-ai-history-member-name').textContent = activeStudentView.name || 'Aluno';
+  setStudentContextModal('student-ai-history-modal', true);
+  void loadStudentAiHistory(activeStudentView.id);
+}
+
 async function loadStudentAi(memberId = activeStudentView?.id) {
   if (!memberId || studentAiLoading) return;
   studentAiLoading = true;
@@ -324,6 +399,7 @@ async function loadStudentAi(memberId = activeStudentView?.id) {
     if (String(activeStudentView?.id || '') !== requestedMemberId) return;
     $('student-view-ai-status').textContent = '';
     renderStudentAi(result);
+    void loadStudentAiHistory(memberId);
   } catch (error) {
     if (String(activeStudentView?.id || '') !== requestedMemberId) return;
     $('student-view-ai-status').textContent = `Não foi possível gerar a análise: ${error.message}`;
@@ -363,7 +439,7 @@ async function openStudentView(item) {
   photo.src = item.photo_url || '';
   $('student-view-photo-empty').hidden = Boolean(item.photo_url);
   $('student-view-exercises').innerHTML = '<li class="empty-state">Carregando ficha...</li>';
-  $('student-view-assessments').innerHTML = '<li class="empty-state">Carregando avaliações...</li>';
+  $('student-view-ai-history-list').innerHTML = '<div class="empty-state">Carregando análises...</div>';
   $('student-view-goal-list').innerHTML = '<li class="empty-state">Carregando metas...</li>';
   $('student-view-media').innerHTML = '<div class="empty-state">Carregando fotos...</div>';
   $('student-view-ai-content').replaceChildren();
@@ -387,25 +463,9 @@ async function openStudentView(item) {
       row.append(name, details); exerciseList.appendChild(row);
     }
     if (!exerciseList.children.length) exerciseList.innerHTML = '<li class="empty-state">Nenhum exercício em ficha ativa.</li>';
-    const list = $('student-view-assessments');
-    list.innerHTML = '';
     const assessments = assessmentResult.data || [];
     const latestAssessment = assessments[0];
     $('student-view-assessment-age').textContent = latestAssessment?.assessment_date ? `${dateOnly(latestAssessment.assessment_date)} · ${assessmentAge(latestAssessment.assessment_date)}` : 'Nunca avaliado';
-    for (const assessment of assessments.slice(0, 8)) {
-      const row = document.createElement('li');
-      row.className = 'student-view-assessment-row';
-      const copy = document.createElement('div');
-      const title = document.createElement('strong');
-      title.textContent = `Avaliação em ${new Date(`${String(assessment.assessment_date).slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR')}`;
-      const summary = document.createElement('span');
-      summary.textContent = `Peso: ${assessment.weight_kg ?? '-'} kg · Gordura: ${assessment.body_fat_percent ?? '-'}% · Cintura: ${assessment.waist_cm ?? '-'} cm`;
-      copy.append(title, summary);
-      row.appendChild(copy);
-      if (assessment.photo_url) { const image = document.createElement('img'); image.src = assessment.photo_url; image.alt = ''; image.loading = 'lazy'; row.appendChild(image); }
-      list.appendChild(row);
-    }
-    if (!list.children.length) list.innerHTML = '<li class="empty-state">Nenhuma avaliação registrada.</li>';
     const media = new Map();
     if (item.photo_url) media.set(item.photo_url, { url: item.photo_url, label: 'Foto do perfil' });
     for (const assessment of assessments) {
@@ -435,7 +495,7 @@ async function openStudentView(item) {
     }
     if (!goalList.children.length) goalList.innerHTML = '<li class="empty-state">Nenhuma meta cadastrada.</li>';
   } catch (error) {
-    $('student-view-assessments').innerHTML = `<li class="empty-state">Não foi possível carregar o histórico: ${error.message}</li>`;
+    $('student-view-ai-history-status').textContent = `Não foi possível carregar o histórico: ${error.message}`;
     $('student-view-media').innerHTML = `<div class="empty-state">Não foi possível carregar as fotos.</div>`;
     $('student-view-goal-list').innerHTML = `<li class="empty-state">Não foi possível carregar as metas.</li>`;
   }
@@ -909,13 +969,15 @@ $('close-student-view-modal').onclick = closeStudentViewModal;
 document.querySelectorAll('[data-student-view-tab]').forEach((button) => button.addEventListener('click', () => setStudentViewTab(button.dataset.studentViewTab)));
 $('student-view-new-assessment').onclick = openStudentAssessmentModal;
 $('student-view-summary').onclick = openStudentSummary;
+$('student-view-ai-history-button').onclick = openStudentAiHistoryModal;
 $('student-view-new-goal').onclick = openStudentGoalModal;
 $('student-assessment-form').addEventListener('submit', saveStudentAssessment);
 $('student-goal-form').addEventListener('submit', saveStudentGoal);
 $('close-student-assessment-modal').onclick = $('cancel-student-assessment').onclick = () => setStudentContextModal('student-assessment-modal', false);
 $('close-student-goal-modal').onclick = $('cancel-student-goal').onclick = () => setStudentContextModal('student-goal-modal', false);
 $('close-student-summary-modal').onclick = () => setStudentContextModal('student-summary-modal', false);
-for (const id of ['student-assessment-modal', 'student-goal-modal', 'student-summary-modal']) $(id).addEventListener('click', (event) => { if (event.target === $(id)) setStudentContextModal(id, false); });
+$('close-student-ai-history-modal').onclick = () => setStudentContextModal('student-ai-history-modal', false);
+for (const id of ['student-assessment-modal', 'student-goal-modal', 'student-summary-modal', 'student-ai-history-modal']) $(id).addEventListener('click', (event) => { if (event.target === $(id)) setStudentContextModal(id, false); });
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
 $('student-search').oninput = () => { currentPage = 1; render(); };

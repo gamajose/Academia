@@ -1,6 +1,7 @@
 const { recordAudit } = require('../lib/audit');
 const { buildProgressAnalysis, carryForwardAssessments } = require('../lib/progressAnalysis');
 const { loadTrainingIntelligence } = require('../lib/trainingIntelligence');
+const { buildProgressReviewPayload, persistProgressReview, listProgressReviewHistory } = require('../lib/progressReviewHistory');
 
 function numberOrNull(value) {
   if (value === undefined || value === null || value === '') return null;
@@ -142,6 +143,15 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     });
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/assessments/analysis/history') {
+    const memberId = url.searchParams.get('member_id');
+    if (!memberId) return send(res, 400, { error: 'member_id_obrigatorio' });
+    const member = await query('SELECT id FROM members WHERE id = $1 AND gym_id = $2 LIMIT 1', [memberId, user.gym_id]);
+    if (!member.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    const data = await listProgressReviewHistory(query, user.gym_id, memberId, url.searchParams.get('limit'));
+    return send(res, 200, { data });
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/assessments/analysis') {
     const memberId = url.searchParams.get('member_id');
     if (!memberId) return send(res, 400, { error: 'member_id_obrigatorio' });
@@ -167,14 +177,26 @@ async function handleAssessmentRoutes(req, res, user, url, helpers) {
     }
     const hasProgress = effectiveAssessments[0] && effectiveBaseline && effectiveAssessments[0].id !== effectiveBaseline.id;
     const trainingIntelligence = await loadTrainingIntelligence(query, user.gym_id, memberId, { assessments: effectiveAssessments, goals: goals.rows });
+    const analysis = buildProgressAnalysis(effectiveAssessments[0], hasProgress ? effectiveBaseline : null, goals.rows, { comparisonLabel: 'medição inicial', includeProjection: false });
+    const recentAnalysis = buildProgressAnalysis(effectiveAssessments[0], effectiveAssessments[1] || null, goals.rows, { comparisonLabel: 'avaliação anterior', includeProjection: false, trainingSessions });
+    const progressReviewPayload = buildProgressReviewPayload({
+      assessments: effectiveAssessments,
+      baseline: effectiveBaseline,
+      goals: goals.rows,
+      trainingSessions,
+      analysis,
+      recentAnalysis
+    });
+    const reviewRecord = await persistProgressReview(query, user, memberId, progressReviewPayload);
     return send(res, 200, {
       assessments: effectiveAssessments,
       baseline: effectiveBaseline,
       goals: goals.rows,
       training_sessions: trainingSessions,
       training_intelligence: trainingIntelligence,
-      analysis: buildProgressAnalysis(effectiveAssessments[0], hasProgress ? effectiveBaseline : null, goals.rows, { comparisonLabel: 'medição inicial', includeProjection: false }),
-      recent_analysis: buildProgressAnalysis(effectiveAssessments[0], effectiveAssessments[1] || null, goals.rows, { comparisonLabel: 'avaliação anterior', includeProjection: false, trainingSessions })
+      analysis,
+      recent_analysis: recentAnalysis,
+      review_record: reviewRecord
     });
   }
 
