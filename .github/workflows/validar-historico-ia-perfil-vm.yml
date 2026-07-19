@@ -9,7 +9,7 @@ on:
 
 jobs:
   validar:
-    runs-on: [self-hosted, linux, academia]
+    runs-on: [self-hosted, linux]
     timeout-minutes: 10
     env:
       PROJECT_DIR: /mnt/Projetos/Academia
