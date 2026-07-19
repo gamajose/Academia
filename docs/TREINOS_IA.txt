@@ -51,18 +51,18 @@ Execução controlada
 - Timeout e tamanho de saída são limitados.
 - Não há nova tentativa automática após timeout, evitando duas inferências pesadas.
 - keep_alive=0 solicita o descarregamento do modelo depois da resposta concluída.
-- O modelo usa temperatura zero, contexto curto e no máximo 96 tokens de saída.
+- O modelo usa temperatura zero, contexto curto e no máximo 160 tokens de saída.
 
 Variáveis do backend
 --------------------
 LOCAL_TRAINING_AI_ENABLED=true
 OLLAMA_BASE_URL=http://127.0.0.1:11434
 OLLAMA_MODEL=gemma3:1b
-OLLAMA_TIMEOUT_MS=150000
+OLLAMA_TIMEOUT_MS=240000
 OLLAMA_TEMPERATURE=0
 OLLAMA_KEEP_ALIVE=0
 OLLAMA_NUM_CTX=1024
-OLLAMA_NUM_PREDICT=96
+OLLAMA_NUM_PREDICT=160
 OLLAMA_NUM_PARALLEL=1
 LOCAL_TRAINING_PROMPT_VERSION=v2-narrative
 
@@ -97,6 +97,18 @@ Validar:
 O modelo gemma3:4b pode permanecer instalado para testes manuais, mas não é o
 modelo recomendado para esta VM sem GPU. O gemma3:1b concluiu a narrativa curta
 em CPU; o schema completo com listas aninhadas excedeu o tempo operacional.
+
+Validação operacional realizada em 19/07/2026:
+- deploy da main confirmado pelo commit implantado;
+- API, web e Ollama ativos;
+- Ollama escutando somente em 127.0.0.1:11434;
+- narrativa direta válida em aproximadamente 18 segundos;
+- análise completa pela rota interna em aproximadamente 27 segundos;
+- 642 tokens de entrada e 100 tokens de saída no teste controlado;
+- aprovação, rejeição e visibilidade do aluno validadas;
+- fallback rules_fallback validado com a IA desabilitada;
+- memória após os testes: aproximadamente 1,4 GiB em uso de 11 GiB;
+- swap praticamente sem uso.
 
 Rotas
 -----
@@ -165,7 +177,7 @@ manter o módulo funcionando pelo motor de regras.
 
 Limitações
 ----------
-- A VM executa o modelo em CPU; uma narrativa pode levar cerca de um a dois minutos.
+- A VM executa o modelo em CPU; o tempo varia conforme o tamanho da ficha e a carga do host.
 - O modelo gera explicação, não decisão autônoma.
 - A qualidade depende da regularidade dos registros de execução e avaliações.
 - Alterações de ficha continuam sendo uma ação separada e exclusivamente humana.
