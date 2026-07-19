@@ -14,11 +14,11 @@ concurrency:
 
 jobs:
   benchmark:
-    name: Medir schema compacto no gemma3 1b
+    name: Medir narrativa curta no gemma3 1b
     runs-on:
       - self-hosted
       - linux
-    timeout-minutes: 10
+    timeout-minutes: 8
     env:
       API_DIR: /mnt/Projetos/Academia/apps/api
       OLLAMA_BASE_URL: http://127.0.0.1:11434
@@ -83,84 +83,46 @@ jobs:
           }
 
           (async () => {
-            await measure('raw_short', {
-              model,
-              stream: false,
-              keep_alive: 0,
-              options: { temperature: 0, num_ctx: 1024, num_predict: 16 },
-              messages: [
-                { role: 'system', content: 'Responda de forma curta.' },
-                { role: 'user', content: 'Responda apenas com a palavra OK.' }
-              ]
-            });
-
-            const smallSchema = {
+            const narrativeSchema = {
               type: 'object',
               additionalProperties: false,
-              required: ['status'],
-              properties: { status: { type: 'string', enum: ['ok'] } }
-            };
-            await measure('small_schema', {
-              model,
-              stream: false,
-              keep_alive: 0,
-              format: smallSchema,
-              options: { temperature: 0, num_ctx: 1024, num_predict: 32 },
-              messages: [
-                { role: 'system', content: 'Responda somente no JSON solicitado.' },
-                { role: 'user', content: 'Retorne status ok.' }
-              ]
-            }, (content) => {
-              const parsed = JSON.parse(content);
-              if (parsed.status !== 'ok') throw new Error('small_schema_invalid');
-            });
-
-            const compactSchema = {
-              type: 'object',
-              additionalProperties: false,
-              required: [
-                'summary', 'status', 'confidence', 'requires_human_review',
-                'student_message', 'trainer_notes'
-              ],
+              required: ['summary', 'student_message', 'trainer_notes'],
               properties: {
-                summary: { type: 'string', minLength: 1, maxLength: 320 },
-                status: { type: 'string', enum: ['maintain', 'adjust', 'replace_partially', 'professional_review'] },
-                confidence: { type: 'number', minimum: 0, maximum: 1 },
-                requires_human_review: { type: 'boolean' },
-                student_message: { type: 'string', minLength: 1, maxLength: 320 },
-                trainer_notes: { type: 'string', minLength: 1, maxLength: 640 }
+                summary: { type: 'string', minLength: 1, maxLength: 180 },
+                student_message: { type: 'string', minLength: 1, maxLength: 180 },
+                trainer_notes: { type: 'string', minLength: 1, maxLength: 300 }
               }
             };
-            await measure('compact_training_schema', {
+
+            await measure('training_narrative_schema', {
               model,
               stream: false,
               keep_alive: 0,
-              format: compactSchema,
-              options: { temperature: 0, num_ctx: 2048, num_predict: 192 },
+              format: narrativeSchema,
+              options: { temperature: 0, num_ctx: 1024, num_predict: 96 },
               messages: [
                 {
                   role: 'system',
-                  content: 'Você apoia um profissional de educação física. Responda somente no JSON solicitado. Não diagnostique nem prescreva.'
+                  content: 'Você apoia um profissional de educação física. Responda somente no JSON solicitado, com três textos muito curtos. Não diagnostique, não prescreva e não altere o treino.'
                 },
                 {
                   role: 'user',
                   content: JSON.stringify({
                     objective: 'condicionamento geral',
                     level: 'iniciante',
-                    restrictions: [],
                     plan_age_days: 10,
                     sessions: 0,
-                    rule_status: 'professional_review',
-                    rule_requires_human_review: true,
-                    instruction: 'Explique de forma curta e conservadora. Preserve a revisão humana obrigatória.'
+                    rules_summary: 'Há poucos dados e a ficha exige revisão profissional.',
+                    rules_status: 'professional_review',
+                    rules_requires_human_review: true,
+                    instruction: 'Apenas explique os sinais objetivos já calculados. Seja conservador.'
                   })
                 }
               ]
             }, (content) => {
               const value = JSON.parse(content);
-              const keys = ['summary', 'status', 'confidence', 'requires_human_review', 'student_message', 'trainer_notes'];
-              if (!keys.every((key) => Object.prototype.hasOwnProperty.call(value, key))) throw new Error('compact_schema_missing_field');
-              if (value.requires_human_review !== true) throw new Error('compact_schema_safety_lost');
+              const keys = ['summary', 'student_message', 'trainer_notes'];
+              if (!keys.every((key) => typeof value[key] === 'string' && value[key].trim())) throw new Error('narrative_schema_invalid');
             });
 
             if (!results.every((item) => item.ok)) process.exitCode = 1;
