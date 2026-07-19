@@ -241,3 +241,59 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
 @media (max-width: 560px) { .finance-filter-grid { grid-template-columns: 1fr; } .finance-filter-actions > * { width: 100%; } .finance-filter-actions span { margin: 0; } }
 @media (max-width: 800px) { .student-ai-technical-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .student-view-grid { grid-template-columns: 1fr; } .student-view-identity { align-items: flex-start; } .student-view-tabs { margin-bottom: 14px; } .student-view-tabs button { min-width: 0; padding-inline: 3px; font-size: 10px; } .student-view-context-actions { justify-content: stretch; } .student-view-context-actions .button { flex: 1 1 0; min-width: 0; padding-inline: 7px; } .student-view-media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .student-context-modal-card .metric-grid, .student-admin-ai-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .student-admin-ai-facts { grid-template-columns: 1fr; } }
+
+
+/* Histórico persistente da IA no perfil do aluno. */
+.student-view-registration-actions {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface, #f4f8fc);
+}
+
+.student-ai-tab-toolbar .button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.student-ai-history-modal-card {
+  width: min(920px, 96vw);
+}
+
+.student-ai-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.student-ai-history-entry {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.student-ai-history-entry > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.student-ai-history-entry > summary::-webkit-details-marker { display: none; }
+.student-ai-history-entry > summary > div { display: grid; gap: 4px; min-width: 0; }
+.student-ai-history-entry > summary strong { color: var(--text); font-size: 14px; }
+.student-ai-history-entry > summary span { color: var(--muted); font-size: 11px; }
+.student-ai-history-entry .student-ai-history-toggle { color: var(--accent); font-weight: 800; white-space: nowrap; }
+.student-ai-history-entry[open] > summary { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.student-ai-history-body { padding: 14px; }
+.student-ai-history-body .student-admin-ai-facts { margin-top: 0; }
+
+@media (max-width: 640px) {
+  .student-ai-tab-toolbar { align-items: stretch; flex-direction: column; }
+  .student-ai-tab-toolbar .button { width: 100%; }
+  .student-ai-history-entry > summary { align-items: flex-start; flex-direction: column; }
+}
