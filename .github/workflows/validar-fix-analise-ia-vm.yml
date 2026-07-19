@@ -1,0 +1,147 @@
+name: Validar correção da análise na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validar-fix-analise-ia-vm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: validar-fix-analise-ia-vm
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    name: Confirmar deploy e normalização
+    runs-on:
+      - self-hosted
+      - linux
+    timeout-minutes: 10
+    env:
+      PROJECT_DIR: /mnt/Projetos/Academia
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      WEB_DIR: /mnt/Projetos/Academia/apps/web
+      EXPECTED_SHA: e13c43be7bf402fb503a2a0adbd98c37b7a0338d
+      RESULT_FILE: /tmp/academia-fix-review-ui-state.txt
+
+    steps:
+      - name: Confirmar commit implantado
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : > "$RESULT_FILE"
+          git config --global --add safe.directory "$PROJECT_DIR"
+          deployed=""
+          remote=""
+          branch=""
+          for attempt in $(seq 1 36); do
+            git -C "$PROJECT_DIR" fetch --quiet origin main
+            deployed="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
+            remote="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
+            branch="$(git -C "$PROJECT_DIR" branch --show-current)"
+            if [ "$branch" = "main" ] && [ "$deployed" = "$EXPECTED_SHA" ] && [ "$remote" = "$EXPECTED_SHA" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "$branch" = "main"
+          test "$deployed" = "$EXPECTED_SHA"
+          test "$remote" = "$EXPECTED_SHA"
+          test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+          echo "deployed_sha=$deployed" | tee -a "$RESULT_FILE"
+          echo "origin_main_sha=$remote" | tee -a "$RESULT_FILE"
+          echo "tracked_tree_clean=yes" | tee -a "$RESULT_FILE"
+
+      - name: Validar serviços e aplicação
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          for service in academia-api.service academia-web.service ollama.service; do
+            state="$(systemctl is-active "$service")"
+            test "$state" = "active"
+            echo "$service=$state" | tee -a "$RESULT_FILE"
+          done
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
+          echo "api_health=ok" | tee -a "$RESULT_FILE"
+          echo "web_health=ok" | tee -a "$RESULT_FILE"
+
+      - name: Validar nova interface
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -f "$WEB_DIR/training-review-ui.js"
+          grep -q 'training-review-ui.js?v=20260719-1' "$WEB_DIR/training.html"
+          grep -q 'Confiabilidade dos dados' "$WEB_DIR/training-review-ui.js"
+          grep -q 'A análise foi concluída e recuperada do histórico' "$WEB_DIR/training-review-ui.js"
+          grep -q 'Revisão do professor necessária' "$WEB_DIR/training-review-ui.js"
+          node --check "$WEB_DIR/training-review-ui.js"
+          echo "review_ui=ok" | tee -a "$RESULT_FILE"
+          echo "saved_result_recovery=ok" | tee -a "$RESULT_FILE"
+          echo "readable_labels=ok" | tee -a "$RESULT_FILE"
+
+      - name: Validar migration e testes
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+          node --test test/trainingReviewUi.test.js
+          node <<'NODE' | tee -a "$RESULT_FILE"
+          const { query, pool } = require('./lib/db');
+          (async () => {
+            const invalid = await query(`
+              SELECT count(*)::integer AS total
+              FROM workout_ai_reviews
+              WHERE confidence < 0 OR confidence > 1
+            `);
+            if (Number(invalid.rows[0]?.total || 0) !== 0) throw new Error('confidence_fora_da_faixa');
+            const constraint = await query(`
+              SELECT convalidated
+              FROM pg_constraint
+              WHERE conname = 'workout_ai_reviews_confidence_check'
+              LIMIT 1
+            `);
+            if (!constraint.rowCount || constraint.rows[0].convalidated !== true) {
+              throw new Error('constraint_confidence_nao_validada');
+            }
+            const demo = await query(`
+              SELECT confidence
+              FROM workout_ai_reviews
+              WHERE plan_id = (
+                SELECT id FROM workout_plans
+                WHERE name = 'Ficha Demo - Força' AND status = 'active'
+                ORDER BY created_at LIMIT 1
+              )
+              ORDER BY created_at ASC
+              LIMIT 1
+            `);
+            console.log(JSON.stringify({
+              confidence_rows_out_of_range: 0,
+              constraint_validated: true,
+              oldest_demo_confidence: demo.rows[0]?.confidence ?? null
+            }));
+          })().finally(() => pool.end());
+          NODE
+          echo "review_ui_tests=ok" | tee -a "$RESULT_FILE"
+          echo "confidence_migration=ok" | tee -a "$RESULT_FILE"
+
+      - name: Registrar recursos
+        if: always()
+        shell: bash
+        run: |
+          echo "memory=$(free -h | awk '/^Mem:/ {print $2 "/" $3 "/" $7}')" | tee -a "$RESULT_FILE"
+          echo "swap=$(free -h | awk '/^Swap:/ {print $2 "/" $3}')" | tee -a "$RESULT_FILE"
+
+      - name: Publicar estado seguro
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: estado-fix-analise-ia-${{ github.run_id }}
+          path: /tmp/academia-fix-review-ui-state.txt
+          if-no-files-found: warn
+          retention-days: 3
