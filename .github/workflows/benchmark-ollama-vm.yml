@@ -1,0 +1,163 @@
+name: Benchmark Ollama na VM
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/benchmark-ollama-vm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: benchmark-ollama-vm
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Medir respostas do gemma3 1b
+    runs-on:
+      - self-hosted
+      - linux
+    timeout-minutes: 15
+    env:
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      OLLAMA_BASE_URL: http://127.0.0.1:11434
+      OLLAMA_MODEL: gemma3:1b
+      OLLAMA_TIMEOUT_MS: 180000
+      LOCAL_TRAINING_MAX_RETRIES: 0
+      RESULT_FILE: /tmp/ollama-benchmark.json
+
+    steps:
+      - name: Preparar modelo
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(systemctl is-active ollama.service)" = "active"
+          ollama stop gemma3:4b >/dev/null 2>&1 || true
+          ollama stop gemma3:1b >/dev/null 2>&1 || true
+          ollama list | awk 'NR > 1 && $1 == "gemma3:1b" {found=1} END {exit found ? 0 : 1}'
+
+      - name: Executar benchmark seguro
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          node <<'NODE'
+          const fs = require('fs');
+          const { requestOllama } = require('./services/localTrainingAiService');
+          const { TRAINING_REVIEW_JSON_SCHEMA, validateTrainingReview } = require('./lib/trainingReviewSchema');
+
+          const model = process.env.OLLAMA_MODEL;
+          const results = [];
+
+          async function measure(name, payload, validate) {
+            const started = Date.now();
+            try {
+              const response = await requestOllama(payload);
+              const content = String(response?.message?.content || '');
+              const item = {
+                name,
+                ok: true,
+                elapsed_ms: Date.now() - started,
+                content_chars: content.length,
+                prompt_tokens: Number(response.prompt_eval_count || 0),
+                completion_tokens: Number(response.eval_count || 0),
+                total_duration_ms: Math.round(Number(response.total_duration || 0) / 1e6),
+                load_duration_ms: Math.round(Number(response.load_duration || 0) / 1e6)
+              };
+              if (validate) validate(content);
+              results.push(item);
+              console.log(JSON.stringify(item));
+            } catch (error) {
+              const item = {
+                name,
+                ok: false,
+                elapsed_ms: Date.now() - started,
+                error_code: String(error.code || error.message || 'unknown').slice(0, 120)
+              };
+              results.push(item);
+              console.log(JSON.stringify(item));
+            }
+          }
+
+          (async () => {
+            await measure('raw_short', {
+              model,
+              stream: false,
+              keep_alive: 0,
+              options: { temperature: 0, num_ctx: 1024, num_predict: 16 },
+              messages: [
+                { role: 'system', content: 'Responda de forma curta.' },
+                { role: 'user', content: 'Responda apenas com a palavra OK.' }
+              ]
+            });
+
+            const smallSchema = {
+              type: 'object',
+              additionalProperties: false,
+              required: ['status'],
+              properties: { status: { type: 'string', enum: ['ok'] } }
+            };
+            await measure('small_schema', {
+              model,
+              stream: false,
+              keep_alive: 0,
+              format: smallSchema,
+              options: { temperature: 0, num_ctx: 1024, num_predict: 32 },
+              messages: [
+                { role: 'system', content: 'Responda somente no JSON solicitado.' },
+                { role: 'user', content: 'Retorne status ok.' }
+              ]
+            }, (content) => {
+              const parsed = JSON.parse(content);
+              if (parsed.status !== 'ok') throw new Error('small_schema_invalid');
+            });
+
+            await measure('training_schema_minimal', {
+              model,
+              stream: false,
+              keep_alive: 0,
+              format: TRAINING_REVIEW_JSON_SCHEMA,
+              options: { temperature: 0, num_ctx: 4096, num_predict: 384 },
+              messages: [
+                {
+                  role: 'system',
+                  content: 'Você apoia um profissional de educação física. Responda somente no JSON do schema, sem diagnóstico e sem prescrição.'
+                },
+                {
+                  role: 'user',
+                  content: JSON.stringify({
+                    objective: 'condicionamento geral',
+                    level: 'iniciante',
+                    restrictions: [],
+                    plan: { age_days: 10, exercises: [] },
+                    execution_summary: { considered_sessions: 0 },
+                    instruction: 'Gere uma análise conservadora, sem sinais e sem sugestões.'
+                  })
+                }
+              ]
+            }, (content) => {
+              validateTrainingReview(JSON.parse(content), { planExercises: [], catalog: [] });
+            });
+
+            fs.writeFileSync(process.env.RESULT_FILE, JSON.stringify({ model, results }, null, 2));
+            if (!results[0]?.ok || !results[1]?.ok) process.exitCode = 1;
+          })();
+          NODE
+
+      - name: Registrar estado final
+        if: always()
+        shell: bash
+        run: |
+          echo "memory=$(free -h | awk '/^Mem:/ {print $2 "/" $3 "/" $7}')"
+          echo "swap=$(free -h | awk '/^Swap:/ {print $2 "/" $3}')"
+          ollama ps || true
+
+      - name: Publicar benchmark
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-ollama-${{ github.run_id }}
+          path: /tmp/ollama-benchmark.json
+          if-no-files-found: warn
+          retention-days: 3
