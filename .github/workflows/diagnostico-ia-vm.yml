@@ -19,70 +19,84 @@ jobs:
       - self-hosted
       - linux
     timeout-minutes: 15
+    env:
+      PROJECT_DIR: /mnt/Projetos/Academia
+      API_DIR: /mnt/Projetos/Academia/apps/api
+      DIAG_FILE: /tmp/academia-ai-diagnostic.txt
 
     steps:
-      - name: Validar ambiente implantado
+      - name: Preparar diagnóstico
         shell: bash
         run: |
           set -Eeuo pipefail
-          trap 'echo "Diagnóstico interrompido na linha $LINENO."' ERR
+          : > "$DIAG_FILE"
+          echo "diagnostico_inicio=$(date -Is)" | tee -a "$DIAG_FILE"
 
-          PROJECT_DIR="/mnt/Projetos/Academia"
-          API_DIR="$PROJECT_DIR/apps/api"
-
-          echo "=== Commit implantado ==="
+      - name: Confirmar commit implantado
+        shell: bash
+        run: |
+          set -Eeuo pipefail
           git config --global --add safe.directory "$PROJECT_DIR"
           git -C "$PROJECT_DIR" fetch --quiet origin main
           BRANCH="$(git -C "$PROJECT_DIR" branch --show-current)"
           HEAD_SHA="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
           MAIN_SHA="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
-          echo "branch=$BRANCH"
-          echo "head=$HEAD_SHA"
-          echo "origin_main=$MAIN_SHA"
+          TRACKED_DIRTY="$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+          {
+            echo "branch=$BRANCH"
+            echo "head=$HEAD_SHA"
+            echo "origin_main=$MAIN_SHA"
+            echo "tracked_tree_clean=$([ -z "$TRACKED_DIRTY" ] && echo yes || echo no)"
+          } | tee -a "$DIAG_FILE"
           test "$BRANCH" = "main"
           test "$HEAD_SHA" = "$MAIN_SHA"
-          test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
+          test -z "$TRACKED_DIRTY"
 
-          echo "=== Serviços ==="
+      - name: Validar serviços e bind local
+        shell: bash
+        run: |
+          set -Eeuo pipefail
           for service in academia-api.service academia-web.service ollama.service; do
             state="$(systemctl is-active "$service")"
-            echo "$service=$state"
+            echo "$service=$state" | tee -a "$DIAG_FILE"
             test "$state" = "active"
           done
-          test "$(systemctl is-enabled ollama.service)" = "enabled"
+          enabled="$(systemctl is-enabled ollama.service)"
+          echo "ollama_enabled=$enabled" | tee -a "$DIAG_FILE"
+          test "$enabled" = "enabled"
 
-          echo "=== Bind local do Ollama ==="
           OLLAMA_LISTENERS="$(ss -lntH | awk '$4 ~ /:11434$/ {print $4}')"
-          printf '%s\n' "$OLLAMA_LISTENERS"
+          echo "ollama_listeners=$OLLAMA_LISTENERS" | tee -a "$DIAG_FILE"
           printf '%s\n' "$OLLAMA_LISTENERS" | grep -Eq '^127\.0\.0\.1:11434$'
           ! printf '%s\n' "$OLLAMA_LISTENERS" | grep -Eq '(^|\[)(0\.0\.0\.0|::|\*).*:11434$'
 
-          echo "=== Saúde da aplicação ==="
-          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health
-          echo
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
+          echo "api_health=ok" | tee -a "$DIAG_FILE"
           curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
-          echo "web=ok"
+          echo "web_health=ok" | tee -a "$DIAG_FILE"
 
-          echo "=== Configuração não sensível ==="
+      - name: Validar configuração, modelo e migration
+        shell: bash
+        run: |
+          set -Eeuo pipefail
           cd "$API_DIR"
           set -a
           source <(sed 's/^\*#/#/' .env)
           set +a
+
           for key in LOCAL_TRAINING_AI_ENABLED OLLAMA_BASE_URL OLLAMA_MODEL OLLAMA_TIMEOUT_MS OLLAMA_TEMPERATURE OLLAMA_KEEP_ALIVE OLLAMA_NUM_CTX OLLAMA_NUM_PARALLEL LOCAL_TRAINING_PROMPT_VERSION; do
             value="${!key-}"
             test -n "$value"
-            echo "$key=$value"
+            echo "$key=$value" | tee -a "$DIAG_FILE"
           done
           test "$LOCAL_TRAINING_AI_ENABLED" = "true"
           test "$OLLAMA_BASE_URL" = "http://127.0.0.1:11434"
           test "$OLLAMA_MODEL" = "gemma3:4b"
 
-          echo "=== Modelo local ==="
-          ollama list | awk 'NR == 1 || $1 == "gemma3:4b"'
           ollama list | awk 'NR > 1 && $1 == "gemma3:4b" {found=1} END {exit found ? 0 : 1}'
+          echo "ollama_model=gemma3:4b" | tee -a "$DIAG_FILE"
 
-          echo "=== Migration e tabelas ==="
-          node <<'NODE'
+          node <<'NODE' | tee -a "$DIAG_FILE"
           const { query, pool } = require('./lib/db');
           (async () => {
             const columns = await query(`
@@ -106,21 +120,37 @@ jobs:
           })().finally(() => pool.end());
           NODE
 
-          echo "=== Saída segura do seed ==="
+      - name: Validar seed e testes automatizados
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+
           SEED_OUTPUT="$(npm run seed:demo 2>&1)"
           printf '%s' "$SEED_OUTPUT" | grep -q 'seed_demo_ok'
           if printf '%s' "$SEED_OUTPUT" | grep -Eiq 'Lobo1234|demo\.[^ ]+@|senha|password|secret_hash'; then
-            echo "seed_output=sensitive_pattern_detected"
+            echo "seed_output=sensitive_pattern_detected" | tee -a "$DIAG_FILE"
             exit 1
           fi
-          echo "seed_output=sanitized"
+          echo "seed_output=sanitized" | tee -a "$DIAG_FILE"
 
-          echo "=== Testes automatizados da análise ==="
           NODE_ENV=test AUTH_SECRET=test-secret-with-more-than-thirty-two-characters \
             node --test test/trainingReview.test.js
+          echo "training_review_tests=ok" | tee -a "$DIAG_FILE"
 
-          echo "=== Teste integrado real e rollback por regras ==="
-          LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 node <<'NODE'
+      - name: Validar geração real, aprovação e fallback
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd "$API_DIR"
+          set -a
+          source <(sed 's/^\*#/#/' .env)
+          set +a
+
+          LOCAL_TRAINING_PLAN_COOLDOWN_SECONDS=0 LOCAL_TRAINING_RATE_LIMIT_PER_HOUR=100 node <<'NODE' | tee -a "$DIAG_FILE"
           const { query, pool } = require('./lib/db');
           const {
             reviewTrainingPlan,
@@ -203,7 +233,22 @@ jobs:
           })();
           NODE
 
-          echo "=== Recursos após análise ==="
-          free -h
-          ollama ps || true
-          echo "diagnostico_ia_vm=ok"
+      - name: Registrar recursos finais
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "memory=$(free -h | awk '/^Mem:/ {print $2 "/" $3 "/" $7}')"
+            echo "swap=$(free -h | awk '/^Swap:/ {print $2 "/" $3}')"
+            echo "ollama_loaded=$(ollama ps 2>/dev/null | awk 'NR > 1 {print $1}' | paste -sd, -)"
+            echo "diagnostico_fim=$(date -Is)"
+          } | tee -a "$DIAG_FILE"
+
+      - name: Publicar diagnóstico seguro
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico-ia-vm-${{ github.run_id }}
+          path: /tmp/academia-ai-diagnostic.txt
+          if-no-files-found: warn
+          retention-days: 3
