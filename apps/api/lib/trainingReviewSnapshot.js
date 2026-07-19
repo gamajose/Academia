@@ -12,6 +12,41 @@ function cleanText(value, max = 1000) {
     .slice(0, max);
 }
 
+function normalizedMarker(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[.!?;:]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const EMPTY_RESTRICTION_MARKERS = new Set([
+  'sem restricao informada',
+  'sem restricoes informadas',
+  'nenhuma restricao informada',
+  'nenhuma restricao cadastrada',
+  'nao possui restricao',
+  'nao possui restricoes',
+  'sem alergia informada',
+  'sem alergias informadas',
+  'nenhuma alergia informada',
+  'sem observacao medica',
+  'sem observacoes medicas',
+  'nenhuma observacao medica',
+  'nao informado',
+  'nao informada',
+  'nenhum',
+  'nenhuma'
+]);
+
+function normalizeRestriction(value) {
+  const cleaned = cleanText(value, 700);
+  if (!cleaned || EMPTY_RESTRICTION_MARKERS.has(normalizedMarker(cleaned))) return null;
+  return cleaned;
+}
+
 function finite(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
@@ -145,7 +180,7 @@ async function loadTrainingReviewSnapshot(query, gymId, planId) {
     objective: cleanText(plan.profile_goal || plan.goal || plan.objective, 500) || null,
     level: cleanText(plan.profile_level || plan.level, 80) || 'não informado',
     restrictions: [plan.restrictions, plan.allergies, plan.medical_notes]
-      .map((value) => cleanText(value, 700))
+      .map(normalizeRestriction)
       .filter(Boolean),
     planned_days_per_week: plannedDays,
     plan: {
@@ -236,6 +271,7 @@ async function loadTrainingReviewSnapshot(query, gymId, planId) {
 
 module.exports = {
   cleanText,
+  normalizeRestriction,
   anonymizedMemberId,
   loadTrainingReviewSnapshot
 };

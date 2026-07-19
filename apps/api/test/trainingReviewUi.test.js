@@ -76,9 +76,13 @@ test('recupera falhas de transporte, mas respeita bloqueios de negócio', () => 
   assert.equal(shouldAttemptRecovery(new Error('limite_horario_atingido')), false);
 });
 
-test('remove evidência genérica e interpreta indicadores visuais', () => {
+test('remove evidência genérica e marcadores de ausência de restrição', () => {
   assert.deepEqual(
-    cleanEvidence(['Restrição cadastrada 1', 'Restrição informada: dor no joelho']),
+    cleanEvidence([
+      'Restrição cadastrada 1',
+      'Restrição informada: Sem restrições informadas',
+      'Restrição informada: dor no joelho'
+    ]),
     ['Restrição informada: dor no joelho']
   );
   assert.equal(firstPercentage(['Adesão calculada: 57%']), 57);

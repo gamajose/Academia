@@ -339,3 +339,55 @@
   .training-review-ring { width: 78px; }
   .training-review-ring strong { font-size: 19px; }
 }
+
+
+/* Mantém os indicadores com largura e altura consistentes. */
+.training-review-data-grid {
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+}
+
+.training-review-data-grid[data-layout="single"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.training-review-data-grid[data-layout="double"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.training-review-data-grid[data-layout="triple"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.training-review-data-card {
+  height: 100%;
+  min-height: 184px;
+  align-content: start;
+}
+
+.training-review-next-grid {
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+}
+
+.training-review-next-card {
+  height: 100%;
+}
+
+@media (max-width: 860px) {
+  .training-review-data-grid[data-layout="triple"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .training-review-data-grid[data-layout="single"],
+  .training-review-data-grid[data-layout="double"],
+  .training-review-data-grid[data-layout="triple"] {
+    grid-template-columns: 1fr;
+  }
+
+  .training-review-data-card {
+    min-height: 0;
+  }
+}

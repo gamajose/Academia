@@ -97,11 +97,42 @@
     return !NON_RECOVERABLE_ERRORS.has(String(error?.message || error || ''));
   }
 
+  const EMPTY_RESTRICTION_EVIDENCE = new Set([
+    'sem restricao informada',
+    'sem restricoes informadas',
+    'nenhuma restricao informada',
+    'nenhuma restricao cadastrada',
+    'nao possui restricao',
+    'nao possui restricoes',
+    'nao informado',
+    'nao informada',
+    'nenhum',
+    'nenhuma'
+  ]);
+
+  function normalizedEvidence(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[.!?;:]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function isEmptyRestrictionEvidence(value) {
+    const normalized = normalizedEvidence(value);
+    if (!normalized.startsWith('restricao informada:')) return false;
+    const detail = normalized.slice('restricao informada:'.length).trim();
+    return EMPTY_RESTRICTION_EVIDENCE.has(detail);
+  }
+
   function cleanEvidence(values) {
     return (Array.isArray(values) ? values : [])
       .map(humanizeText)
       .filter(Boolean)
-      .filter((value) => !/^Restrição cadastrada \d+$/i.test(value));
+      .filter((value) => !/^Restrição cadastrada \d+$/i.test(value))
+      .filter((value) => !isEmptyRestrictionEvidence(value));
   }
 
   function firstPercentage(values) {
@@ -353,6 +384,11 @@
       }
 
       grid.replaceChildren(...cards);
+      grid.dataset.layout = cards.length === 1
+        ? 'single'
+        : cards.length === 3
+          ? 'triple'
+          : 'double';
       grid.classList.toggle('hidden', cards.length === 0);
     }
 
