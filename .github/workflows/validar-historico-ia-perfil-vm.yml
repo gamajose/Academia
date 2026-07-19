@@ -1,92 +1,11 @@
 name: Validar histórico de IA no perfil na VM
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/validar-historico-ia-perfil-vm.yml'
+  workflow_dispatch:
 
 jobs:
   validar:
     runs-on: [self-hosted, linux]
     timeout-minutes: 10
-    env:
-      PROJECT_DIR: /mnt/Projetos/Academia
-      API_DIR: /mnt/Projetos/Academia/apps/api
-      WEB_DIR: /mnt/Projetos/Academia/apps/web
-      EXPECTED_SHA: be7ae79282014bccbfb0ab01a349491872c3d094
     steps:
-      - name: Confirmar deploy automático
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          git config --global --add safe.directory "$PROJECT_DIR"
-          deployed=""
-          remote=""
-          branch=""
-          for attempt in $(seq 1 60); do
-            git -C "$PROJECT_DIR" fetch --quiet origin main
-            deployed="$(git -C "$PROJECT_DIR" rev-parse HEAD)"
-            remote="$(git -C "$PROJECT_DIR" rev-parse origin/main)"
-            branch="$(git -C "$PROJECT_DIR" branch --show-current)"
-            if [ "$branch" = "main" ] && [ "$deployed" = "$EXPECTED_SHA" ] && [ "$remote" = "$EXPECTED_SHA" ]; then
-              break
-            fi
-            sleep 10
-          done
-          test "$branch" = "main"
-          test "$deployed" = "$EXPECTED_SHA"
-          test "$remote" = "$EXPECTED_SHA"
-          test -z "$(git -C "$PROJECT_DIR" status --porcelain --untracked-files=no)"
-          echo "deployed_sha=$deployed"
-
-      - name: Validar serviços e saúde
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          test "$(systemctl is-active academia-api.service)" = "active"
-          test "$(systemctl is-active academia-web.service)" = "active"
-          test "$(systemctl is-active ollama.service)" = "active"
-          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3004/health >/dev/null
-          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8084/ >/dev/null
-          echo "services=active"
-          echo "health=ok"
-
-      - name: Validar código e interface implantados
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          grep -q 'student-view-ai-history-list' "$WEB_DIR/alunos.html"
-          grep -q 'student-view-ai-history-button' "$WEB_DIR/alunos.html"
-          grep -q 'student-ai-history-modal' "$WEB_DIR/alunos.html"
-          grep -q 'studentAiHistoryEntry' "$WEB_DIR/alunos.js"
-          grep -q '/api/assessments/analysis/history' "$WEB_DIR/alunos.js"
-          grep -q 'student-view-registration-actions' "$WEB_DIR/alunos.html"
-          grep -q 'member_progress_ai_reviews' "$API_DIR/lib/progressReviewHistory.js"
-          node --check "$WEB_DIR/alunos.js"
-          node --check "$API_DIR/features/assessmentRoutes.js"
-          node --check "$API_DIR/lib/progressReviewHistory.js"
-
-      - name: Validar migration e testes na VM
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          cd "$API_DIR"
-          set -a
-          source <(sed 's/^\*#/#/' .env)
-          set +a
-          node - <<'NODE'
-          const { pool, query } = require('./lib/db');
-          (async () => {
-            const table = await query("SELECT to_regclass('public.member_progress_ai_reviews') AS name");
-            if (table.rows[0]?.name !== 'member_progress_ai_reviews') throw new Error('tabela_historico_ia_ausente');
-            const index = await query("SELECT to_regclass('public.member_progress_ai_reviews_snapshot_uidx') AS name");
-            if (index.rows[0]?.name !== 'member_progress_ai_reviews_snapshot_uidx') throw new Error('indice_historico_ia_ausente');
-            console.log('database_history=ok');
-          })().finally(() => pool.end());
-          NODE
-          node --test test/progressReviewHistory.test.js test/studentAiProfileHistoryUi.test.js
-          echo "profile_history=ok"
-          echo "accordion=ok"
-          echo "assessment_actions=inside_registration"
+      - run: echo "Validação manual desativada para não disputar o runner único com o deploy."
