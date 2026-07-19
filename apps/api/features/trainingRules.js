@@ -6,8 +6,32 @@ const levelNames = {
   avancado: 'avancado'
 };
 
+const EMPTY_RESTRICTION_MARKERS = new Set([
+  'sem restricao informada',
+  'sem restricoes informadas',
+  'nenhuma restricao informada',
+  'nenhuma restricao cadastrada',
+  'nao possui restricao',
+  'nao possui restricoes',
+  'sem alergia informada',
+  'sem alergias informadas',
+  'nenhuma alergia informada',
+  'sem observacao medica',
+  'sem observacoes medicas',
+  'nenhuma observacao medica',
+  'nao informado',
+  'nao informada',
+  'nenhum',
+  'nenhuma'
+]);
+
 function normalizeText(value) {
   return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function isMeaningfulRestriction(value) {
+  const normalized = normalizeText(value).replace(/[.!?;:]+$/g, '').replace(/\s+/g, ' ').trim();
+  return Boolean(normalized) && !EMPTY_RESTRICTION_MARKERS.has(normalized);
 }
 
 function normalizeLevel(level) {
@@ -75,7 +99,7 @@ function buildTrainingReview(input = {}) {
   const logs = input.logs || snapshot.executions || [];
   const exerciseLogs = input.exerciseLogs || snapshot.exercise_executions || [];
   const assessments = input.assessments || snapshot.assessments || [];
-  const restrictions = input.restrictions || snapshot.restrictions || [];
+  const restrictions = (input.restrictions || snapshot.restrictions || []).filter(isMeaningfulRestriction);
   const planAgeDays = Number(input.planAgeDays ?? plan.age_days ?? 0);
   const level = input.level || snapshot.level;
   const progression = progressionByLevel(level);
@@ -197,4 +221,4 @@ function buildTrainingReview(input = {}) {
   };
 }
 
-module.exports = { normalizeLevel, progressionByLevel, describeAssessment, buildTrainingReview };
+module.exports = { normalizeLevel, progressionByLevel, describeAssessment, isMeaningfulRestriction, buildTrainingReview };
