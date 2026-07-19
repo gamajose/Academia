@@ -154,7 +154,7 @@ function keepAliveValue() {
 async function requestOllama(payload, options = {}) {
   const fetchImpl = options.fetchImpl || global.fetch;
   if (typeof fetchImpl !== 'function') throw localError('fetch_indisponivel');
-  const timeoutMs = envNumber('OLLAMA_TIMEOUT_MS', 150000, 1000, 300000);
+  const timeoutMs = envNumber('OLLAMA_TIMEOUT_MS', 240000, 1000, 300000);
   const retries = envNumber('LOCAL_TRAINING_MAX_RETRIES', 0, 0, 2);
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
@@ -202,7 +202,7 @@ async function generateLocalTrainingReview({ snapshot, rules, planExercises, cat
     options: {
       temperature: envNumber('OLLAMA_TEMPERATURE', 0, 0, 2),
       num_ctx: envNumber('OLLAMA_NUM_CTX', 1024, 512, 8192),
-      num_predict: envNumber('OLLAMA_NUM_PREDICT', 96, 32, 256)
+      num_predict: envNumber('OLLAMA_NUM_PREDICT', 160, 32, 256)
     },
     messages: [
       { role: 'system', content: systemPrompt() },
