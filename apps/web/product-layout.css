@@ -297,3 +297,30 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
   .student-ai-tab-toolbar .button { width: 100%; }
   .student-ai-history-entry > summary { align-items: flex-start; flex-direction: column; }
 }
+
+
+/* Perfil do aluno: ações dentro do cartão e histórico real da IA de treinos. */
+.student-view-identity { align-items: center; flex-wrap: wrap; }
+.student-view-identity-copy { flex: 1 1 320px; min-width: 0; }
+.student-view-registration-actions { display: flex; align-self: flex-start; gap: 8px; margin-left: auto; }
+.student-view-registration-actions .button { width: auto; min-height: 36px; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
+.student-training-review-entry > summary { align-items: center; }
+.student-training-review-entry > summary > div { display: grid; gap: 4px; min-width: 0; }
+.student-training-review-entry > summary span { color: var(--muted); font-size: 11px; }
+.student-training-review-body { display: grid; gap: 14px; }
+.student-training-review-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.student-training-review-overview article { display: grid; gap: 5px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.student-training-review-overview span { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.student-training-review-overview strong { font-size: 13px; line-height: 1.35; }
+.student-training-review-summary { margin: 0; padding: 12px 14px; border-left: 3px solid var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, transparent); line-height: 1.5; }
+.student-training-review-section { display: grid; gap: 8px; }
+.student-training-review-section h5 { margin: 0; font-size: 13px; }
+.student-training-review-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.student-training-review-items article { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.student-training-review-items strong { font-size: 12px; }
+.student-training-review-items p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+@media (max-width: 760px) {
+  .student-view-registration-actions { width: 100%; margin-left: 0; }
+  .student-view-registration-actions .button { flex: 1 1 0; }
+  .student-training-review-overview, .student-training-review-items { grid-template-columns: 1fr; }
+}

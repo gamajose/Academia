@@ -158,7 +158,7 @@ function setStudentViewTab(tabName = 'registration') {
   document.querySelectorAll('[data-student-view-panel]').forEach((panel) => panel.classList.toggle('hidden', panel.dataset.studentViewPanel !== tabName));
   clearInterval(studentAiRefreshTimer);
   studentAiRefreshTimer = null;
-  if (tabName === 'history' && activeStudentView) void loadStudentAiHistory(activeStudentView.id);
+  if (tabName === 'history' && activeStudentView) void loadStudentTrainingReviewHistory(activeStudentView.id);
   if (tabName === 'ai' && activeStudentView) {
     void loadStudentAi(activeStudentView.id);
     studentAiRefreshTimer = setInterval(() => {
@@ -315,28 +315,121 @@ function renderStudentAi(result, host = $('student-view-ai-content')) {
   }
 }
 
-function studentAiHistoryEntry(review) {
+function trainingReviewConfidencePercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(100, Math.round(number <= 1 ? number * 100 : number)));
+}
+
+function trainingReviewText(value) {
+  return String(value || '')
+    .replace(/\bfat_loss\b/gi, 'redução de gordura')
+    .replace(/\bmuscle_gain\b/gi, 'ganho de massa muscular')
+    .replace(/\bprofessional_review\b/gi, 'revisão do professor')
+    .replace(/\breplace_partially\b/gi, 'substituição parcial')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function trainingReviewRecommendation(review) {
+  if (review?.requires_human_review || review?.status === 'professional_review') return 'Solicite revisão do professor.';
+  const labels = {
+    maintain: 'Mantenha a ficha atual.',
+    adjust: 'Ajuste a ficha com acompanhamento.',
+    replace_partially: 'Revise parte da ficha.'
+  };
+  return labels[review?.status] || 'Acompanhe a ficha com o professor.';
+}
+
+function trainingReviewDecision(review) {
+  if (review?.approved_at) return 'Aprovada pelo professor';
+  if (review?.rejected_at) return 'Rejeitada pelo professor';
+  return 'Aguardando decisão do professor';
+}
+
+function trainingReviewSource(review) {
+  return review?.source === 'rules_fallback' ? 'Regras automáticas' : 'IA da ficha de treino';
+}
+
+function appendTrainingReviewItems(documentTarget, parent, titleText, items) {
+  const cleanItems = (Array.isArray(items) ? items : []).filter(Boolean);
+  if (!cleanItems.length) return;
+  const section = documentTarget.createElement('section');
+  section.className = 'student-training-review-section';
+  const title = documentTarget.createElement('h5');
+  title.textContent = titleText;
+  const list = documentTarget.createElement('div');
+  list.className = 'student-training-review-items';
+  cleanItems.forEach((item) => {
+    const card = documentTarget.createElement('article');
+    const heading = documentTarget.createElement('strong');
+    const copy = documentTarget.createElement('p');
+    if (typeof item === 'string') {
+      heading.textContent = trainingReviewText(item);
+    } else {
+      heading.textContent = trainingReviewText(item.suggested_action || item.description || item.type || 'Registro');
+      copy.textContent = trainingReviewText(item.reason || (Array.isArray(item.evidence) ? item.evidence.join(' · ') : ''));
+    }
+    card.appendChild(heading);
+    if (copy.textContent) card.appendChild(copy);
+    list.appendChild(card);
+  });
+  section.append(title, list);
+  parent.appendChild(section);
+}
+
+function studentTrainingReviewHistoryEntry(review) {
   const details = document.createElement('details');
-  details.className = 'student-ai-history-entry';
+  details.className = 'student-ai-history-entry student-training-review-entry';
   const summary = document.createElement('summary');
   const copy = document.createElement('div');
-  const analysis = review.recent_analysis || review.analysis || {};
   const title = document.createElement('strong');
-  title.textContent = analysis.title || 'Análise do progresso';
+  title.textContent = review.plan_name ? `Ficha: ${review.plan_name}` : 'Análise da ficha de treino';
   const meta = document.createElement('span');
   const date = review.created_at ? new Date(review.created_at).toLocaleString('pt-BR') : 'Data não informada';
-  meta.textContent = `${date} · ${review.assessment_count || 0} avaliação(ões) · ${review.training_sessions || 0} treino(s)`;
+  meta.textContent = `${date} · ${trainingReviewConfidencePercent(review.confidence)}% de confiabilidade · ${trainingReviewSource(review)}`;
   copy.append(title, meta);
   const indicator = document.createElement('span');
   indicator.className = 'student-ai-history-toggle';
-  indicator.textContent = 'Ver detalhes';
+  indicator.textContent = 'Ver análise';
   summary.append(copy, indicator);
+
   const body = document.createElement('div');
-  body.className = 'student-ai-history-body';
-  renderStudentAi(review, body);
+  body.className = 'student-ai-history-body student-training-review-body';
+  const overview = document.createElement('div');
+  overview.className = 'student-training-review-overview';
+  [
+    ['Recomendação', trainingReviewRecommendation(review)],
+    ['Confiabilidade', `${trainingReviewConfidencePercent(review.confidence)}%`],
+    ['Situação', trainingReviewDecision(review)]
+  ].forEach(([label, value]) => {
+    const card = document.createElement('article');
+    const name = document.createElement('span'); name.textContent = label;
+    const content = document.createElement('strong'); content.textContent = value;
+    card.append(name, content); overview.appendChild(card);
+  });
+  body.appendChild(overview);
+
+  const summaryText = trainingReviewText(review.summary);
+  if (summaryText) {
+    const summaryCard = document.createElement('p');
+    summaryCard.className = 'student-training-review-summary';
+    summaryCard.textContent = summaryText;
+    body.appendChild(summaryCard);
+  }
+  appendTrainingReviewItems(document, body, 'Pontos identificados', review.signals);
+  appendTrainingReviewItems(document, body, 'Próximos passos', review.suggestions);
+
+  const messages = [];
+  if (review.student_message) messages.push({ description: 'Mensagem para o aluno', evidence: [review.student_message] });
+  if (review.trainer_notes) messages.push({ description: 'Observação profissional', evidence: [review.trainer_notes] });
+  if (review.rejection_reason) messages.push({ description: 'Motivo da rejeição', evidence: [review.rejection_reason] });
+  appendTrainingReviewItems(document, body, 'Mensagens registradas', messages);
+
   details.append(summary, body);
   details.addEventListener('toggle', () => {
-    indicator.textContent = details.open ? 'Ocultar detalhes' : 'Ver detalhes';
+    indicator.textContent = details.open ? 'Ocultar análise' : 'Ver análise';
     if (!details.open) return;
     details.parentElement?.querySelectorAll('details[open]').forEach((item) => {
       if (item !== details) item.removeAttribute('open');
@@ -345,36 +438,36 @@ function studentAiHistoryEntry(review) {
   return details;
 }
 
-function renderStudentAiHistory(rows, target) {
+function renderStudentTrainingReviewHistory(rows, target) {
   if (!target) return;
   target.replaceChildren();
   if (!rows.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'Nenhuma análise com IA registrada para este aluno.';
+    empty.textContent = 'Nenhuma análise gerada na aba Treinos para este aluno.';
     target.appendChild(empty);
     return;
   }
-  rows.forEach((review) => target.appendChild(studentAiHistoryEntry(review)));
+  rows.forEach((review) => target.appendChild(studentTrainingReviewHistoryEntry(review)));
 }
 
-async function loadStudentAiHistory(memberId = activeStudentView?.id) {
+async function loadStudentTrainingReviewHistory(memberId = activeStudentView?.id) {
   if (!memberId || studentAiHistoryLoading) return;
   studentAiHistoryLoading = true;
   const profileStatus = $('student-view-ai-history-status');
   const modalStatus = $('student-ai-history-modal-status');
-  if (profileStatus) profileStatus.textContent = 'Carregando histórico...';
-  if (modalStatus && !$('student-ai-history-modal').classList.contains('hidden')) modalStatus.textContent = 'Carregando histórico...';
+  if (profileStatus) profileStatus.textContent = 'Carregando análises da ficha...';
+  if (modalStatus && !$('student-ai-history-modal').classList.contains('hidden')) modalStatus.textContent = 'Carregando análises da ficha...';
   try {
-    const result = await req(`/api/assessments/analysis/history?member_id=${encodeURIComponent(memberId)}&limit=50`);
+    const result = await req(`/api/training/plans/reviews/member?member_id=${encodeURIComponent(memberId)}&limit=50`);
     if (String(activeStudentView?.id || '') !== String(memberId)) return;
     const records = Array.isArray(result.data) ? result.data : [];
-    renderStudentAiHistory(records, $('student-view-ai-history-list'));
-    renderStudentAiHistory(records, $('student-ai-history-modal-list'));
+    renderStudentTrainingReviewHistory(records, $('student-view-ai-history-list'));
+    renderStudentTrainingReviewHistory(records, $('student-ai-history-modal-list'));
     if (profileStatus) profileStatus.textContent = '';
     if (modalStatus) modalStatus.textContent = '';
   } catch (error) {
-    const message = `Não foi possível carregar o histórico: ${error.message}`;
+    const message = `Não foi possível carregar as análises da ficha: ${error.message}`;
     if (profileStatus) profileStatus.textContent = message;
     if (modalStatus) modalStatus.textContent = message;
   } finally {
@@ -386,7 +479,7 @@ function openStudentAiHistoryModal() {
   if (!activeStudentView) return;
   $('student-ai-history-member-name').textContent = activeStudentView.name || 'Aluno';
   setStudentContextModal('student-ai-history-modal', true);
-  void loadStudentAiHistory(activeStudentView.id);
+  void loadStudentTrainingReviewHistory(activeStudentView.id);
 }
 
 async function loadStudentAi(memberId = activeStudentView?.id) {
@@ -399,7 +492,6 @@ async function loadStudentAi(memberId = activeStudentView?.id) {
     if (String(activeStudentView?.id || '') !== requestedMemberId) return;
     $('student-view-ai-status').textContent = '';
     renderStudentAi(result);
-    void loadStudentAiHistory(memberId);
   } catch (error) {
     if (String(activeStudentView?.id || '') !== requestedMemberId) return;
     $('student-view-ai-status').textContent = `Não foi possível gerar a análise: ${error.message}`;
@@ -439,7 +531,7 @@ async function openStudentView(item) {
   photo.src = item.photo_url || '';
   $('student-view-photo-empty').hidden = Boolean(item.photo_url);
   $('student-view-exercises').innerHTML = '<li class="empty-state">Carregando ficha...</li>';
-  $('student-view-ai-history-list').innerHTML = '<div class="empty-state">Carregando análises...</div>';
+  $('student-view-ai-history-list').innerHTML = '<div class="empty-state">Carregando análises da ficha...</div>';
   $('student-view-goal-list').innerHTML = '<li class="empty-state">Carregando metas...</li>';
   $('student-view-media').innerHTML = '<div class="empty-state">Carregando fotos...</div>';
   $('student-view-ai-content').replaceChildren();

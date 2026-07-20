@@ -159,6 +159,31 @@ async function listTrainingReviews(query, user, planId, limit = 20) {
   return result.rows;
 }
 
+
+async function listMemberTrainingReviews(query, user, memberId, limit = 50) {
+  if (!canGenerate(user)) throw serviceError('sem_permissao', 403);
+  if (!memberId) throw serviceError('member_id_obrigatorio', 400);
+  const member = await query('SELECT id FROM members WHERE id = $1 AND gym_id = $2 LIMIT 1', [memberId, user.gym_id]);
+  if (!member.rowCount) throw serviceError('aluno_nao_encontrado', 404);
+  const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
+  const result = await query(
+    `SELECT r.id, r.member_id, r.plan_id, wp.name AS plan_name, wp.goal AS plan_goal,
+            wp.level AS plan_level, wp.status AS plan_status, r.source, r.model,
+            r.prompt_version, r.status, r.confidence, r.requires_human_review,
+            r.recommendation AS summary, r.signals, r.suggestions, r.student_message,
+            r.trainer_notes, r.error_code, r.duration_ms, r.token_usage,
+            r.approved_at, r.approved_by, r.rejected_at, r.rejected_by,
+            r.rejection_reason, r.created_at
+     FROM workout_ai_reviews r
+     INNER JOIN workout_plans wp ON wp.id = r.plan_id AND wp.gym_id = r.gym_id
+     WHERE r.gym_id = $1 AND r.member_id = $2
+     ORDER BY r.created_at DESC
+     LIMIT $3`,
+    [user.gym_id, memberId, safeLimit]
+  );
+  return result.rows;
+}
+
 async function decideTrainingReview(query, user, reviewId, decision, reason = '') {
   if (!canGenerate(user)) throw serviceError('sem_permissao', 403);
   if (!reviewId || !['approved', 'rejected'].includes(decision)) throw serviceError('dados_invalidos', 400);
@@ -210,6 +235,7 @@ module.exports = {
   enforceRateLimit,
   reviewTrainingPlan,
   listTrainingReviews,
+  listMemberTrainingReviews,
   decideTrainingReview,
   latestApprovedStudentMessage
 };
