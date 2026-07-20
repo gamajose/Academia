@@ -19,6 +19,7 @@ test('histórico do perfil usa as análises geradas no módulo Treinos', () => {
   assert.doesNotMatch(js, /\/api\/assessments\/analysis\/history/);
   assert.match(routes, /listMemberTrainingReviews/);
   assert.match(service, /FROM workout_ai_reviews r/);
+  assert.match(service, /r\.member_id = \$2/);
 });
 
 test('histórico continua expansível e mostra os dados da ficha', () => {
