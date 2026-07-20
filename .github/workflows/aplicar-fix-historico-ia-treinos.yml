@@ -23,15 +23,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: fix/historico-ia-treinos-no-perfil
-          fetch-depth: 1
-          show-progress: false
+      - name: Baixar branch silenciosamente
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git clone --quiet --depth 1 --branch fix/historico-ia-treinos-no-perfil "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" source
       - name: Aplicar correção
-        run: python3 -u .github/scripts/apply_training_history_profile_fix.py
+        run: cd source && python3 -u .github/scripts/apply_training_history_profile_fix.py
       - name: Validar alterações
         run: |
+          cd source
           node --check apps/web/alunos.js
           node --check apps/api/features/assessmentRoutes.js
           node --check apps/api/features/trainingPlansRoutes.js
@@ -39,6 +39,7 @@ jobs:
           node --test apps/api/test/studentAiProfileHistoryUi.test.js
       - name: Registrar correção
         run: |
+          cd source
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           rm -f .github/scripts/apply_training_history_profile_fix.py
