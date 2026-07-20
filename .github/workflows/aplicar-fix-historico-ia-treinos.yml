@@ -1,0 +1,40 @@
+name: Aplicar correção do histórico de IA
+
+on:
+  push:
+    branches:
+      - fix/historico-ia-treinos-no-perfil
+    paths:
+      - '.github/scripts/apply_training_history_profile_fix.py'
+      - '.github/workflows/aplicar-fix-historico-ia-treinos.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/historico-ia-treinos-no-perfil
+          fetch-depth: 0
+      - name: Aplicar correção
+        run: python3 .github/scripts/apply_training_history_profile_fix.py
+      - name: Validar alterações
+        run: |
+          node --check apps/web/alunos.js
+          node --check apps/api/features/assessmentRoutes.js
+          node --check apps/api/features/trainingPlansRoutes.js
+          node --check apps/api/services/trainingReviewService.js
+          node --test apps/api/test/studentAiProfileHistoryUi.test.js
+      - name: Registrar correção
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/scripts/apply_training_history_profile_fix.py
+          rm -f .github/workflows/aplicar-fix-historico-ia-treinos.yml
+          git add apps/api/features/assessmentRoutes.js apps/api/features/trainingPlansRoutes.js apps/api/services/trainingReviewService.js apps/web/alunos.html apps/web/alunos.js apps/web/product-layout.css apps/api/test/studentAiProfileHistoryUi.test.js .github/scripts/apply_training_history_profile_fix.py .github/workflows/aplicar-fix-historico-ia-treinos.yml
+          git commit -m 'fix: usar histórico real da IA de treinos no perfil'
+          git push origin HEAD:fix/historico-ia-treinos-no-perfil
