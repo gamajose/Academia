@@ -3,6 +3,7 @@ const { resolveTrainingLevel } = require('./trainingRoutes');
 const {
   reviewTrainingPlan,
   listTrainingReviews,
+  listMemberTrainingReviews,
   decideTrainingReview
 } = require('../services/trainingReviewService');
 
@@ -182,6 +183,16 @@ async function handleTrainingPlansRoutes(req, res, user, url, helpers) {
       const review = await reviewTrainingPlan({ query, user, planId: input.plan_id });
       await recordAudit(user, 'create', 'workout_ai_review', review.id, { plan_id: review.plan_id, source: review.source });
       return send(res, 201, review);
+    } catch (error) {
+      return sendServiceError(send, res, error);
+    }
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/training/plans/reviews/member') {
+    const memberId = url.searchParams.get('member_id');
+    try {
+      const data = await listMemberTrainingReviews(query, user, memberId, url.searchParams.get('limit'));
+      return send(res, 200, { data });
     } catch (error) {
       return sendServiceError(send, res, error);
     }
