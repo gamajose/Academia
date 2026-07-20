@@ -30,6 +30,16 @@ jobs:
       - name: Aplicar correção
         run: |
           cd source
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/apply_training_history_profile_fix.py')
+          text = path.read_text(encoding='utf-8')
+          old = '    new_history_block + "async function loadStudentAi(memberId",\n'
+          new = '    lambda _: new_history_block + "async function loadStudentAi(memberId",\n'
+          if old not in text:
+              raise SystemExit('substituicao_regex_nao_encontrada')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
           set +e
           python3 -u .github/scripts/apply_training_history_profile_fix.py > .github/fix-historico-diagnostico.txt 2>&1
           status=$?
@@ -38,7 +48,7 @@ jobs:
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add .github/fix-historico-diagnostico.txt
-            git commit -m 'chore: registrar falha do aplicador' || true
+            git commit -m 'chore: atualizar diagnóstico do aplicador' || true
             git push origin HEAD:fix/historico-ia-treinos-no-perfil
             exit "$status"
           fi
