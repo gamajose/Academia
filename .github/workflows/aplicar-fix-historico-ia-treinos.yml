@@ -26,9 +26,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: fix/historico-ia-treinos-no-perfil
-          fetch-depth: 0
+          fetch-depth: 1
+          show-progress: false
       - name: Aplicar correção
-        run: python3 .github/scripts/apply_training_history_profile_fix.py
+        run: python3 -u .github/scripts/apply_training_history_profile_fix.py
       - name: Validar alterações
         run: |
           node --check apps/web/alunos.js
