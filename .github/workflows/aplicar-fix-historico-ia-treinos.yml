@@ -28,7 +28,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: git clone --quiet --depth 1 --branch fix/historico-ia-treinos-no-perfil "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" source
       - name: Aplicar correção
-        run: cd source && python3 -u .github/scripts/apply_training_history_profile_fix.py
+        run: |
+          cd source
+          set +e
+          python3 -u .github/scripts/apply_training_history_profile_fix.py > .github/fix-historico-diagnostico.txt 2>&1
+          status=$?
+          cat .github/fix-historico-diagnostico.txt
+          if [ "$status" -ne 0 ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add .github/fix-historico-diagnostico.txt
+            git commit -m 'chore: registrar falha do aplicador' || true
+            git push origin HEAD:fix/historico-ia-treinos-no-perfil
+            exit "$status"
+          fi
+          rm -f .github/fix-historico-diagnostico.txt
       - name: Validar alterações
         run: |
           cd source
@@ -44,6 +58,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           rm -f .github/scripts/apply_training_history_profile_fix.py
           rm -f .github/workflows/aplicar-fix-historico-ia-treinos.yml
-          git add apps/api/features/assessmentRoutes.js apps/api/features/trainingPlansRoutes.js apps/api/services/trainingReviewService.js apps/web/alunos.html apps/web/alunos.js apps/web/product-layout.css apps/api/test/studentAiProfileHistoryUi.test.js .github/scripts/apply_training_history_profile_fix.py .github/workflows/aplicar-fix-historico-ia-treinos.yml
+          rm -f .github/fix-historico-diagnostico.txt
+          git add apps/api/features/assessmentRoutes.js apps/api/features/trainingPlansRoutes.js apps/api/services/trainingReviewService.js apps/web/alunos.html apps/web/alunos.js apps/web/product-layout.css apps/api/test/studentAiProfileHistoryUi.test.js .github/scripts/apply_training_history_profile_fix.py .github/workflows/aplicar-fix-historico-ia-treinos.yml .github/fix-historico-diagnostico.txt
           git commit -m 'fix: usar histórico real da IA de treinos no perfil'
           git push origin HEAD:fix/historico-ia-treinos-no-perfil
