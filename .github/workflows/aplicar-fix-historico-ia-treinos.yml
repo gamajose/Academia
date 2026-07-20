@@ -7,12 +7,19 @@ on:
     paths:
       - '.github/scripts/apply_training_history_profile_fix.py'
       - '.github/workflows/aplicar-fix-historico-ia-treinos.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/apply_training_history_profile_fix.py'
+      - '.github/workflows/aplicar-fix-historico-ia-treinos.yml'
 
 permissions:
   contents: write
 
 jobs:
   aplicar:
+    if: github.head_ref == '' || github.head_ref == 'fix/historico-ia-treinos-no-perfil'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
