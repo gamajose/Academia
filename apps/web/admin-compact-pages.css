@@ -56,6 +56,16 @@ body.admin-training-page .training-ai-icon {
   }
 
   body.admin-compact-page .toolbar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+  }
+
+  body.admin-compact-page .toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     gap: 8px;
   }
 
