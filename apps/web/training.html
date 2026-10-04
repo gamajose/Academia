@@ -20,7 +20,7 @@
           <div class="exercise-library-actions">
             <button id="open-review-button" class="icon-button training-ai-button" type="button" title="Análise com IA" aria-label="Análise com IA"><span class="training-ai-icon" aria-hidden="true">✦</span></button>
             <button class="icon-button" id="toggle-exercise-search" type="button" aria-label="Pesquisar exercícios" title="Pesquisar exercícios" aria-expanded="false" aria-controls="exercise-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button>
-            <button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício">+</button>
+            <button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
           </div>
         </div>
         <p class="status-line training-status" id="training-status"></p>
@@ -34,7 +34,7 @@
         <div id="exercise-pagination" class="admin-pagination" hidden></div>
       </article>
       <article class="panel">
-        <div class="toolbar"><h3>Fichas</h3><div class="exercise-library-actions"><button class="icon-button" id="toggle-plan-search" type="button" aria-label="Pesquisar fichas" title="Pesquisar fichas" aria-expanded="false" aria-controls="plan-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button><button class="icon-button" id="open-plan-button" type="button" aria-label="Adicionar ficha" title="Adicionar ficha">+</button></div></div>
+        <div class="toolbar"><h3>Fichas</h3><div class="exercise-library-actions"><button class="icon-button" id="toggle-plan-search" type="button" aria-label="Pesquisar fichas" title="Pesquisar fichas" aria-expanded="false" aria-controls="plan-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button><button class="icon-button" id="open-plan-button" type="button" aria-label="Adicionar ficha" title="Adicionar ficha"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div></div>
         <div id="plan-library-filters" class="exercise-library-filters hidden" aria-hidden="true"><label class="exercise-library-search"><span class="sr-only">Pesquisar fichas</span><input id="plan-search" type="search" placeholder="Pesquisar pelo nome do aluno..." autocomplete="off" /></label></div>
         <ul id="plan-list"></ul>
         <div id="plan-pagination" class="admin-pagination" hidden></div>
@@ -68,7 +68,7 @@
 
   <div class="modal hidden" id="exercise-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-title" aria-hidden="true">
     <section class="modal-card training-modal-card">
-      <div class="modal-header"><div><p class="eyebrow">Cadastro</p><h3 id="exercise-title">Novo exercício</h3><p>Cadastre instruções e uma demonstração animada em GIF ou vídeo.</p></div><button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+      <div class="modal-header" style="justify-content: flex-end;"><h3 id="exercise-title" class="sr-only">Novo exercício</h3><button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
       <input id="exercise-name" placeholder="Nome do exercício" />
       <input id="exercise-group" placeholder="Músculo principal. Ex.: Peito" />
       <input id="exercise-secondary-muscles" placeholder="Músculos secundários. Ex.: Tríceps, Ombros" />
@@ -89,14 +89,14 @@
   </div>
 
   <div class="modal hidden" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" aria-hidden="true">
-    <section class="modal-card training-modal-card"><div class="modal-header"><div><p class="eyebrow">Acompanhamento</p><h3 id="profile-title">Perfil de treino do aluno</h3><p>Defina o nível, objetivo, frequência e restrições.</p></div><button type="button" id="close-profile-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="profile-member"></select><select id="profile-level"><option value="">Carregando níveis...</option></select><input id="profile-goal" placeholder="Objetivo" /><input id="profile-days" type="number" placeholder="Dias por semana" /><textarea id="profile-restrictions" placeholder="Restrições, dores ou observações"></textarea><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="profile-modal">Cancelar</button><button id="save-profile-button" type="button">Salvar perfil</button></div></section>
+    <section class="modal-card training-modal-card"><div class="modal-header"><div><h3 id="profile-title">Perfil de treino do aluno</h3></div><button type="button" id="close-profile-modal" class="secondary modal-close" aria-label="Fechar">×</button></div><select id="profile-member"></select><select id="profile-level"><option value="">Carregando níveis...</option></select><input id="profile-goal" placeholder="Objetivo" /><input id="profile-days" type="number" placeholder="Dias por semana" /><textarea id="profile-restrictions" placeholder="Restrições, dores ou observações"></textarea><div class="form-actions"><button class="secondary" type="button" data-close-training-modal="profile-modal">Cancelar</button><button id="save-profile-button" type="button">Salvar perfil</button></div></section>
   </div>
 
   <div class="modal hidden" id="plan-modal" role="dialog" aria-modal="true" aria-labelledby="plan-title" aria-hidden="true">
     <section class="modal-card training-modal-card plan-modal-card">
       <div class="modal-header"><div><h3 id="plan-title">Nova ficha</h3></div><button type="button" id="close-plan-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
       <label class="field"><span>Aluno</span><select id="plan-member"></select></label>
-      <div class="plan-level-picker"><label class="field"><span>Nível de treino</span><select id="plan-level"><option value="">Carregando níveis...</option></select></label><button class="icon-button" id="open-plan-levels-button" type="button" aria-label="Cadastrar novo nível de treino" title="Cadastrar novo nível">+</button></div>
+      <div class="plan-level-picker"><label class="field"><span>Nível de treino</span><select id="plan-level"><option value="">Carregando níveis...</option></select></label><button class="icon-button" id="open-plan-levels-button" type="button" aria-label="Cadastrar novo nível de treino" title="Cadastrar novo nível"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>
       <label class="field"><span>Objetivo da ficha</span><input id="plan-goal" placeholder="Ex.: ganhar força, mobilidade ou condicionamento" /></label>
       <fieldset class="training-week-field">
         <legend>Dias da ficha</legend>
@@ -104,7 +104,7 @@
         <div class="training-week-calendar" id="plan-days-picker" role="radiogroup" aria-label="Dia da ficha"><label class="training-day-option"><input type="radio" name="plan-day" value="1" /><span>Seg</span></label><label class="training-day-option"><input type="radio" name="plan-day" value="2" /><span>Ter</span></label><label class="training-day-option"><input type="radio" name="plan-day" value="3" /><span>Qua</span></label><label class="training-day-option"><input type="radio" name="plan-day" value="4" /><span>Qui</span></label><label class="training-day-option"><input type="radio" name="plan-day" value="5" /><span>Sex</span></label><label class="training-day-option"><input type="radio" name="plan-day" value="6" /><span>Sáb</span></label><label class="training-day-option"><input type="radio" name="plan-day" value="7" /><span>Dom</span></label></div>
       </fieldset>
       <section id="plan-day-builder" class="plan-day-builder hidden" aria-live="polite">
-        <div class="plan-day-builder-header"><div><h4 id="plan-day-builder-title">Exercícios do dia</h4><p class="section-help">Selecione os exercícios que serão feitos neste dia.</p></div><button class="icon-button" id="add-plan-day-exercise" type="button" aria-label="Adicionar exercício ao dia" title="Adicionar exercício">+</button></div>
+        <div class="plan-day-builder-header"><div><h4 id="plan-day-builder-title">Exercícios do dia</h4><p class="section-help">Selecione os exercícios que serão feitos neste dia.</p></div><button class="icon-button" id="add-plan-day-exercise" type="button" aria-label="Adicionar exercício ao dia" title="Adicionar exercício"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div>
         <div id="plan-day-exercise-list" class="plan-day-exercise-list"></div>
         <p id="plan-day-builder-status" class="section-help"></p>
       </section>

@@ -39,7 +39,7 @@
   </main>
   <div class="modal hidden" id="finance-modal">
     <div class="modal-card">
-      <div class="toolbar"><h3 id="finance-title">Ajuste financeiro</h3><button class="secondary modal-close" id="close-finance-modal" aria-label="Fechar" title="Fechar">×</button></div>
+      <div class="toolbar"><h3 id="finance-title">Lançamento</h3><button class="secondary modal-close" id="close-finance-modal" aria-label="Fechar" title="Fechar">×</button></div>
       <input id="finance-payment-id" type="hidden" />
       <div class="grid finance-form-grid">
         <div class="field"><label for="finance-discount">Desconto</label><input id="finance-discount" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor abatido do lançamento.</small></div>
@@ -54,11 +54,12 @@
 
   <div class="modal hidden" id="finance-status-modal" role="dialog" aria-modal="true" aria-labelledby="finance-status-title">
     <div class="modal-card finance-status-card">
-      <div class="toolbar"><div><p class="eyebrow">Resumo financeiro</p><h3 id="finance-status-title">Lançamentos</h3></div><button class="secondary modal-close" id="close-finance-status-modal" aria-label="Fechar" title="Fechar">×</button></div>
+      <div class="toolbar"><div><h3 id="finance-status-title">Lançamentos</h3></div><button class="secondary modal-close" id="close-finance-status-modal" aria-label="Fechar" title="Fechar">×</button></div>
       <ul id="finance-status-list" class="finance-status-list"></ul>
     </div>
   </div>
   <script src="./guard.js"></script>
+  <script src="./icon-utils.js"></script>
   <script src="./nav.js?v=20260719-1"></script>
   <script src="./fin-core.js?v=20260719-1"></script>
 </body>

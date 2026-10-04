@@ -245,13 +245,11 @@ function renderUsers(rows, emptyMessage = 'Nenhum funcionário cadastrado.') {
     edit.addEventListener('click', () => editUser(user));
     actionButtons.appendChild(edit);
 
-    const toggle = document.createElement('button');
-    toggle.className = 'mini-button';
-    toggle.type = 'button';
-    toggle.textContent = user.is_active ? '⊘' : '●';
-    toggle.title = user.is_active ? 'Desativar funcionário' : 'Ativar funcionário';
-    toggle.setAttribute('aria-label', toggle.title);
-    toggle.className = 'icon-button';
+    const toggle = window.AcademiaIcons.button(
+      user.is_active ? 'deactivate' : 'activate',
+      user.is_active ? 'Desativar funcionário' : 'Ativar funcionário',
+      user.is_active ? 'danger' : 'success'
+    );
     toggle.addEventListener('click', () => toggleUser(user));
     actionButtons.appendChild(toggle);
     actions.appendChild(actionButtons);
@@ -352,9 +350,12 @@ function updateProfileHelp() {
   get('user-role-preview').textContent = profile
     ? 'As permissões deste funcionário são definidas pelo perfil selecionado.'
     : 'Cadastre um perfil pelo botão Permissões antes de criar o funcionário.';
-  get('permission-help').textContent = profile
-    ? `Perfil selecionado: ${profile.name}. Para alterar os módulos, use o botão Permissões.`
-    : 'Cadastre um perfil pelo botão Permissões antes de criar o funcionário.';
+  const help = get('permission-help');
+  if (help) {
+    help.textContent = profile
+      ? `Perfil selecionado: ${profile.name}. Para alterar os módulos, use o botão Permissões.`
+      : 'Cadastre um perfil pelo botão Permissões antes de criar o funcionário.';
+  }
 }
 
 function renderPermissionInputs(selected = {}) {
@@ -436,13 +437,11 @@ function renderPermissionProfiles() {
     edit.addEventListener('click', () => openPermissionsEditor(profile));
     actions.appendChild(edit);
 
-    const toggle = document.createElement('button');
-    toggle.className = 'mini-button';
-    toggle.type = 'button';
-    toggle.textContent = profile.is_active ? '⊘' : '●';
-    toggle.className = 'icon-button';
-    toggle.title = profile.is_active ? 'Desativar perfil de acesso' : 'Ativar perfil de acesso';
-    toggle.setAttribute('aria-label', toggle.title);
+    const toggle = window.AcademiaIcons.button(
+      profile.is_active ? 'deactivate' : 'activate',
+      profile.is_active ? 'Desativar perfil de acesso' : 'Ativar perfil de acesso',
+      profile.is_active ? 'danger' : 'success'
+    );
     toggle.addEventListener('click', () => toggleAccessProfile(profile));
     actions.appendChild(toggle);
 
