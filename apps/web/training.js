@@ -18,6 +18,7 @@ let planLibraryQuery = '';
 let exercisePage = 1;
 let planPage = 1;
 let currentTrainingReview = null;
+let targetExerciseForPlan = null;
 const TRAINING_PAGE_SIZE = 5;
 
 const t = (id) => document.getElementById(id);
@@ -359,38 +360,101 @@ function renderAll({ libraryOnly = false } = {}) {
   }
   for (const item of renderedExercises) {
     const row = document.createElement('li');
-    row.className = 'entity-card';
+    row.className = 'entity-card exercise-feed-card';
     if (item.is_active === false) row.classList.add('is-inactive');
     row.tabIndex = 0;
     row.setAttribute('role', 'button');
-    row.setAttribute('aria-label', `Ver como fazer ${item.name}`);
-    row.addEventListener('click', () => openExerciseDetails(item));
-    row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openExerciseDetails(item); } });
+    row.setAttribute('aria-label', `Selecionar ${item.name} para a ficha`);
+
+    const isMobile = () => window.innerWidth <= 768;
+
+    row.addEventListener('click', (event) => {
+      if (event.target.closest('.entity-actions, .employee-menu-dropdown, .employee-menu-trigger, .exercise-feed-action-btn')) return;
+      if (isMobile()) {
+        selectExerciseForPlan(item);
+      } else {
+        openExerciseDetails(item);
+      }
+    });
+
+    row.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        if (isMobile()) {
+          selectExerciseForPlan(item);
+        } else {
+          openExerciseDetails(item);
+        }
+      }
+    });
+
+    const header = document.createElement('div');
+    header.className = 'exercise-feed-header';
+
     const main = document.createElement('div');
-    main.className = 'entity-main';
+    main.className = 'entity-main exercise-feed-title-wrap';
     const name = document.createElement('strong');
     name.textContent = item.name;
-    const detail = document.createElement('span');
+
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
-    const primaryMuscle = item.muscle_group_primary || item.muscle_group || 'Músculo não informado';
+    const primaryMuscle = item.muscle_group_primary || item.muscle_group || 'Geral';
     const secondaryMuscles = item.muscle_group_secondary ? ` · ${item.muscle_group_secondary}` : '';
     const status = item.is_active === false ? ' · Inativo' : '';
-    detail.textContent = `${primaryMuscle}${secondaryMuscles} · ${level?.name || item.level}${status}`;
+
+    const detail = document.createElement('span');
+    detail.className = 'exercise-feed-detail';
+    detail.textContent = `${level?.name || item.level || 'Geral'}${secondaryMuscles}${status}`;
     main.append(name, detail);
-    row.appendChild(main);
+
+    const tag = document.createElement('span');
+    tag.className = 'exercise-feed-tag';
+    tag.textContent = primaryMuscle;
+
+    header.append(main, tag);
+    row.appendChild(header);
+
+    const media = document.createElement('div');
+    media.className = 'video-preview-slot exercise-feed-media';
     if (item.video_url && window.AcademiaTrainingMedia) {
-      const media = document.createElement('div');
-      media.className = 'video-preview-slot';
       window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
       const thumbnailVideo = media.querySelector('video');
-      if (thumbnailVideo) thumbnailVideo.controls = false;
-      row.appendChild(media);
+      if (thumbnailVideo) {
+        thumbnailVideo.controls = false;
+        thumbnailVideo.autoplay = true;
+        thumbnailVideo.loop = true;
+        thumbnailVideo.muted = true;
+        thumbnailVideo.playsInline = true;
+      }
     } else if (item.image_url) {
-      const media = document.createElement('div');
-      media.className = 'video-preview-slot';
       appendExerciseImage(media, item.image_url, `Demonstração de ${item.name}`);
-      row.appendChild(media);
+    } else {
+      const emptyMedia = document.createElement('div');
+      emptyMedia.className = 'exercise-feed-media-placeholder';
+      emptyMedia.innerHTML = '<span>Sem vídeo cadastrado</span>';
+      media.appendChild(emptyMedia);
     }
+    row.appendChild(media);
+
+    const footer = document.createElement('div');
+    footer.className = 'exercise-feed-footer';
+
+    if (item.instructions) {
+      const caption = document.createElement('p');
+      caption.className = 'exercise-feed-caption';
+      caption.textContent = item.instructions;
+      footer.appendChild(caption);
+    }
+
+    const selectBtn = document.createElement('button');
+    selectBtn.type = 'button';
+    selectBtn.className = 'button exercise-feed-select-btn exercise-feed-action-btn';
+    selectBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M12 5v14M5 12h14"/></svg> Adicionar à ficha';
+    selectBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      selectExerciseForPlan(item);
+    });
+    footer.appendChild(selectBtn);
+
     if (canManageTrainingLevels()) {
       const actions = document.createElement('div');
       actions.className = 'entity-actions';
@@ -413,12 +477,15 @@ function renderAll({ libraryOnly = false } = {}) {
         await toggleExercise(item, remove);
       });
       actions.append(edit, remove);
-      row.appendChild(actions);
-      row.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
+      footer.appendChild(actions);
+
+      footer.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
         { label: 'Editar', run: () => openExerciseForm(item) },
         { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
       ]));
     }
+
+    row.appendChild(footer);
     exerciseList.appendChild(row);
   }
   if (!renderedExercises.length) {
@@ -1005,6 +1072,90 @@ function addPlanDayExercise() {
   renderPlanDayBuilder();
 }
 
+function appendExerciseToCurrentPlan(exercise) {
+  let weekdays = selectedPlanDays();
+  if (!weekdays.length) {
+    const monday = document.querySelector('input[name="plan-day"][value="1"]');
+    if (monday) monday.checked = true;
+    activePlanWeekday = 1;
+    weekdays = [1];
+  } else if (!activePlanWeekday || !weekdays.includes(activePlanWeekday)) {
+    activePlanWeekday = weekdays[0];
+  }
+
+  const draft = ensurePlanDayDraft(activePlanWeekday);
+  draft.push({
+    exercise_id: exercise.id,
+    sets: '3',
+    reps: '10-12',
+    rest_seconds: '60',
+    load_hint: ''
+  });
+  renderPlanDayBuilder();
+  if (t('plan-status')) {
+    t('plan-status').textContent = `"${exercise.name}" adicionado ao treino de ${planWeekdayNames[activePlanWeekday - 1]}.`;
+  }
+  setTrainingStatus(`Exercício "${exercise.name}" adicionado à ficha.`);
+  openTrainingModal('plan-modal');
+  const builder = t('plan-day-builder');
+  if (builder) {
+    builder.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function openExercisePlanPicker(exercise) {
+  targetExerciseForPlan = exercise;
+  const pickerList = t('exercise-plan-picker-list');
+  if (!pickerList) return;
+
+  pickerList.innerHTML = '';
+  const subtitle = t('exercise-plan-picker-subtitle');
+  if (subtitle) {
+    subtitle.textContent = `Selecione a ficha para adicionar "${exercise.name}":`;
+  }
+
+  if (plans && plans.length > 0) {
+    for (const plan of plans) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'plan-picker-card-option';
+      const level = trainingLevels.find((candidate) => candidate.slug === plan.level);
+      btn.innerHTML = `<strong>${planDisplayName(plan)}</strong><span>${level?.name || plan.level || 'Geral'} · Início: ${String(plan.starts_at || '').slice(0, 10) || 'Recente'}</span>`;
+      btn.addEventListener('click', async () => {
+        closeTrainingModal('exercise-plan-picker-modal');
+        await openPlanForm(plan);
+        appendExerciseToCurrentPlan(exercise);
+      });
+      pickerList.appendChild(btn);
+    }
+  } else {
+    const empty = document.createElement('p');
+    empty.className = 'section-help';
+    empty.textContent = 'Nenhuma ficha cadastrada no momento.';
+    pickerList.appendChild(empty);
+  }
+
+  openTrainingModal('exercise-plan-picker-modal');
+}
+
+async function selectExerciseForPlan(exercise) {
+  const planModal = t('plan-modal');
+  const isPlanModalOpen = planModal && !planModal.classList.contains('hidden');
+
+  if (isPlanModalOpen) {
+    appendExerciseToCurrentPlan(exercise);
+    return;
+  }
+
+  if (!plans || plans.length === 0) {
+    resetPlanBuilder();
+    appendExerciseToCurrentPlan(exercise);
+    return;
+  }
+
+  openExercisePlanPicker(exercise);
+}
+
 async function createPlan() {
   const memberId = t('plan-member').value;
   const member = members.find((item) => item.id === memberId);
@@ -1343,8 +1494,19 @@ t('plan-search')?.addEventListener('input', (event) => {
   ['close-workout-exercise-modal', 'workout-exercise-modal'],
   ['close-review-modal', 'review-modal'],
   ['close-exercise-view-modal', 'exercise-view-modal'],
-  ['close-plan-view-modal', 'plan-view-modal']
+  ['close-plan-view-modal', 'plan-view-modal'],
+  ['close-exercise-plan-picker-modal', 'exercise-plan-picker-modal']
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => closeTrainingModal(modalId)));
+
+t('new-plan-from-picker-button')?.addEventListener('click', () => {
+  closeTrainingModal('exercise-plan-picker-modal');
+  resetPlanBuilder();
+  if (targetExerciseForPlan) {
+    appendExerciseToCurrentPlan(targetExerciseForPlan);
+  } else {
+    openTrainingModal('plan-modal');
+  }
+});
 
 document.querySelectorAll('[data-close-training-modal]').forEach((button) => {
   button.addEventListener('click', () => closeTrainingModal(button.dataset.closeTrainingModal));
