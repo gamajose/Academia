@@ -371,15 +371,39 @@
         }));
       }
 
-      const balance = signals.find((item) => item?.type === 'balance' || item?.type === 'progression' || item?.type === 'recovery');
+      const balance = signals.find((item) => item?.type === 'balance');
       if (balance) {
         cards.push(createDataCard({
-          icon: '✓',
-          title: 'Leitura da ficha',
-          value: balance?.severity === 'critical' ? 'Prioridade alta' : balance?.severity === 'attention' ? 'Atenção' : 'Acompanhamento',
+          icon: '⚖',
+          title: 'Distribuição muscular',
+          value: balance?.severity === 'critical' ? 'Desbalanceado' : balance?.severity === 'attention' ? 'Atenção no volume' : 'Equilibrado',
           copy: humanizeText(balance.description),
           evidence: cleanEvidence(balance.evidence),
-          accent: balance?.severity === 'critical' ? '#ef6a68' : '#2389ee'
+          accent: balance?.severity === 'critical' ? '#ef6a68' : balance?.severity === 'attention' ? '#efb13d' : '#2389ee'
+        }));
+      }
+
+      const progression = signals.find((item) => item?.type === 'progression');
+      if (progression) {
+        cards.push(createDataCard({
+          icon: '⚡',
+          title: 'Progressão de carga',
+          value: progression?.severity === 'critical' ? 'Sobrecarga' : progression?.severity === 'attention' ? 'Atenção' : 'Acompanhamento',
+          copy: humanizeText(progression.description),
+          evidence: cleanEvidence(progression.evidence),
+          accent: '#8b5cf6'
+        }));
+      }
+
+      const recovery = signals.find((item) => item?.type === 'recovery');
+      if (recovery) {
+        cards.push(createDataCard({
+          icon: '⏱',
+          title: 'Descanso e recuperação',
+          value: recovery?.severity === 'critical' ? 'Risco de fadiga' : recovery?.severity === 'attention' ? 'Atenção no intervalo' : 'Adequado',
+          copy: humanizeText(recovery.description),
+          evidence: cleanEvidence(recovery.evidence),
+          accent: recovery?.severity === 'critical' ? '#ef6a68' : '#06b6d4'
         }));
       }
 
@@ -388,7 +412,9 @@
         ? 'single'
         : cards.length === 3
           ? 'triple'
-          : 'double';
+          : cards.length >= 4
+            ? 'quad'
+            : 'double';
       grid.classList.toggle('hidden', cards.length === 0);
     }
 

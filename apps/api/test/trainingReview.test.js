@@ -419,3 +419,49 @@ test('falha do Ollama persiste rules_fallback e sempre libera a trava', async ()
   assert.equal(state.released, true);
   assert.equal(state.planUpdated, true);
 });
+
+test('gera sinais de equilíbrio muscular quando a ficha possui distribuição calculada', () => {
+  const data = snapshot({
+    plan: {
+      age_days: 20,
+      days: [{ weekday: 1, title: 'Treino A' }, { weekday: 3, title: 'Treino B' }],
+      exercises: [
+        { exercise_id: CURRENT_EXERCISE_ID, name: 'Supino Reto', sets: 4, muscle_group_primary: 'Peito' },
+        { exercise_id: CURRENT_EXERCISE_ID, name: 'Remada Curvada', sets: 4, muscle_group_primary: 'Costas' },
+        { exercise_id: CURRENT_EXERCISE_ID, name: 'Agachamento Livre', sets: 4, muscle_group_primary: 'Pernas' }
+      ]
+    }
+  });
+  const result = rules(data);
+  const balanceSignal = result.signals.find((s) => s.type === 'balance');
+  assert.ok(balanceSignal);
+  assert.equal(balanceSignal.severity, 'info');
+  assert.ok(balanceSignal.evidence.some((e) => e.includes('séries')));
+});
+
+test('detecta sobrecarga progressiva ou estabilidade nas cargas dos exercícios', () => {
+  const data = snapshot({
+    executions: Array.from({ length: 5 }, (_, i) => ({ status: 'completed', perceived_effort: 5, completed_at: '2026-07-18T10:00:00Z' })),
+    exercise_executions: [
+      { load_used: '50 kg', perceived_effort: 5, completed_at: '2026-07-18T10:00:00Z' },
+      { load_used: '45 kg', perceived_effort: 5, completed_at: '2026-07-15T10:00:00Z' }
+    ]
+  });
+  const result = rules(data);
+  const progressionSignal = result.signals.find((s) => s.type === 'progression');
+  assert.ok(progressionSignal);
+  assert.equal(progressionSignal.type, 'progression');
+});
+
+test('avalia cadência e dias de recuperação entre sessões concluídas', () => {
+  const data = snapshot({
+    executions: [
+      { status: 'completed', perceived_effort: 6, completed_at: '2026-07-18T10:00:00Z' },
+      { status: 'completed', perceived_effort: 6, completed_at: '2026-07-16T10:00:00Z' }
+    ]
+  });
+  const result = rules(data);
+  const recoverySignal = result.signals.find((s) => s.type === 'recovery');
+  assert.ok(recoverySignal);
+  assert.equal(recoverySignal.severity, 'info');
+});

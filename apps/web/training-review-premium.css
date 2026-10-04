@@ -351,7 +351,8 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.training-review-data-grid[data-layout="double"] {
+.training-review-data-grid[data-layout="double"],
+.training-review-data-grid[data-layout="quad"] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -383,7 +384,8 @@
 @media (max-width: 760px) {
   .training-review-data-grid[data-layout="single"],
   .training-review-data-grid[data-layout="double"],
-  .training-review-data-grid[data-layout="triple"] {
+  .training-review-data-grid[data-layout="triple"],
+  .training-review-data-grid[data-layout="quad"] {
     grid-template-columns: 1fr;
   }
 

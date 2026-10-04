@@ -23,7 +23,7 @@ async function acquireGenerationLock(query, user, planId) {
   const result = await query(
     `INSERT INTO training_ai_generation_locks
        (lock_key, lock_token, gym_id, actor_user_id, plan_id, expires_at)
-     VALUES ('global', $1, $2, $3, $4, now() + ($5::integer * interval '1 millisecond'))
+     VALUES ('global', $1, $2, (SELECT id FROM users WHERE id = $3 AND gym_id = $2 LIMIT 1), $4, now() + ($5::integer * interval '1 millisecond'))
      ON CONFLICT (lock_key) DO UPDATE
        SET lock_token = EXCLUDED.lock_token, gym_id = EXCLUDED.gym_id,
            actor_user_id = EXCLUDED.actor_user_id, plan_id = EXCLUDED.plan_id,
