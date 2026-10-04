@@ -24,6 +24,23 @@
     </section>
 
     <section class="dashboard" id="dashboard">
+      <!-- Cockpit Recepção: Fast Check-in -->
+      <section class="cockpit-checkin-banner">
+        <div class="cockpit-checkin-lead">
+          <div class="cockpit-live-tag"><span class="pulse-indicator"></span> Recepção ao Vivo</div>
+          <h2>Check-in Rápido de Aluno</h2>
+          <p>Digite o nome do aluno, telefone ou use o leitor de código de barras para registrar entrada com 1 toque.</p>
+        </div>
+        <form id="cockpit-checkin-form" class="cockpit-checkin-form" autocomplete="off">
+          <div class="cockpit-input-group">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="cockpit-checkin-input" type="text" placeholder="Nome do aluno, CPF ou telefone..." required />
+            <button id="cockpit-checkin-btn" type="submit" class="button">Confirmar Entrada</button>
+          </div>
+          <div id="cockpit-checkin-status" class="cockpit-checkin-status hidden"></div>
+        </form>
+      </section>
+
       <div class="cards dashboard-summary-cards dashboard-core-cards">
         <a class="dashboard-summary-card members" href="./alunos.html"><span>Alunos ativos</span><strong id="active-members">0</strong><small>Ver cadastro e histórico</small></a>
         <a class="dashboard-summary-card plans" href="./planos.html"><span>Planos ativos</span><strong id="active-plans">0</strong><small>Ver planos comerciais</small></a>
@@ -36,6 +53,42 @@
         <a class="dashboard-summary-card assessments dashboard-alert-trigger" data-dashboard-alert="evolution" href="#avaliacoes-pendentes" role="button" aria-haspopup="dialog"><span>Evolução</span><strong id="dashboard-assessment-due-count">0</strong><small>Avaliações pendentes</small></a>
       </div>
       <p class="status-line dashboard-alerts-status" id="dashboard-alerts-status" aria-live="polite"></p>
+
+      <!-- Cockpit Executivo: Frequência Semanal + Presenças ao Vivo + Radar de Evasão -->
+      <div class="cockpit-grid">
+        <div class="cockpit-card">
+          <div class="cockpit-card-header">
+            <div>
+              <h3>Frequência da Semana</h3>
+              <p>Presenças de segunda a domingo</p>
+            </div>
+            <span class="cockpit-metric-badge" id="cockpit-week-total">0 acessos</span>
+          </div>
+          <div class="cockpit-chart-container" id="cockpit-week-chart"></div>
+        </div>
+
+        <div class="cockpit-card">
+          <div class="cockpit-card-header">
+            <div>
+              <h3>Presenças Recentes (Hoje)</h3>
+              <p>Feed em tempo real da recepção</p>
+            </div>
+            <a href="./access.html" class="cockpit-link-btn">Ver todas</a>
+          </div>
+          <div class="cockpit-recent-list" id="cockpit-recent-list"></div>
+        </div>
+
+        <div class="cockpit-card">
+          <div class="cockpit-card-header">
+            <div>
+              <h3>Radar de Retenção</h3>
+              <p>Alunos sem treinar há mais de 10 dias</p>
+            </div>
+            <span class="cockpit-tag warning">Atenção</span>
+          </div>
+          <div class="cockpit-churn-list" id="cockpit-churn-list"></div>
+        </div>
+      </div>
     </section>
   </main>
 

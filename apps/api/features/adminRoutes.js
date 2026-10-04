@@ -11,8 +11,12 @@ const { handleGymRoutes } = require('./gymRoutes');
 const { handleTrainingExecutionRoutes } = require('./trainingExecutionRoutes');
 const { handleAssessmentRoutes } = require('./assessmentRoutes');
 const { handleAlertRoutes } = require('./alertRoutes');
+const { handleOmnisearchRoutes } = require('./omnisearchRoutes');
 
 async function handleAdminRoutes(req, res, user, url, helpers) {
+  const omnisearch = await handleOmnisearchRoutes(req, res, user, url, helpers);
+  if (omnisearch !== false) return omnisearch;
+
   const memberDetail = await handleMemberDetailRoutes(req, res, user, url, helpers);
   if (memberDetail !== false) return memberDetail;
 

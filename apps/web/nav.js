@@ -8,6 +8,12 @@ if (!window.AcademiaModules) {
   document.head.appendChild(moduleScript);
 }
 
+if (!window.AcademiaCommandPalette) {
+  const cmdScript = document.createElement('script');
+  cmdScript.src = './admin-command-palette.js?v=20261004-1';
+  document.head.appendChild(cmdScript);
+}
+
 if (['permissions.html', 'student-accounts.html'].includes(pageName(window.location.pathname))) {
   window.location.replace(pageUrl(pageName(window.location.pathname) === 'permissions.html' ? 'users.html' : 'alunos.html'));
 }
@@ -44,7 +50,8 @@ function loadNavigationStyles() {
     loadStyle('./admin-mobile-nav.css?v=20260716-2'),
     loadStyle('./admin-profile.css'),
     loadStyle('./admin-dark-theme.css?v=20260715-1015'),
-    loadStyle('./admin-desktop-nav.css?v=20260716-1')
+    loadStyle('./admin-desktop-nav.css?v=20260716-1'),
+    loadStyle('./admin-command-palette.css?v=20261004-1')
   ]);
 }
 
@@ -206,6 +213,11 @@ function renderNavigation() {
       <img class="top-nav-logo" src="./blue-rec-logo.png" alt="Logo da Blue Hack" width="36" height="36" />
     </a>
     <div class="top-nav-links">${pages.map(([href, label, key]) => `<a data-page="${href}" data-nav-key="${key}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
+    <button class="nav-spotlight-btn" id="open-command-palette" type="button" aria-label="Buscar ou executar comando" title="Buscar alunos, treinos, ações (Ctrl + K)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <span>Buscar</span>
+      <kbd>Ctrl+K</kbd>
+    </button>
     <div class="profile-menu">
       <button class="profile-trigger" id="profile-trigger" type="button" aria-label="Abrir perfil" title="Abrir perfil" aria-expanded="false">
         <span class="profile-avatar" id="profile-avatar">U</span>
@@ -221,6 +233,10 @@ function renderNavigation() {
     </div>`;
   document.body.prepend(nav);
   renderAdminMobileNavigation(current, pages, icons);
+
+  document.getElementById('open-command-palette')?.addEventListener('click', () => {
+    window.AcademiaCommandPalette?.open();
+  });
 
   const trigger = document.getElementById('profile-trigger');
   const dropdown = document.getElementById('profile-dropdown');

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./blue-theme.css?v=20260715-2" />
   <link rel="stylesheet" href="./training-media.css?v=20260715-2" />
   <link rel="stylesheet" href="./student-shell.css?v=20260719-1" />
+  <link rel="stylesheet" href="./student-live-workout.css?v=20261004-1" />
 </head>
 <body class="student-page" data-student-page="training">
   <nav class="top-nav student-top-nav">
@@ -45,6 +46,26 @@
       <p>Veja a ficha do dia, os exercícios e as orientações preparadas para você.</p>
     </section>
 
+    <section class="student-live-hero-card" id="student-live-hero-card">
+      <div class="student-live-hero-top">
+        <div class="student-streak-badge">
+          <span class="flame">🔥</span>
+          <span id="student-streak-text">Foco Total: Treino de Hoje</span>
+        </div>
+        <div class="student-greeting-text" id="student-greeting-message">Pronto para superar seus limites hoje?</div>
+      </div>
+      <div class="student-live-hero-main">
+        <div class="student-live-hero-info">
+          <h2 id="student-live-workout-name">Ficha do Dia</h2>
+          <p id="student-live-workout-sub">Acompanhe as séries, descanso inteligente e execute seu treino com foco total.</p>
+        </div>
+        <button class="student-start-workout-btn" id="student-start-live-btn" type="button">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Iniciar Treino Agora</span>
+        </button>
+      </div>
+    </section>
+
     <section class="panel hidden" id="student-approved-analysis">
       <div class="toolbar"><div><h3>Orientação do seu professor</h3></div><span aria-hidden="true">✦</span></div>
       <p id="student-approved-analysis-message"></p>
@@ -72,6 +93,7 @@
   <div class="modal hidden" id="student-private-exercise-modal" role="dialog" aria-modal="true" aria-labelledby="student-private-exercise-title"><article class="modal-card student-workout-editor-card"><div class="modal-header"><div><h3 id="student-private-exercise-title">Criar exercício personalizado</h3><p>Fica disponível somente na sua conta.</p></div><button class="modal-close" id="student-private-exercise-close" type="button" aria-label="Fechar">×</button></div><form id="student-private-exercise-form" class="student-workout-editor-form"><div class="form-grid"><div class="field"><label for="student-private-name">Nome do exercício</label><input id="student-private-name" maxlength="120" placeholder="Ex.: Supino de cabeça para baixo" required /></div><div class="field"><label for="student-private-equipment">Equipamento</label><input id="student-private-equipment" maxlength="120" placeholder="Ex.: Barra" /></div></div><div class="form-grid"><div class="field"><label for="student-private-primary">Grupo muscular primário</label><input id="student-private-primary" maxlength="120" placeholder="Ex.: Peito" /></div><div class="field"><label for="student-private-secondary">Grupos musculares secundários</label><input id="student-private-secondary" maxlength="240" placeholder="Ex.: Tríceps, ombros" /></div></div><div class="form-grid"><div class="field"><label for="student-private-image-url">Imagem ou GIF por link</label><input id="student-private-image-url" type="url" maxlength="1000" placeholder="https://.../demonstracao.gif" /></div><div class="field"><label for="student-private-image-file">Ou escolha uma imagem</label><input id="student-private-image-file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" /></div></div><div class="field"><label for="student-private-video">Vídeo ou GIF</label><input id="student-private-video" type="url" maxlength="1000" placeholder="https://youtube.com/... ou /uploads/video.mp4" /></div><div class="field"><label for="student-private-instructions">Como executar</label><textarea id="student-private-instructions" maxlength="2000" placeholder="Suas orientações"></textarea></div><p class="status-line" id="student-private-exercise-status" aria-live="polite"></p><div class="form-actions"><button class="button secondary" id="student-private-exercise-cancel" type="button">Cancelar</button><button class="button" type="submit">Salvar e adicionar ao treino</button></div></form></article></div>
   <script src="./student-shell.js?v=20260719-2"></script>
   <script src="./training-media.js?v=20260715-2"></script>
+  <script src="./student-live-workout.js?v=20261004-1"></script>
   <script src="./student-portal.js?v=20260716-3"></script>
 </body>
 </html>
