@@ -57,16 +57,18 @@ body.admin-training-page .training-ai-icon {
 
   body.admin-compact-page .toolbar {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     align-items: center;
     gap: 8px;
+    width: 100%;
   }
 
   body.admin-compact-page .toolbar-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 8px;
+    margin-left: auto;
   }
 
   body.admin-compact-page .panel h2,
