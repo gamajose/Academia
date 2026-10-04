@@ -24,7 +24,7 @@ const TRAINING_PAGE_SIZE = 5;
 const t = (id) => document.getElementById(id);
 
 function trainingActionIcon(type, label, className = '') {
-  const iconType = type === 'delete' ? 'trash' : type;
+  const iconType = type === 'delete' ? 'trash' : (type === 'add' ? 'plus' : type);
   if (window.AcademiaIcons) return window.AcademiaIcons.button(iconType, label, className);
   const button = document.createElement('button');
   button.type = 'button';
@@ -33,7 +33,9 @@ function trainingActionIcon(type, label, className = '') {
   button.title = label;
   button.innerHTML = type === 'edit'
     ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>'
-    : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6v14H5V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>';
+    : (iconType === 'plus'
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6v14H5V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>');
   return button;
 }
 
@@ -500,19 +502,27 @@ function renderAll({ libraryOnly = false } = {}) {
     const actionRow = document.createElement('div');
     actionRow.className = 'exercise-card-action-row';
 
-    const selectBtn = document.createElement('button');
-    selectBtn.type = 'button';
-    selectBtn.className = 'button exercise-card-add-btn';
-    selectBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M12 5v14M5 12h14"/></svg> <span>Adicionar à ficha</span>';
-    selectBtn.addEventListener('click', (event) => {
+    const mobileAddBtn = document.createElement('button');
+    mobileAddBtn.type = 'button';
+    mobileAddBtn.className = 'button exercise-card-mobile-add-btn';
+    mobileAddBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span>Adicionar à ficha</span>';
+    mobileAddBtn.addEventListener('click', (event) => {
       event.stopPropagation();
       selectExerciseForPlan(item);
     });
-    actionRow.appendChild(selectBtn);
+    actionRow.appendChild(mobileAddBtn);
+
+    const actions = document.createElement('div');
+    actions.className = 'entity-actions';
+
+    const addIconBtn = trainingActionIcon('plus', `Adicionar ${item.name} à ficha`, 'exercise-add-btn');
+    addIconBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      selectExerciseForPlan(item);
+    });
+    actions.appendChild(addIconBtn);
 
     if (canManageTrainingLevels()) {
-      const actions = document.createElement('div');
-      actions.className = 'entity-actions';
       const edit = trainingActionIcon('edit', `Editar ${item.name}`);
       edit.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -532,13 +542,14 @@ function renderAll({ libraryOnly = false } = {}) {
         await toggleExercise(item, remove);
       });
       actions.append(edit, remove);
-      actionRow.appendChild(actions);
-
-      actionRow.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
-        { label: 'Editar', run: () => openExerciseForm(item) },
-        { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
-      ]));
     }
+    actionRow.appendChild(actions);
+
+    actionRow.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
+      { label: 'Adicionar à ficha', run: () => selectExerciseForPlan(item) },
+      { label: 'Editar', run: () => openExerciseForm(item) },
+      { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
+    ]));
 
     footer.appendChild(actionRow);
     row.append(header, media, footer);
