@@ -246,6 +246,60 @@ async function loadBase() {
   renderAll();
   setTrainingStatus('');
   checkUrlAction();
+  setupMobileTrainingTabs();
+}
+
+function setupMobileTrainingTabs() {
+  const tabExercises = t('tab-exercises-btn');
+  const tabPlans = t('tab-plans-btn');
+  const panelExercises = t('panel-exercises');
+  const panelPlans = t('panel-plans');
+
+  if (!tabExercises || !tabPlans || !panelExercises || !panelPlans) return;
+  if (tabExercises.dataset.tabsBound === 'true') return;
+  tabExercises.dataset.tabsBound = 'true';
+
+  function applyTab(target) {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) {
+      panelExercises.classList.remove('mobile-panel-hidden');
+      panelPlans.classList.remove('mobile-panel-hidden');
+      return;
+    }
+
+    if (target === 'exercises') {
+      tabExercises.classList.add('active');
+      tabExercises.setAttribute('aria-selected', 'true');
+      tabPlans.classList.remove('active');
+      tabPlans.setAttribute('aria-selected', 'false');
+      panelExercises.classList.remove('mobile-panel-hidden');
+      panelPlans.classList.add('mobile-panel-hidden');
+    } else {
+      tabPlans.classList.add('active');
+      tabPlans.setAttribute('aria-selected', 'true');
+      tabExercises.classList.remove('active');
+      tabExercises.setAttribute('aria-selected', 'false');
+      panelPlans.classList.remove('mobile-panel-hidden');
+      panelExercises.classList.add('mobile-panel-hidden');
+    }
+  }
+
+  tabExercises.addEventListener('click', () => applyTab('exercises'));
+  tabPlans.addEventListener('click', () => applyTab('plans'));
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      panelExercises.classList.remove('mobile-panel-hidden');
+      panelPlans.classList.remove('mobile-panel-hidden');
+    } else {
+      const activeTab = tabExercises.classList.contains('active') ? 'exercises' : 'plans';
+      applyTab(activeTab);
+    }
+  });
+
+  if (window.innerWidth <= 768) {
+    applyTab('exercises');
+  }
 }
 
 function checkUrlAction() {
@@ -360,16 +414,16 @@ function renderAll({ libraryOnly = false } = {}) {
   }
   for (const item of renderedExercises) {
     const row = document.createElement('li');
-    row.className = 'entity-card exercise-feed-card';
+    row.className = 'entity-card exercise-card';
     if (item.is_active === false) row.classList.add('is-inactive');
     row.tabIndex = 0;
     row.setAttribute('role', 'button');
-    row.setAttribute('aria-label', `Selecionar ${item.name} para a ficha`);
+    row.setAttribute('aria-label', `Exercício ${item.name}`);
 
     const isMobile = () => window.innerWidth <= 768;
 
     row.addEventListener('click', (event) => {
-      if (event.target.closest('.entity-actions, .employee-menu-dropdown, .employee-menu-trigger, .exercise-feed-action-btn')) return;
+      if (event.target.closest('.entity-actions, .mobile-card-menu, .exercise-card-add-btn, button, input, select')) return;
       if (isMobile()) {
         selectExerciseForPlan(item);
       } else {
@@ -389,10 +443,10 @@ function renderAll({ libraryOnly = false } = {}) {
     });
 
     const header = document.createElement('div');
-    header.className = 'exercise-feed-header';
+    header.className = 'exercise-card-header';
 
     const main = document.createElement('div');
-    main.className = 'entity-main exercise-feed-title-wrap';
+    main.className = 'entity-main exercise-card-title-wrap';
     const name = document.createElement('strong');
     name.textContent = item.name;
 
@@ -402,19 +456,18 @@ function renderAll({ libraryOnly = false } = {}) {
     const status = item.is_active === false ? ' · Inativo' : '';
 
     const detail = document.createElement('span');
-    detail.className = 'exercise-feed-detail';
+    detail.className = 'exercise-card-detail';
     detail.textContent = `${level?.name || item.level || 'Geral'}${secondaryMuscles}${status}`;
     main.append(name, detail);
 
     const tag = document.createElement('span');
-    tag.className = 'exercise-feed-tag';
+    tag.className = 'exercise-card-tag';
     tag.textContent = primaryMuscle;
 
     header.append(main, tag);
-    row.appendChild(header);
 
     const media = document.createElement('div');
-    media.className = 'video-preview-slot exercise-feed-media';
+    media.className = 'video-preview-slot exercise-card-media';
     if (item.video_url && window.AcademiaTrainingMedia) {
       window.AcademiaTrainingMedia.appendVideoPreview(media, item.video_url);
       const thumbnailVideo = media.querySelector('video');
@@ -429,31 +482,33 @@ function renderAll({ libraryOnly = false } = {}) {
       appendExerciseImage(media, item.image_url, `Demonstração de ${item.name}`);
     } else {
       const emptyMedia = document.createElement('div');
-      emptyMedia.className = 'exercise-feed-media-placeholder';
-      emptyMedia.innerHTML = '<span>Sem vídeo cadastrado</span>';
+      emptyMedia.className = 'exercise-card-media-placeholder';
+      emptyMedia.innerHTML = '<span>Sem vídeo</span>';
       media.appendChild(emptyMedia);
     }
-    row.appendChild(media);
 
     const footer = document.createElement('div');
-    footer.className = 'exercise-feed-footer';
+    footer.className = 'exercise-card-footer';
 
     if (item.instructions) {
       const caption = document.createElement('p');
-      caption.className = 'exercise-feed-caption';
+      caption.className = 'exercise-card-caption';
       caption.textContent = item.instructions;
       footer.appendChild(caption);
     }
 
+    const actionRow = document.createElement('div');
+    actionRow.className = 'exercise-card-action-row';
+
     const selectBtn = document.createElement('button');
     selectBtn.type = 'button';
-    selectBtn.className = 'button exercise-feed-select-btn exercise-feed-action-btn';
-    selectBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M12 5v14M5 12h14"/></svg> Adicionar à ficha';
+    selectBtn.className = 'button exercise-card-add-btn';
+    selectBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M12 5v14M5 12h14"/></svg> <span>Adicionar à ficha</span>';
     selectBtn.addEventListener('click', (event) => {
       event.stopPropagation();
       selectExerciseForPlan(item);
     });
-    footer.appendChild(selectBtn);
+    actionRow.appendChild(selectBtn);
 
     if (canManageTrainingLevels()) {
       const actions = document.createElement('div');
@@ -477,15 +532,16 @@ function renderAll({ libraryOnly = false } = {}) {
         await toggleExercise(item, remove);
       });
       actions.append(edit, remove);
-      footer.appendChild(actions);
+      actionRow.appendChild(actions);
 
-      footer.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
+      actionRow.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
         { label: 'Editar', run: () => openExerciseForm(item) },
         { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
       ]));
     }
 
-    row.appendChild(footer);
+    footer.appendChild(actionRow);
+    row.append(header, media, footer);
     exerciseList.appendChild(row);
   }
   if (!renderedExercises.length) {
@@ -1106,33 +1162,65 @@ function appendExerciseToCurrentPlan(exercise) {
 function openExercisePlanPicker(exercise) {
   targetExerciseForPlan = exercise;
   const pickerList = t('exercise-plan-picker-list');
+  const searchInput = t('picker-plan-search');
   if (!pickerList) return;
 
-  pickerList.innerHTML = '';
   const subtitle = t('exercise-plan-picker-subtitle');
   if (subtitle) {
-    subtitle.textContent = `Selecione a ficha para adicionar "${exercise.name}":`;
+    subtitle.textContent = `Selecione o aluno para enviar "${exercise.name}":`;
   }
 
-  if (plans && plans.length > 0) {
-    for (const plan of plans) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'plan-picker-card-option';
-      const level = trainingLevels.find((candidate) => candidate.slug === plan.level);
-      btn.innerHTML = `<strong>${planDisplayName(plan)}</strong><span>${level?.name || plan.level || 'Geral'} · Início: ${String(plan.starts_at || '').slice(0, 10) || 'Recente'}</span>`;
-      btn.addEventListener('click', async () => {
-        closeTrainingModal('exercise-plan-picker-modal');
-        await openPlanForm(plan);
-        appendExerciseToCurrentPlan(exercise);
-      });
-      pickerList.appendChild(btn);
+  if (searchInput) searchInput.value = '';
+
+  function renderPickerOptions(query = '') {
+    pickerList.innerHTML = '';
+    const norm = normalizeExerciseFilterValue(query);
+    const filtered = (plans || []).filter((p) => {
+      if (!norm) return true;
+      const combined = `${p.member_name || ''} ${p.name || ''} ${p.goal || ''}`;
+      return normalizeExerciseFilterValue(combined).includes(norm);
+    });
+
+    if (filtered.length > 0) {
+      for (const plan of filtered) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'plan-picker-option';
+        const level = trainingLevels.find((candidate) => candidate.slug === plan.level);
+        const memberName = plan.member_name || plan.name || 'Aluno';
+        const initial = (memberName.trim().charAt(0) || 'A').toUpperCase();
+        const displayName = planDisplayName(plan);
+        const levelName = level?.name || plan.level || 'Geral';
+        const dateStr = String(plan.starts_at || '').slice(0, 10);
+        const metaStr = dateStr ? `Início: ${dateStr}` : 'Ficha ativa';
+
+        btn.innerHTML = `
+          <span class="picker-avatar" aria-hidden="true">${initial}</span>
+          <div class="picker-text-wrap">
+            <strong class="picker-student-name">${displayName}</strong>
+            <span class="picker-plan-detail">${levelName} · ${metaStr}</span>
+          </div>
+          <span class="picker-action-arrow" aria-hidden="true">Adicionar ➔</span>
+        `;
+        btn.addEventListener('click', async () => {
+          closeTrainingModal('exercise-plan-picker-modal');
+          await openPlanForm(plan);
+          appendExerciseToCurrentPlan(exercise);
+        });
+        pickerList.appendChild(btn);
+      }
+    } else {
+      const empty = document.createElement('p');
+      empty.className = 'section-help';
+      empty.textContent = query ? 'Nenhum aluno encontrado para esta busca.' : 'Nenhuma ficha cadastrada no momento.';
+      pickerList.appendChild(empty);
     }
-  } else {
-    const empty = document.createElement('p');
-    empty.className = 'section-help';
-    empty.textContent = 'Nenhuma ficha cadastrada no momento.';
-    pickerList.appendChild(empty);
+  }
+
+  renderPickerOptions();
+
+  if (searchInput) {
+    searchInput.oninput = (e) => renderPickerOptions(e.target.value);
   }
 
   openTrainingModal('exercise-plan-picker-modal');

@@ -182,193 +182,538 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
 .training-review-note p { margin: 6px 0 0; }
 .training-review-badges .alert { color: #b42318; background: #fee4e2; }
 
-/* Instagram-like feed card for exercises */
-.exercise-feed-card {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  padding: 16px !important;
-  border-radius: 16px !important;
-  border: 1px solid var(--line, #d7e3ef) !important;
-  background: var(--card, #fff) !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
-  box-sizing: border-box !important;
+/* =========================================================
+   RESPONSIVE EXERCISE CARDS & MOBILE FEED
+   ========================================================= */
+
+/* Desktop view (> 768px): Clean, compact, horizontal row */
+@media (min-width: 769px) {
+  body.admin-training-page #exercise-list {
+    display: grid !important;
+    gap: 10px !important;
+  }
+
+  .exercise-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 110px auto !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--line, #d7e3ef) !important;
+    background: var(--card, #fff) !important;
+    box-sizing: border-box !important;
+    transition: all .16s ease !important;
+  }
+
+  .exercise-card:hover {
+    border-color: var(--accent, #1478d4) !important;
+    box-shadow: 0 4px 16px rgba(20, 120, 212, 0.10) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .exercise-card-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+  }
+
+  .exercise-card-title-wrap strong {
+    font-size: 15px !important;
+    font-weight: 750 !important;
+    color: var(--text, #0f172a) !important;
+    line-height: 1.3 !important;
+  }
+
+  .exercise-card-detail {
+    font-size: 12px !important;
+    color: var(--muted, #64748b) !important;
+    line-height: 1.35 !important;
+  }
+
+  .exercise-card-tag {
+    display: inline-block !important;
+    margin-top: 3px !important;
+    padding: 2px 8px !important;
+    border-radius: 999px !important;
+    background: #edf5fc !important;
+    color: var(--accent, #1478d4) !important;
+    font-size: 11px !important;
+    font-weight: 750 !important;
+    text-transform: capitalize !important;
+  }
+
+  /* Desktop media: NEVER cropped/cut off */
+  .exercise-card-media {
+    grid-column: 2 !important;
+    width: 110px !important;
+    height: 78px !important;
+    min-height: 78px !important;
+    max-height: 78px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: #08111c !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  .exercise-card-media video,
+  .exercise-card-media img,
+  .exercise-card-media iframe {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  .exercise-card-media-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 11px;
+  }
+
+  .exercise-card-footer {
+    grid-column: 3 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .exercise-card-caption {
+    display: none !important;
+  }
+
+  .exercise-card-action-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .exercise-card-add-btn {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    background: var(--accent, #1478d4) !important;
+    color: #ffffff !important;
+    border: 0 !important;
+    cursor: pointer !important;
+    transition: all .15s ease !important;
+  }
+
+  .exercise-card-add-btn:hover {
+    background: #0f66b6 !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .exercise-card .mobile-card-menu {
+    display: none !important;
+  }
 }
 
-.exercise-feed-card:hover {
-  border-color: var(--accent, #1478d4) !important;
-  box-shadow: 0 8px 24px rgba(20, 120, 212, 0.10) !important;
+/* Mobile view (<= 768px): Instagram-style feed, responsive, full visibility */
+@media (max-width: 768px) {
+  body.admin-training-page #exercise-list {
+    display: grid !important;
+    gap: 16px !important;
+  }
+
+  .exercise-card {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+    border: 1px solid var(--line, #d7e3ef) !important;
+    background: var(--card, #fff) !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+    box-sizing: border-box !important;
+  }
+
+  .exercise-card-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .exercise-card-title-wrap {
+    display: grid !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+  }
+
+  .exercise-card-title-wrap strong {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: var(--text, #0f172a) !important;
+    line-height: 1.25 !important;
+  }
+
+  .exercise-card-detail {
+    font-size: 12px !important;
+    color: var(--muted, #64748b) !important;
+    line-height: 1.35 !important;
+  }
+
+  .exercise-card-tag {
+    flex-shrink: 0 !important;
+    padding: 4px 10px !important;
+    border-radius: 999px !important;
+    background: #edf5fc !important;
+    color: var(--accent, #1478d4) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: capitalize !important;
+  }
+
+  /* Mobile media: Spacious 4:3 frame, NEVER cropped */
+  .exercise-card-media {
+    grid-column: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3 !important;
+    max-height: 380px !important;
+    min-height: 220px !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    background: #08111c !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  .exercise-card-media video,
+  .exercise-card-media img,
+  .exercise-card-media iframe {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  .exercise-card-footer {
+    grid-column: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .exercise-card-caption {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    color: var(--muted, #64748b) !important;
+  }
+
+  .exercise-card-action-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .exercise-card-add-btn {
+    flex: 1 !important;
+    width: 100% !important;
+    padding: 11px 16px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 750 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: var(--accent, #1478d4) !important;
+    color: #ffffff !important;
+    border: 0 !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(20, 120, 212, 0.22) !important;
+    transition: all .15s ease !important;
+  }
+
+  .exercise-card-add-btn:active {
+    transform: scale(0.98) !important;
+  }
+
+  .exercise-card .entity-actions {
+    display: none !important;
+  }
+
+  .exercise-card .mobile-card-menu {
+    display: block !important;
+  }
 }
 
-.exercise-feed-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  width: 100%;
+/* =========================================================
+   MOBILE TRAINING TABS (Clean Segmented Switcher)
+   ========================================================= */
+.mobile-training-tabs {
+  display: none;
 }
 
-.exercise-feed-title-wrap {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
+@media (max-width: 768px) {
+  .mobile-training-tabs {
+    display: flex !important;
+    gap: 6px;
+    padding: 4px;
+    background: #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+
+  .mobile-tab-btn {
+    flex: 1 !important;
+    padding: 10px 12px !important;
+    border-radius: 9px !important;
+    border: 0 !important;
+    font-size: 14px !important;
+    font-weight: 750 !important;
+    background: transparent !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    transition: all .16s ease !important;
+    text-align: center !important;
+  }
+
+  .mobile-tab-btn.active {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  body.admin-training-page #panel-plans.mobile-panel-hidden,
+  body.admin-training-page #panel-exercises.mobile-panel-hidden {
+    display: none !important;
+  }
 }
 
-.exercise-feed-title-wrap strong {
-  font-size: 16px;
-  font-weight: 750;
-  color: var(--text, #0f172a);
-  letter-spacing: -0.2px;
-}
-
-.exercise-feed-detail {
-  font-size: 12px;
-  color: var(--muted, #64748b);
-  line-height: 1.35;
-}
-
-.exercise-feed-tag {
-  flex-shrink: 0;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #edf5fc;
-  color: var(--accent, #1478d4);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  text-transform: capitalize;
-}
-
-.exercise-feed-media {
-  position: relative;
-  width: 100% !important;
-  max-width: 100% !important;
-  aspect-ratio: 4 / 3 !important;
-  max-height: 380px !important;
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  background: #0b131e !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.exercise-feed-media video,
-.exercise-feed-media img,
-.exercise-feed-media iframe {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  display: block !important;
-}
-
-.exercise-feed-media-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: #64748b;
-  font-size: 13px;
-  background: #0f172a;
-}
-
-.exercise-feed-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.exercise-feed-caption {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--muted, #64748b);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.exercise-feed-select-btn {
-  width: 100% !important;
-  padding: 10px 16px !important;
-  border-radius: 10px !important;
-  font-size: 13px !important;
-  font-weight: 750 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  background: var(--accent, #1478d4) !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  cursor: pointer !important;
-  transition: all .16s ease !important;
-}
-
-.exercise-feed-select-btn:hover,
-.exercise-feed-select-btn:focus-visible {
-  background: #0f66b6 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(20, 120, 212, 0.25) !important;
-}
-
-.exercise-feed-select-btn:active {
-  transform: translateY(0) !important;
-}
-
-/* Plan Picker Sheet / Modal */
+/* =========================================================
+   EXERCISE PLAN PICKER MODAL (Theme-Aware & Bottom Sheet)
+   ========================================================= */
 .exercise-plan-picker-card {
   width: min(520px, 94vw);
   max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.sheet-drag-handle {
+  display: none;
+}
+
+.picker-search-field {
+  margin: 12px 0 8px;
+}
+
+.picker-search-field input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line, #cbd5e1);
+  background: var(--bg, #f8fafc);
+  color: var(--text, #0f172a);
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 .exercise-plan-picker-list {
   display: grid;
   gap: 8px;
-  max-height: 50vh;
+  max-height: 48vh;
   overflow-y: auto;
-  margin: 12px 0 16px;
+  margin: 8px 0 16px;
   padding: 2px;
 }
 
-.plan-picker-card-option {
-  display: grid;
-  gap: 3px;
+/* Student Option in Picker: Always crisp and readable */
+.plan-picker-option {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
   width: 100% !important;
-  padding: 12px 16px;
-  border: 1px solid var(--line, #d7e3ef);
-  border-radius: 10px;
-  background: #ffffff;
-  color: var(--text, #0f172a);
-  text-align: left;
-  cursor: pointer;
-  transition: all .15s ease-in-out;
+  padding: 12px 16px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all .16s ease !important;
+  box-sizing: border-box !important;
 }
 
-.plan-picker-card-option:hover,
-.plan-picker-card-option:focus-visible {
-  border-color: var(--accent, #1478d4);
-  background: #f0f7ff;
-  transform: translateY(-1px);
+.plan-picker-option:hover,
+.plan-picker-option:focus-visible {
+  border-color: #1478d4 !important;
+  background: #eff6ff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(20, 120, 212, 0.12) !important;
+  outline: none !important;
 }
 
-.plan-picker-card-option strong {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.plan-picker-card-option span {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.exercise-plan-picker-actions {
+.picker-avatar {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1478d4 0%, #0c569c 100%);
+  color: #ffffff !important;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: 0 2px 8px rgba(20, 120, 212, 0.3);
+}
+
+.picker-text-wrap {
+  display: grid !important;
+  gap: 3px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.picker-student-name {
+  display: block !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.2px !important;
+}
+
+.picker-plan-detail {
+  display: block !important;
+  font-size: 12px !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+}
+
+.picker-action-arrow {
+  flex-shrink: 0;
+  color: #1478d4;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(20, 120, 212, 0.08);
+}
+
+.new-plan-from-picker-btn {
+  width: 100% !important;
+  padding: 12px 18px !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+}
+
+/* Dark Theme Overrides for Picker & Tabs */
+html[data-admin-theme="dark"][data-admin-shell="true"] .exercise-plan-picker-card {
+  background: #122235 !important;
+  border-color: #29445d !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .picker-search-field input {
+  background: #0e1b2a !important;
+  border-color: #34536e !important;
+  color: #e8f0f8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .plan-picker-option {
+  background: #162638 !important;
+  border-color: #29445d !important;
+  color: #e8f0f8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .plan-picker-option:hover,
+html[data-admin-theme="dark"][data-admin-shell="true"] .plan-picker-option:focus-visible {
+  background: #1c334d !important;
+  border-color: #38bdf8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .picker-student-name {
+  color: #f1f5f9 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .picker-plan-detail {
+  color: #94a3b8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .picker-action-arrow {
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .mobile-training-tabs {
+  background: #0e1b2a !important;
+  border: 1px solid #29445d;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .mobile-tab-btn {
+  color: #94a3b8 !important;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .mobile-tab-btn.active {
+  background: #1e354f !important;
+  color: #f1f5f9 !important;
+}
+
+/* Mobile Bottom Sheet Layout for Picker */
+@media (max-width: 768px) {
+  #exercise-plan-picker-modal {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+
+  .exercise-plan-picker-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 82vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    border-bottom: 0 !important;
+    padding: 12px 18px 24px !important;
+    animation: sheetSlideUp .22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .sheet-drag-handle {
+    display: block !important;
+    width: 38px;
+    height: 4px;
+    background: #cbd5e1;
+    border-radius: 999px;
+    margin: 0 auto 12px;
+  }
+
+  html[data-admin-theme="dark"][data-admin-shell="true"] .sheet-drag-handle {
+    background: #475569 !important;
+  }
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
