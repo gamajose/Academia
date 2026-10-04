@@ -180,6 +180,7 @@ body.admin-training-page .training-ai-icon {
     box-sizing: border-box !important;
   }
 
+  body.admin-training-page .exercise-card-header,
   body.admin-training-page .exercise-feed-header {
     display: flex !important;
     justify-content: space-between !important;
@@ -188,17 +189,20 @@ body.admin-training-page .training-ai-icon {
     width: 100% !important;
   }
 
+  body.admin-training-page .exercise-card-title-wrap strong,
   body.admin-training-page .exercise-feed-title-wrap strong {
     font-size: 17px !important;
     font-weight: 750 !important;
     line-height: 1.25 !important;
   }
 
+  body.admin-training-page .exercise-card-detail,
   body.admin-training-page .exercise-feed-detail {
     font-size: 12px !important;
     line-height: 1.35 !important;
   }
 
+  body.admin-training-page .exercise-card-tag,
   body.admin-training-page .exercise-feed-tag {
     font-size: 11px !important;
     font-weight: 800 !important;
@@ -210,6 +214,7 @@ body.admin-training-page .training-ai-icon {
   }
 
   body.admin-training-page #exercise-list .entity-card .video-preview-slot,
+  body.admin-training-page .exercise-card-media,
   body.admin-training-page .exercise-feed-media {
     width: 100% !important;
     max-width: 100% !important;
@@ -220,7 +225,7 @@ body.admin-training-page .training-ai-icon {
     flex-basis: auto !important;
     border-radius: 14px !important;
     margin: 0 !important;
-    background: #0b131e !important;
+    background: #08111c !important;
     overflow: hidden !important;
     display: flex !important;
     align-items: center !important;
@@ -229,10 +234,13 @@ body.admin-training-page .training-ai-icon {
 
   body.admin-training-page #exercise-list .entity-card .video-preview-slot video,
   body.admin-training-page #exercise-list .entity-card .video-preview-slot img,
-  body.admin-training-page #exercise-list .entity-card .video-preview-slot iframe {
+  body.admin-training-page #exercise-list .entity-card .video-preview-slot iframe,
+  body.admin-training-page .exercise-card-media video,
+  body.admin-training-page .exercise-card-media img,
+  body.admin-training-page .exercise-card-media iframe {
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
     border-radius: 14px !important;
   }
 

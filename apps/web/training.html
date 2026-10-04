@@ -13,8 +13,12 @@
 </head>
 <body class="admin-compact-page admin-training-page">
   <main class="app-shell">
+    <div class="mobile-training-tabs" role="tablist" aria-label="Seções da página de treino">
+      <button type="button" role="tab" class="mobile-tab-btn active" id="tab-exercises-btn" aria-selected="true">Exercícios</button>
+      <button type="button" role="tab" class="mobile-tab-btn" id="tab-plans-btn" aria-selected="false">Fichas</button>
+    </div>
     <section class="grid lists-grid">
-      <article class="panel">
+      <article class="panel" id="panel-exercises">
         <div class="toolbar">
           <h3>Exercícios cadastrados</h3>
           <div class="exercise-library-actions">
@@ -33,7 +37,7 @@
         <ul id="exercise-list"></ul>
         <div id="exercise-pagination" class="admin-pagination" hidden></div>
       </article>
-      <article class="panel">
+      <article class="panel" id="panel-plans">
         <div class="toolbar"><h3>Fichas</h3><div class="exercise-library-actions"><button class="icon-button" id="toggle-plan-search" type="button" aria-label="Pesquisar fichas" title="Pesquisar fichas" aria-expanded="false" aria-controls="plan-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button><button class="icon-button" id="open-plan-button" type="button" aria-label="Adicionar ficha" title="Adicionar ficha"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div></div>
         <div id="plan-library-filters" class="exercise-library-filters hidden" aria-hidden="true"><label class="exercise-library-search"><span class="sr-only">Pesquisar fichas</span><input id="plan-search" type="search" placeholder="Pesquisar pelo nome do aluno..." autocomplete="off" /></label></div>
         <ul id="plan-list"></ul>
@@ -175,16 +179,20 @@
 
   <div class="modal hidden" id="exercise-plan-picker-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-plan-picker-title" aria-hidden="true">
     <section class="modal-card training-modal-card exercise-plan-picker-card">
+      <div class="sheet-drag-handle" aria-hidden="true"></div>
       <div class="modal-header">
         <div>
           <h3 id="exercise-plan-picker-title">Adicionar à ficha</h3>
-          <p id="exercise-plan-picker-subtitle" class="section-help">Selecione para qual ficha deseja enviar</p>
+          <p id="exercise-plan-picker-subtitle" class="section-help">Selecione o aluno para enviar este exercício</p>
         </div>
         <button type="button" id="close-exercise-plan-picker-modal" class="secondary modal-close" aria-label="Fechar">×</button>
       </div>
-      <div id="exercise-plan-picker-list" class="exercise-plan-picker-list"></div>
+      <div class="picker-search-field">
+        <input type="search" id="picker-plan-search" placeholder="Buscar aluno..." autocomplete="off" />
+      </div>
+      <div id="exercise-plan-picker-list" class="exercise-plan-picker-list" role="listbox" aria-label="Fichas de alunos"></div>
       <div class="form-actions exercise-plan-picker-actions">
-        <button type="button" id="new-plan-from-picker-button" class="button">＋ Criar nova ficha</button>
+        <button type="button" id="new-plan-from-picker-button" class="button new-plan-from-picker-btn">＋ Criar nova ficha</button>
       </div>
     </section>
   </div>
