@@ -3,7 +3,8 @@ const moduleLabels = {
   dashboard: ['Painel', 'Resumo da operação'], members: ['Alunos', 'Cadastros dos alunos'],
   plans: ['Planos', 'Planos comerciais'], memberships: ['Matrículas', 'Vínculos e matrículas'], pre_enrollments: ['Pré-matrículas', 'Solicitações de entrada'],
   finance: ['Financeiro', 'Cobranças e movimentações'], alerts: ['Alertas', 'Avisos operacionais'], training: ['Treinos', 'Exercícios e fichas'],
-  access: ['Acessos', 'QR Code, catraca e credenciais'], users: ['Funcionários', 'Equipe e permissões']
+  access: ['Acessos', 'QR Code, catraca e credenciais'], users: ['Funcionários', 'Equipe e permissões'],
+  totem: ['Totem / Catraca', 'Terminal quiosque de autoatendimento para entrada']
 };
 
 async function loadModuleSettings() {

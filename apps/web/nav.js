@@ -206,11 +206,14 @@ function renderNavigation() {
     'training.html': 'dumbbell', 'assessments.html': 'chart', 'access.html': 'access', 'users.html': 'users'
   };
 
+  const savedLogo = localStorage.getItem('gymLogoUrl') || './blue-rec-logo.png';
+  const savedGymName = localStorage.getItem('gymName') || 'BlueREC Academia';
+
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
   nav.innerHTML = `
-    <a class="top-nav-brand logo-only" href="${pageUrl('painel.html')}" aria-label="Blue Hack, voltar ao painel">
-      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="Logo da Blue Hack" width="36" height="36" />
+    <a class="top-nav-brand logo-only" href="${pageUrl('painel.html')}" aria-label="${savedGymName}, voltar ao painel" title="${savedGymName}">
+      <img class="top-nav-logo" src="${savedLogo}" alt="Logo da ${savedGymName}" width="36" height="36" />
     </a>
     <div class="top-nav-links">${pages.map(([href, label, key]) => `<a data-page="${href}" data-nav-key="${key}" class="${current === href ? 'active' : ''}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span class="nav-label">${label}</span></a>`).join('')}</div>
     <div class="profile-menu">
@@ -229,6 +232,15 @@ function renderNavigation() {
   document.body.prepend(nav);
   renderAdminMobileNavigation(current, pages, icons);
 
+  const brandLink = nav.querySelector('.top-nav-brand');
+  brandLink?.addEventListener('click', (event) => {
+    const role = localStorage.getItem('academiaRole') || '';
+    if (['owner', 'admin'].includes(role)) {
+      event.preventDefault();
+      openBrandModal();
+    }
+  });
+
   const trigger = document.getElementById('profile-trigger');
   const dropdown = document.getElementById('profile-dropdown');
   trigger?.addEventListener('click', (event) => {
@@ -239,6 +251,152 @@ function renderNavigation() {
   document.getElementById('profile-logout')?.addEventListener('click', clearSession);
   document.addEventListener('click', () => dropdown?.classList.add('hidden'));
   loadProfile();
+}
+
+function openBrandModal() {
+  let modal = document.getElementById('gym-brand-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.className = 'modal hidden';
+    modal.id = 'gym-brand-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML = `
+      <div class="modal-card" style="max-width: 480px;">
+        <div class="modal-header">
+          <div><h3 style="margin:0 0 4px;font-size:18px;">Identidade da Academia</h3><p style="margin:0;font-size:13px;color:var(--muted);">Altere a logo e o nome da academia exibidos no sistema.</p></div>
+          <button class="modal-close" id="close-brand-modal" type="button" aria-label="Fechar">×</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;padding:12px 0;">
+          <div class="field">
+            <label style="font-size:13px;font-weight:600;margin-bottom:6px;display:block;">Logo da Academia</label>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <img id="nav-brand-modal-preview" src="${localStorage.getItem('gymLogoUrl') || './blue-rec-logo.png'}" width="56" height="56" style="border-radius:12px;border:1px solid var(--line);object-fit:contain;background:#f8fafc;padding:4px;" />
+              <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+                <button type="button" class="button secondary" id="nav-brand-file-btn" style="font-size:13px;padding:6px 12px;align-self:flex-start;">Escolher imagem</button>
+                <input type="file" id="nav-brand-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" hidden />
+                <input type="url" id="nav-brand-url" placeholder="Ou cole o link direto da imagem" style="font-size:13px;padding:6px 10px;" value="${localStorage.getItem('gymLogoUrl') || ''}" />
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="nav-brand-name" style="font-size:13px;font-weight:600;margin-bottom:6px;display:block;">Nome da Academia</label>
+            <input id="nav-brand-name" value="${localStorage.getItem('gymName') || ''}" placeholder="Ex.: Performance Fitness" />
+          </div>
+          <div class="field">
+            <label for="nav-brand-pix" style="font-size:13px;font-weight:600;margin-bottom:6px;display:block;">Chave Pix Padrão</label>
+            <input id="nav-brand-pix" value="${localStorage.getItem('gymPixKey') || ''}" placeholder="Ex.: financeiro@academia.com.br ou CNPJ" />
+          </div>
+          <p class="status-line" id="nav-brand-status" aria-live="polite" style="margin:0;font-size:13px;"></p>
+          <div class="form-actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+            <a href="${pageUrl('painel.html')}" id="nav-brand-go-painel" style="font-size:13px;color:var(--muted);text-decoration:none;">Ir ao Painel</a>
+            <div style="display:flex;gap:8px;">
+              <button class="secondary" type="button" id="cancel-brand-modal">Cancelar</button>
+              <button type="button" id="save-brand-modal" class="button">Salvar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const close = () => modal.classList.add('hidden');
+    modal.querySelector('#close-brand-modal')?.addEventListener('click', close);
+    modal.querySelector('#cancel-brand-modal')?.addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+    const fileBtn = modal.querySelector('#nav-brand-file-btn');
+    const fileInput = modal.querySelector('#nav-brand-file');
+    const urlInput = modal.querySelector('#nav-brand-url');
+    const preview = modal.querySelector('#nav-brand-modal-preview');
+
+    fileBtn?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => { if (preview) preview.src = evt.target.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+    urlInput?.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (preview && val) preview.src = val;
+    });
+
+    modal.querySelector('#save-brand-modal')?.addEventListener('click', async () => {
+      const saveBtn = modal.querySelector('#save-brand-modal');
+      const status = modal.querySelector('#nav-brand-status');
+      saveBtn.disabled = true;
+      status.textContent = 'Salvando identidade...';
+      try {
+        let logoUrl = urlInput.value.trim();
+        const file = fileInput.files?.[0];
+        const token = localStorage.getItem('academiaToken') || '';
+        const host = window.location.hostname || 'localhost';
+        const api = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+
+        if (file) {
+          const form = new FormData();
+          form.append('file', file, file.name);
+          const uploadRes = await fetch(`${api}/api/editor/images`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: form
+          });
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          if (uploadData.location) logoUrl = uploadData.location;
+        }
+
+        const brandName = modal.querySelector('#nav-brand-name').value.trim();
+        const brandPix = modal.querySelector('#nav-brand-pix').value.trim();
+
+        const res = await fetch(`${api}/api/gym/profile`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: brandName || undefined,
+            logo_url: logoUrl || undefined,
+            pix_key: brandPix || undefined
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Erro ao salvar identidade');
+
+        if (data.logo_url) {
+          localStorage.setItem('gymLogoUrl', data.logo_url);
+          document.querySelectorAll('.top-nav-logo').forEach((img) => { img.src = data.logo_url; });
+        }
+        if (data.name) {
+          localStorage.setItem('gymName', data.name);
+          document.querySelectorAll('.top-nav-brand').forEach((el) => { el.title = data.name; });
+        }
+        if (data.pix_key) localStorage.setItem('gymPixKey', data.pix_key);
+
+        window.dispatchEvent(new CustomEvent('academia:brand-updated', { detail: data }));
+        status.textContent = 'Identidade atualizada com sucesso!';
+        setTimeout(close, 700);
+      } catch (err) {
+        status.textContent = `Erro: ${err.message}`;
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  }
+
+  const currentLogo = localStorage.getItem('gymLogoUrl') || './blue-rec-logo.png';
+  const currentName = localStorage.getItem('gymName') || '';
+  const currentPix = localStorage.getItem('gymPixKey') || '';
+  const preview = modal.querySelector('#nav-brand-modal-preview');
+  const nameInp = modal.querySelector('#nav-brand-name');
+  const pixInp = modal.querySelector('#nav-brand-pix');
+  const urlInp = modal.querySelector('#nav-brand-url');
+  if (preview) preview.src = currentLogo;
+  if (nameInp) nameInp.value = currentName;
+  if (pixInp) pixInp.value = currentPix;
+  if (urlInp) urlInp.value = currentLogo.startsWith('data:') || currentLogo.startsWith('/') || currentLogo.startsWith('http') ? currentLogo : '';
+
+  modal.classList.remove('hidden');
 }
 
 function renderAdminMobileNavigation(current, pages, icons) {
@@ -320,6 +478,22 @@ async function loadProfile() {
     const accountRole = document.getElementById('account-role');
     if (accountName) accountName.textContent = name;
     if (accountRole) accountRole.textContent = `${roleLabel(user.role, user.access_profile, user.access_profile_name)} · permissões definidas pelo perfil`;
+
+    try {
+      const gymRes = await fetch(`${api}/api/gym/profile`, { headers: { Authorization: `Bearer ${token}` } });
+      if (gymRes.ok) {
+        const gym = await gymRes.json();
+        if (gym.logo_url) {
+          localStorage.setItem('gymLogoUrl', gym.logo_url);
+          document.querySelectorAll('.top-nav-logo').forEach((img) => { img.src = gym.logo_url; });
+        }
+        if (gym.name) {
+          localStorage.setItem('gymName', gym.name);
+          document.querySelectorAll('.top-nav-brand').forEach((el) => { el.title = gym.name; });
+        }
+        if (gym.pix_key) localStorage.setItem('gymPixKey', gym.pix_key);
+      }
+    } catch (_) {}
   } catch (_) {
     const role = localStorage.getItem('academiaRole') || '';
     const accessProfile = localStorage.getItem('academiaAccessProfile') || '';

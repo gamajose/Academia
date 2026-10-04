@@ -13,11 +13,10 @@
   <main class="app-shell">
     <section class="grid profile-page-grid">
       <form class="panel" id="profile-form">
-        <div class="toolbar"><div><h3>Dados pessoais</h3><small>Esses dados identificam você no sistema.</small></div><span class="badge" id="profile-access-badge">Carregando</span></div>
+        <div class="toolbar"><div><h3>Dados pessoais</h3></div><span class="badge" id="profile-access-badge">Carregando</span></div>
         <div class="profile-identity">
           <button class="profile-identity-avatar" id="profile-photo-button" type="button" aria-label="Alterar foto do perfil" title="Alterar foto do perfil">J</button>
           <input id="profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden />
-          <small>Foto do perfil. Passe o mouse ou toque no avatar para alterar.</small>
         </div>
         <div class="form-grid">
           <div class="field"><label for="profile-name">Nome completo *</label><input id="profile-name" autocomplete="name" required /></div>
@@ -50,9 +49,21 @@
       <div class="grid profile-side-grid">
         <section class="panel" id="gym-profile-panel">
           <div><h3>Dados da academia</h3><small>Informações institucionais, separadas do seu perfil.</small></div>
+          <div class="field gym-logo-field">
+            <label>Logo da academia</label>
+            <div class="gym-logo-preview-row">
+              <img id="gym-logo-preview" src="./blue-rec-logo.png" alt="Logo da academia" width="56" height="56" />
+              <div class="gym-logo-actions">
+                <button type="button" class="button secondary" id="gym-logo-upload-btn">Escolher arquivo</button>
+                <input type="file" id="gym-logo-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" hidden />
+                <input type="url" id="gym-logo-url" placeholder="Ou cole a URL da logo..." />
+              </div>
+            </div>
+          </div>
           <div class="field"><label for="gym-name">Nome da academia</label><input id="gym-name" /></div>
           <div class="form-grid"><div class="field"><label for="gym-email">E-mail da academia</label><input id="gym-email" type="email" /></div><div class="field"><label for="gym-phone">Telefone da academia</label><input id="gym-phone" inputmode="tel" /></div></div>
           <div class="field"><label for="gym-document">CNPJ / documento da academia</label><input id="gym-document" /></div>
+          <div class="field"><label for="gym-pix-key">Chave Pix padrão</label><input id="gym-pix-key" placeholder="Ex.: financeiro@academia.com.br ou CNPJ / celular" /></div>
           <div class="field"><label for="gym-address">Endereço da academia</label><input id="gym-address" /></div>
           <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
           <div class="form-actions"><button id="save-gym-button" type="button">Salvar</button></div>

@@ -102,13 +102,29 @@ async function handleOmnisearchRoutes(req, res, user, url, helpers) {
     let memberQuery;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(search);
     if (isUuid) {
-      memberQuery = await query('SELECT id, name, status, phone FROM members WHERE id = $1 AND gym_id = $2', [search, user.gym_id]);
+      memberQuery = await query(
+        `SELECT m.id, m.name, m.status, m.phone, m.photo_url, m.access_number, p.name AS plan_name
+         FROM members m
+         LEFT JOIN LATERAL (
+           SELECT pl.name FROM memberships mb JOIN plans pl ON pl.id = mb.plan_id
+           WHERE mb.member_id = m.id AND mb.gym_id = m.gym_id AND mb.status = 'active'
+           ORDER BY mb.ends_at DESC LIMIT 1
+         ) p ON true
+         WHERE m.id = $1 AND m.gym_id = $2`,
+        [search, user.gym_id]
+      );
     } else {
       memberQuery = await query(
-        `SELECT id, name, status, phone FROM members
-         WHERE gym_id = $1 AND (name ILIKE $2 OR phone ILIKE $2 OR email ILIKE $2)
-         ORDER BY (name ILIKE $3) DESC, name ASC LIMIT 1`,
-        [user.gym_id, `%${search}%`, `${search}%`]
+        `SELECT m.id, m.name, m.status, m.phone, m.photo_url, m.access_number, p.name AS plan_name
+         FROM members m
+         LEFT JOIN LATERAL (
+           SELECT pl.name FROM memberships mb JOIN plans pl ON pl.id = mb.plan_id
+           WHERE mb.member_id = m.id AND mb.gym_id = m.gym_id AND mb.status = 'active'
+           ORDER BY mb.ends_at DESC LIMIT 1
+         ) p ON true
+         WHERE m.gym_id = $1 AND (m.name ILIKE $2 OR m.phone ILIKE $2 OR m.email ILIKE $2 OR m.access_number ILIKE $2 OR m.cpf ILIKE $2)
+         ORDER BY (m.access_number = $4) DESC, (m.name ILIKE $3) DESC, m.name ASC LIMIT 1`,
+        [user.gym_id, `%${search}%`, `${search}%`, search]
       );
     }
 
@@ -120,6 +136,7 @@ async function handleOmnisearchRoutes(req, res, user, url, helpers) {
     if (member.status !== 'active') {
       return send(res, 400, {
         error: 'aluno_inativo',
+        member,
         message: `Aluno(a) ${member.name} está com status "${member.status}". Verifique a matrícula antes de liberar o acesso.`
       });
     }

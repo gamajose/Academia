@@ -223,6 +223,24 @@
       document.querySelectorAll('[data-student-name]').forEach((element) => { element.textContent = name; });
       document.querySelectorAll('[data-student-avatar]').forEach((element) => { element.textContent = name.charAt(0).toUpperCase(); });
       document.querySelectorAll('[data-student-email]').forEach((element) => { element.textContent = me.account_email || me.email || ''; });
+
+      const savedLogo = localStorage.getItem('gymLogoUrl');
+      const savedName = localStorage.getItem('gymName');
+      if (savedLogo) document.querySelectorAll('.top-nav-logo').forEach((img) => { img.src = savedLogo; });
+      if (savedName) document.querySelectorAll('.brand-wordmark strong').forEach((el) => { el.textContent = savedName; });
+
+      try {
+        const gym = await api('/api/gym/profile');
+        if (gym.logo_url) {
+          localStorage.setItem('gymLogoUrl', gym.logo_url);
+          document.querySelectorAll('.top-nav-logo').forEach((img) => { img.src = gym.logo_url; });
+        }
+        if (gym.name) {
+          localStorage.setItem('gymName', gym.name);
+          document.querySelectorAll('.brand-wordmark strong').forEach((el) => { el.textContent = gym.name; });
+        }
+      } catch (_) {}
+
       return me;
     } catch (error) {
       if (error.message === 'nao_autorizado') logout();

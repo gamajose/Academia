@@ -111,6 +111,15 @@ async function loadGym(canManageGym) {
   const gym = await accountApi('/api/gym/profile');
   fill('gym-name', gym.name); fill('gym-email', gym.email); fill('gym-phone', gym.phone);
   fill('gym-document', gym.document_number); fill('gym-address', gym.address); fill('gym-timezone', gym.timezone);
+  fill('gym-pix-key', gym.pix_key);
+  fill('gym-logo-url', gym.logo_url);
+  if (gym.logo_url) {
+    const preview = account('gym-logo-preview');
+    if (preview) preview.src = gym.logo_url;
+  }
+  localStorage.setItem('gymLogoUrl', gym.logo_url || '');
+  localStorage.setItem('gymName', gym.name || '');
+  localStorage.setItem('gymPixKey', gym.pix_key || '');
 }
 
 async function saveProfile(event) {
@@ -147,10 +156,53 @@ async function savePreferences() {
 
 async function saveGym() {
   try {
-    await accountApi('/api/gym/profile', { method: 'POST', body: JSON.stringify({ name: value('gym-name'), email: value('gym-email'), phone: value('gym-phone'), document_number: value('gym-document'), address: value('gym-address'), timezone: value('gym-timezone') }) });
-    setAccountStatus('Dados da academia salvos.');
+    let logoUrl = value('gym-logo-url');
+    const file = account('gym-logo-file')?.files?.[0];
+    if (file) {
+      logoUrl = await uploadProfilePhoto(file);
+      fill('gym-logo-url', logoUrl);
+      const preview = account('gym-logo-preview');
+      if (preview) preview.src = logoUrl;
+    }
+    const updated = await accountApi('/api/gym/profile', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: value('gym-name'),
+        email: value('gym-email'),
+        phone: value('gym-phone'),
+        document_number: value('gym-document'),
+        address: value('gym-address'),
+        timezone: value('gym-timezone'),
+        pix_key: value('gym-pix-key'),
+        logo_url: logoUrl
+      })
+    });
+    localStorage.setItem('gymLogoUrl', updated.logo_url || '');
+    localStorage.setItem('gymName', updated.name || '');
+    localStorage.setItem('gymPixKey', updated.pix_key || '');
+    window.dispatchEvent(new CustomEvent('academia:brand-updated', { detail: updated }));
+    document.querySelectorAll('.top-nav-logo').forEach((img) => { if (updated.logo_url) img.src = updated.logo_url; });
+    setAccountStatus('Dados da academia salvos com sucesso.');
   } catch (error) { setAccountStatus(`Erro ao salvar academia: ${error.message}`); }
 }
+
+account('gym-logo-upload-btn')?.addEventListener('click', () => account('gym-logo-file')?.click());
+account('gym-logo-file')?.addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const preview = account('gym-logo-preview');
+      if (preview) preview.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
+account('gym-logo-url')?.addEventListener('input', (e) => {
+  const val = e.target.value.trim();
+  const preview = account('gym-logo-preview');
+  if (preview && val) preview.src = val;
+});
 
 account('profile-form').addEventListener('submit', saveProfile);
 account('save-gym-button').addEventListener('click', saveGym);
