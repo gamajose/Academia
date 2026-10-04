@@ -92,6 +92,17 @@ function suggestion(type, priority, action, reason, progression, extra = {}) {
   };
 }
 
+function categorizeMuscleGroup(primary, secondary, name) {
+  const text = normalizeText([primary, secondary, name].filter(Boolean).join(' '));
+  if (/peit/.test(text)) return 'Peito';
+  if (/costa|dorsal|lombar|remada|puxada/.test(text)) return 'Costas';
+  if (/perna|quadricep|posterior|coxa|panturrilha|glute|agach|leg press/.test(text)) return 'Membros Inferiores';
+  if (/ombro|deltoid|desenvolvimento|elevacao lateral/.test(text)) return 'Ombros';
+  if (/biceps|triceps|braco|antebraco|rosca/.test(text)) return 'Braços';
+  if (/abd|core|obliqu|prancha/.test(text)) return 'Abdômen / Core';
+  return primary ? String(primary).trim() : 'Geral';
+}
+
 function buildTrainingReview(input = {}) {
   const snapshot = input.snapshot || {};
   const plan = snapshot.plan || {};
@@ -160,8 +171,103 @@ function buildTrainingReview(input = {}) {
     requiresHumanReview = true;
   }
 
+  if (exercises.length >= 2) {
+    const groupSets = new Map();
+    for (const ex of exercises) {
+      const group = categorizeMuscleGroup(ex.muscle_group_primary, ex.muscle_group_secondary, ex.name || ex.exercise_name);
+      const sets = Number.isFinite(Number(ex.sets)) && Number(ex.sets) > 0 ? Number(ex.sets) : 3;
+      groupSets.set(group, (groupSets.get(group) || 0) + sets);
+    }
+    const sortedGroups = [...groupSets.entries()].sort((a, b) => b[1] - a[1]);
+    const balanceEvidence = sortedGroups.slice(0, 4).map(([grp, count]) => `${grp}: ${count} séries`);
+
+    const hasChest = groupSets.has('Peito');
+    const hasBack = groupSets.has('Costas');
+    const hasLegs = groupSets.has('Membros Inferiores');
+    const chestSets = groupSets.get('Peito') || 0;
+    const backSets = groupSets.get('Costas') || 0;
+
+    if (chestSets >= 8 && backSets === 0) {
+      addSignal('balance', 'attention', 'Desproporção entre peito e costas; recomenda-se incluir exercícios de tração/costas.', balanceEvidence);
+    } else if ((hasChest || hasBack) && !hasLegs && exercises.length >= 4) {
+      addSignal('balance', 'attention', 'A ficha atual não contempla exercícios para membros inferiores.', balanceEvidence);
+    } else {
+      addSignal('balance', 'info', 'Distribuição de volume muscular equilibrada entre os grupamentos planejados.', balanceEvidence);
+    }
+  }
+
+  if (exerciseLogs.length >= 2) {
+    const loads = exerciseLogs
+      .map((item) => {
+        const match = String(item.load_used || '').match(/(\d+(?:[.,]\d+)?)/);
+        return match ? parseFloat(match[1].replace(',', '.')) : null;
+      })
+      .filter((val) => val !== null && Number.isFinite(val) && val > 0);
+
+    if (loads.length >= 2) {
+      const recentAvg = avg(loads.slice(0, Math.min(4, Math.ceil(loads.length / 2))));
+      const pastAvg = avg(loads.slice(-Math.min(4, Math.ceil(loads.length / 2))));
+      if (recentAvg !== null && pastAvg !== null && recentAvg > pastAvg * 1.05) {
+        addSignal('progression', 'info', 'Sobrecarga progressiva positiva observada nas cargas registradas.', [
+          `Carga média recente: ${recentAvg.toFixed(1)} kg`,
+          `Carga média anterior: ${pastAvg.toFixed(1)} kg`
+        ]);
+      } else if (avgEffort !== null && avgEffort <= 5 && sessions >= 4) {
+        addSignal('progression', 'info', 'Cargas estáveis com esforço percebido moderado ou baixo.', [
+          `Carga média: ${recentAvg ? recentAvg.toFixed(1) + ' kg' : 'Estável'}`,
+          'Margem favorável para progressão gradual com o professor'
+        ]);
+      } else {
+        addSignal('progression', 'info', 'Cargas mantidas estáveis nos treinos recentes.', [
+          'Acompanhamento de adaptação neuromuscular em andamento'
+        ]);
+      }
+    } else if (sessions >= 4) {
+      addSignal('progression', 'info', 'Registro de cargas em andamento.', [
+        'O apontamento das cargas utilizadas aprimora o cálculo da progressão'
+      ]);
+    }
+  }
+
+  if (completed.length >= 2) {
+    const dates = completed
+      .map((item) => (item.completed_at ? new Date(item.completed_at).getTime() : null))
+      .filter((t) => t !== null && !Number.isNaN(t))
+      .sort((a, b) => b - a);
+
+    if (dates.length >= 2) {
+      const intervalsDays = [];
+      for (let i = 0; i < dates.length - 1; i++) {
+        intervalsDays.push(Math.abs(dates[i] - dates[i + 1]) / (1000 * 60 * 60 * 24));
+      }
+      const avgInterval = avg(intervalsDays);
+      const minInterval = Math.min(...intervalsDays);
+
+      if (minInterval < 1.0 && avgEffort !== null && avgEffort >= 8) {
+        addSignal('recovery', 'attention', 'Treinos intensos em dias consecutivos sem descanso intermediário.', [
+          'Intervalo menor que 24h com esforço percebido elevado'
+        ]);
+      } else if (avgInterval !== null) {
+        addSignal('recovery', 'info', 'Cadência de treinos e dias de descanso adequados à rotina.', [
+          `Intervalo médio entre sessões: ${avgInterval.toFixed(1)} dias`
+        ]);
+      }
+    }
+  }
+
+  let professionalReviewReason = 'Dor, restrição, esforço excessivo ou dados insuficientes exigem decisão do profissional.';
+  if (avgPain !== null || painMentioned) {
+    professionalReviewReason = 'Registro de dor ou desconforto reportado pelo aluno requer avaliação presencial.';
+  } else if (restrictions.length) {
+    professionalReviewReason = 'Restrições clínicas cadastradas exigem validação prévia dos exercícios e amplitudes.';
+  } else if (avgEffort !== null && avgEffort >= 9) {
+    professionalReviewReason = 'Esforço percebido máximo (RPE >= 9) em treinos recentes requer ajuste de intensidade.';
+  } else if (assessments.length < 2) {
+    professionalReviewReason = 'Ainda não há histórico comparativo de avaliações físicas para balizar a evolução.';
+  }
+
   if (requiresHumanReview) {
-    suggestions.push(suggestion('professional_review', 'high', 'Revisar a ficha presencialmente antes de progredir carga, volume ou complexidade.', 'Dor, restrição, esforço excessivo ou dados insuficientes exigem decisão do profissional.', progression, { target_sets: null, target_reps: null, target_rest_seconds: null }));
+    suggestions.push(suggestion('professional_review', 'high', 'Revisar a ficha presencialmente antes de progredir carga, volume ou complexidade.', professionalReviewReason, progression, { target_sets: null, target_reps: null, target_rest_seconds: null }));
   } else if ((Number.isFinite(adherence) && adherence < 0.6) || (sessions < 4 && planAgeDays >= 30)) {
     suggestions.push(suggestion('adjust_volume', 'high', 'Priorizar consistência e ajustar o volume à rotina real do aluno.', 'Aumentar volume sem frequência suficiente tende a reduzir a aderência.', progression, { target_sets: Math.max(2, progression.sets - 1) }));
   } else if (avgEffort !== null && avgEffort >= 8) {
@@ -198,7 +304,13 @@ function buildTrainingReview(input = {}) {
       : suggestions.some((item) => ['adjust_volume', 'adjust_rest', 'progress_load', 'reduce_load'].includes(item.type))
         ? 'adjust'
         : 'maintain';
-  const confidenceEvidence = [sessions >= 4, assessments.length >= 2, exercises.length > 0, Number.isFinite(adherence)].filter(Boolean).length;
+  const confidenceEvidence = [
+    sessions >= 4,
+    assessments.length >= 2,
+    exercises.length > 0,
+    Number.isFinite(adherence),
+    exerciseLogs.length >= 2
+  ].filter(Boolean).length;
   const confidence = Number(Math.min(0.9, 0.25 + confidenceEvidence * 0.16).toFixed(2));
   const summary = status === 'professional_review'
     ? 'A ficha precisa de revisão do profissional antes de qualquer progressão.'
@@ -207,6 +319,11 @@ function buildTrainingReview(input = {}) {
       : status === 'adjust'
         ? 'A ficha pode receber ajustes graduais com acompanhamento do profissional.'
         : 'Os dados atuais sustentam a manutenção da ficha com acompanhamento.';
+  const studentMessage = requiresHumanReview
+    ? 'Seu professor identificou pontos importantes na sua rotina que merecem uma conversa presencial antes de avançar nas cargas.'
+    : sessions >= 4
+      ? 'Excelente constância! Continue registrando seus treinos e dialogando com seu professor para manter sua evolução.'
+      : 'Bom início de ciclo! Mantenha o foco em completar suas sessões e registrar seu esforço ao final de cada treino.';
   return {
     summary,
     status,
@@ -214,10 +331,8 @@ function buildTrainingReview(input = {}) {
     requires_human_review: requiresHumanReview,
     signals,
     suggestions,
-    student_message: requiresHumanReview
-      ? 'Seu professor identificou pontos que precisam ser revisados antes de mudar seu treino.'
-      : 'Continue registrando seus treinos e siga as orientações do seu professor.',
-    trainer_notes: `${summary} Foram consideradas ${sessions} execuções, ${assessments.length} avaliações e ${exercises.length} exercícios.`
+    student_message: studentMessage,
+    trainer_notes: `${summary} Foram consideradas ${sessions} execuções, ${assessments.length} avaliações e ${exercises.length} exercícios planejados.`
   };
 }
 
