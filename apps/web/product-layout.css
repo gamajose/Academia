@@ -110,7 +110,8 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
 .student-filter-actions { display: flex; align-items: center; gap: 12px; }
 .student-filter-actions span { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 700; }
 .student-filter-actions button { width: auto; }
-.students-toolbar .student-toolbar-actions { display: flex; align-items: center; gap: 8px; }
+.students-toolbar { display: flex; justify-content: flex-start; align-items: center; }
+.students-toolbar .student-toolbar-actions { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 .students-toolbar .student-toolbar-actions .icon-button { margin-left: 0; }
 .students-toolbar .student-toolbar-actions .icon-button.has-active-filters { border-color: var(--accent); background: var(--accent); color: #fff; }
 .student-toolbar-actions .icon-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

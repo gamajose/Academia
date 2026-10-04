@@ -6,7 +6,13 @@
 .access-metrics span { display: block; color: var(--muted); font-size: 13px; }
 .access-metrics strong { display: block; margin-top: 7px; font-size: 26px; }
 .access-members-panel, .access-decisions-panel { gap: 16px; margin-bottom: 24px; }
-.access-member-filters { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card, #fff); }
+.access-decisions-panel .toolbar { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 12px; }
+.access-search-drawer { display: grid; gap: 12px; margin-bottom: 16px; }
+.access-search-drawer.hidden, .access-member-list.hidden { display: none !important; }
+.access-decisions-header { margin: 12px 0 10px; }
+.access-decisions-header h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: var(--text); }
+.access-decisions-header p { margin: 0; font-size: 13px; color: var(--muted); }
+.access-member-filters { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--card, #fff); }
 .access-members-panel > .access-member-filters { display: none; }
 .access-members-panel > .access-member-filters.inline-filter-panel:not(.hidden) { display: grid; }
 .access-filter-modal-card .access-member-filters { display: grid; margin: 0; }

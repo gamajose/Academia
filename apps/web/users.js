@@ -202,6 +202,24 @@ function renderUsers(rows, emptyMessage = 'Nenhum funcionário cadastrado.') {
 
   for (const user of rows) {
     const row = document.createElement('tr');
+    row.className = 'employee-row-interactive';
+    row.setAttribute('role', 'button');
+    row.tabIndex = 0;
+    row.title = `Editar dados e cargo de ${user.name || 'funcionário'}`;
+
+    row.addEventListener('click', (event) => {
+      if (event.target.closest('a, button, input, select, textarea, .employee-menu-dropdown')) {
+        return;
+      }
+      editUser(user);
+    });
+
+    row.addEventListener('keydown', (event) => {
+      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('a, button, input, select, textarea, .employee-menu-dropdown')) {
+        event.preventDefault();
+        editUser(user);
+      }
+    });
 
     const name = document.createElement('td');
     name.textContent = user.name || '';

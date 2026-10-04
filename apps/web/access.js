@@ -41,8 +41,22 @@ function accessDecisionLabel(item) {
 
 function renderMembers() {
   const list = accessEl('access-member-list');
-  const term = accessEl('access-member-search').value.trim().toLowerCase();
-  const filter = accessEl('access-member-filter').value;
+  const term = accessEl('access-member-search')?.value.trim().toLowerCase() || '';
+  const filter = accessEl('access-member-filter')?.value || '';
+  const panel = accessEl('access-filter-panel');
+  const isSearchOpen = panel && !panel.classList.contains('hidden');
+
+  accessEl('access-member-count').textContent = String(accessMembers.length);
+  if (!list) return;
+
+  if (!isSearchOpen || (!term && !filter)) {
+    list.classList.add('hidden');
+    list.innerHTML = '';
+    const pagination = accessEl('access-member-pagination');
+    if (pagination) pagination.hidden = true;
+    return;
+  }
+
   list.innerHTML = '';
   const rows = accessMembers.filter((member) => `${member.name} ${member.email || ''} ${member.phone || ''}`.toLowerCase().includes(term)
     && (!filter
@@ -50,6 +64,8 @@ function renderMembers() {
       || (filter === 'inactive' && member.status !== 'active')
       || (filter === 'blocked' && member.access_status === 'blocked')
       || (filter === 'pending' && !member.access_status)));
+
+  list.classList.remove('hidden');
   const pages = Math.max(1, Math.ceil(rows.length / ACCESS_PAGE_SIZE));
   accessMemberPage = Math.min(pages, Math.max(1, accessMemberPage));
   const visibleRows = rows.slice((accessMemberPage - 1) * ACCESS_PAGE_SIZE, accessMemberPage * ACCESS_PAGE_SIZE);
@@ -59,9 +75,8 @@ function renderMembers() {
     pageSize: ACCESS_PAGE_SIZE,
     onChange: (page) => { accessMemberPage = page; renderMembers(); }
   });
-  accessEl('access-member-count').textContent = String(accessMembers.length);
   if (!rows.length) {
-    const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = term ? 'Nenhum aluno encontrado.' : 'Nenhum aluno cadastrado.'; list.appendChild(empty); return;
+    const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = term ? 'Nenhum aluno encontrado para a busca.' : 'Nenhum aluno encontrado.'; list.appendChild(empty); return;
   }
   for (const member of visibleRows) {
     const row = document.createElement('li'); row.className = 'access-member-row'; row.setAttribute('role', 'button'); row.tabIndex = 0; row.title = 'Abrir credencial do aluno';
@@ -138,9 +153,11 @@ async function loadPage() { try { const [members, decisions] = await Promise.all
 
 function toggleAccessFilters() {
   const panel = accessEl('access-filter-panel');
+  if (!panel) return;
   const hidden = panel.classList.toggle('hidden');
-  accessEl('access-filter-toggle').setAttribute('aria-expanded', String(!hidden));
+  accessEl('access-filter-toggle')?.setAttribute('aria-expanded', String(!hidden));
   if (!hidden) setTimeout(() => accessEl('access-member-search')?.focus(), 40);
+  renderMembers();
 }
 accessEl('access-filter-toggle')?.addEventListener('click', toggleAccessFilters);
 accessEl('access-member-search').addEventListener('input', () => { accessMemberPage = 1; renderMembers(); });

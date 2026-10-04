@@ -18,7 +18,12 @@
 
 body.modal-open { overflow: hidden; }
 .employee-list-panel { gap: 16px; }
-.employee-list-toolbar .toolbar-actions { justify-content: flex-end; }
+.employee-list-toolbar { display: flex; justify-content: flex-start; align-items: center; gap: 10px; }
+.employee-list-toolbar .toolbar-actions { display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
+.employee-toolbar-mobile-menu { margin-left: auto; }
+.employee-row-interactive { cursor: pointer; transition: background-color 0.15s ease; }
+.employee-row-interactive:hover { background-color: rgba(20, 120, 212, 0.04); }
+.employee-row-interactive:focus-visible { outline: 2px solid var(--accent, #1478d4); outline-offset: -2px; }
 .employee-list-toolbar .icon-button, #new-user-button, #new-access-profile-button { flex: 0 0 36px; width: 36px !important; min-width: 36px !important; height: 36px; margin: 0; padding: 0; border-radius: 8px; }
 .employee-list-toolbar .icon-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .employee-filter-panel { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr)); gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card, #fff); }
