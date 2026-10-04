@@ -145,12 +145,16 @@ body.admin-training-page .training-ai-icon {
     line-height: 1.35;
   }
 
-  body.admin-training-page #exercise-list,
+  body.admin-training-page #exercise-list {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
   body.admin-training-page #plan-list {
     gap: 8px;
   }
 
-  body.admin-training-page #exercise-list > li,
   body.admin-training-page #plan-list > li {
     position: relative;
     display: grid !important;
@@ -162,28 +166,74 @@ body.admin-training-page .training-ai-icon {
     border-radius: 11px;
   }
 
-  body.admin-training-page .entity-main {
-    width: 100%;
-    padding-right: 30px;
-    gap: 3px;
+  body.admin-training-page #exercise-list > li {
+    position: relative;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+    border: 1px solid var(--line, #d7e3ef);
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    box-sizing: border-box !important;
   }
 
-  body.admin-training-page .entity-main strong {
-    font-size: 14px;
-    line-height: 1.25;
+  body.admin-training-page .exercise-feed-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
   }
 
-  body.admin-training-page .entity-main span {
-    font-size: 11px;
-    line-height: 1.35;
+  body.admin-training-page .exercise-feed-title-wrap strong {
+    font-size: 17px !important;
+    font-weight: 750 !important;
+    line-height: 1.25 !important;
   }
 
-  body.admin-training-page .entity-card .video-preview-slot {
-    justify-self: center;
-    flex-basis: 72px;
-    width: 72px;
-    height: 72px;
-    margin: 2px auto 0;
+  body.admin-training-page .exercise-feed-detail {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  body.admin-training-page .exercise-feed-tag {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    padding: 4px 10px !important;
+    border-radius: 999px !important;
+    background: #edf5fc !important;
+    color: var(--accent, #1478d4) !important;
+    flex-shrink: 0 !important;
+  }
+
+  body.admin-training-page #exercise-list .entity-card .video-preview-slot,
+  body.admin-training-page .exercise-feed-media {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 220px !important;
+    max-height: 380px !important;
+    aspect-ratio: 4 / 3 !important;
+    flex-basis: auto !important;
+    border-radius: 14px !important;
+    margin: 0 !important;
+    background: #0b131e !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  body.admin-training-page #exercise-list .entity-card .video-preview-slot video,
+  body.admin-training-page #exercise-list .entity-card .video-preview-slot img,
+  body.admin-training-page #exercise-list .entity-card .video-preview-slot iframe {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 14px !important;
   }
 
   body.admin-training-page #exercise-list .entity-actions,
