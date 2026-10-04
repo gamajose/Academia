@@ -92,8 +92,9 @@
 .training-ai-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto !important; min-width: 0; min-height: 40px; padding: 10px 14px; border-radius: 9px; white-space: nowrap; }
 .training-ai-icon { font-size: 18px; line-height: 1; }
 .training-status { margin: 0; }
+.lists-grid .toolbar { display: flex; justify-content: flex-end; align-items: center; width: 100%; }
 .lists-grid .toolbar .icon-button { flex: 0 0 34px; width: 34px !important; min-width: 34px; height: 34px; margin: 0; padding: 0; border-radius: 9px; }
-.exercise-library-actions { display: flex; align-items: center; gap: 8px; }
+.exercise-library-actions { display: flex; align-items: center; justify-content: flex-end; margin-left: auto; gap: 8px; }
 .exercise-library-actions .icon-button { margin: 0; }
 .exercise-library-actions .icon-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .exercise-library-filters { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(150px, 1fr)); gap: 10px; padding: 12px; border: 1px solid var(--line, #d7e3ef); border-radius: 10px; background: color-mix(in srgb, var(--surface, #fff) 72%, transparent); }

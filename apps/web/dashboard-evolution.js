@@ -386,11 +386,37 @@
     return String(val || '').replace(/[&<>"']/g, (s) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]);
   }
 
-  // Fast Check-in Form Submission
+  // Fast Check-in Form Submission & Expandable Toggle
+  const receptionToggle = byId('cockpit-reception-toggle');
+  const receptionClose = byId('cockpit-checkin-close');
   const checkinForm = byId('cockpit-checkin-form');
   const checkinInput = byId('cockpit-checkin-input');
   const checkinStatus = byId('cockpit-checkin-status');
   const checkinBtn = byId('cockpit-checkin-btn');
+
+  function openReception() {
+    receptionToggle?.classList.add('hidden');
+    checkinForm?.classList.remove('hidden');
+    receptionToggle?.setAttribute('aria-expanded', 'true');
+    setTimeout(() => checkinInput?.focus(), 40);
+  }
+
+  function closeReception() {
+    checkinForm?.classList.add('hidden');
+    receptionToggle?.classList.remove('hidden');
+    receptionToggle?.setAttribute('aria-expanded', 'false');
+    if (checkinInput) checkinInput.value = '';
+    if (checkinStatus) checkinStatus.classList.add('hidden');
+  }
+
+  receptionToggle?.addEventListener('click', openReception);
+  receptionClose?.addEventListener('click', closeReception);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && checkinForm && !checkinForm.classList.contains('hidden')) {
+      closeReception();
+    }
+  });
 
   checkinForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -413,7 +439,8 @@
       void loadCockpit();
       setTimeout(() => {
         checkinStatus.classList.add('hidden');
-      }, 4000);
+        closeReception();
+      }, 2500);
     } catch (err) {
       checkinStatus.classList.add('is-error');
       checkinStatus.textContent = `⚠ ${err.message || 'Aluno não encontrado ou inativo.'}`;
