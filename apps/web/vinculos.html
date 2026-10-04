@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./product-layout.css" />
   <link rel="stylesheet" href="./membership.css?v=20260719-1" />
+  <link rel="stylesheet" href="./print-contract.css?v=20261004-1" />
 </head>
 <body class="admin-memberships-page">
   <main class="app-shell">
@@ -65,9 +66,53 @@
     </form>
   </div>
 
+  <!-- Modal Contrato de Adesão -->
+  <div class="modal hidden" id="contract-modal" role="dialog" aria-modal="true" aria-labelledby="contract-modal-title">
+    <div class="modal-card contract-modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 id="contract-modal-title" style="margin: 0 0 4px; font-size: 18px;">Contrato de Prestação de Serviços Fitness</h3>
+          <p style="margin: 0; font-size: 13px; color: var(--muted);">Termo de adesão pronto para assinatura e impressão</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="button" id="print-contract-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>Imprimir Contrato</span>
+          </button>
+          <button class="secondary modal-close" id="close-contract-modal" type="button" aria-label="Fechar">×</button>
+        </div>
+      </div>
+      <div id="contract-printable-container" class="contract-printable-area">
+        <!-- Injected via vinculos.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Recibo de Matrícula -->
+  <div class="modal hidden" id="receipt-modal" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
+    <div class="modal-card contract-modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="receipt-modal-title" style="margin: 0 0 4px; font-size: 18px;">Recibo de Matrícula</h3>
+          <p style="margin: 0; font-size: 13px; color: var(--muted);">Comprovante de pagamento e adesão</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="button" id="print-receipt-btn" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>Imprimir</span>
+          </button>
+          <button class="secondary modal-close" id="close-receipt-modal" type="button" aria-label="Fechar">×</button>
+        </div>
+      </div>
+      <div id="receipt-printable-container" class="contract-printable-area">
+        <!-- Injected via vinculos.js -->
+      </div>
+    </div>
+  </div>
+
   <script src="./guard.js"></script>
-<script src="./nav.js?v=20260719-1"></script>
-<script src="./icon-utils.js"></script>
-<script src="./vinculos.js?v=20260719-1"></script>
+  <script src="./nav.js?v=20260719-1"></script>
+  <script src="./icon-utils.js"></script>
+  <script src="./vinculos.js?v=20261004-1"></script>
 </body>
 </html>

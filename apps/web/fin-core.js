@@ -140,6 +140,12 @@ function draw() {
     tr.addEventListener('click', () => openM(item));
     tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openM(item); } });
     actions.appendChild(actionButton('Ajustar', (event) => { event.stopPropagation(); openM(item); }));
+    if (item.status !== 'paid') {
+      const pixBtn = actionButton('Cobrar Pix', (event) => { event.stopPropagation(); openPixModal(item); });
+      pixBtn.style.setProperty('background', '#0284c7', 'important');
+      pixBtn.style.setProperty('color', '#ffffff', 'important');
+      actions.appendChild(pixBtn);
+    }
     actions.appendChild(actionButton(item.status === 'paid' ? 'Recebido' : 'Marcar como recebido', (event) => { event.stopPropagation(); pay(item); }, item.status === 'paid'));
     list.appendChild(tr);
   }
@@ -320,6 +326,101 @@ for (const [selector, kind] of [['.finance-pending', 'pending'], ['.finance-over
   document.querySelector(selector)?.setAttribute('role', 'button');
   document.querySelector(selector)?.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openFinanceStatus(kind); } });
 }
-f('close-finance-status-modal')?.addEventListener('click', closeFinanceStatus);
-f('finance-status-modal')?.addEventListener('click', (event) => { if (event.target === f('finance-status-modal')) closeFinanceStatus(); });
+let currentPixItem = null;
+
+function closePixModal() {
+  const modal = f('pix-charge-modal');
+  if (modal) modal.classList.add('hidden');
+  currentPixItem = null;
+}
+
+function openPixModal(item) {
+  currentPixItem = item;
+  const modal = f('pix-charge-modal');
+  if (!modal) return;
+
+  const gymName = localStorage.getItem('gymName') || 'BlueREC Academia';
+  const pixKey = localStorage.getItem('gymPixKey') || 'financeiro@academia.com.br';
+  const amountBrl = Number(item.amount_cents || 0) / 100;
+  const formattedAmount = brl(item.amount_cents);
+  const formattedDueDate = dateOnly(item.due_date);
+  const label = statusLabel(item);
+
+  if (f('pix-member-name')) f('pix-member-name').textContent = item.member_name || 'Aluno';
+  if (f('pix-member-due')) f('pix-member-due').textContent = `Vencimento: ${formattedDueDate}`;
+  if (f('pix-member-amount')) f('pix-member-amount').textContent = formattedAmount;
+  const badge = f('pix-member-badge');
+  if (badge) {
+    badge.className = `badge ${statusClass(label)}`;
+    badge.textContent = label;
+  }
+
+  // Generate Pix string
+  let pixPayload = '';
+  if (window.AcademiaPix?.generatePixPayload) {
+    pixPayload = window.AcademiaPix.generatePixPayload({
+      pixKey,
+      merchantName: gymName,
+      merchantCity: 'BRASIL',
+      amount: amountBrl,
+      txid: (item.id || 'MENSALIDADE').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25)
+    });
+  } else {
+    pixPayload = pixKey;
+  }
+
+  const copiaColaInput = f('pix-copia-cola');
+  if (copiaColaInput) copiaColaInput.value = pixPayload;
+
+  // Render QR Code
+  const canvas = f('pix-qr-canvas');
+  if (canvas && window.QRCode?.toCanvas) {
+    window.QRCode.toCanvas(canvas, pixPayload, {
+      width: 200,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+  }
+
+  // WhatsApp Pre-formatted Message
+  const phone = (item.phone || '').replace(/\D/g, '');
+  const waPhone = phone ? (phone.startsWith('55') ? phone : `55${phone}`) : '';
+  const waMsg = `Olá, *${item.member_name || 'Aluno'}*! Tudo bem?\n\nSegue a chave Pix para pagamento da sua mensalidade na *${gymName}*:\n\n💰 *Valor:* ${formattedAmount}\n📅 *Vencimento:* ${formattedDueDate}\n\n📋 *Pix Copia e Cola:*\n\`\`\`${pixPayload}\`\`\`\n\nQualquer dúvida, estamos à disposição!`;
+
+  const waLink = f('pix-whatsapp-link');
+  if (waLink) {
+    waLink.href = waPhone
+      ? `https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+// Copy Pix code button
+f('pix-copy-btn')?.addEventListener('click', () => {
+  const code = f('pix-copia-cola')?.value || '';
+  if (code && navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = f('pix-copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copiado!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+});
+
+// Mark as paid button from modal
+f('pix-mark-paid-btn')?.addEventListener('click', () => {
+  if (currentPixItem) {
+    pay(currentPixItem);
+    closePixModal();
+  }
+});
+
+f('close-pix-modal')?.addEventListener('click', closePixModal);
+f('pix-charge-modal')?.addEventListener('click', (e) => {
+  if (e.target === f('pix-charge-modal')) closePixModal();
+});
+
 load();

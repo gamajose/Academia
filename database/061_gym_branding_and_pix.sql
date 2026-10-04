@@ -1,0 +1,2 @@
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS logo_url text;
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS pix_key text;

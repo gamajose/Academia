@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Totem de Entrada - Catraca Kiosk</title>
+  <link rel="stylesheet" href="./totem.css?v=20261004-1" />
+</head>
+<body class="totem-page">
+  <!-- Top Bar -->
+  <header class="totem-header">
+    <div class="totem-brand">
+      <img id="totem-logo" class="totem-brand-logo" src="./blue-rec-logo.png" alt="Logo da Academia" />
+      <div class="totem-brand-info">
+        <h1 id="totem-gym-name">BlueREC Academia</h1>
+        <span><i class="totem-status-dot"></i> Catraca Online</span>
+      </div>
+    </div>
+
+    <div class="totem-clock-wrap">
+      <div class="totem-clock" id="totem-clock">--:--:--</div>
+      <div class="totem-date" id="totem-date">Carregando...</div>
+    </div>
+
+    <div class="totem-header-controls">
+      <button class="totem-icon-btn" id="totem-fullscreen-btn" type="button" title="Alternar tela cheia">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        <span>Tela cheia</span>
+      </button>
+      <a class="totem-icon-btn" href="./access.html" title="Voltar para a recepção">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span>Sair</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="totem-main">
+    <div class="totem-container">
+
+      <!-- State 1: Idle / Input & Keypad -->
+      <section class="totem-card" id="totem-idle-view">
+        <div class="totem-instruction-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+
+        <div class="totem-titles">
+          <h2>Identifique-se na Entrada</h2>
+          <p>Aproxime seu QR Code do leitor ou digite sua Matrícula / CPF abaixo</p>
+        </div>
+
+        <div class="totem-display">
+          <input id="totem-input" class="totem-input" type="text" placeholder="Digite sua matrícula ou CPF..." autocomplete="off" autofocus />
+        </div>
+
+        <!-- Touch Numpad -->
+        <div class="totem-keypad">
+          <button class="totem-key" type="button" data-key="1">1</button>
+          <button class="totem-key" type="button" data-key="2">2</button>
+          <button class="totem-key" type="button" data-key="3">3</button>
+
+          <button class="totem-key" type="button" data-key="4">4</button>
+          <button class="totem-key" type="button" data-key="5">5</button>
+          <button class="totem-key" type="button" data-key="6">6</button>
+
+          <button class="totem-key" type="button" data-key="7">7</button>
+          <button class="totem-key" type="button" data-key="8">8</button>
+          <button class="totem-key" type="button" data-key="9">9</button>
+
+          <button class="totem-key action-clear" type="button" data-key="clear">Limpar</button>
+          <button class="totem-key" type="button" data-key="0">0</button>
+          <button class="totem-key action-confirm" type="button" data-key="confirm">Entrar</button>
+        </div>
+      </section>
+
+      <!-- State 2: Approved Check-in -->
+      <section class="totem-result-card success hidden" id="totem-success-view">
+        <div class="totem-result-icon">✓</div>
+        <div class="totem-member-avatar" id="totem-approved-avatar">A</div>
+        <h2 id="totem-approved-name">Nome do Aluno</h2>
+        <span class="totem-plan-chip" id="totem-approved-plan">Matrícula Ativa</span>
+        <p style="font-size: 20px; font-weight: 800; color: #10b981; margin: 4px 0;">ACESSO LIBERADO</p>
+        <p class="totem-result-hint">Tenha um excelente treino! 💪</p>
+        <div class="totem-progress-bar">
+          <div class="totem-progress-fill" id="totem-success-progress"></div>
+        </div>
+      </section>
+
+      <!-- State 3: Denied Check-in -->
+      <section class="totem-result-card denied hidden" id="totem-denied-view">
+        <div class="totem-result-icon">✕</div>
+        <h2 id="totem-denied-name">Acesso Bloqueado</h2>
+        <p class="totem-result-reason" id="totem-denied-reason">Mensalidade pendente ou matrícula inativa.</p>
+        <p class="totem-result-hint">Por favor, dirija-se à recepção para regularizar o seu acesso.</p>
+        <div class="totem-progress-bar">
+          <div class="totem-progress-fill" id="totem-denied-progress"></div>
+        </div>
+      </section>
+
+      <!-- State 4: Module Disabled Notification -->
+      <section class="totem-disabled-card hidden" id="totem-disabled-view">
+        <h3>Módulo de Totem Desativado</h3>
+        <p>O módulo de Totem / Catraca está desativado nas configurações desta academia.</p>
+        <a href="./settings.html" class="totem-icon-btn">Abrir Configurações de Módulos</a>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="./module-settings.js?v=20260716-3"></script>
+  <script src="./totem.js?v=20261004-1"></script>
+</body>
+</html>
