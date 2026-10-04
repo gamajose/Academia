@@ -204,7 +204,7 @@ async function load() {
 function openM(item) {
   f('finance-modal').classList.remove('hidden');
   f('finance-payment-id').value = item.id;
-  f('finance-title').textContent = `Ajuste financeiro - ${item.member_name}`;
+  f('finance-title').textContent = item.member_name || 'Lançamento';
   f('finance-discount').value = (Number(item.discount_cents || 0) / 100).toFixed(2);
   f('finance-fee').value = (Number(item.fee_cents || 0) / 100).toFixed(2);
   f('finance-status').value = ['pending', 'paid', 'overdue', 'cancelled'].includes(item.status) ? item.status : 'pending';

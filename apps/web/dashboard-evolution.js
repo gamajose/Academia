@@ -107,6 +107,51 @@
         button.append(name, detail, action);
         button.addEventListener('click', () => openAssessment(item));
         row.appendChild(button);
+      } else if (kind === 'training') {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'dashboard-evolution-person';
+        const name = document.createElement('strong');
+        name.textContent = item.member_name || 'Aluno';
+        const detail = document.createElement('span');
+        detail.textContent = category.detail(item);
+        const action = document.createElement('small');
+        action.textContent = 'Revisar ficha';
+        button.append(name, detail, action);
+        button.addEventListener('click', () => {
+          window.location.href = `./training.html?plan_id=${encodeURIComponent(item.id || '')}&action=review`;
+        });
+        row.appendChild(button);
+      } else if (kind === 'membership') {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'dashboard-evolution-person';
+        const name = document.createElement('strong');
+        name.textContent = item.member_name || 'Aluno';
+        const detail = document.createElement('span');
+        detail.textContent = category.detail(item);
+        const action = document.createElement('small');
+        action.textContent = 'Ver matrícula';
+        button.append(name, detail, action);
+        button.addEventListener('click', () => {
+          window.location.href = './vinculos.html';
+        });
+        row.appendChild(button);
+      } else if (kind === 'finance') {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'dashboard-evolution-person';
+        const name = document.createElement('strong');
+        name.textContent = item.member_name || 'Aluno';
+        const detail = document.createElement('span');
+        detail.textContent = category.detail(item);
+        const action = document.createElement('small');
+        action.textContent = 'Ver financeiro';
+        button.append(name, detail, action);
+        button.addEventListener('click', () => {
+          window.location.href = './financeiro.html';
+        });
+        row.appendChild(button);
       } else {
         row.className = 'dashboard-alert-row';
         const name = document.createElement('strong');

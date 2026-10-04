@@ -244,6 +244,30 @@ async function loadBase() {
   trainingLevels = levelResult.data || [];
   renderAll();
   setTrainingStatus('');
+  checkUrlAction();
+}
+
+function checkUrlAction() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetPlanId = urlParams.get('plan_id') || urlParams.get('review_plan_id');
+  const targetAction = urlParams.get('action');
+
+  if (targetPlanId) {
+    const reviewSelect = t('review-plan');
+    if (reviewSelect) {
+      reviewSelect.value = targetPlanId;
+      reviewSelect.dispatchEvent(new Event('change'));
+    }
+    if (targetAction === 'edit') {
+      const planItem = plans.find((p) => String(p.id) === String(targetPlanId));
+      if (planItem) openPlanForm(planItem);
+    } else {
+      openTrainingModal('review-modal');
+      setTimeout(() => {
+        t('review-plan-button')?.click();
+      }, 50);
+    }
+  }
 }
 
 function normalizeExerciseFilterValue(value) {

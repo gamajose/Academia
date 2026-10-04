@@ -17,7 +17,7 @@
           <h3>Equipe cadastrada</h3>
         </div>
         <div class="toolbar-actions">
-          <button id="new-user-button" class="icon-button" type="button" aria-label="Cadastrar funcionário" title="Cadastrar funcionário">+</button>
+          <button id="new-user-button" class="icon-button" type="button" aria-label="Cadastrar funcionário" title="Cadastrar funcionário"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
           <button id="employee-filter-toggle" class="icon-button" type="button" aria-label="Pesquisar funcionários" title="Pesquisar funcionários" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
           <button id="manage-permissions-button" class="secondary" type="button">Permissões</button>
         </div>
@@ -63,11 +63,8 @@
 
   <div class="modal hidden" id="employee-form-panel" role="dialog" aria-modal="true" aria-labelledby="employee-form-title" aria-hidden="true">
     <form class="modal-card employee-modal-card employee-form" id="employee-form">
-      <div class="modal-header">
-        <div>
-          <h3 id="employee-form-title">Cadastrar funcionário</h3>
-          <p>Preencha os dados do funcionário e selecione o perfil que definirá suas permissões.</p>
-        </div>
+      <div class="modal-header employee-modal-header-compact">
+        <h3 id="employee-form-title" class="sr-only">Cadastrar funcionário</h3>
         <button type="button" id="close-employee-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
       </div>
 
@@ -94,12 +91,12 @@
           <div class="field">
             <div class="employee-access-profile-row">
               <select id="user-access-profile" aria-label="Perfil de acesso" required></select>
-              <button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Novo perfil de acesso" title="Novo perfil de acesso">+</button>
+              <button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Novo perfil de acesso" title="Novo perfil de acesso"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
             </div>
             <small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small>
           </div>
         </div>
-        <p class="section-help" id="permission-help">Use o botão + para criar um perfil sem sair do cadastro.</p>
+        <p class="section-help sr-only" id="permission-help"></p>
       </section>
 
       <section class="form-section">
@@ -129,17 +126,11 @@
       <div class="modal-header permissions-modal-header">
         <div>
           <h3 id="permissions-manager-title">Gerenciar permissões</h3>
-          <p>Crie perfis e defina quais módulos cada funcionário poderá acessar.</p>
         </div>
-        <button type="button" id="close-permissions-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
-      </div>
-
-      <div class="toolbar permissions-modal-toolbar">
-        <div>
-          <h4>Perfis de acesso</h4>
-          <p class="section-help">O perfil escolhido no cadastro do funcionário determina o acesso dele.</p>
+        <div class="modal-header-actions">
+          <button id="new-access-profile-button" class="icon-button" type="button" aria-label="Novo perfil" title="Novo perfil"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+          <button type="button" id="close-permissions-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
         </div>
-        <button id="new-access-profile-button" class="icon-button" type="button" aria-label="Novo perfil" title="Novo perfil">+</button>
       </div>
 
       <div id="access-profile-list" class="access-profile-list"></div>

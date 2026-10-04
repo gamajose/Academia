@@ -54,11 +54,17 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .login-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .login-links a, .link-button { width: auto; padding: 0; border: 0; background: transparent; color: var(--accent); font-weight: 800; text-decoration: none; box-shadow: none; }
 .mini-button { width: auto; padding: 6px 10px; margin-left: 8px; border-radius: 8px; font-size: 12px; }
-.icon-button { width: 34px; min-width: 34px; height: 34px; display: inline-grid; place-items: center; padding: 0; margin-left: 6px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--text); font-size: 17px; line-height: 1; }
-.icon-button:hover, .icon-button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
-.icon-button.danger { color: #b91c1c; }
-.action-icon-button svg, .icon-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.icon-button { width: 34px; min-width: 34px; height: 34px; display: inline-grid; place-items: center; padding: 0; margin-left: 6px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--text); font-size: 17px; line-height: 1; transition: all .16s ease-in-out; cursor: pointer; }
+.icon-button:hover, .icon-button:focus-visible { border-color: var(--accent); color: var(--accent); background: #f8fafc; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.06); outline: none; }
+.icon-button:active { transform: translateY(0); }
+.icon-button svg, .action-icon-button svg, .icon-link svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .16s ease; }
+.icon-button.danger, .action-icon-button.danger { color: #b91c1c; }
+.icon-button.danger:hover, .action-icon-button.danger:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+.icon-button.success, .action-icon-button.success { color: #16a34a; }
+.icon-button.success:hover, .action-icon-button.success:hover { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.icon-button.icon-edit:hover { background: #eff6ff; border-color: #93c5fd; color: #2563eb; }
 .icon-link { text-decoration: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 small { min-height: 18px; color: var(--muted); }
 .hidden { display: none; }
 
