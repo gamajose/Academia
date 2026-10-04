@@ -14,7 +14,6 @@ STUDENT_HTML = {
     'student-portal.html', 'student-complete.html', 'student-progress.html',
     'student-goals.html', 'student-share.html', 'student-history.html', 'student-access.html',
     'student-profile.html', 'student-security.html', 'student-change-password.html',
-    'student-feed.html', 'student-social-profile.html', 'student-social-profile-edit.html',
     'visitor-portal.html'
 }
 ADMIN_ROLES = {'owner', 'admin', 'staff'}

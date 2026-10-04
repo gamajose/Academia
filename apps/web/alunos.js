@@ -539,11 +539,10 @@ async function openStudentView(item) {
   openStudentViewModal();
   void loadStudentAi(item.id);
   try {
-    const [assessmentResult, goalResult, trainingResult, mediaResult] = await Promise.all([
+    const [assessmentResult, goalResult, trainingResult] = await Promise.all([
       req(`/api/assessments?member_id=${encodeURIComponent(item.id)}`),
       req(`/api/goals?member_id=${encodeURIComponent(item.id)}`),
-      item.training_plan_id ? req(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.training_plan_id)}`) : Promise.resolve({ exercises: [] }),
-      req(`/api/student/admin-community/media?q=${encodeURIComponent(item.name || '')}&page=1`).catch(() => ({ items: [] }))
+      item.training_plan_id ? req(`/api/training/plans/detail?plan_id=${encodeURIComponent(item.training_plan_id)}`) : Promise.resolve({ exercises: [] })
     ]);
     const exerciseList = $('student-view-exercises');
     exerciseList.innerHTML = '';
@@ -562,10 +561,6 @@ async function openStudentView(item) {
     if (item.photo_url) media.set(item.photo_url, { url: item.photo_url, label: 'Foto do perfil' });
     for (const assessment of assessments) {
       if (assessment.photo_url) media.set(assessment.photo_url, { url: assessment.photo_url, label: `Avaliação de ${dateOnly(assessment.assessment_date)}` });
-    }
-    for (const mediaItem of mediaResult.items || []) {
-      if (!mediaItem.photo_url || String(mediaItem.author_name || '').trim().toLowerCase() !== String(item.name || '').trim().toLowerCase()) continue;
-      media.set(mediaItem.photo_url, { url: mediaItem.photo_url, label: `${mediaItem.source_type === 'comment' ? 'Comentário' : 'Publicação'} de ${dateOnly(mediaItem.created_at)}` });
     }
     const mediaGrid = $('student-view-media');
     mediaGrid.innerHTML = '';

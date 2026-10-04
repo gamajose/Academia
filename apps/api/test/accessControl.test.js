@@ -48,9 +48,9 @@ test('qualquer usuario autenticado pode enviar imagens', () => {
   assert.equal(canAccess({ role: 'staff' }, 'GET', '/api/editor/images', permissions), false);
 });
 
-test('administrador com perfil configurado pode enviar videos da comunidade', () => {
-  const permissions = { student_access: true };
-  assert.equal(canAccess({ role: 'admin' }, 'POST', '/api/editor/videos', permissions), true);
+test('administrador com permissao de treino pode enviar videos de treino', () => {
+  const permissions = { training: true };
+  assert.equal(canAccess({ role: 'admin' }, 'POST', '/api/training/videos', permissions), true);
 });
 
 test('aluno pode enviar foto de evolucao sem acessar rotas administrativas', () => {

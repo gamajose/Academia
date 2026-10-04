@@ -66,9 +66,9 @@ function applyAdminPreferences(preferences = {}) {
 }
 
 const adminNavLabels = {
-  'pt-BR': { comunidade: 'Comunidade', painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acessos', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', configuracoes: 'Configurações', sair: 'Sair', mais: 'Mais' },
-  en: { comunidade: 'Community', painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', configuracoes: 'Settings', sair: 'Sign out', mais: 'More' },
-  es: { comunidade: 'Comunidad', painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Accesos', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', configuracoes: 'Configuración', sair: 'Salir', mais: 'Más' }
+  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acessos', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', configuracoes: 'Configurações', sair: 'Sair', mais: 'Mais' },
+  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', configuracoes: 'Settings', sair: 'Sign out', mais: 'More' },
+  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Accesos', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', configuracoes: 'Configuración', sair: 'Salir', mais: 'Más' }
 };
 
 function applyAdminLanguage(language = 'pt-BR') {
@@ -126,7 +126,7 @@ function roleLabel(role, accessProfile = '', accessProfileName = '') {
 function canSeePage(href, role, accessProfile, permissions = null) {
   if (role === 'owner' || (role === 'admin' && !permissions)) return true;
   const pageModules = {
-    'painel.html': 'dashboard', 'admin-community.html': 'student_access', 'alunos.html': 'members', 'planos.html': 'plans',
+    'painel.html': 'dashboard', 'alunos.html': 'members', 'planos.html': 'plans',
     'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments',
     'financeiro.html': 'finance', 'alerts.html': 'alerts', 'training.html': 'training',
     'assessments.html': 'assessments', 'access.html': 'access', 'users.html': 'users'
@@ -156,7 +156,7 @@ function applyNavPermissions(user) {
 
 function pageModule(href) {
   return {
-    'painel.html': 'dashboard', 'admin-community.html': 'community', 'alunos.html': 'members', 'planos.html': 'plans',
+    'painel.html': 'dashboard', 'alunos.html': 'members', 'planos.html': 'plans',
     'vinculos.html': 'memberships', 'solicitacoes.html': 'pre_enrollments', 'financeiro.html': 'finance',
     'alerts.html': 'alerts', 'training.html': 'training', 'assessments.html': 'assessments',
     'access.html': 'access', 'users.html': 'users'
@@ -185,16 +185,16 @@ function renderNavigation() {
   document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
 
   const current = pageName(window.location.pathname) || 'painel.html';
-  const adminPages = ['painel.html', 'admin-community.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
+  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
   if (adminPages.includes(current)) document.documentElement.dataset.adminShell = 'true';
   const pages = [
-    ['painel.html', 'Painel', 'painel'], ['admin-community.html', 'Comunidade', 'comunidade'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
+    ['painel.html', 'Painel', 'painel'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
     ['vinculos.html', 'Matrículas', 'matriculas'], ['solicitacoes.html', 'Pré-matrículas', 'pre'],
     ['financeiro.html', 'Financeiro', 'financeiro'], ['training.html', 'Treinos', 'treinos'],
     ['access.html', 'Acesso', 'acesso'], ['users.html', 'Funcionários', 'funcionarios']
   ];
   const icons = {
-    'painel.html': 'home', 'admin-community.html': 'users', 'alunos.html': 'members', 'planos.html': 'plans', 'vinculos.html': 'membership',
+    'painel.html': 'home', 'alunos.html': 'members', 'planos.html': 'plans', 'vinculos.html': 'membership',
     'solicitacoes.html': 'spark', 'financeiro.html': 'finance', 'alerts.html': 'alert',
     'training.html': 'dumbbell', 'assessments.html': 'chart', 'access.html': 'access', 'users.html': 'users'
   };
@@ -236,7 +236,7 @@ function renderNavigation() {
 
 function renderAdminMobileNavigation(current, pages, icons) {
   const bottomItems = [
-    ['admin-community.html', 'comunidade', 'users'],
+    ['painel.html', 'painel', 'home'],
     ['alunos.html', 'alunos', 'members'],
     ['training.html', 'treinos', 'dumbbell'],
     ['access.html', 'acesso', 'access']
@@ -292,8 +292,8 @@ async function loadProfile() {
     user.enabled_modules = await waitForModuleSettings(token);
     const currentModule = pageModule(pageName(window.location.pathname));
     if (currentModule && user.enabled_modules[currentModule] === false) {
-      const fallback = ['dashboard', 'community', 'members', 'training'].find((key) => user.enabled_modules[key] !== false);
-      const fallbackPages = { dashboard: 'painel.html', community: 'admin-community.html', members: 'alunos.html', training: 'training.html' };
+      const fallback = ['dashboard', 'members', 'training'].find((key) => user.enabled_modules[key] !== false);
+      const fallbackPages = { dashboard: 'painel.html', members: 'alunos.html', training: 'training.html' };
       window.location.replace(pageUrl(fallbackPages[fallback] || 'settings.html'));
       return;
     }

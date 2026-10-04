@@ -1,6 +1,6 @@
 (function () {
   const defaults = {
-    dashboard: true, community: true, members: true, plans: true, memberships: true,
+    dashboard: true, members: true, plans: true, memberships: true,
     pre_enrollments: true, finance: true, alerts: true, training: true,
     assessments: true, access: true, users: true
   };

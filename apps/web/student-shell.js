@@ -19,8 +19,8 @@
   function getToken() {
     return localStorage.getItem('studentToken') || localStorage.getItem('academiaStudentToken') || getCookie('academiaStudentAuth') || '';
   }
-  const navigationIcons = { community: 'users', training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history', access: 'qr' };
-  const navigationLabels = { community: 'Comunidade', training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico', access: 'Acesso' };
+  const navigationIcons = { training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history', access: 'qr', profile: 'profile' };
+  const navigationLabels = { training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico', access: 'Acesso', profile: 'Perfil' };
   const translations = {
     en: {
       'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Compartilhar': 'Share', 'Histórico': 'History', 'Acesso': 'Access', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
@@ -90,11 +90,10 @@
     nav.className = 'student-mobile-nav';
     nav.setAttribute('aria-label', 'Navegação principal');
     const items = [
-      ['community', './student-feed.html', 'users', 'Comunidade'],
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
       ['progress', './student-progress.html', 'chart', 'Evolução'],
       ['access', './student-access.html', 'qr', 'Acesso'],
-      ['profile', './student-social-profile.html', 'profile', 'Perfil']
+      ['profile', './student-profile.html', 'profile', 'Perfil']
     ];
     items.forEach(([key, href, iconText, label]) => {
       const link = document.createElement('a');
@@ -129,11 +128,8 @@
   function renderAccountMenu(dropdown) {
     if (!dropdown) return;
     const items = [
-      ['./student-social-profile.html', 'Meu perfil'],
-      ['./student-social-profile-edit.html#social-account', 'Dados da conta'],
-      ['./student-social-profile-edit.html#social-body', 'Dados corporais'],
-      ['./student-social-profile-edit.html#social-security', 'Segurança'],
-      ['./student-social-profile-edit.html#social-preferences', 'Preferências']
+      ['./student-profile.html', 'Meu perfil'],
+      ['./student-security.html', 'Segurança']
     ];
     dropdown.replaceChildren();
     items.forEach(([href, label]) => {
@@ -152,19 +148,11 @@
 
   function setActiveLink() {
     createMobileNavigation();
-    const desktopNav = document.querySelector('.student-module-nav');
     document.querySelectorAll('[data-student-link="history"]').forEach((link) => {
       link.dataset.studentLink = 'access';
       link.href = './student-access.html';
       link.textContent = 'Acesso';
     });
-    if (desktopNav && !desktopNav.querySelector('[data-student-link="community"]')) {
-      const community = document.createElement('a');
-      community.dataset.studentLink = 'community';
-      community.href = './student-feed.html';
-      community.textContent = translations[getLocale()]?.Comunidade || 'Comunidade';
-      desktopNav.insertBefore(community, desktopNav.firstElementChild);
-    }
     const current = document.body.dataset.studentPage || 'training';
     document.querySelectorAll('[data-student-link]').forEach((link) => {
       link.classList.toggle('active', link.dataset.studentLink === current);
@@ -182,14 +170,14 @@
         link.querySelector('.nav-label').textContent = translations[getLocale()]?.[navigationLabels[key]] || navigationLabels[key];
       }
     });
-    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'community' ? 'community' : current === 'access' ? 'access' : 'training';
+    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'access' ? 'access' : 'training';
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 
   async function applyEnabledModules(token) {
     for (let attempt = 0; attempt < 20 && !window.AcademiaModules; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 25));
     const modules = window.AcademiaModules?.load ? await window.AcademiaModules.load(token) : {};
-    const linkModules = { community: 'community', share: 'community', training: 'training', complete: 'training', history: 'training', progress: 'assessments', goals: 'assessments', access: 'access' };
+    const linkModules = { training: 'training', complete: 'training', history: 'training', progress: 'assessments', goals: 'assessments', share: 'assessments', access: 'access' };
     document.querySelectorAll('[data-student-link], [data-mobile-student-link]').forEach((link) => {
       const key = link.dataset.studentLink || link.dataset.mobileStudentLink;
       const module = linkModules[key];
@@ -198,7 +186,7 @@
     const current = document.body.dataset.studentPage || 'training';
     const currentModule = linkModules[current];
     if (currentModule && modules[currentModule] === false) {
-      const fallback = modules.community !== false ? './student-feed.html' : modules.training !== false ? './student-portal.html' : './student-social-profile.html';
+      const fallback = modules.training !== false ? './student-portal.html' : './student-profile.html';
       window.location.replace(fallback);
       return false;
     }

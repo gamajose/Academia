@@ -15,7 +15,7 @@ test('normalization only disables explicit false values', () => {
 });
 
 test('request paths resolve to the global academy module', () => {
-  assert.equal(moduleForRequest('/api/student/admin-community/feed'), 'community');
+  assert.equal(moduleForRequest('/api/dashboard/summary'), 'dashboard');
   assert.equal(moduleForRequest('/api/student/access/status'), 'access');
   assert.equal(moduleForRequest('/api/access-profiles'), 'users');
   assert.equal(moduleForRequest('/api/student/progress'), 'assessments');

@@ -1,6 +1,5 @@
 const DEFAULT_MODULES = Object.freeze({
   dashboard: true,
-  community: true,
   members: true,
   plans: true,
   memberships: true,
@@ -19,7 +18,6 @@ function normalizeModules(value = {}) {
 
 function moduleForRequest(pathname) {
   if (pathname.startsWith('/api/dashboard')) return 'dashboard';
-  if (pathname.startsWith('/api/student/social') || pathname.startsWith('/api/student/admin-community') || pathname.startsWith('/api/student/feed') || pathname.startsWith('/api/community')) return 'community';
   if (pathname.startsWith('/api/users') || pathname.startsWith('/api/access-profiles')) return 'users';
   if (pathname.startsWith('/api/student/access') || pathname.startsWith('/api/access') || pathname.startsWith('/api/checkins') || pathname.startsWith('/api/operations')) return 'access';
   if (pathname.startsWith('/api/student/training') || pathname.startsWith('/api/student/workout') || pathname.startsWith('/api/training')) return 'training';

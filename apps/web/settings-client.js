@@ -1,6 +1,6 @@
 const moduleStatus = document.getElementById('module-settings-status');
 const moduleLabels = {
-  dashboard: ['Painel', 'Resumo da operação'], community: ['Comunidade', 'Publicações e interações'], members: ['Alunos', 'Cadastros dos alunos'],
+  dashboard: ['Painel', 'Resumo da operação'], members: ['Alunos', 'Cadastros dos alunos'],
   plans: ['Planos', 'Planos comerciais'], memberships: ['Matrículas', 'Vínculos e matrículas'], pre_enrollments: ['Pré-matrículas', 'Solicitações de entrada'],
   finance: ['Financeiro', 'Cobranças e movimentações'], alerts: ['Alertas', 'Avisos operacionais'], training: ['Treinos', 'Exercícios e fichas'],
   access: ['Acessos', 'QR Code, catraca e credenciais'], users: ['Funcionários', 'Equipe e permissões']

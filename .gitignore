@@ -36,3 +36,6 @@ apps/web/uploads/
 apps/mobile/.dart_tool/
 apps/mobile/.flutter-plugins
 apps/mobile/.flutter-plugins-dependencies
+
+# Media uploads and local files
+files/

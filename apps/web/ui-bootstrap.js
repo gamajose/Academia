@@ -4,7 +4,6 @@
   const adminPages = new Set([
     'access.html',
     'account.html',
-    'admin-community.html',
     'alerts.html',
     'alunos.html',
     'assessment-actions.html',
@@ -26,16 +25,13 @@
   const studentPages = new Set([
     'student-access.html',
     'student-complete.html',
-    'student-feed.html',
     'student-goals.html',
     'student-history.html',
     'student-portal.html',
     'student-profile.html',
     'student-progress.html',
     'student-security.html',
-    'student-share.html',
-    'student-social-profile-edit.html',
-    'student-social-profile.html'
+    'student-share.html'
   ]);
   const isAdmin = adminPages.has(page);
   const isStudent = studentPages.has(page);
