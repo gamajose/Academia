@@ -31,8 +31,15 @@ function statusLabel(item) {
 }
 
 function accessReasonLabel(reason) {
-  const labels = { member_inactive: 'Aluno inativo', membership_inactive: 'Matrícula inativa', membership_expired: 'Matrícula vencida', payment_overdue: 'Pagamento em atraso', membership_grace_expired: 'Prazo de tolerância encerrado' };
-  return labels[reason] || reason || 'Motivo não informado';
+  const labels = {
+    member_inactive: 'Aluno inativo',
+    membership_inactive: 'Matrícula inativa',
+    membership_expired: 'Matrícula vencida',
+    payment_overdue: 'Pagamento em atraso',
+    membership_grace_expired: 'Prazo de tolerância encerrado',
+    manual_override: 'Liberação manual'
+  };
+  return labels[reason] || '';
 }
 
 function accessDecisionLabel(item) {
@@ -100,13 +107,41 @@ function renderDecisions(rows) {
   if (!rows.length) { const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhuma decisão registrada ainda.'; list.appendChild(empty); return; }
   for (const item of rows.slice(0, 50)) {
     const row = document.createElement('li'); row.className = 'access-decision-row';
-    const main = document.createElement('div'); const name = document.createElement('strong'); name.textContent = item.member_name || 'Aluno'; const detail = document.createElement('span'); detail.textContent = `${accessDecisionLabel(item)} · ${formatDateTime(item.decided_at)}`; main.append(name, detail);
+    const main = document.createElement('div');
+    const name = document.createElement('strong');
+    name.textContent = item.member_name || 'Aluno';
+    const detail = document.createElement('span');
+    detail.textContent = `${accessDecisionLabel(item)} · ${formatDateTime(item.decided_at)}`;
+    main.append(name, detail);
+
     const actions = document.createElement('div'); actions.className = 'access-decision-actions';
-    const badge = document.createElement('span'); badge.className = `badge ${item.allowed ? 'ok' : 'bad'}`; badge.textContent = item.allowed ? 'Liberado' : 'Bloqueado';
+    const actionsRow = document.createElement('div'); actionsRow.className = 'access-decision-actions-row';
+
+    const badge = document.createElement('span');
+    badge.className = `badge ${item.allowed ? 'ok' : 'bad'}`;
+    badge.textContent = item.allowed ? 'Liberado' : 'Bloqueado';
+
     const details = document.createElement('details'); details.className = 'access-decision-details';
     const summary = document.createElement('summary'); summary.textContent = 'Ver decisão';
-    const explanation = document.createElement('p'); explanation.textContent = [item.reason, item.message, item.device_name ? `Dispositivo: ${item.device_name}` : ''].filter(Boolean).join(' · ') || 'Sem detalhes adicionais.';
-    details.append(summary, explanation); actions.append(badge, details); row.append(main, actions); list.appendChild(row);
+
+    const explanation = document.createElement('p');
+    const detailParts = [];
+    const reasonText = accessReasonLabel(item.reason);
+    if (item.message && item.message !== item.reason && item.message !== 'membership_grace_expired') {
+      detailParts.push(item.message);
+    } else if (reasonText) {
+      detailParts.push(reasonText);
+    }
+    if (item.device_name) {
+      detailParts.push(`Dispositivo: ${item.device_name}`);
+    }
+    explanation.textContent = detailParts.join(' · ') || (item.allowed ? 'Entrada autorizada.' : 'Acesso bloqueado.');
+
+    details.append(summary, explanation);
+    actionsRow.append(badge, details);
+    actions.append(actionsRow);
+    row.append(main, actions);
+    list.appendChild(row);
   }
 }
 

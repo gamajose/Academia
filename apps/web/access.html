@@ -8,19 +8,21 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
   <link rel="stylesheet" href="./access-credential.css" />
-  <link rel="stylesheet" href="./access-page.css?v=20260719-1" />
+  <link rel="stylesheet" href="./access-page.css?v=20261004-2" />
   <link rel="stylesheet" href="./admin-compact-pages.css?v=20260716-3" />
   <link rel="stylesheet" href="./admin-pagination.css?v=20260716-1" />
-  <link rel="stylesheet" href="./dashboard-evolution.css" />
+  <link rel="stylesheet" href="./dashboard-evolution.css?v=20261004-2" />
 </head>
 <body class="admin-compact-page admin-access-page">
   <main class="app-shell">
-    <section class="panel access-overview-panel">
-      <div class="access-metrics"><article><span>Alunos cadastrados</span><strong id="access-member-count">0</strong></article><article><span>Entradas recentes</span><strong id="access-decision-count">0</strong></article><article><span>Última atualização</span><strong id="access-last-update">--:--</strong></article></div>
+    <section class="cards access-metrics">
+      <article><span>Alunos cadastrados</span><strong id="access-member-count">0</strong></article>
+      <article><span>Entradas recentes</span><strong id="access-decision-count">0</strong></article>
+      <article><span>Última atualização</span><strong id="access-last-update">--:--</strong></article>
     </section>
 
     <section class="panel access-decisions-panel">
-      <div class="toolbar">
+      <div class="toolbar access-toolbar">
         <div class="cockpit-reception-bar">
           <button id="access-reception-toggle" class="cockpit-reception-trigger-btn" type="button" aria-expanded="false" title="Abrir recepção rápida">
             <span class="pulse-indicator"></span> Recepção
@@ -35,8 +37,8 @@
             <div id="access-checkin-status" class="cockpit-checkin-status hidden"></div>
           </form>
         </div>
-        <button class="icon-button" id="access-filter-toggle" type="button" aria-label="Credencial QR Code" title="Credencial QR Code" aria-expanded="false">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar aluno" title="Pesquisar aluno" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
       </div>
       <div class="access-search-drawer hidden" id="access-filter-panel">

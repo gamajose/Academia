@@ -21,8 +21,54 @@ body.modal-open { overflow: hidden; }
 .employee-list-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; }
 .employee-list-toolbar .toolbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-left: auto; }
 .employee-toolbar-mobile-menu { margin-left: 8px; }
-.employee-modal-card { position: relative; padding-top: 24px; }
-.employee-modal-card .modal-close { position: absolute; top: 14px; right: 14px; z-index: 10; width: 34px; height: 34px; min-width: 34px; display: flex; align-items: center; justify-content: center; margin: 0; font-size: 20px; line-height: 1; }
+.employee-modal-card { position: relative; }
+.employee-modal-card .form-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.employee-modal-card .form-section-header h4 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.employee-modal-card .modal-close {
+  position: static !important;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  margin: 0;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  transition: all .16s ease;
+}
+.employee-modal-card .modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+html[data-admin-theme="dark"] .employee-modal-card .modal-close {
+  border-color: #34536e;
+  background: #183047;
+  color: #e8f0f8;
+}
+html[data-admin-theme="dark"] .employee-modal-card .modal-close:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  background: #204160;
+}
 .employee-row-interactive { cursor: pointer; transition: background-color 0.15s ease; }
 .employee-row-interactive:hover { background-color: rgba(20, 120, 212, 0.04); }
 .employee-row-interactive:focus-visible { outline: 2px solid var(--accent, #1478d4); outline-offset: -2px; }
