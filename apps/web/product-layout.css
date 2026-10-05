@@ -96,10 +96,72 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
 #student-form-panel .student-modal-actions { margin-top: 28px; }
 .finance-filter-actions span { margin-right: auto; color: #68716b; font-size: 13px; font-weight: 700; }
 .finance-status-card { width: min(680px, 94vw); }
-.finance-status-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 0; max-height: 55vh; overflow: auto; }
-.finance-status-list li { display: grid; gap: 4px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 11px; }
-.finance-status-list strong { color: var(--text); }
-.finance-status-list span { color: var(--muted); font-size: 13px; }
+.finance-status-card .toolbar,
+#finance-modal .toolbar,
+.pix-modal-card .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.finance-status-card .toolbar h3,
+#finance-modal .toolbar h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.finance-status-card .modal-close,
+#finance-modal .modal-close,
+.pix-modal-card .modal-close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .16s ease;
+  margin: 0;
+  flex: 0 0 36px;
+}
+.finance-status-card .modal-close:hover,
+#finance-modal .modal-close:hover,
+.pix-modal-card .modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.06);
+}
+html[data-admin-theme="dark"] .finance-status-card .modal-close,
+html[data-admin-theme="dark"] #finance-modal .modal-close,
+html[data-admin-theme="dark"] .pix-modal-card .modal-close {
+  border-color: #34536e;
+  background: #183047;
+  color: #e8f0f8;
+}
+html[data-admin-theme="dark"] .finance-status-card .modal-close:hover,
+html[data-admin-theme="dark"] #finance-modal .modal-close:hover,
+html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  background: #204160;
+}
+.finance-status-list { display: grid; gap: 12px; list-style: none; padding: 2px 0; margin: 0; max-height: 55vh; overflow-y: auto; }
+.finance-status-list li { display: grid; gap: 6px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; }
+.finance-status-list strong { color: var(--text); font-size: 15px; }
+.finance-status-list span { color: var(--muted); font-size: 13px; line-height: 1.4; }
 .entity-card[role="button"] { cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .entity-card[role="button"]:hover, .entity-card[role="button"]:focus-visible { border-color: var(--accent); box-shadow: 0 10px 24px rgba(29, 111, 214, .12); outline: none; transform: translateY(-1px); }
 .student-filter-panel { display: grid; gap: 14px; margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }

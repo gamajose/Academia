@@ -72,7 +72,8 @@ small { min-height: 18px; color: var(--muted); }
 .toolbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-left: auto; }
 .toolbar-actions button { min-width: 0; }
 .modal-card .toolbar,
-.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-close { width: 36px; height: 36px; min-width: 36px; min-height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 20px; line-height: 1; flex-shrink: 0; }
 .pre-enrollment-toolbar { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .pre-enrollment-toolbar .icon-button { margin-left: auto; }
 .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin: 18px 0; }
