@@ -1,4 +1,78 @@
-.settings-shell { padding-top: 28px; }
+.settings-shell { padding-top: 20px; }
+
+.settings-browser-tabbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--line, #cbd5e1);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.settings-browser-tabbar::-webkit-scrollbar {
+  display: none;
+}
+.settings-browser-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 22px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  background: transparent;
+  color: var(--muted, #64748b);
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  position: relative;
+  transition: all .16s ease;
+  white-space: nowrap;
+}
+.settings-browser-tab:hover {
+  color: var(--text, #0f172a);
+  background: rgba(0, 0, 0, 0.03);
+}
+.settings-browser-tab.active {
+  background: var(--card, #ffffff);
+  border-color: var(--line, #cbd5e1);
+  color: var(--accent, #1478d4);
+  margin-bottom: -1px;
+  padding-bottom: 12px;
+  z-index: 2;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.03);
+}
+.settings-browser-tab.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent, #1478d4);
+  border-radius: 12px 12px 0 0;
+}
+.settings-tab-panel.hidden {
+  display: none !important;
+}
+
+html[data-admin-theme="dark"] .settings-browser-tabbar {
+  border-color: #29445d;
+}
+html[data-admin-theme="dark"] .settings-browser-tab {
+  color: #94a3b8;
+}
+html[data-admin-theme="dark"] .settings-browser-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+}
+html[data-admin-theme="dark"] .settings-browser-tab.active {
+  background: #122235;
+  border-color: #29445d;
+  color: #38bdf8;
+}
+
 .module-settings-panel { margin-bottom: 24px; }
 .module-settings-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
 .module-settings-heading h2, .module-settings-heading p { margin: 0; }

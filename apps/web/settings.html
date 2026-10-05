@@ -4,126 +4,269 @@
   <script src="./ui-bootstrap.js?v=20260718-1"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Configuracoes - BlueREC Academia</title>
+  <title>Configurações - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./settings.css" />
+  <link rel="stylesheet" href="./settings.css?v=20261005-1" />
+  <link rel="stylesheet" href="./site-customization.css?v=20261005-1" />
 </head>
 <body>
   <main class="app-shell settings-shell">
-    <section class="panel" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-      <div>
-        <h2 style="margin: 0 0 4px; font-size: 18px;">Página Pública e Personalização do Site</h2>
-        <p style="margin: 0; font-size: 13px; color: var(--muted);">Fotos de destaque, fotos de planos, cor dos botões e link do Instagram.</p>
+    <div class="settings-browser-tabbar" role="tablist" aria-label="Abas de configurações">
+      <button type="button" class="settings-browser-tab active" id="tab-btn-modules" role="tab" aria-selected="true" aria-controls="panel-modules">
+        Modo do sistema
+      </button>
+      <button type="button" class="settings-browser-tab" id="tab-btn-payments" role="tab" aria-selected="false" aria-controls="panel-payments">
+        Pagamentos
+      </button>
+      <button type="button" class="settings-browser-tab" id="tab-btn-site" role="tab" aria-selected="false" aria-controls="panel-site">
+        Personalizar site
+      </button>
+    </div>
+
+    <!-- TAB 1: Modo do sistema -->
+    <section class="settings-tab-panel" id="panel-modules" role="tabpanel" aria-labelledby="tab-btn-modules">
+      <div class="panel module-settings-panel">
+        <div class="module-settings-heading">
+          <div>
+            <h2>Módulos do sistema</h2>
+            <p>Ao desativar um módulo, ele e suas ações deixam de aparecer para todos os usuários. Os dados existentes são preservados.</p>
+          </div>
+          <button id="save-modules-button" type="button">Salvar</button>
+        </div>
+        <div class="module-settings-grid" id="module-settings-grid"></div>
+        <p class="status-line" id="module-settings-status" aria-live="polite"></p>
       </div>
-      <a href="./site-customization.html" class="button" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 16px; border-radius: 10px; font-weight: 750; font-size: 13px;">Personalizar Site</a>
     </section>
 
-    <section class="panel module-settings-panel">
-      <div class="module-settings-heading"><div><h2>Módulos do sistema</h2><p>Ao desativar um módulo, ele e suas ações deixam de aparecer para todos os usuários. Os dados existentes são preservados.</p></div><button id="save-modules-button" type="button">Salvar</button></div>
-      <div class="module-settings-grid" id="module-settings-grid"></div>
-      <p class="status-line" id="module-settings-status" aria-live="polite"></p>
+    <!-- TAB 2: Pagamentos -->
+    <section class="settings-tab-panel hidden" id="panel-payments" role="tabpanel" aria-labelledby="tab-btn-payments">
+      <div class="panel payment-settings-panel">
+        <div class="module-settings-heading">
+          <div>
+            <h2>Métodos de Pagamento</h2>
+            <p>Configure as credenciais e parâmetros de recebimento para Pix, Cartão de Crédito e PayPal.</p>
+          </div>
+          <button id="save-payments-button" type="button">Salvar Pagamentos</button>
+        </div>
+
+        <div class="payment-tabs-nav" role="tablist">
+          <button type="button" class="tab-btn active" data-tab="pix">Pix (Dinâmico & Estático)</button>
+          <button type="button" class="tab-btn" data-tab="card">Cartão de Crédito</button>
+          <button type="button" class="tab-btn" data-tab="paypal">PayPal</button>
+        </div>
+
+        <div class="payment-tab-content" id="tab-pix">
+          <div class="form-grid">
+            <div class="field">
+              <label for="pay-pix-key">Chave Pix *</label>
+              <input id="pay-pix-key" placeholder="Ex.: CNPJ, e-mail, celular ou chave aleatória" />
+              <small>Chave principal para geração do QR Code dinâmico com valor da mensalidade.</small>
+            </div>
+            <div class="field">
+              <label for="pay-pix-receiver">Nome do Favorecido / Beneficiário</label>
+              <input id="pay-pix-receiver" placeholder="Ex.: BlueREC Academia Ltda" />
+              <small>Nome institucional que aparece no QR Code Pix.</small>
+            </div>
+            <div class="field">
+              <label for="pay-pix-bank">Banco / Instituição Financeira</label>
+              <input id="pay-pix-bank" placeholder="Ex.: Nubank, Banco do Brasil, Itaú, Inter..." />
+            </div>
+            <div class="field">
+              <label for="pay-pix-city">Cidade da Academia / Conta</label>
+              <input id="pay-pix-city" placeholder="Ex.: SAO PAULO ou RECIFE" />
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-tab-content hidden" id="tab-card">
+          <div class="form-grid">
+            <div class="field">
+              <label for="pay-card-provider">Gateway / Operadora</label>
+              <select id="pay-card-provider">
+                <option value="mercadopago">Mercado Pago</option>
+                <option value="asaas">Asaas</option>
+                <option value="stripe">Stripe</option>
+                <option value="pagseguro">PagSeguro</option>
+                <option value="cielo">Cielo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pay-card-installments">Parcelamento Máximo</label>
+              <select id="pay-card-installments">
+                <option value="1">1x (Apenas à vista)</option>
+                <option value="3">Até 3x</option>
+                <option value="6">Até 6x</option>
+                <option value="12" selected>Até 12x</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pay-card-public-key">Chave Pública (Public Key / Client ID)</label>
+              <input id="pay-card-public-key" placeholder="APP_USR-xxxx ou pk_live_xxxx" />
+            </div>
+            <div class="field">
+              <label for="pay-card-secret-key">Chave Secreta (Access Token / Secret Key)</label>
+              <input id="pay-card-secret-key" type="password" placeholder="APP_USR-xxxx ou sk_live_xxxx" />
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-tab-content hidden" id="tab-paypal">
+          <div class="form-grid">
+            <div class="field">
+              <label for="pay-paypal-email">E-mail Comercial (PayPal Business)</label>
+              <input id="pay-paypal-email" type="email" placeholder="financeiro@empresa.com.br" />
+            </div>
+            <div class="field">
+              <label for="pay-paypal-mode">Ambiente</label>
+              <select id="pay-paypal-mode">
+                <option value="live">Produção (Live)</option>
+                <option value="sandbox">Testes (Sandbox)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pay-paypal-client-id">Client ID</label>
+              <input id="pay-paypal-client-id" placeholder="AZDxjD9PRmz..." />
+            </div>
+            <div class="field">
+              <label for="pay-paypal-secret">Secret Key</label>
+              <input id="pay-paypal-secret" type="password" placeholder="ELqP01..." />
+            </div>
+          </div>
+        </div>
+
+        <p class="status-line" id="payment-settings-status" aria-live="polite" style="margin-top: 14px;"></p>
+      </div>
     </section>
 
-    <section class="panel payment-settings-panel" style="margin-top: 24px;">
-      <div class="module-settings-heading">
+    <!-- TAB 3: Personalizar site -->
+    <section class="settings-tab-panel hidden" id="panel-site" role="tabpanel" aria-labelledby="tab-btn-site">
+      <div class="customization-header" style="margin-bottom: 16px;">
         <div>
-          <h2>Métodos de Pagamento</h2>
-          <p>Configure as credenciais e parâmetros de recebimento para Pix, Cartão de Crédito e PayPal.</p>
+          <h2 style="margin: 0 0 4px; font-size: 20px;">Personalização do Site</h2>
+          <p style="margin: 0; font-size: 13px; color: var(--muted);">Fotos de destaque da página inicial, fundo de planos, cor dos botões e link do Instagram.</p>
         </div>
-        <button id="save-payments-button" type="button">Salvar Pagamentos</button>
+        <button type="button" class="btn-save" id="btn-save-top">Salvar</button>
       </div>
 
-      <div class="payment-tabs-nav" role="tablist">
-        <button type="button" class="tab-btn active" data-tab="pix">Pix (Dinâmico & Estático)</button>
-        <button type="button" class="tab-btn" data-tab="card">Cartão de Crédito</button>
-        <button type="button" class="tab-btn" data-tab="paypal">PayPal</button>
-      </div>
+      <form id="customization-form" class="customization-sections">
+        <!-- Início -->
+        <section class="custom-card">
+          <h2>Página Inicial</h2>
+          <div class="images-grid">
+            <div class="image-block">
+              <label>Destaque Principal (Hero)</label>
+              <div class="image-preview-box">
+                <img id="preview-home-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Hero" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-home-hero">Escolher imagem</button>
+                <input type="file" id="file-home-hero" accept="image/*" hidden />
+                <input type="url" id="inp-home-hero" placeholder="Link da imagem" />
+              </div>
+            </div>
 
-      <div class="payment-tab-content" id="tab-pix">
-        <div class="form-grid">
-          <div class="field">
-            <label for="pay-pix-key">Chave Pix *</label>
-            <input id="pay-pix-key" placeholder="Ex.: CNPJ, e-mail, celular ou chave aleatória" />
-            <small>Chave principal para geração do QR Code dinâmico com valor da mensalidade.</small>
+            <div class="image-block">
+              <label>Estrutura</label>
+              <div class="image-preview-box">
+                <img id="preview-home-structure" src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1000&q=85" alt="Estrutura" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-home-structure">Escolher imagem</button>
+                <input type="file" id="file-home-structure" accept="image/*" hidden />
+                <input type="url" id="inp-home-structure" placeholder="Link da imagem" />
+              </div>
+            </div>
+
+            <div class="image-block">
+              <label>Acompanhamento</label>
+              <div class="image-preview-box">
+                <img id="preview-home-coaching" src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&q=88" alt="Acompanhamento" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-home-coaching">Escolher imagem</button>
+                <input type="file" id="file-home-coaching" accept="image/*" hidden />
+                <input type="url" id="inp-home-coaching" placeholder="Link da imagem" />
+              </div>
+            </div>
           </div>
-          <div class="field">
-            <label for="pay-pix-receiver">Nome do Favorecido / Beneficiário</label>
-            <input id="pay-pix-receiver" placeholder="Ex.: BlueREC Academia Ltda" />
-            <small>Nome institucional que aparece no QR Code Pix.</small>
+        </section>
+
+        <!-- Planos e Cores -->
+        <section class="custom-card">
+          <h2>Planos e Aulas</h2>
+          <div class="images-grid">
+            <div class="image-block">
+              <label>Fundo do Topo (Planos)</label>
+              <div class="image-preview-box">
+                <img id="preview-plans-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Topo Planos" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-plans-hero">Escolher imagem</button>
+                <input type="file" id="file-plans-hero" accept="image/*" hidden />
+                <input type="url" id="inp-plans-hero" placeholder="Link da imagem" />
+              </div>
+            </div>
+
+            <div class="image-block">
+              <label>Cor dos Botões (CTA)</label>
+              <div class="color-picker-row">
+                <div class="color-input-wrap">
+                  <input type="color" id="picker-button-color" value="#1478d4" />
+                  <input type="text" id="inp-button-color" class="color-hex-input" value="#1478d4" maxlength="7" />
+                </div>
+                <button type="button" id="preview-button-cta" class="color-preview-btn">Exemplo de Botão</button>
+              </div>
+            </div>
+
+            <div class="image-block">
+              <label>Instagram</label>
+              <input type="url" id="inp-instagram-url" placeholder="https://www.instagram.com/sua_academia" />
+            </div>
           </div>
-          <div class="field">
-            <label for="pay-pix-bank">Banco / Instituição Financeira</label>
-            <input id="pay-pix-bank" placeholder="Ex.: Nubank, Banco do Brasil, Itaú, Inter..." />
-          </div>
-          <div class="field">
-            <label for="pay-pix-city">Cidade da Academia / Conta</label>
-            <input id="pay-pix-city" placeholder="Ex.: SAO PAULO ou RECIFE" />
-          </div>
+        </section>
+
+        <div class="customization-footer">
+          <div id="customization-status" class="customization-status" aria-live="polite"></div>
+          <button type="button" class="btn-save" id="btn-save-bottom">Salvar</button>
         </div>
-      </div>
-
-      <div class="payment-tab-content hidden" id="tab-card">
-        <div class="form-grid">
-          <div class="field">
-            <label for="pay-card-provider">Gateway / Operadora</label>
-            <select id="pay-card-provider">
-              <option value="mercadopago">Mercado Pago</option>
-              <option value="asaas">Asaas</option>
-              <option value="stripe">Stripe</option>
-              <option value="pagseguro">PagSeguro</option>
-              <option value="cielo">Cielo</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="pay-card-installments">Parcelamento Máximo</label>
-            <select id="pay-card-installments">
-              <option value="1">1x (Apenas à vista)</option>
-              <option value="3">Até 3x</option>
-              <option value="6">Até 6x</option>
-              <option value="12" selected>Até 12x</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="pay-card-public-key">Chave Pública (Public Key / Client ID)</label>
-            <input id="pay-card-public-key" placeholder="APP_USR-xxxx ou pk_live_xxxx" />
-          </div>
-          <div class="field">
-            <label for="pay-card-secret-key">Chave Secreta (Access Token / Secret Key)</label>
-            <input id="pay-card-secret-key" type="password" placeholder="APP_USR-xxxx ou sk_live_xxxx" />
-          </div>
-        </div>
-      </div>
-
-      <div class="payment-tab-content hidden" id="tab-paypal">
-        <div class="form-grid">
-          <div class="field">
-            <label for="pay-paypal-email">E-mail Comercial (PayPal Business)</label>
-            <input id="pay-paypal-email" type="email" placeholder="financeiro@empresa.com.br" />
-          </div>
-          <div class="field">
-            <label for="pay-paypal-mode">Ambiente</label>
-            <select id="pay-paypal-mode">
-              <option value="live">Produção (Live)</option>
-              <option value="sandbox">Testes (Sandbox)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="pay-paypal-client-id">Client ID</label>
-            <input id="pay-paypal-client-id" placeholder="AZDxjD9PRmz..." />
-          </div>
-          <div class="field">
-            <label for="pay-paypal-secret">Secret Key</label>
-            <input id="pay-paypal-secret" type="password" placeholder="ELqP01..." />
-          </div>
-        </div>
-      </div>
-
-      <p class="status-line" id="payment-settings-status" aria-live="polite" style="margin-top: 14px;"></p>
+      </form>
     </section>
-
   </main>
-  <script src="./nav.js?v=20260719-1"></script>
-  <script src="./module-settings.js?v=20260716-3"></script>
-  <script src="./settings-client.js?v=20260716-3"></script>
+
+  <script src="./nav.js?v=20261005-2"></script>
+  <script src="./module-settings.js?v=20261005-1"></script>
+  <script src="./settings-client.js?v=20261005-1"></script>
+  <script src="./site-customization.js?v=20261005-1"></script>
+  <script>
+    (function() {
+      function switchTab(key) {
+        const tabs = [
+          { key: 'modules', btn: 'tab-btn-modules', panel: 'panel-modules' },
+          { key: 'payments', btn: 'tab-btn-payments', panel: 'panel-payments' },
+          { key: 'site', btn: 'tab-btn-site', panel: 'panel-site' }
+        ];
+        tabs.forEach(t => {
+          const b = document.getElementById(t.btn);
+          const p = document.getElementById(t.panel);
+          const active = t.key === key;
+          if (b) {
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-selected', String(active));
+          }
+          if (p) {
+            p.classList.toggle('hidden', !active);
+          }
+        });
+      }
+
+      document.getElementById('tab-btn-modules')?.addEventListener('click', () => switchTab('modules'));
+      document.getElementById('tab-btn-payments')?.addEventListener('click', () => switchTab('payments'));
+      document.getElementById('tab-btn-site')?.addEventListener('click', () => switchTab('site'));
+
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#pagamentos' || hash === '#payments') switchTab('payments');
+      else if (hash === '#site' || hash === '#personalizar-site') switchTab('site');
+    })();
+  </script>
 </body>
 </html>

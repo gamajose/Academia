@@ -19,7 +19,7 @@
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-end !important;
+  justify-content: space-between !important;
   gap: 10px !important;
   margin-bottom: 8px !important;
   width: 100% !important;

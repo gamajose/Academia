@@ -14,8 +14,13 @@
       if (photoEl) {
         photoEl.src = photoUrl;
         photoEl.classList.remove('hidden');
+        photoEl.style.display = 'block';
       }
-      if (initialEl) initialEl.classList.add('hidden');
+      if (initialEl) {
+        initialEl.classList.add('hidden');
+        initialEl.style.display = 'none';
+        initialEl.textContent = '';
+      }
       document.querySelectorAll('[data-student-avatar]').forEach((el) => {
         el.innerHTML = `<img src="${photoUrl}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
       });
@@ -23,10 +28,12 @@
       if (photoEl) {
         photoEl.src = '';
         photoEl.classList.add('hidden');
+        photoEl.style.display = 'none';
       }
       if (initialEl) {
         initialEl.textContent = initialChar;
         initialEl.classList.remove('hidden');
+        initialEl.style.display = 'flex';
       }
       document.querySelectorAll('[data-student-avatar]').forEach((el) => {
         el.textContent = initialChar;
@@ -53,7 +60,7 @@
     const bio = (data.notes || data.objective || '').trim();
     const bioEl = p('profile-view-bio');
     if (bioEl) {
-      bioEl.textContent = bio || 'Sem bio cadastrada. Toque nos três pontinhos para editar suas informações e contar um pouco sobre você.';
+      bioEl.textContent = bio || 'Sem bio cadastrada. Toque em Editar perfil para adicionar uma descrição sobre você.';
       bioEl.classList.toggle('is-empty', !bio);
     }
 

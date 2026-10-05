@@ -87,7 +87,13 @@
       <div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div></div>
       <div class="student-stat-grid progress-summary-grid" id="student-progress-summary"></div>
     </section>
-    <section class="panel progress-analysis-panel" id="student-progress-analysis"></section>
+
+    <div class="progress-browser-tabbar" role="tablist" aria-label="Aba de análise">
+      <button type="button" class="progress-browser-tab active" id="tab-btn-analysis" role="tab" aria-selected="true" aria-controls="student-progress-analysis">
+        ✦ Análise inteligente
+      </button>
+    </div>
+    <section class="panel progress-analysis-panel" id="student-progress-analysis" role="tabpanel" aria-labelledby="tab-btn-analysis"></section>
     <p class="status-line" id="student-progress-status" aria-live="polite"></p>
 
     <!-- Modal / Tela Sobreposta: Histórico de avaliações -->

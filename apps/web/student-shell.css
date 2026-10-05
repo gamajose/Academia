@@ -216,29 +216,31 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 }
 
 .student-workout-menu-btn {
-  width: 32px !important;
-  min-width: 32px !important;
-  max-width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  max-height: 32px !important;
-  border-radius: 50% !important;
-  background: #0d1b2a !important;
-  border: 1px solid #243c55 !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   color: #94a3b8 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
   cursor: pointer !important;
-  transition: all .15s ease !important;
+  transition: color .15s ease !important;
 }
 
 .student-workout-menu-btn:hover,
 .student-workout-menu-btn:focus-visible {
-  background: #13273e !important;
+  background: transparent !important;
   color: #38bdf8 !important;
-  border-color: #38bdf8 !important;
+  border: none !important;
+  box-shadow: none !important;
   outline: none !important;
 }
 
@@ -1221,21 +1223,23 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
 .student-profile-avatar-section {
   display: flex !important;
   align-items: flex-end !important;
-  gap: 14px !important;
+  gap: 16px !important;
   margin-top: -44px !important;
-  margin-bottom: 12px !important;
-  flex-wrap: wrap !important;
+  margin-bottom: 14px !important;
+  flex-wrap: nowrap !important;
 }
 
 .student-profile-avatar-wrap {
   position: relative !important;
   width: 86px !important;
   height: 86px !important;
+  min-width: 86px !important;
+  min-height: 86px !important;
   border-radius: 50% !important;
   border: 3.5px solid #ffffff !important;
   background: #0284c7 !important;
   box-shadow: 0 4px 12px rgba(8, 31, 53, 0.18) !important;
-  flex-shrink: 0 !important;
+  flex: 0 0 86px !important;
   cursor: pointer !important;
   transition: transform .15s ease !important;
 }
@@ -1252,6 +1256,10 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
   display: block !important;
 }
 
+.student-profile-avatar-img.hidden {
+  display: none !important;
+}
+
 .student-profile-avatar-initial {
   width: 100% !important;
   height: 100% !important;
@@ -1265,12 +1273,21 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
   user-select: none !important;
 }
 
+.student-profile-avatar-initial.hidden {
+  display: none !important;
+}
+
 .student-avatar-edit-badge {
   position: absolute !important;
   bottom: 0 !important;
   right: 0 !important;
   width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
   height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   background: #0284c7 !important;
   border: 2px solid #ffffff !important;
@@ -1281,6 +1298,8 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
   cursor: pointer !important;
   padding: 0 !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+  flex: 0 0 28px !important;
+  box-sizing: border-box !important;
   transition: background .15s ease, transform .15s ease !important;
 }
 
@@ -1298,23 +1317,31 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
 }
 
 .student-profile-identity {
-  flex: 1 1 180px !important;
-  padding-top: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+  gap: 4px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding-bottom: 2px !important;
 }
 
 .student-profile-name {
   margin: 0 !important;
-  font-size: 19px !important;
-  font-weight: 700 !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
   color: #0f172a !important;
   line-height: 1.2 !important;
+  text-align: left !important;
 }
 
 .student-profile-badges {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  margin-top: 4px !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
   flex-wrap: wrap !important;
 }
 
