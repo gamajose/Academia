@@ -8,6 +8,22 @@ body.admin-compact-page .panel h3 {
   letter-spacing: -.015em;
 }
 
+body.admin-compact-page .icon-button {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 !important;
+  border-radius: 7px !important;
+}
+
+body.admin-compact-page .icon-button svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
 body.admin-training-page .training-ai-button {
   flex: 0 0 34px;
   width: 34px !important;
@@ -78,12 +94,18 @@ body.admin-training-page .training-ai-icon {
   }
 
   body.admin-compact-page .icon-button {
-    width: 34px !important;
-    min-width: 34px !important;
-    height: 34px !important;
-    min-height: 34px !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
     padding: 0 !important;
-    border-radius: 9px !important;
+    border-radius: 7px !important;
+  }
+  body.admin-compact-page .icon-button svg {
+    width: 14px !important;
+    height: 14px !important;
   }
 
   /* Students */
