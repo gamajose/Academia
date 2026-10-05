@@ -20,3 +20,7 @@
     justify-self: end;
   }
 }
+
+html[data-admin-shell="true"] .top-nav {
+  background: rgba(8, 26, 43, .98) !important;
+}

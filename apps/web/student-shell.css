@@ -161,32 +161,67 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 .danger-outline:hover, .danger-outline:focus-visible { border-color: #bd1f2d; background: #fff4f5; }
 
 .student-day-picker {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 3px;
-  scrollbar-width: thin;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding-bottom: 2px;
+  overflow-x: visible;
 }
 
 .student-day-picker button {
-  flex: 0 0 auto;
-  display: grid;
-  gap: 3px;
-  min-width: 104px;
-  min-height: 66px;
-  padding: 10px 12px;
-  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+  min-height: 48px;
+  height: 48px;
+  padding: 4px 2px;
+  background: #f8fafc;
   color: #24405a;
   border: 1px solid #d7e3ef;
+  border-radius: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all .15s ease;
 }
 
-.student-day-picker button strong { font-size: 14px; }
-.student-day-picker button small { color: currentColor; font-size: 11px; opacity: .78; }
+.student-day-picker button strong { font-size: 13px; line-height: 1.1; }
+.student-day-picker button small {
+  color: currentColor;
+  font-size: 9.5px;
+  opacity: .8;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
 
 .student-day-picker button.active {
   background: #1478d4;
   border-color: #1478d4;
   color: #fff;
+}
+
+html[data-student-theme="dark"] body.student-page .student-day-picker button {
+  background: #182a3d;
+  border-color: #29445d;
+  color: #cbd5e1;
+}
+
+html[data-student-theme="dark"] body.student-page .student-day-picker button:hover {
+  background: #203a55;
+  border-color: #38bdf8;
+  color: #f1f5f9;
+}
+
+html[data-student-theme="dark"] body.student-page .student-day-picker button.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
 }
 
 .student-new-event-button,
@@ -231,7 +266,7 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 .student-exercise-inline-media:empty { display: none; }
 .student-exercise-inline-media img, .student-exercise-inline-media video, .student-exercise-inline-media iframe { width: min(220px, 100%); max-height: 150px; border: 1px solid #d7e3ef; border-radius: 10px; object-fit: cover; }
 .student-form-hint { margin: 0; color: #5e7081; font-size: 13px; line-height: 1.45; }
-.student-workout-editor-card { width: min(820px, 96vw); max-height: min(92vh, 900px); overflow-y: auto; }
+.student-workout-editor-card { width: min(540px, calc(100vw - 32px)) !important; max-width: 540px; border-radius: 18px; padding: 22px; max-height: min(92vh, 900px); overflow-y: auto; }
 .student-workout-editor-form { display: grid; gap: 16px; }
 .student-workout-editor-form > small { color: #5e7081; }
 .student-workout-editor-form .form-actions { margin-top: 0; }
@@ -372,7 +407,7 @@ html[data-student-theme="dark"] body.student-page .profile-dropdown .logout-item
   .student-top-nav .top-nav-logo { width: 76px; height: 46px; }
   .student-top-nav .profile-copy { display: none; }
   .student-top-nav .profile-trigger { padding-right: 7px; }
-  .student-mobile-nav { position: fixed; inset: auto 0 0; z-index: 1000; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: 72px; padding: 7px 8px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #d7e3ef; background: rgba(255, 255, 255, .97); box-shadow: 0 -10px 28px rgba(8, 31, 53, .12); }
+  .student-mobile-nav { position: fixed; inset: auto 0 0; z-index: 1000; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); min-height: 72px; padding: 7px 8px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #d7e3ef; background: rgba(255, 255, 255, .97); box-shadow: 0 -10px 28px rgba(8, 31, 53, .12); }
   .student-mobile-nav a { display: grid; place-items: center; align-content: center; gap: 3px; min-height: 58px; border-radius: 12px; color: #687b8d; text-decoration: none; }
   .student-mobile-nav a.active { background: #e7f2ff; color: #1478d4; }
   .student-mobile-nav .nav-icon svg { width: 34px; height: 34px; }

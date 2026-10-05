@@ -198,9 +198,59 @@
 
 .student-goal-form {
   position: relative;
-  width: min(640px, calc(100vw - 32px));
+  width: min(440px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
   overflow-y: auto;
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.student-goal-form .modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.student-goal-form .modal-close {
+  position: static !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--line, #d7e3ef);
+  color: var(--muted, #5e7081);
+  cursor: pointer;
+  margin: 0 0 0 auto !important;
+  flex: 0 0 34px;
+  transition: all .16s ease;
+}
+
+.student-goal-form .modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--accent, #1478d4);
+  border-color: var(--accent, #1478d4);
+  transform: scale(1.05);
+}
+
+html[data-student-theme="dark"] .student-goal-form .modal-close {
+  background: #182a3d;
+  border-color: #29445d;
+  color: #a9bed1;
+}
+
+html[data-student-theme="dark"] .student-goal-form .modal-close:hover {
+  background: #203a55;
+  border-color: #38bdf8;
+  color: #38bdf8;
 }
 
 .student-goal-form h2 {
@@ -209,7 +259,7 @@
 }
 
 .student-goal-form .modal-description {
-  margin: 6px 0 20px;
+  margin: 6px 0 16px;
   color: #5e7081;
 }
 

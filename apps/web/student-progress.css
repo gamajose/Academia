@@ -78,11 +78,61 @@ html[data-student-theme="dark"] body.student-page .student-progress-baseline-pan
 html[data-student-theme="dark"] body.student-page .progress-baseline-grid > div { border-color: #29445d; background: #102033; }
 html[data-student-theme="dark"] body.student-page .progress-baseline-grid span { color: #a9bed1; }
 @media (max-width: 650px) { .progress-baseline-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.student-history-pagination { display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 14px; }
-.student-history-pagination button { width: 34px; height: 34px; padding: 0; }
-.student-history-pagination button:disabled { opacity: .38; cursor: default; }
-.student-history-pagination span { min-width: 56px; color: #60778b; font-size: 12px; font-weight: 800; text-align: center; }
+.student-history-pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; }
+.student-history-pagination button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: transparent !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+  color: var(--muted, #64748b) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.student-history-pagination button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: var(--text, #1e293b) !important;
+  border-color: #94a3b8 !important;
+}
+.student-history-pagination button:disabled {
+  opacity: 0.25 !important;
+  cursor: default !important;
+  background: transparent !important;
+  border-color: var(--line, #cbd5e1) !important;
+  color: var(--muted, #64748b) !important;
+  box-shadow: none !important;
+}
+.student-history-pagination span { min-width: 56px; color: #60778b; font-size: 12px; font-weight: 700; text-align: center; }
 html[data-student-theme="dark"] body.student-page .student-history-pagination span { color: #a9bed1; }
+html[data-student-theme="dark"] body.student-page .student-history-pagination button {
+  background: transparent !important;
+  border-color: #29445d !important;
+  color: #a9bed1 !important;
+  box-shadow: none !important;
+}
+html[data-student-theme="dark"] body.student-page .student-history-pagination button:hover:not(:disabled) {
+  background: #183047 !important;
+  color: #e8f0f8 !important;
+  border-color: #38bdf8 !important;
+}
+html[data-student-theme="dark"] body.student-page .student-history-pagination button:disabled {
+  opacity: 0.25 !important;
+  background: transparent !important;
+  border-color: #29445d !important;
+  color: #55718a !important;
+}
 @media (max-width: 650px) {
   .student-progress-baseline-panel .toolbar { display: flex; flex-flow: row nowrap; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .student-progress-baseline-panel .toolbar-actions { width: auto; }
