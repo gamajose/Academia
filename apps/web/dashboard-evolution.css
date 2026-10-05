@@ -136,17 +136,6 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 5px;
   }
-  .cockpit-grid {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(240px, 84vw);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 10px;
-  }
-  .cockpit-card {
-    scroll-snap-align: start;
-    padding: 12px 10px;
-  }
 
   .dashboard-assessment-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -316,12 +305,72 @@
   border: 1px solid #fecaca;
 }
 
-/* 3-Column Grid */
-.cockpit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 18px;
+/* Cockpit Browser-style Tabs */
+.cockpit-tabs-container {
+  display: flex;
+  flex-direction: column;
   margin-top: 24px;
+}
+
+.cockpit-browser-tabbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--line, #cbd5e1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cockpit-browser-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+.cockpit-browser-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  background: transparent;
+  color: var(--muted, #64748b);
+  font-size: 13.5px;
+  font-weight: 750;
+  cursor: pointer;
+  position: relative;
+  transition: all .16s ease;
+  white-space: nowrap;
+}
+
+.cockpit-browser-tab:hover {
+  color: var(--text, #0f172a);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.cockpit-browser-tab.active {
+  background: var(--card, #ffffff);
+  border-color: var(--line, #cbd5e1);
+  color: var(--accent, #1478d4);
+  margin-bottom: -1px;
+  padding-bottom: 11px;
+  z-index: 2;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.cockpit-browser-tab.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent, #1478d4);
+  border-radius: 12px 12px 0 0;
+}
+
+.cockpit-panels {
+  width: 100%;
 }
 
 .cockpit-card {
@@ -329,9 +378,15 @@
   flex-direction: column;
   background: var(--card, #ffffff);
   border: 1px solid var(--line, #cbd5e1);
-  border-radius: 16px;
-  padding: 20px;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  padding: 22px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  width: 100%;
+}
+
+.cockpit-tab-panel.hidden {
+  display: none !important;
 }
 
 .cockpit-card-header {
@@ -528,5 +583,64 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-feed-item {
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .chart-bar-count {
   color: #f1f5f9;
+}
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-browser-tabbar {
+  border-bottom-color: #263d56;
+}
+html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-browser-tab {
+  color: #94a3b8;
+}
+html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-browser-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+}
+html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-browser-tab.active {
+  background: #112236;
+  border-color: #263d56;
+  color: #38bdf8;
+}
+html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-tab-panel {
+  background: #112236;
+  border-color: #263d56;
+}
+
+@media (max-width: 760px) {
+  .cockpit-browser-tabbar {
+    display: flex !important;
+    gap: 2px !important;
+    padding: 0 !important;
+  }
+  .cockpit-browser-tab {
+    flex: 1 1 0 !important;
+    padding: 10px 4px !important;
+    font-size: 11px !important;
+    text-align: center !important;
+    border-radius: 9px 9px 0 0 !important;
+  }
+  .cockpit-tab-panel {
+    padding: 14px 12px !important;
+    border-radius: 0 0 12px 12px !important;
+  }
+  .cockpit-chart-container {
+    min-height: 190px !important;
+    gap: 6px !important;
+    padding: 10px 0 0 !important;
+    width: 100% !important;
+  }
+  .chart-bar-group {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+  .chart-bar-track {
+    max-width: none !important;
+    width: 75% !important;
+  }
+  .chart-bar-label {
+    font-size: 11px !important;
+  }
+  .chart-bar-count {
+    font-size: 11px !important;
+  }
 }
 

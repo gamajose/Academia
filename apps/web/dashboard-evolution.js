@@ -464,6 +464,25 @@
     if (event.target === byId('dashboard-assessment-modal')) closeAssessment();
   });
 
+  const browserTabs = document.querySelectorAll('.cockpit-browser-tab');
+  const tabPanels = document.querySelectorAll('.cockpit-tab-panel');
+  browserTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.dataset.panel;
+      browserTabs.forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tabPanels.forEach((p) => {
+        p.classList.add('hidden');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      const targetPanel = byId(targetId);
+      if (targetPanel) targetPanel.classList.remove('hidden');
+    });
+  });
+
   void loadAlerts();
   void loadCockpit();
   window.setInterval(() => {

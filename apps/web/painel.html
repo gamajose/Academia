@@ -28,39 +28,53 @@
       </div>
       <p class="status-line dashboard-alerts-status" id="dashboard-alerts-status" aria-live="polite"></p>
 
-      <!-- Cockpit Executivo: Frequência Semanal + Presenças ao Vivo + Radar de Evasão -->
-      <div class="cockpit-grid">
-        <div class="cockpit-card">
-          <div class="cockpit-card-header">
-            <div>
-              <h3>Frequência da Semana</h3>
-              <p>Presenças de segunda a domingo</p>
-            </div>
-            <span class="cockpit-metric-badge" id="cockpit-week-total">0 acessos</span>
-          </div>
-          <div class="cockpit-chart-container" id="cockpit-week-chart"></div>
+      <!-- Cockpit Executivo em Abas estilo Navegador: Frequência da Semana / Presenças Recentes / Radar de Retenção -->
+      <div class="cockpit-tabs-container">
+        <div class="cockpit-browser-tabbar" role="tablist" aria-label="Visualizações do painel">
+          <button type="button" class="cockpit-browser-tab active" id="tab-week-btn" data-panel="cockpit-panel-week" role="tab" aria-selected="true" aria-controls="cockpit-panel-week">
+            <span class="tab-label">Frequência da semana</span>
+          </button>
+          <button type="button" class="cockpit-browser-tab" id="tab-recent-btn" data-panel="cockpit-panel-recent" role="tab" aria-selected="false" aria-controls="cockpit-panel-recent">
+            <span class="tab-label">Presença recente</span>
+          </button>
+          <button type="button" class="cockpit-browser-tab" id="tab-churn-btn" data-panel="cockpit-panel-churn" role="tab" aria-selected="false" aria-controls="cockpit-panel-churn">
+            <span class="tab-label">Radar de retenção</span>
+          </button>
         </div>
 
-        <div class="cockpit-card">
-          <div class="cockpit-card-header">
-            <div>
-              <h3>Presenças Recentes (Hoje)</h3>
-              <p>Feed em tempo real da recepção</p>
+        <div class="cockpit-panels">
+          <div class="cockpit-card cockpit-tab-panel" id="cockpit-panel-week" role="tabpanel" aria-labelledby="tab-week-btn">
+            <div class="cockpit-card-header">
+              <div>
+                <h3>Frequência da Semana</h3>
+                <p>Presenças de segunda a domingo</p>
+              </div>
+              <span class="cockpit-metric-badge" id="cockpit-week-total">0 acessos</span>
             </div>
-            <a href="./access.html" class="cockpit-link-btn">Ver todas</a>
+            <div class="cockpit-chart-container" id="cockpit-week-chart"></div>
           </div>
-          <div class="cockpit-recent-list" id="cockpit-recent-list"></div>
-        </div>
 
-        <div class="cockpit-card">
-          <div class="cockpit-card-header">
-            <div>
-              <h3>Radar de Retenção</h3>
-              <p>Alunos sem treinar há mais de 10 dias</p>
+          <div class="cockpit-card cockpit-tab-panel hidden" id="cockpit-panel-recent" role="tabpanel" aria-labelledby="tab-recent-btn">
+            <div class="cockpit-card-header">
+              <div>
+                <h3>Presenças Recentes (Hoje)</h3>
+                <p>Feed em tempo real da recepção</p>
+              </div>
+              <a href="./access.html" class="cockpit-link-btn">Ver todas</a>
             </div>
-            <span class="cockpit-tag warning">Atenção</span>
+            <div class="cockpit-recent-list" id="cockpit-recent-list"></div>
           </div>
-          <div class="cockpit-churn-list" id="cockpit-churn-list"></div>
+
+          <div class="cockpit-card cockpit-tab-panel hidden" id="cockpit-panel-churn" role="tabpanel" aria-labelledby="tab-churn-btn">
+            <div class="cockpit-card-header">
+              <div>
+                <h3>Radar de Retenção</h3>
+                <p>Alunos sem treinar há mais de 10 dias</p>
+              </div>
+              <span class="cockpit-tag warning">Atenção</span>
+            </div>
+            <div class="cockpit-churn-list" id="cockpit-churn-list"></div>
+          </div>
         </div>
       </div>
     </section>

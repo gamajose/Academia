@@ -355,6 +355,70 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
   }
 }
 
+.exercise-toolbar-centered {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-bottom: 12px !important;
+}
+
+.exercise-toolbar-centered .exercise-library-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 auto !important;
+}
+
+.compact-exercise-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+  background: var(--card, #ffffff) !important;
+  color: var(--text, #0f172a) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  transition: all .16s ease !important;
+}
+
+.compact-exercise-btn:hover {
+  border-color: var(--accent, #1478d4) !important;
+  color: var(--accent, #1478d4) !important;
+}
+
+.compact-exercise-btn.training-ai-button {
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  background: color-mix(in srgb, var(--accent, #1478d4) 10%, var(--card, #fff)) !important;
+  color: var(--accent, #1478d4) !important;
+}
+
+html[data-admin-theme="dark"] .compact-exercise-btn {
+  background: #112236 !important;
+  border-color: #263d56 !important;
+  color: #e2e8f0 !important;
+}
+html[data-admin-theme="dark"] .compact-exercise-btn:hover {
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+html[data-admin-theme="dark"] .compact-exercise-btn.training-ai-button {
+  background: #18334e !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
 /* Mobile view (<= 768px): Instagram-style feed, responsive, full visibility */
 @media (max-width: 768px) {
   body.admin-training-page #exercise-list {
@@ -415,44 +479,30 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
     text-transform: capitalize !important;
   }
 
-  .exercise-library-actions.desktop-actions {
-    display: none !important;
-  }
-  .exercise-toolbar-mobile-menu {
-    display: block !important;
-    position: relative !important;
-    margin-left: auto;
-  }
-  .exercise-toolbar-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    z-index: 1000;
-    display: grid;
-    min-width: 170px;
-    padding: 6px;
-    border-radius: 12px;
-    border: 1px solid var(--line, #34536e);
-    background: var(--card, #122235);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-  }
-  .exercise-toolbar-dropdown button {
-    display: flex;
-    align-items: center;
+  .exercise-toolbar-centered {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     width: 100% !important;
-    min-height: 36px;
-    padding: 8px 12px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text, #dceaf6);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: left;
+    flex-direction: row !important;
+    margin-bottom: 8px !important;
   }
-  .exercise-toolbar-dropdown button:hover {
-    background: rgba(20, 120, 212, 0.18);
+  .exercise-toolbar-centered .exercise-library-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .compact-exercise-btn {
+    flex: 1 1 0 !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 6px !important;
+    font-size: 11.5px !important;
+    text-align: center !important;
+    min-width: 0 !important;
   }
 
   /* Mobile media: Spacious 4:3 frame, NEVER cropped */

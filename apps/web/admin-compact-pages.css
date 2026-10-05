@@ -505,3 +505,79 @@ body.admin-training-page .training-ai-icon {
     gap: 6px;
   }
 }
+
+/* Student compact toolbar button matching 3-dots height */
+.students-toolbar {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.student-toolbar-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  margin-left: auto !important;
+  width: auto !important;
+}
+
+.student-add-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.student-more-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 760px) {
+  body.admin-students-page .toolbar {
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+  body.admin-students-page .student-toolbar-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    width: auto !important;
+    margin-left: auto !important;
+  }
+  body.admin-students-page .student-add-btn {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    font-size: 11.5px !important;
+    padding: 0 10px !important;
+  }
+}

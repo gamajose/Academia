@@ -1546,26 +1546,6 @@ function closeTrainingModal(id) {
 t('open-exercise-button')?.addEventListener('click', () => openExerciseForm());
 t('open-plan-levels-button')?.addEventListener('click', () => openTrainingModal('training-levels-modal'));
 
-const mobileMenuTrigger = t('exercise-toolbar-trigger');
-const mobileMenuDropdown = t('exercise-toolbar-dropdown');
-mobileMenuTrigger?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  mobileMenuDropdown?.classList.toggle('hidden');
-});
-document.addEventListener('click', () => mobileMenuDropdown?.classList.add('hidden'));
-
-t('mobile-new-exercise')?.addEventListener('click', () => {
-  mobileMenuDropdown?.classList.add('hidden');
-  openExerciseForm();
-});
-t('mobile-search-exercise')?.addEventListener('click', () => {
-  mobileMenuDropdown?.classList.add('hidden');
-  t('toggle-exercise-search')?.click();
-});
-t('mobile-ai-exercise')?.addEventListener('click', () => {
-  mobileMenuDropdown?.classList.add('hidden');
-  t('open-review-button')?.click();
-});
 t('toggle-exercise-search')?.addEventListener('click', () => {
   const filters = t('exercise-library-filters');
   const isOpen = filters?.classList.toggle('hidden') === false;

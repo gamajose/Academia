@@ -19,19 +19,11 @@
     </div>
     <section class="grid lists-grid">
       <article class="panel" id="panel-exercises">
-        <div class="toolbar">
-          <div class="exercise-library-actions desktop-actions">
-            <button class="icon-button" id="open-exercise-button" type="button" aria-label="Adicionar exercício" title="Adicionar exercício"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-            <button class="icon-button" id="toggle-exercise-search" type="button" aria-label="Pesquisar exercícios" title="Pesquisar exercícios" aria-expanded="false" aria-controls="exercise-library-filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button>
-            <button id="open-review-button" class="icon-button training-ai-button" type="button" title="Análise com IA" aria-label="Análise com IA"><span class="training-ai-icon" aria-hidden="true">✦</span></button>
-          </div>
-          <div class="exercise-toolbar-mobile-menu">
-            <button id="exercise-toolbar-trigger" class="icon-button" type="button" aria-label="Mais opções" aria-expanded="false" style="font-size:22px;line-height:1;width:34px;height:34px;">⋮</button>
-            <div id="exercise-toolbar-dropdown" class="exercise-toolbar-dropdown hidden">
-              <button type="button" id="mobile-new-exercise">Novo exercício</button>
-              <button type="button" id="mobile-search-exercise">Pesquisar</button>
-              <button type="button" id="mobile-ai-exercise">Análise com IA</button>
-            </div>
+        <div class="toolbar exercise-toolbar-centered">
+          <div class="exercise-library-actions">
+            <button class="button secondary compact-exercise-btn" id="open-exercise-button" type="button">Novo exercício</button>
+            <button class="button secondary compact-exercise-btn" id="toggle-exercise-search" type="button" aria-expanded="false" aria-controls="exercise-library-filters">Pesquisa</button>
+            <button class="button secondary compact-exercise-btn training-ai-button" id="open-review-button" type="button" title="Análise com IA"><span class="training-ai-icon" aria-hidden="true">✦</span> Análise com IA</button>
           </div>
         </div>
         <p class="status-line training-status" id="training-status"></p>
