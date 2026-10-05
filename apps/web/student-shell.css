@@ -76,12 +76,14 @@
 .student-calendar-panel { overflow: hidden; }
 .student-training-day-panel { max-width: 900px; margin-inline: auto; }
 .student-training-workspace { max-width: 900px; margin-inline: auto; }
-.student-my-plan-button { min-height: 36px; padding: 8px 12px; font-size: 13px; }
-.student-training-workspace > .student-detail-day-switcher { margin-top: 24px; padding-top: 24px; border-top: 1px solid #d7e3ef; }
-html[data-student-theme="dark"] body.student-page .student-training-workspace > .student-detail-day-switcher { border-color: #29445d; }
+.student-my-plan-button { min-height: 28px !important; height: 28px !important; padding: 4px 10px !important; font-size: 12px !important; border-radius: 7px !important; }
+.student-start-workout-btn { min-height: 28px !important; height: 28px !important; padding: 4px 10px !important; font-size: 12px !important; border-radius: 7px !important; gap: 5px !important; }
+.student-start-workout-btn svg { width: 12px !important; height: 12px !important; }
+.student-training-workspace > .student-detail-day-switcher { margin-top: 2px !important; padding-top: 0 !important; border-top: 0 !important; }
+html[data-student-theme="dark"] body.student-page .student-training-workspace > .student-detail-day-switcher { border-color: #243c55 !important; }
 @media (max-width: 760px) {
   .student-training-workspace > .toolbar:first-child { flex-direction: row; align-items: center; }
-  .student-training-workspace > .toolbar:first-child .toolbar-actions { width: auto; flex-direction: row; }
+  .student-training-workspace > .toolbar:first-child .toolbar-actions { width: auto; flex-direction: row; gap: 6px !important; }
 }
 .student-day-switcher { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 14px; padding: 18px 0 8px; }
 .student-day-switcher > div { display: grid; gap: 3px; text-align: center; text-transform: capitalize; }
@@ -116,20 +118,91 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 .student-event-copy { min-width: 0; }
 .student-event-copy strong { display: block; overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .student-event-chevron { color: #6c849b; font-size: 22px; line-height: 1; }
-.student-detail-day-switcher { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px !important; }
-.student-detail-day-switcher > div { display: grid; gap: 2px; text-align: center; }
-.student-detail-day-switcher span { color: #1478d4; font-size: 11px; font-weight: 700; text-transform: capitalize; }
-.student-detail-day-switcher span:empty { display: none !important; }
-.student-detail-day-switcher strong { color: #101923; font-size: 15px; font-weight: 600; }
-.student-detail-day-switcher .icon-button { flex: 0 0 auto; width: 28px !important; min-width: 28px !important; height: 28px !important; border: 1px solid #d7e3ef; border-radius: 7px; background: #fff; color: #1478d4; font-size: 18px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
-.student-detail-icon-actions { display: flex; align-items: center; gap: 6px; }
-.student-detail-icon-action { display: inline-grid; place-items: center; flex: 0 0 34px; width: 34px !important; min-width: 34px; max-width: 34px; height: 34px; min-height: 34px; max-height: 34px; aspect-ratio: 1; box-sizing: border-box; padding: 0; border: 1px solid #d7e3ef; border-radius: 8px; background: #fff; color: #1478d4; cursor: pointer; }
-.student-detail-icon-action:hover, .student-detail-icon-action:focus-visible { border-color: #1478d4; background: #f2f8ff; outline: none; box-shadow: 0 0 0 2px rgba(20, 120, 212, .1); }
-.student-detail-icon-action svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.student-detail-icon-action.compact { flex-basis: 30px; width: 30px !important; min-width: 30px; max-width: 30px; height: 30px; min-height: 30px; max-height: 30px; border-radius: 7px; }
-.student-detail-icon-action.compact svg { width: 14px; height: 14px; }
-.student-detail-icon-action.is-danger { color: #bd1f2d; border-color: #e8b9c0; }
-.student-detail-icon-action.is-danger:hover, .student-detail-icon-action.is-danger:focus-visible { border-color: #bd1f2d; background: #fff4f5; box-shadow: 0 0 0 2px rgba(189, 31, 45, .1); }
+.student-detail-day-switcher {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: fit-content !important;
+  margin: 2px auto 8px auto !important;
+  padding: 2px 8px !important;
+  border-radius: 999px !important;
+  background: #0d1b2a !important;
+  border: 1px solid #243c55 !important;
+  align-self: center !important;
+  user-select: none !important;
+  touch-action: pan-y !important;
+}
+.student-detail-day-switcher .student-day-pill,
+.student-detail-day-switcher strong {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: capitalize !important;
+  padding: 0 4px !important;
+}
+.student-detail-day-switcher .student-day-arrow,
+.student-detail-day-switcher .icon-button {
+  width: 22px !important;
+  min-width: 22px !important;
+  max-width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: #94a3b8 !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all .15s ease !important;
+}
+.student-detail-day-switcher .student-day-arrow:hover,
+.student-detail-day-switcher .icon-button:hover {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38bdf8 !important;
+  transform: scale(1.1);
+}
+.student-day-transition {
+  opacity: 0.5 !important;
+  transform: translateY(2px) !important;
+  transition: opacity 0.18s ease, transform 0.18s ease !important;
+}
+.student-day-rest-empty {
+  text-align: center !important;
+  padding: 20px 14px !important;
+  border-radius: 10px !important;
+  background: rgba(14, 27, 42, 0.5) !important;
+  border: 1px dashed #243c55 !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  margin: 6px 0 !important;
+}
+.student-day-rest-empty strong {
+  display: block !important;
+  font-size: 13.5px !important;
+  color: #ffffff !important;
+  margin-bottom: 4px !important;
+}
+.student-day-rest-empty span {
+  display: block !important;
+  color: #64748b !important;
+  line-height: 1.4 !important;
+}
+.student-detail-icon-actions { display: flex; align-items: center; gap: 5px; }
+.student-detail-icon-action { display: inline-grid; place-items: center; flex: 0 0 28px; width: 28px !important; min-width: 28px; max-width: 28px; height: 28px; min-height: 28px; max-height: 28px; aspect-ratio: 1; box-sizing: border-box; padding: 0; border: 1px solid #243c55; border-radius: 7px; background: #0d1b2a; color: #38bdf8; cursor: pointer; }
+.student-detail-icon-action:hover, .student-detail-icon-action:focus-visible { border-color: #38bdf8; background: #13273e; outline: none; box-shadow: 0 0 0 2px rgba(56, 189, 248, .15); }
+.student-detail-icon-action svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.student-detail-icon-action.compact { flex-basis: 26px; width: 26px !important; min-width: 26px; max-width: 26px; height: 26px; min-height: 26px; max-height: 26px; border-radius: 6px; }
+.student-detail-icon-action.compact svg { width: 12px; height: 12px; }
+.student-detail-icon-action.is-danger { color: #f87171; border-color: #5a2228; }
+.student-detail-icon-action.is-danger:hover, .student-detail-icon-action.is-danger:focus-visible { border-color: #ef4444; background: #451319; color: #fca5a5; box-shadow: 0 0 0 2px rgba(239, 68, 68, .2); }
 #student-event-exercise-list { display: grid; gap: 6px; list-style: none; padding: 0; margin: 6px 0 0 !important; }
 #student-event-detail-notes:empty, #student-event-detail-notes[hidden] { display: none !important; margin: 0 !important; padding: 0 !important; }
 .student-workout-exercise-row {
@@ -137,72 +210,112 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
   flex-direction: row !important;
   align-items: center !important;
   gap: 10px !important;
-  padding: 6px 10px !important;
-  min-height: 52px !important;
+  padding: 6px 8px !important;
   border-radius: 10px !important;
   cursor: pointer;
   transition: all .15s ease;
-  background: #fff;
-  border: 1px solid #d7e3ef;
+  background: #112236 !important;
+  border: 1px solid #243c55 !important;
+  min-height: 0 !important;
+}
+.student-workout-exercise-row:hover {
+  border-color: #38bdf8 !important;
+  background: #152942 !important;
 }
 .student-workout-exercise-row .student-exercise-inline-media {
-  flex: 0 0 52px !important;
-  width: 52px !important;
-  height: 52px !important;
-  min-width: 52px !important;
-  min-height: 52px !important;
+  flex: 0 0 115px !important;
+  width: 115px !important;
+  height: 82px !important;
+  min-width: 115px !important;
+  min-height: 82px !important;
+  max-width: 115px !important;
+  max-height: 82px !important;
   border-radius: 8px !important;
   overflow: hidden !important;
-  background: #09131f !important;
+  background: #08121d !important;
   border: 1px solid #243c55 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   margin: 0 !important;
   padding: 0 !important;
+  position: relative !important;
 }
 .student-workout-exercise-row .student-exercise-inline-media img,
-.student-workout-exercise-row .student-exercise-inline-media video {
+.student-workout-exercise-row .student-exercise-inline-media video,
+.student-workout-exercise-row .student-exercise-inline-media .exercise-video-preview,
+.student-workout-exercise-row .student-exercise-inline-media .exercise-gif-preview {
   width: 100% !important;
   height: 100% !important;
-  max-height: 52px !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   object-fit: contain !important;
   border: 0 !important;
-  border-radius: 0 !important;
+  border-radius: 6px !important;
   background: transparent !important;
+  display: block !important;
+}
+.student-exercise-media-placeholder {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: #334e68;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .student-workout-exercise-row .entity-main {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 3px !important;
   justify-content: center !important;
+  padding: 2px 0 !important;
 }
 .student-workout-exercise-row .student-exercise-row-title {
-  font-size: 14px !important;
-  font-weight: 750 !important;
-  line-height: 1.2 !important;
-  color: #101923;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  color: #ffffff !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
 }
 .student-workout-exercise-row .student-exercise-row-meta {
-  font-size: 11.5px !important;
-  color: #55697d !important;
-  line-height: 1.2 !important;
+  font-size: 11px !important;
+  color: #94a3b8 !important;
+  line-height: 1.25 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 3px 5px !important;
+  margin: 0 !important;
+}
+.student-meta-dot {
+  color: #475569 !important;
+  font-weight: bold !important;
 }
 .student-workout-exercise-row .student-exercise-row-tag {
-  font-size: 10.5px !important;
-  color: #1478d4 !important;
+  font-size: 10px !important;
   font-weight: 600 !important;
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  width: fit-content !important;
+  line-height: 1.2 !important;
+  margin-top: 2px !important;
+  text-transform: capitalize !important;
 }
 .student-workout-exercise-row .entity-actions {
   flex: 0 0 auto !important;
   display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
   align-items: center !important;
-  gap: 4px !important;
 }
 .student-exercise-picker { display: grid; gap: 14px; }
 .student-exercise-picker .field label { color: #5e7081; font-size: 13px; font-weight: 500; text-transform: none; letter-spacing: normal; }
@@ -300,30 +413,30 @@ html[data-student-theme="dark"] body.student-page .student-day-picker button.act
 
 .student-new-event-button,
 .student-goal-new {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 40px;
-  width: 40px !important;
-  min-width: 40px !important;
-  max-width: 40px;
-  height: 40px !important;
-  min-height: 40px !important;
-  max-height: 40px;
-  aspect-ratio: 1;
-  box-sizing: border-box;
+  display: inline-grid !important;
+  place-items: center !important;
+  flex: 0 0 28px !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  aspect-ratio: 1 !important;
+  box-sizing: border-box !important;
   padding: 0 !important;
-  border-radius: 8px;
+  border-radius: 7px !important;
 }
 
 .student-new-event-button svg,
 .student-goal-new svg {
-  width: 21px;
-  height: 21px;
+  width: 14px !important;
+  height: 14px !important;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 1.8;
+  stroke-width: 2;
 }
 
 .student-exercise-filters {
@@ -577,8 +690,14 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
   .student-event-calendar-icon svg { width: 14px !important; height: 14px !important; }
   .student-event-copy strong { font-size: 13px !important; }
 
-  .student-detail-day-switcher { margin-bottom: 4px !important; }
-  .student-detail-day-switcher strong { font-size: 14px !important; }
+  .student-detail-day-switcher {
+    margin: 2px auto 6px auto !important;
+    align-self: center !important;
+  }
+  .student-detail-day-switcher .student-day-pill,
+  .student-detail-day-switcher strong {
+    font-size: 12px !important;
+  }
 
   .student-detail-icon-actions {
     display: flex;
@@ -589,33 +708,42 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
     gap: 4px !important;
   }
   .student-detail-icon-action {
-    flex-basis: 30px !important;
-    width: 30px !important;
-    min-width: 30px !important;
-    max-width: 30px !important;
-    height: 30px !important;
-    min-height: 30px !important;
-    max-height: 30px !important;
-    border-radius: 7px !important;
+    flex-basis: 26px !important;
+    width: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    border-radius: 6px !important;
   }
-  .student-detail-icon-action svg { width: 14px !important; height: 14px !important; }
+  .student-detail-icon-action svg { width: 13px !important; height: 13px !important; }
 
   .student-workout-exercise-row {
-    padding: 5px 8px !important;
-    gap: 8px !important;
-    min-height: 48px !important;
+    padding: 6px 8px !important;
+    gap: 10px !important;
+    min-height: 0 !important;
   }
   .student-workout-exercise-row .student-exercise-inline-media {
-    flex: 0 0 46px !important;
-    width: 46px !important;
-    height: 46px !important;
-    min-width: 46px !important;
-    min-height: 46px !important;
+    flex: 0 0 100px !important;
+    width: 100px !important;
+    height: 74px !important;
+    min-width: 100px !important;
+    min-height: 74px !important;
+    max-width: 100px !important;
+    max-height: 74px !important;
+    border-radius: 7px !important;
   }
   .student-workout-exercise-row .student-exercise-row-title {
-    font-size: 13.5px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
   }
   .student-workout-exercise-row .student-exercise-row-meta {
-    font-size: 11px !important;
+    font-size: 10.5px !important;
+    gap: 2px 4px !important;
+  }
+  .student-workout-exercise-row .student-exercise-row-tag {
+    font-size: 9.5px !important;
+    padding: 1px 5px !important;
   }
 }

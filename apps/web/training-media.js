@@ -46,7 +46,7 @@
     return iframe;
   }
 
-  function buildVideo(url) {
+  function buildVideo(url, showControls = false) {
     const video = document.createElement('video');
     video.className = 'exercise-video-preview';
     video.autoplay = true;
@@ -54,7 +54,7 @@
     video.loop = true;
     video.playsInline = true;
     video.preload = 'metadata';
-    video.controls = true;
+    if (showControls) video.controls = true;
     video.setAttribute('aria-label', 'Demonstração do exercício');
     video.src = url;
     video.addEventListener('loadedmetadata', () => video.play().catch(() => {}), { once: true });
@@ -71,7 +71,7 @@
     return image;
   }
 
-  function appendMediaPreview(container, url) {
+  function appendMediaPreview(container, url, options = {}) {
     if (!container || !url) return;
     const text = String(url).trim();
     container.replaceChildren();
@@ -89,7 +89,8 @@
       return;
     }
     if (isDirectVideoUrl(text)) {
-      const video = buildVideo(text);
+      const showControls = Boolean(options && options.controls);
+      const video = buildVideo(text, showControls);
       const fallback = document.createElement('a');
       fallback.className = 'mini-button secondary';
       fallback.href = text;

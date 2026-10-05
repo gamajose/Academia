@@ -157,12 +157,19 @@
     });
   }
 
-  function appendExerciseMedia(host, item) {
+  function appendExerciseMedia(host, item, options = {}) {
+    if (item.video_url && window.AcademiaTrainingMedia) {
+      window.AcademiaTrainingMedia.appendVideoPreview(host, item.video_url, options);
+      return;
+    }
     if (item.image_url) {
       const image = document.createElement('img');
-      image.className = 'student-exercise-inline-image'; image.src = item.image_url; image.alt = `Demonstração de ${item.exercise_name || 'exercício'}`; image.loading = 'lazy'; host.appendChild(image);
+      image.className = 'student-exercise-inline-image';
+      image.src = item.image_url;
+      image.alt = `Demonstração de ${item.exercise_name || 'exercício'}`;
+      image.loading = 'lazy';
+      host.appendChild(image);
     }
-    if (item.video_url && window.AcademiaTrainingMedia) window.AcademiaTrainingMedia.appendVideoPreview(host, item.video_url);
   }
 
   function updateLiveHero(event) {
@@ -188,19 +195,25 @@
   function renderEventDetail() {
     const panel = p('student-event-detail-panel');
     const weekday = weekdayForDate(selectedDate);
-    p('student-selected-date-weekday').textContent = '';
-    p('student-selected-date-title').textContent = weekdayLabel(weekday);
+    const dayLabel = weekdayLabel(weekday);
+    if (p('student-selected-date-weekday')) p('student-selected-date-weekday').textContent = '';
+    const dayTitle = p('student-selected-date-title');
+    if (dayTitle) dayTitle.textContent = dayLabel;
     const actions = p('student-event-detail-actions');
     const list = p('student-event-exercise-list');
     list.replaceChildren();
     updateLiveHero(selectedEvent);
     if (!selectedEvent) {
-      panel.classList.add('hidden');
+      panel.classList.remove('hidden');
       actions.classList.add('hidden');
-      p('student-event-detail-title').textContent = 'Treino do dia';
-      p('student-event-detail-time').textContent = '';
+      p('student-event-detail-title').textContent = 'Descanso';
+      p('student-event-detail-time').textContent = dayLabel;
       p('student-event-detail-notes').textContent = '';
       p('student-event-detail-notes').hidden = true;
+      const emptyDay = document.createElement('li');
+      emptyDay.className = 'empty-state student-day-rest-empty';
+      emptyDay.innerHTML = '<strong>Dia livre / Descanso</strong><span>Nenhum treino programado para este dia.<br>Deslize na tela para navegar entre os dias.</span>';
+      list.appendChild(emptyDay);
       return;
     }
     panel.classList.remove('hidden');
@@ -208,7 +221,7 @@
     p('student-add-event-exercise-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
     p('student-delete-event-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
     p('student-event-detail-title').textContent = selectedEvent.title;
-    p('student-event-detail-time').textContent = `${weekdayLabel(weekday)} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
+    p('student-event-detail-time').textContent = `${dayLabel} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
     if (selectedEvent.notes && selectedEvent.notes.trim()) {
       p('student-event-detail-notes').hidden = false;
       p('student-event-detail-notes').textContent = selectedEvent.notes;
@@ -218,29 +231,80 @@
     }
     if (!selectedEvent.exercises.length) return;
     selectedEvent.exercises.forEach((item) => {
-      const row = document.createElement('li'); row.className = 'entity-card student-workout-exercise-row';
-      const media = document.createElement('div'); media.className = 'student-exercise-inline-media'; appendExerciseMedia(media, item);
-      if (media.children.length) row.appendChild(media);
-      const main = document.createElement('div'); main.className = 'entity-main';
+      const row = document.createElement('li');
+      row.className = 'entity-card student-workout-exercise-row';
+      const media = document.createElement('div');
+      media.className = 'student-exercise-inline-media';
+      appendExerciseMedia(media, item, { controls: false });
+      if (!media.children.length) {
+        media.innerHTML = '<svg viewBox="0 0 24 24" class="student-exercise-media-placeholder" aria-hidden="true"><path d="M6 5v14M18 5v14M4 8h4M16 8h4M4 16h4M16 16h4M6 12h12"/></svg>';
+      }
+      row.appendChild(media);
+      const main = document.createElement('div');
+      main.className = 'entity-main';
       const primaryGroup = item.muscle_group_primary || item.muscle_group || '';
-      main.innerHTML = `<strong class="student-exercise-row-title">${text(item.exercise_name || 'Exercício')}</strong><span class="student-exercise-row-meta">${text(item.sets || '-')} séries · ${text(item.reps || '-')} repetições · ${text(item.rest_seconds ?? '-')}s descanso</span>${primaryGroup ? `<span class="student-exercise-row-tag">${text(primaryGroup)}</span>` : ''}`;
+      const sets = text(item.sets || '-');
+      const reps = text(item.reps || '-');
+      const rest = item.rest_seconds != null ? `${text(item.rest_seconds)}s` : '-';
+      main.innerHTML = `<strong class="student-exercise-row-title">${text(item.exercise_name || 'Exercício')}</strong><div class="student-exercise-row-meta"><span>${sets} séries × ${reps}</span><span class="student-meta-dot">·</span><span>${rest} descanso</span></div>${primaryGroup ? `<span class="student-exercise-row-tag">${text(primaryGroup)}</span>` : ''}`;
       row.appendChild(main);
-      row.tabIndex = 0; row.setAttribute('role', 'button'); row.setAttribute('aria-label', `Ver detalhes de ${item.exercise_name || 'exercício'}`);
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-label', `Ver detalhes de ${item.exercise_name || 'exercício'}`);
       row.addEventListener('click', () => openExercise(item));
-      row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openExercise(item); } });
-      const actions = document.createElement('div'); actions.className = 'entity-actions';
-      const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'student-detail-icon-action compact'; edit.setAttribute('aria-label', `Editar ${item.exercise_name || 'exercício'}`); edit.title = 'Editar exercício'; edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg>'; edit.addEventListener('click', (event) => { event.stopPropagation(); openExercisePicker(item); });
-      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'student-detail-icon-action compact is-danger'; remove.setAttribute('aria-label', `Remover ${item.exercise_name || 'exercício'}`); remove.title = 'Remover exercício'; remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg>'; remove.addEventListener('click', (event) => { event.stopPropagation(); removeEventExercise(item); });
-      actions.append(edit, remove); row.appendChild(actions); list.appendChild(row);
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openExercise(item);
+        }
+      });
+      const rowActions = document.createElement('div');
+      rowActions.className = 'entity-actions';
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'student-detail-icon-action compact';
+      edit.setAttribute('aria-label', `Editar ${item.exercise_name || 'exercício'}`);
+      edit.title = 'Editar exercício';
+      edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg>';
+      edit.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openExercisePicker(item);
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'student-detail-icon-action compact is-danger';
+      remove.setAttribute('aria-label', `Remover ${item.exercise_name || 'exercício'}`);
+      remove.title = 'Remover exercício';
+      remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg>';
+      remove.addEventListener('click', (event) => {
+        event.stopPropagation();
+        removeEventExercise(item);
+      });
+      rowActions.append(edit, remove);
+      row.appendChild(rowActions);
+      list.appendChild(row);
     });
   }
 
   function openExercise(item) {
     p('student-exercise-title').textContent = item.exercise_name || 'Exercício';
     p('student-exercise-subtitle').textContent = [item.muscle_group, item.is_private ? 'Exercício personalizado' : 'Catálogo da academia'].filter(Boolean).join(' · ');
-    p('student-exercise-sets').textContent = item.sets || '-'; p('student-exercise-reps').textContent = item.reps || '-'; p('student-exercise-rest').textContent = item.rest_seconds != null ? `${item.rest_seconds}s` : '-';
-    p('student-exercise-equipment').textContent = item.equipment || '-'; p('student-exercise-primary').textContent = item.muscle_group_primary || item.muscle_group || '-'; p('student-exercise-secondary').textContent = item.muscle_group_secondary || '-'; p('student-exercise-instructions').textContent = item.instructions || 'Nenhuma orientação cadastrada.';
-    const media = p('student-exercise-media'); media.replaceChildren(); appendExerciseMedia(media, item); if (!media.children.length) { const empty = document.createElement('span'); empty.className = 'exercise-view-media-empty'; empty.textContent = 'Nenhuma demonstração cadastrada.'; media.appendChild(empty); }
+    p('student-exercise-sets').textContent = item.sets || '-';
+    p('student-exercise-reps').textContent = item.reps || '-';
+    p('student-exercise-rest').textContent = item.rest_seconds != null ? `${item.rest_seconds}s` : '-';
+    p('student-exercise-equipment').textContent = item.equipment || '-';
+    p('student-exercise-primary').textContent = item.muscle_group_primary || item.muscle_group || '-';
+    p('student-exercise-secondary').textContent = item.muscle_group_secondary || '-';
+    p('student-exercise-instructions').textContent = item.instructions || 'Nenhuma orientação cadastrada.';
+    const media = p('student-exercise-media');
+    media.replaceChildren();
+    appendExerciseMedia(media, item, { controls: true });
+    if (!media.children.length) {
+      const empty = document.createElement('span');
+      empty.className = 'exercise-view-media-empty';
+      empty.textContent = 'Nenhuma demonstração cadastrada.';
+      media.appendChild(empty);
+    }
     p('student-exercise-modal').classList.remove('hidden');
   }
 
@@ -411,7 +475,56 @@
     } catch (error) { status('student-portal-status', `Não foi possível carregar seus treinos: ${error.message}`, true); }
   }
 
-  async function moveDay(offset) { const date = fromDateKey(selectedDate); date.setDate(date.getDate() + offset); selectedDate = toDateKey(date); selectedEvent = null; await loadCalendar(); }
+  async function moveDay(offset) {
+    const list = p('student-event-exercise-list');
+    if (list) {
+      list.classList.add('student-day-transition');
+      setTimeout(() => list.classList.remove('student-day-transition'), 180);
+    }
+    const date = fromDateKey(selectedDate);
+    date.setDate(date.getDate() + offset);
+    selectedDate = toDateKey(date);
+    selectedEvent = null;
+    await loadCalendar();
+  }
+
+  function initSwipeGestures() {
+    const workspace = p('student-event-detail-panel') || document.querySelector('.student-training-workspace');
+    if (!workspace) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    workspace.addEventListener('touchstart', (event) => {
+      if (event.touches.length !== 1) return;
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    workspace.addEventListener('touchend', (event) => {
+      if (!touchStartTime) return;
+      const touchEndX = event.changedTouches[0].clientX;
+      const touchEndY = event.changedTouches[0].clientY;
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+      const duration = Date.now() - touchStartTime;
+      touchStartTime = 0;
+
+      if (event.target.closest('.modal:not(.hidden), input, select, textarea, button:not(.student-day-arrow)')) {
+        if (Math.abs(diffX) < 45) return;
+      }
+
+      if (duration < 600 && Math.abs(diffX) >= 38 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+        if (diffX < 0) {
+          moveDay(1);
+        } else {
+          moveDay(-1);
+        }
+      }
+    }, { passive: true });
+  }
 
   async function openMyPlan() {
     if (!events.length) await loadCalendar();
@@ -441,5 +554,6 @@
   [p('student-event-editor-modal'), p('student-exercise-picker-modal'), p('student-private-exercise-modal'), p('student-exercise-modal')].filter(Boolean).forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); }));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') document.querySelectorAll('.modal:not(.hidden)').forEach((modal) => modal.classList.add('hidden')); });
   window.StudentWorkout = { getEvents: () => events };
+  initSwipeGestures();
   load();
 }());
