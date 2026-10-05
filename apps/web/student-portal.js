@@ -285,8 +285,8 @@
       const menuDropdown = document.createElement('div');
       menuDropdown.className = 'student-feed-item-dropdown hidden';
       menuDropdown.innerHTML = `
-        <button type="button" class="feed-item-edit-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg><span>Editar exercício</span></button>
-        <button type="button" class="feed-item-delete-btn is-danger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg><span>Excluir exercício</span></button>
+        <button type="button" class="feed-item-edit-btn">Editar exercício</button>
+        <button type="button" class="feed-item-delete-btn is-danger">Excluir exercício</button>
       `;
 
       dotsBtn.addEventListener('click', (e) => {

@@ -72,14 +72,8 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>
           </button>
           <div class="student-feed-item-dropdown hidden" role="menu">
-            <button type="button" class="goal-item-edit-btn" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg>
-              <span>Editar meta</span>
-            </button>
-            <button type="button" class="goal-item-delete-btn is-danger" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg>
-              <span>Excluir meta</span>
-            </button>
+            <button type="button" class="goal-item-edit-btn" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">Editar meta</button>
+            <button type="button" class="goal-item-delete-btn is-danger" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">Excluir meta</button>
           </div>
         </div>`;
       list.appendChild(row);

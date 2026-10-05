@@ -259,6 +259,14 @@
     setTimeout(() => p('student-assessment-date')?.focus(), 0);
   }
 
+  function openHistoryModal() {
+    p('student-progress-history-modal')?.classList.remove('hidden');
+  }
+
+  function closeHistoryModal() {
+    p('student-progress-history-modal')?.classList.add('hidden');
+  }
+
   function initProgressMenu() {
     const trigger = p('student-progress-menu-btn');
     const dropdown = p('student-progress-dropdown');
@@ -276,22 +284,10 @@
       openNewAssessment();
     });
 
-    p('student-menu-view-summary')?.addEventListener('click', () => {
-      dropdown.classList.add('hidden');
-      trigger.setAttribute('aria-expanded', 'false');
-      p('student-progress-summary-panel')?.scrollIntoView({ behavior: 'smooth' });
-    });
-
-    p('student-menu-view-analysis')?.addEventListener('click', () => {
-      dropdown.classList.add('hidden');
-      trigger.setAttribute('aria-expanded', 'false');
-      p('student-progress-analysis')?.scrollIntoView({ behavior: 'smooth' });
-    });
-
     p('student-menu-view-history')?.addEventListener('click', () => {
       dropdown.classList.add('hidden');
       trigger.setAttribute('aria-expanded', 'false');
-      p('student-progress-history-panel')?.scrollIntoView({ behavior: 'smooth' });
+      openHistoryModal();
     });
 
     document.addEventListener('click', (e) => {
@@ -306,7 +302,15 @@
   p('student-assessment-close').addEventListener('click', closeAssessmentModal);
   p('student-assessment-cancel').addEventListener('click', closeAssessmentModal);
   p('student-assessment-modal').addEventListener('click', (event) => { if (event.target === p('student-assessment-modal')) closeAssessmentModal(); });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !p('student-assessment-modal').classList.contains('hidden')) closeAssessmentModal(); });
+  p('student-progress-history-close')?.addEventListener('click', closeHistoryModal);
+  p('student-progress-history-back-btn')?.addEventListener('click', closeHistoryModal);
+  p('student-progress-history-modal')?.addEventListener('click', (event) => { if (event.target === p('student-progress-history-modal')) closeHistoryModal(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      if (!p('student-assessment-modal')?.classList.contains('hidden')) closeAssessmentModal();
+      if (!p('student-progress-history-modal')?.classList.contains('hidden')) closeHistoryModal();
+    }
+  });
   p('student-assessment-form').addEventListener('submit', saveAssessment);
   p('student-goal-celebration-later').addEventListener('click', closeGoalCelebration);
   p('student-goal-celebration-new').addEventListener('click', () => { window.location.href = './student-goals.html?new=1'; });

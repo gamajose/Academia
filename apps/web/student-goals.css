@@ -16,10 +16,13 @@
 }
 
 .student-goals-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 18px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-bottom: 8px !important;
+  width: 100% !important;
 }
 
 .student-goals-toolbar h1 {
@@ -89,17 +92,74 @@
 }
 
 .student-goal-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  min-height: 0;
-  padding: 14px 16px;
-  border: 1px solid #c5ddf3;
-  border-radius: 12px;
-  background: #f8fcff;
-  cursor: pointer;
-  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  min-height: 96px !important;
+  padding: 14px 48px 14px 16px !important;
+  border: 1px solid #c5ddf3 !important;
+  border-radius: 14px !important;
+  background: #f8fcff !important;
+  cursor: pointer !important;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease !important;
+}
+
+.student-goal-card .student-feed-item-menu {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  z-index: 20 !important;
+}
+
+.student-goal-dots-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  border-radius: 8px !important;
+  background: #eef4fb !important;
+  border: 1px solid #c9dceb !important;
+  color: #24405a !important;
+  box-shadow: 0 1px 4px rgba(8, 31, 53, 0.08) !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: all .15s ease !important;
+}
+
+.student-goal-dots-btn:hover,
+.student-goal-dots-btn:focus-visible {
+  background: #e1edf8 !important;
+  border-color: #1478d4 !important;
+  color: #1478d4 !important;
+  outline: none !important;
+}
+
+.student-goal-dots-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  fill: currentColor !important;
+}
+
+html[data-student-theme="dark"] body.student-page .student-goal-dots-btn {
+  background: #182a3d !important;
+  border-color: #34536e !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-student-theme="dark"] body.student-page .student-goal-dots-btn:hover,
+html[data-student-theme="dark"] body.student-page .student-goal-dots-btn:focus-visible {
+  background: #203a55 !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
 }
 
 .student-goal-card:hover,
@@ -389,8 +449,10 @@ html[data-student-theme="dark"] body.student-page .student-goal-form .secondary-
   }
 
   .student-goals-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
   }
 
   .student-goal-new {

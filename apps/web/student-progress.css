@@ -153,3 +153,33 @@ html[data-student-theme="dark"] body.student-page .student-goal-celebration-card
 @keyframes student-confetti-fall { to { transform: translate3d(24px, calc(100vh + 48px), 0) rotate(var(--confetti-turn)); } }
 @keyframes student-goal-pop { 0% { opacity: 0; transform: scale(.45) rotate(-12deg); } 70% { transform: scale(1.12) rotate(4deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 @media (prefers-reduced-motion: reduce) { .student-confetti i, .student-goal-celebration-icon { animation: none; } }
+
+.student-progress-baseline-panel .toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+
+.student-progress-baseline-panel .toolbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  margin-left: auto !important;
+}
+
+.student-progress-history-modal-card {
+  width: min(640px, calc(100vw - 28px)) !important;
+  max-width: 640px !important;
+  max-height: min(90vh, 820px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 18px 20px !important;
+  border-radius: 16px !important;
+}
+
+.student-progress-history-content {
+  overflow-y: auto !important;
+  max-height: calc(90vh - 160px) !important;
+  margin-top: 10px !important;
+}
