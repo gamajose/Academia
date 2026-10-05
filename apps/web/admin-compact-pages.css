@@ -1,6 +1,6 @@
 /* Compact admin workspaces: keep the useful section headings and remove wasted height. */
 body.admin-compact-page .app-shell {
-  padding-top: 26px;
+  padding-top: 8px !important;
 }
 
 body.admin-compact-page .panel h2,
@@ -45,14 +45,14 @@ body.admin-training-page .training-ai-icon {
 
 @media (max-width: 760px) {
   body.admin-compact-page .app-shell {
-    width: calc(100% - 18px);
-    padding-top: 12px;
+    width: calc(100% - 14px);
+    padding-top: 6px !important;
   }
 
   body.admin-compact-page .panel {
-    gap: 10px;
-    padding: 14px;
-    border-radius: 14px;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    border-radius: 12px;
   }
 
   body.admin-compact-page .toolbar {
