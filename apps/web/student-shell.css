@@ -74,8 +74,8 @@
 .student-page .panel h3 { margin: 0; }
 
 .student-calendar-panel { overflow: hidden; }
-.student-training-day-panel { max-width: 900px; margin-inline: auto; }
-.student-training-workspace { max-width: 900px; margin-inline: auto; }
+.student-training-day-panel { max-width: 900px; margin-left: 0; margin-right: auto; }
+.student-training-workspace { max-width: 900px; margin-left: 0; margin-right: auto; }
 .student-my-plan-button { min-height: 28px !important; height: 28px !important; padding: 4px 10px !important; font-size: 12px !important; border-radius: 7px !important; }
 .student-start-workout-btn { min-height: 28px !important; height: 28px !important; padding: 4px 10px !important; font-size: 12px !important; border-radius: 7px !important; gap: 5px !important; }
 .student-start-workout-btn svg { width: 12px !important; height: 12px !important; }
@@ -121,7 +121,8 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 /* Instagram Reels / TikTok style Workout Feed & Top Header */
 .student-feed-workspace {
   max-width: 580px !important;
-  margin-inline: auto !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
   padding: 12px 14px !important;
 }
 
@@ -249,18 +250,18 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 
 .student-workout-dropdown {
   position: absolute !important;
-  top: calc(100% + 6px) !important;
+  top: calc(100% + 4px) !important;
   right: 0 !important;
-  min-width: 200px !important;
+  min-width: 140px !important;
   background: #0b1523 !important;
   border: 1px solid #22384f !important;
-  border-radius: 12px !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65) !important;
-  padding: 5px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6) !important;
+  padding: 3px !important;
   z-index: 60 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 1px !important;
 }
 
 .student-workout-dropdown.hidden {
@@ -268,19 +269,18 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 }
 
 .student-workout-dropdown button {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
+  display: block !important;
   width: 100% !important;
-  padding: 8px 12px !important;
+  padding: 6px 10px !important;
   border: 0 !important;
   background: transparent !important;
   color: #cbd5e1 !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   cursor: pointer !important;
   text-align: left !important;
+  white-space: nowrap !important;
   transition: background .15s ease, color .15s ease !important;
 }
 
@@ -450,18 +450,18 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 
 .student-feed-item-dropdown {
   position: absolute !important;
-  top: calc(100% + 6px) !important;
+  top: calc(100% + 4px) !important;
   right: 0 !important;
-  min-width: 180px !important;
+  min-width: 130px !important;
   background: #0b1523 !important;
   border: 1px solid #22384f !important;
-  border-radius: 10px !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65) !important;
-  padding: 4px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6) !important;
+  padding: 3px !important;
   z-index: 30 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 1px !important;
 }
 
 .student-feed-item-dropdown.hidden {
@@ -469,19 +469,18 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 }
 
 .student-feed-item-dropdown button {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+  display: block !important;
   width: 100% !important;
-  padding: 8px 12px !important;
+  padding: 6px 10px !important;
   border: 0 !important;
   background: transparent !important;
   color: #cbd5e1 !important;
-  font-size: 12.5px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
   border-radius: 6px !important;
   cursor: pointer !important;
   text-align: left !important;
+  white-space: nowrap !important;
   transition: background .15s ease, color .15s ease !important;
 }
 
@@ -1054,7 +1053,7 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
 .student-goals-toolbar {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
+  justify-content: flex-end !important;
   gap: 10px !important;
   margin-bottom: 12px !important;
   padding: 0 2px !important;
