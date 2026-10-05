@@ -159,37 +159,22 @@
 
   function updateLiveHero(event) {
     const startBtn = p('student-start-live-btn');
-    const workoutName = p('student-live-workout-name');
-    const workoutSub = p('student-live-workout-sub');
-    const streakText = p('student-streak-text');
-    const greetingMsg = p('student-greeting-message');
+    if (!startBtn) return;
+    const activeWorkout = (event && event.exercises?.length)
+      ? event
+      : (events || []).find((e) => e.exercises?.length) || null;
 
-    const hour = new Date().getHours();
-    const period = hour < 12 ? 'Bom dia' : (hour < 18 ? 'Boa tarde' : 'Boa noite');
-    if (greetingMsg) {
-      greetingMsg.textContent = `${period}! Mantenha a disciplina e supere seus limites.`;
-    }
-
-    if (!event || !event.exercises?.length) {
-      if (workoutName) workoutName.textContent = 'Dia de Descanso ou Sem Ficha';
-      if (workoutSub) workoutSub.textContent = 'Nenhum exercício cadastrado para este dia. Aproveite para descansar ou escolha outro dia!';
-      if (startBtn) startBtn.style.display = 'none';
-      if (streakText) streakText.textContent = 'Recuperação Ativa';
+    if (!activeWorkout) {
+      startBtn.classList.add('hidden');
       return;
     }
 
-    if (startBtn) startBtn.style.display = 'inline-flex';
-    if (workoutName) workoutName.textContent = `${event.title} · ${event.exercises.length} Exercício${event.exercises.length > 1 ? 's' : ''}`;
-    if (workoutSub) workoutSub.textContent = `Acompanhe suas séries, descanso inteligente e execute seu treino com foco total.`;
-    if (streakText) streakText.textContent = `Treino Pronto: ${event.title}`;
-
-    if (startBtn) {
-      startBtn.onclick = () => {
-        if (window.StudentLiveWorkout) {
-          window.StudentLiveWorkout.start(event);
-        }
-      };
-    }
+    startBtn.classList.remove('hidden');
+    startBtn.onclick = () => {
+      if (window.StudentLiveWorkout) {
+        window.StudentLiveWorkout.start(activeWorkout);
+      }
+    };
   }
 
   function renderEventDetail() {
