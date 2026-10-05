@@ -158,12 +158,13 @@ async function submitForgot(event) {
   }
 }
 
-document.getElementById('password-toggle').addEventListener('click', () => {
+document.getElementById('password-toggle')?.addEventListener('click', () => {
   const visible = passwordField.type === 'text';
   passwordField.type = visible ? 'password' : 'text';
   const toggle = document.getElementById('password-toggle');
-  toggle.textContent = visible ? 'Mostrar' : 'Ocultar';
   toggle.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha');
+  toggle.querySelector('.eye-open')?.classList.toggle('hidden', !visible);
+  toggle.querySelector('.eye-closed')?.classList.toggle('hidden', visible);
 });
 
 document.getElementById('login-form').addEventListener('submit', (event) => { event.preventDefault(); accountLogin(); });
