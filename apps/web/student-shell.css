@@ -118,204 +118,528 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
 .student-event-copy { min-width: 0; }
 .student-event-copy strong { display: block; overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .student-event-chevron { color: #6c849b; font-size: 22px; line-height: 1; }
-.student-detail-day-switcher {
+/* Instagram Reels / TikTok style Workout Feed & Top Header */
+.student-feed-workspace {
+  max-width: 580px !important;
+  margin-inline: auto !important;
+  padding: 12px 14px !important;
+}
+
+.student-feed-top-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+  padding: 0 2px !important;
+}
+
+.student-workout-breadcrumb {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
   gap: 6px !important;
-  width: fit-content !important;
-  margin: 2px auto 8px auto !important;
-  padding: 2px 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  user-select: none !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.student-bc-section {
+  color: #64748b !important;
+  font-weight: 600 !important;
+  flex-shrink: 0 !important;
+}
+
+.student-bc-sep {
+  color: #334155 !important;
+  font-weight: 400 !important;
+  flex-shrink: 0 !important;
+}
+
+.student-bc-day {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+  text-transform: capitalize !important;
+  flex-shrink: 0 !important;
+}
+
+.student-bc-plan {
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+  max-width: 170px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.student-feed-top-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.student-start-workout-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
   border-radius: 999px !important;
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4) !important;
+  cursor: pointer !important;
+  transition: all .15s ease !important;
+  white-space: nowrap !important;
+}
+
+.student-start-workout-btn:hover {
+  background: #0369a1 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5) !important;
+}
+
+.student-start-workout-btn svg {
+  width: 13px !important;
+  height: 13px !important;
+  fill: currentColor !important;
+}
+
+.student-menu-container {
+  position: relative !important;
+  display: inline-flex !important;
+}
+
+.student-workout-menu-btn {
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
   background: #0d1b2a !important;
   border: 1px solid #243c55 !important;
-  align-self: center !important;
-  user-select: none !important;
-  touch-action: pan-y !important;
-}
-.student-detail-day-switcher .student-day-pill,
-.student-detail-day-switcher strong {
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  color: #38bdf8 !important;
-  letter-spacing: 0.02em !important;
-  text-transform: capitalize !important;
-  padding: 0 4px !important;
-}
-.student-detail-day-switcher .student-day-arrow,
-.student-detail-day-switcher .icon-button {
-  width: 22px !important;
-  min-width: 22px !important;
-  max-width: 22px !important;
-  height: 22px !important;
-  min-height: 22px !important;
-  max-height: 22px !important;
-  border-radius: 50% !important;
-  background: transparent !important;
-  border: 0 !important;
   color: #94a3b8 !important;
-  font-size: 16px !important;
-  line-height: 1 !important;
-  padding: 0 !important;
-  cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding: 0 !important;
+  cursor: pointer !important;
   transition: all .15s ease !important;
 }
-.student-detail-day-switcher .student-day-arrow:hover,
-.student-detail-day-switcher .icon-button:hover {
-  background: rgba(56, 189, 248, 0.15) !important;
+
+.student-workout-menu-btn:hover,
+.student-workout-menu-btn:focus-visible {
+  background: #13273e !important;
   color: #38bdf8 !important;
-  transform: scale(1.1);
+  border-color: #38bdf8 !important;
+  outline: none !important;
 }
-.student-day-transition {
-  opacity: 0.5 !important;
-  transform: translateY(2px) !important;
-  transition: opacity 0.18s ease, transform 0.18s ease !important;
+
+.student-workout-menu-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  fill: currentColor !important;
 }
-.student-day-rest-empty {
-  text-align: center !important;
-  padding: 20px 14px !important;
-  border-radius: 10px !important;
-  background: rgba(14, 27, 42, 0.5) !important;
-  border: 1px dashed #243c55 !important;
-  color: #94a3b8 !important;
-  font-size: 12px !important;
-  margin: 6px 0 !important;
-}
-.student-day-rest-empty strong {
-  display: block !important;
-  font-size: 13.5px !important;
-  color: #ffffff !important;
-  margin-bottom: 4px !important;
-}
-.student-day-rest-empty span {
-  display: block !important;
-  color: #64748b !important;
-  line-height: 1.4 !important;
-}
-.student-detail-icon-actions { display: flex; align-items: center; gap: 5px; }
-.student-detail-icon-action { display: inline-grid; place-items: center; flex: 0 0 28px; width: 28px !important; min-width: 28px; max-width: 28px; height: 28px; min-height: 28px; max-height: 28px; aspect-ratio: 1; box-sizing: border-box; padding: 0; border: 1px solid #243c55; border-radius: 7px; background: #0d1b2a; color: #38bdf8; cursor: pointer; }
-.student-detail-icon-action:hover, .student-detail-icon-action:focus-visible { border-color: #38bdf8; background: #13273e; outline: none; box-shadow: 0 0 0 2px rgba(56, 189, 248, .15); }
-.student-detail-icon-action svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-.student-detail-icon-action.compact { flex-basis: 26px; width: 26px !important; min-width: 26px; max-width: 26px; height: 26px; min-height: 26px; max-height: 26px; border-radius: 6px; }
-.student-detail-icon-action.compact svg { width: 12px; height: 12px; }
-.student-detail-icon-action.is-danger { color: #f87171; border-color: #5a2228; }
-.student-detail-icon-action.is-danger:hover, .student-detail-icon-action.is-danger:focus-visible { border-color: #ef4444; background: #451319; color: #fca5a5; box-shadow: 0 0 0 2px rgba(239, 68, 68, .2); }
-#student-event-exercise-list { display: grid; gap: 6px; list-style: none; padding: 0; margin: 6px 0 0 !important; }
-#student-event-detail-notes:empty, #student-event-detail-notes[hidden] { display: none !important; margin: 0 !important; padding: 0 !important; }
-.student-workout-exercise-row {
+
+.student-workout-dropdown {
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  min-width: 200px !important;
+  background: #0b1523 !important;
+  border: 1px solid #22384f !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65) !important;
+  padding: 5px !important;
+  z-index: 60 !important;
   display: flex !important;
-  flex-direction: row !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.student-workout-dropdown.hidden {
+  display: none !important;
+}
+
+.student-workout-dropdown button {
+  display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  padding: 6px 8px !important;
-  border-radius: 10px !important;
-  cursor: pointer;
-  transition: all .15s ease;
-  background: #112236 !important;
-  border: 1px solid #243c55 !important;
-  min-height: 0 !important;
-}
-.student-workout-exercise-row:hover {
-  border-color: #38bdf8 !important;
-  background: #152942 !important;
-}
-.student-workout-exercise-row .student-exercise-inline-media {
-  flex: 0 0 115px !important;
-  width: 115px !important;
-  height: 82px !important;
-  min-width: 115px !important;
-  min-height: 82px !important;
-  max-width: 115px !important;
-  max-height: 82px !important;
+  width: 100% !important;
+  padding: 8px 12px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
   border-radius: 8px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: background .15s ease, color .15s ease !important;
+}
+
+.student-workout-dropdown button svg {
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  flex-shrink: 0 !important;
+}
+
+.student-workout-dropdown button:hover,
+.student-workout-dropdown button:focus-visible {
+  background: #15283f !important;
+  color: #38bdf8 !important;
+  outline: none !important;
+}
+
+.student-workout-dropdown button.is-danger {
+  color: #f87171 !important;
+}
+
+.student-workout-dropdown button.is-danger:hover,
+.student-workout-dropdown button.is-danger:focus-visible {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+/* Feed List & Smooth Vertical Snap */
+#student-event-exercise-list.student-exercise-feed {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 4px 0 0 !important;
+  width: 100% !important;
+}
+
+#student-event-detail-notes:empty,
+#student-event-detail-notes[hidden] {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Instagram Reel / Feed Card */
+.student-feed-card {
+  position: relative !important;
+  width: 100% !important;
+  height: min(68vh, 520px) !important;
+  min-height: 400px !important;
+  border-radius: 18px !important;
   overflow: hidden !important;
-  background: #08121d !important;
-  border: 1px solid #243c55 !important;
+  background: #030712 !important;
+  border: 1px solid #1e293b !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
+  scroll-snap-align: start !important;
+  scroll-snap-stop: always !important;
+  user-select: none !important;
+  outline: none !important;
+  transition: border-color .18s ease, box-shadow .18s ease !important;
+}
+
+.student-feed-card:hover,
+.student-feed-card:focus-visible {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 8px 30px rgba(56, 189, 248, 0.18) !important;
+}
+
+/* Media taking 100% dominant space */
+.student-feed-media {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: relative !important;
+  background: #030712 !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
 }
-.student-workout-exercise-row .student-exercise-inline-media img,
-.student-workout-exercise-row .student-exercise-inline-media video,
-.student-workout-exercise-row .student-exercise-inline-media .exercise-video-preview,
-.student-workout-exercise-row .student-exercise-inline-media .exercise-gif-preview {
+
+.student-feed-media img,
+.student-feed-media video,
+.student-feed-media .exercise-video-preview,
+.student-feed-media .exercise-gif-preview {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: contain !important;
-  border: 0 !important;
-  border-radius: 6px !important;
-  background: transparent !important;
   display: block !important;
+  border: 0 !important;
+  background: transparent !important;
+  pointer-events: none !important;
 }
-.student-exercise-media-placeholder {
-  width: 26px;
-  height: 26px;
-  fill: none;
-  stroke: #334e68;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.student-workout-exercise-row .entity-main {
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
+
+.student-feed-placeholder {
   display: flex !important;
   flex-direction: column !important;
-  gap: 3px !important;
+  align-items: center !important;
   justify-content: center !important;
-  padding: 2px 0 !important;
+  gap: 10px !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  text-align: center !important;
+  padding: 20px !important;
 }
-.student-workout-exercise-row .student-exercise-row-title {
-  font-size: 13.5px !important;
+
+.student-feed-placeholder svg {
+  width: 42px !important;
+  height: 42px !important;
+  stroke: #334e68 !important;
+  fill: none !important;
+  stroke-width: 1.6 !important;
+}
+
+/* Exercise card top-right 3-dots menu */
+.student-feed-item-menu {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  z-index: 25 !important;
+}
+
+.student-feed-dots-btn {
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  border-radius: 50% !important;
+  background: rgba(3, 7, 18, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #f8fafc !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  transition: all .15s ease !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.student-feed-dots-btn:hover,
+.student-feed-dots-btn:focus-visible {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+  transform: scale(1.05) !important;
+  outline: none !important;
+}
+
+.student-feed-dots-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  fill: currentColor !important;
+}
+
+.student-feed-item-dropdown {
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  min-width: 180px !important;
+  background: #0b1523 !important;
+  border: 1px solid #22384f !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65) !important;
+  padding: 4px !important;
+  z-index: 30 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.student-feed-item-dropdown.hidden {
+  display: none !important;
+}
+
+.student-feed-item-dropdown button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 8px 12px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: background .15s ease, color .15s ease !important;
+}
+
+.student-feed-item-dropdown button svg {
+  width: 14px !important;
+  height: 14px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  flex-shrink: 0 !important;
+}
+
+.student-feed-item-dropdown button:hover,
+.student-feed-item-dropdown button:focus-visible {
+  background: #15283f !important;
+  color: #38bdf8 !important;
+  outline: none !important;
+}
+
+.student-feed-item-dropdown button.is-danger {
+  color: #f87171 !important;
+}
+
+.student-feed-item-dropdown button.is-danger:hover,
+.student-feed-item-dropdown button.is-danger:focus-visible {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+/* Bottom Instagram Caption Overlay */
+.student-feed-overlay {
+  position: absolute !important;
+  inset-inline: 0 !important;
+  bottom: 0 !important;
+  z-index: 15 !important;
+  padding: 44px 14px 12px !important;
+  background: linear-gradient(to top, rgba(3, 7, 18, 0.96) 0%, rgba(3, 7, 18, 0.8) 42%, rgba(3, 7, 18, 0.3) 76%, transparent 100%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.student-feed-meta-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.student-feed-title {
+  font-size: 15.5px !important;
   font-weight: 700 !important;
-  line-height: 1.25 !important;
   color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
   margin: 0 !important;
 }
-.student-workout-exercise-row .student-exercise-row-meta {
+
+.student-feed-index {
   font-size: 11px !important;
+  font-weight: 700 !important;
   color: #94a3b8 !important;
-  line-height: 1.25 !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 2px 7px !important;
+  border-radius: 999px !important;
+  flex-shrink: 0 !important;
+}
+
+.student-feed-badges {
   display: flex !important;
   flex-wrap: wrap !important;
   align-items: center !important;
-  gap: 3px 5px !important;
-  margin: 0 !important;
+  gap: 6px !important;
 }
-.student-meta-dot {
-  color: #475569 !important;
-  font-weight: bold !important;
-}
-.student-workout-exercise-row .student-exercise-row-tag {
-  font-size: 10px !important;
+
+.student-feed-badge {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
   font-weight: 600 !important;
+}
+
+.student-feed-badge.primary {
+  background: rgba(56, 189, 248, 0.18) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
   color: #38bdf8 !important;
-  background: rgba(56, 189, 248, 0.12) !important;
-  border: 1px solid rgba(56, 189, 248, 0.25) !important;
-  padding: 1px 6px !important;
-  border-radius: 4px !important;
-  width: fit-content !important;
-  line-height: 1.2 !important;
-  margin-top: 2px !important;
+}
+
+.student-feed-badge.secondary {
+  background: rgba(148, 163, 184, 0.15) !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  color: #cbd5e1 !important;
+}
+
+.student-feed-badge.muscle {
+  background: rgba(168, 85, 247, 0.18) !important;
+  border: 1px solid rgba(168, 85, 247, 0.38) !important;
+  color: #c084fc !important;
   text-transform: capitalize !important;
 }
-.student-workout-exercise-row .entity-actions {
-  flex: 0 0 auto !important;
+
+.student-feed-caption {
+  font-size: 11px !important;
+  color: #94a3b8 !important;
+  line-height: 1.3 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  opacity: 0.85 !important;
+}
+
+/* Empty & Rest Day Card */
+.student-feed-rest-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 260px !important;
+  padding: 32px 18px !important;
+  border-radius: 18px !important;
+  background: rgba(8, 18, 29, 0.6) !important;
+  border: 1px dashed #243c55 !important;
+  text-align: center !important;
+  color: #94a3b8 !important;
+  list-style: none !important;
+}
+
+.student-feed-rest-body {
   display: flex !important;
   flex-direction: column !important;
-  gap: 3px !important;
   align-items: center !important;
+  gap: 8px !important;
+  max-width: 320px !important;
+}
+
+.student-feed-rest-icon {
+  font-size: 26px !important;
+  color: #38bdf8 !important;
+  line-height: 1 !important;
+}
+
+.student-feed-rest-body strong {
+  font-size: 15px !important;
+  color: #ffffff !important;
+}
+
+.student-feed-rest-body p {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  color: #64748b !important;
+  margin: 0 !important;
 }
 .student-exercise-picker { display: grid; gap: 14px; }
 .student-exercise-picker .field label { color: #5e7081; font-size: 13px; font-weight: 500; text-transform: none; letter-spacing: normal; }
@@ -690,60 +1014,35 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
   .student-event-calendar-icon svg { width: 14px !important; height: 14px !important; }
   .student-event-copy strong { font-size: 13px !important; }
 
-  .student-detail-day-switcher {
-    margin: 2px auto 6px auto !important;
-    align-self: center !important;
+  /* Mobile Feed adjustments */
+  .student-feed-workspace {
+    padding: 8px 10px !important;
   }
-  .student-detail-day-switcher .student-day-pill,
-  .student-detail-day-switcher strong {
+  .student-feed-top-bar {
+    padding: 0 !important;
+    gap: 6px !important;
+  }
+  .student-workout-breadcrumb {
     font-size: 12px !important;
-  }
-
-  .student-detail-icon-actions {
-    display: flex;
-    flex-direction: row !important;
-    flex-wrap: nowrap;
-    align-self: flex-end;
-    width: max-content;
     gap: 4px !important;
   }
-  .student-detail-icon-action {
-    flex-basis: 26px !important;
-    width: 26px !important;
-    min-width: 26px !important;
-    max-width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
-    border-radius: 6px !important;
+  .student-bc-plan {
+    max-width: 110px !important;
   }
-  .student-detail-icon-action svg { width: 13px !important; height: 13px !important; }
-
-  .student-workout-exercise-row {
-    padding: 6px 8px !important;
-    gap: 10px !important;
-    min-height: 0 !important;
+  .student-start-workout-btn {
+    padding: 5px 11px !important;
+    font-size: 11.5px !important;
   }
-  .student-workout-exercise-row .student-exercise-inline-media {
-    flex: 0 0 100px !important;
-    width: 100px !important;
-    height: 74px !important;
-    min-width: 100px !important;
-    min-height: 74px !important;
-    max-width: 100px !important;
-    max-height: 74px !important;
-    border-radius: 7px !important;
+  .student-feed-card {
+    height: calc(100vh - 145px) !important;
+    max-height: 580px !important;
+    min-height: 380px !important;
+    border-radius: 14px !important;
   }
-  .student-workout-exercise-row .student-exercise-row-title {
-    font-size: 13px !important;
-    line-height: 1.2 !important;
+  .student-feed-title {
+    font-size: 14.5px !important;
   }
-  .student-workout-exercise-row .student-exercise-row-meta {
-    font-size: 10.5px !important;
-    gap: 2px 4px !important;
-  }
-  .student-workout-exercise-row .student-exercise-row-tag {
-    font-size: 9.5px !important;
-    padding: 1px 5px !important;
+  .student-feed-overlay {
+    padding: 36px 12px 10px !important;
   }
 }
