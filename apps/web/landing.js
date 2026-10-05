@@ -95,6 +95,30 @@ async function loadSiteConfig() {
         coachImg.style.backgroundImage = `url('${settings.home_coaching_image}')`;
       }
     }
+    if (settings.home_hero_title) {
+      const el = document.querySelector('.hero-copy h1');
+      if (el) el.textContent = settings.home_hero_title;
+    }
+    if (settings.home_hero_subtitle) {
+      const el = document.querySelector('.hero-lead');
+      if (el) el.textContent = settings.home_hero_subtitle;
+    }
+    if (settings.home_structure_title) {
+      const el = document.querySelector('#estrutura .section-heading h2');
+      if (el) el.textContent = settings.home_structure_title;
+    }
+    if (settings.home_structure_desc) {
+      const el = document.querySelector('#estrutura .section-heading p:last-of-type');
+      if (el) el.textContent = settings.home_structure_desc;
+    }
+    if (settings.home_coaching_title) {
+      const el = document.querySelector('#acompanhamento .split-copy h2');
+      if (el) el.textContent = settings.home_coaching_title;
+    }
+    if (settings.home_coaching_desc) {
+      const el = document.querySelector('#acompanhamento .split-copy > p:not(.eyebrow-public)');
+      if (el) el.textContent = settings.home_coaching_desc;
+    }
   } catch (_) {}
 }
 

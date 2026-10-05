@@ -82,8 +82,36 @@ html[data-admin-theme="dark"] .settings-browser-tab.active {
 .module-toggle:hover { border-color: #339cff; }
 .module-toggle input { width: 20px; height: 20px; accent-color: #218cff; flex: 0 0 auto; }
 .module-toggle strong, .module-toggle small { display: block; }
-.module-toggle small { margin-top: 3px; color: var(--muted, #9fb2c9); }
-@media (max-width: 640px) { .module-settings-heading { align-items: stretch; flex-direction: column; } .module-settings-heading button { width: 100%; } }
+@media (max-width: 640px) {
+  .module-settings-heading { align-items: stretch; flex-direction: column; }
+  .module-settings-heading button { width: 100%; }
+  .module-settings-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+  .module-toggle {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    min-height: 0 !important;
+    padding: 10px 4px !important;
+    gap: 6px !important;
+    border-radius: 10px !important;
+  }
+  .module-toggle input {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+  }
+  .module-toggle strong {
+    font-size: 11.5px !important;
+    line-height: 1.2 !important;
+  }
+  .module-toggle small {
+    display: none !important;
+  }
+}
 
 .payment-tabs-nav {
   display: flex;

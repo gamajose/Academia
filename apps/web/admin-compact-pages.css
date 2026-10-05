@@ -25,17 +25,29 @@ body.admin-compact-page .icon-button svg {
 }
 
 body.admin-training-page .training-ai-button {
-  flex: 0 0 34px;
-  width: 34px !important;
-  min-width: 34px;
-  min-height: 34px;
-  height: 34px;
-  padding: 0;
-  border-radius: 9px;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 7px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  white-space: nowrap !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
 }
 
 body.admin-training-page .training-ai-icon {
-  font-size: 17px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+body.admin-training-page #panel-plans .toolbar {
+  padding-right: 14px !important;
 }
 
 .mobile-card-menu {

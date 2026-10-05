@@ -337,12 +337,12 @@
       overlay.innerHTML = `
         <div class="student-feed-meta-row">
           <strong class="student-feed-title">${text(item.exercise_name || 'Exercício')}</strong>
-          <div class="student-feed-meta-actions">
+          <div class="student-feed-meta-actions-col">
+            <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
             <button type="button" class="student-feed-add-btn" title="Adicionar exercício ao treino" aria-label="Adicionar exercício">
               <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span>Adicionar exercício</span>
             </button>
-            <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
           </div>
         </div>
         <div class="student-feed-badges">

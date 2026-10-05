@@ -138,12 +138,17 @@
       ['Cintura', value(latest, 'waist_cm', ' cm')]
     ].map(([label, content]) => `<div class="student-stat"><span>${label}</span><strong>${escape(content)}</strong></div>`).join('');
     p('student-progress-summary-date').textContent = latest ? `Última medição em ${dateLabel(latest.assessment_date)}` : 'Nenhuma medição registrada ainda.';
-    const reminder = p('student-progress-reminder');
-    if (!latest) { reminder.hidden = false; reminder.textContent = 'Faça sua primeira medição'; return; }
+    if (!latest) {
+      showProgressToast('Primeira medição', 'Faça sua primeira medição para acompanhar sua evolução.');
+      return;
+    }
     const last = new Date(`${String(latest.assessment_date).slice(0, 10)}T12:00:00`);
     const days = Math.floor((Date.now() - last.getTime()) / 86400000);
-    reminder.hidden = days < 30;
-    reminder.textContent = 'Sua medição mensal está disponível';
+    if (days >= 30) {
+      showProgressToast('Medição mensal', 'Sua medição mensal já está disponível!');
+    } else {
+      hideProgressToast();
+    }
   }
 
   function renderBaselineDashboard(current, baseline) {
@@ -297,6 +302,25 @@
       }
     });
   }
+
+  function showProgressToast(title, desc) {
+    const toast = p('student-progress-toast');
+    if (!toast) return;
+    const titleEl = p('student-toast-title');
+    const descEl = p('student-toast-desc');
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = desc;
+    toast.classList.remove('hidden');
+  }
+  function hideProgressToast() {
+    p('student-progress-toast')?.classList.add('hidden');
+  }
+
+  p('student-toast-action-btn')?.addEventListener('click', () => {
+    hideProgressToast();
+    openNewAssessment();
+  });
+  p('student-toast-close-btn')?.addEventListener('click', hideProgressToast);
 
   p('open-student-assessment')?.addEventListener('click', openNewAssessment);
   p('student-assessment-close').addEventListener('click', closeAssessmentModal);

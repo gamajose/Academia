@@ -77,10 +77,9 @@
 .finance-table td { color: #26332e; border-bottom: 1px solid #e6ded3; padding: 13px 10px; vertical-align: middle; }
 .finance-table td:first-child { color: #171717; font-weight: 750; }
 .finance-table .badge.ok { background: #dcfce7; color: #166534; }
-.top-nav-logo { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #1478d4; }
-.finance-date-cell { display: grid; gap: 3px; min-width: 155px; }
-.finance-date-cell strong { font-size: 12px; color: #526158; }
-.finance-date-cell span { white-space: nowrap; }
+td.finance-date-cell { display: table-cell !important; vertical-align: middle !important; min-width: 155px; }
+td.finance-date-cell strong { display: block !important; font-size: 12px; color: #526158; line-height: 1.35; }
+td.finance-date-cell span { display: block !important; white-space: nowrap; line-height: 1.35; }
 .finance-form-grid { margin-bottom: 16px; }
 .finance-form-grid .field, .modal-card > .field { display: grid; gap: 7px; }
 .finance-form-grid label, .modal-card > .field label { color: #26332e; font-size: 13px; font-weight: 850; }
@@ -411,10 +410,17 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
 }
 
 /* Planos 3-dots actions and mobile 2-column grid */
+#plans-page-list > li.entity-card {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
 .plan-card-actions {
   position: relative;
   display: inline-flex;
   align-items: center;
+  margin-left: auto !important;
+  justify-content: flex-end !important;
 }
 .plan-card-menu-trigger {
   width: 28px !important;
@@ -542,10 +548,18 @@ html[data-admin-theme="dark"] .plan-card-menu-dropdown button:hover {
 }
 
 /* Finance 3-dots actions */
+.finance-table th.finance-actions-col,
+.finance-table td.finance-actions-cell {
+  text-align: right !important;
+  width: 50px !important;
+}
+
 .finance-card-actions {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end !important;
+  width: 100% !important;
 }
 .finance-card-menu-trigger {
   width: 28px !important;

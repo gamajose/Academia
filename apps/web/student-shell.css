@@ -126,7 +126,13 @@ html[data-student-theme="dark"] body.student-page .student-training-workspace > 
   padding: 12px 14px !important;
 }
 
-body.student-page[data-student-page="training"] .hero,
+body.student-page[data-student-page="training"] .hero {
+  max-width: 580px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
+
 body.student-page[data-student-page="training"] #student-approved-analysis {
   max-width: 580px !important;
   margin-left: auto !important;
@@ -420,15 +426,18 @@ body.student-page[data-student-page="training"] #student-approved-analysis {
   z-index: 25 !important;
 }
 
-.student-feed-dots-btn {
-  width: 32px !important;
-  min-width: 32px !important;
-  max-width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  max-height: 32px !important;
+.student-feed-dots-btn,
+button.student-feed-dots-btn,
+.student-feed-item-menu > button {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
   border-radius: 0 !important;
   background: transparent !important;
+  background-color: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: none !important;
@@ -444,8 +453,11 @@ body.student-page[data-student-page="training"] #student-approved-analysis {
 }
 
 .student-feed-dots-btn:hover,
-.student-feed-dots-btn:focus-visible {
+.student-feed-dots-btn:focus-visible,
+button.student-feed-dots-btn:hover,
+button.student-feed-dots-btn:focus-visible {
   background: transparent !important;
+  background-color: transparent !important;
   color: #38bdf8 !important;
   border: none !important;
   box-shadow: none !important;
@@ -556,10 +568,11 @@ body.student-page[data-student-page="training"] #student-approved-analysis {
   margin: 0 !important;
 }
 
-.student-feed-meta-actions {
+.student-feed-meta-actions-col {
   display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 4px !important;
   flex-shrink: 0 !important;
 }
 
@@ -574,11 +587,12 @@ body.student-page[data-student-page="training"] #student-approved-analysis {
   -webkit-backdrop-filter: blur(6px) !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   color: #e2e8f0 !important;
-  font-size: 11px !important;
+  font-size: 10.5px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   line-height: 1 !important;
   transition: all .15s ease !important;
+  white-space: nowrap !important;
 }
 
 .student-feed-add-btn:hover,
@@ -1132,6 +1146,12 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
   background: #ffffff !important;
   box-shadow: 0 2px 10px rgba(8, 31, 53, 0.04) !important;
   transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease !important;
+  overflow: visible !important;
+  z-index: 1 !important;
+}
+
+.student-goal-card.is-menu-open {
+  z-index: 100 !important;
 }
 
 .student-goal-card:hover {

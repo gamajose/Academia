@@ -93,10 +93,18 @@ html[data-admin-shell="true"] body.admin-memberships-page .panel > .membership-f
 }
 
 /* Membership 3-dots actions and mobile layout */
+.membership-table th.membership-actions-col,
+.membership-table td.membership-actions-cell {
+  text-align: right !important;
+  width: 50px !important;
+}
+
 .membership-card-actions {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end !important;
+  width: 100% !important;
 }
 .membership-card-menu-trigger {
   width: 28px !important;

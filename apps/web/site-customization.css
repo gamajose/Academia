@@ -246,3 +246,39 @@ html[data-admin-theme="dark"] .image-controls .btn-upload {
   border-color: #29445d;
   color: #e2e8f0;
 }
+
+.custom-subtitle {
+  font-size: 15px;
+  font-weight: 750;
+  margin: 22px 0 12px;
+  color: var(--text, #0f172a);
+}
+
+.texts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.texts-grid .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.texts-grid .field label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text, #1e293b);
+}
+
+@media (max-width: 640px) {
+  .texts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+html[data-admin-theme="dark"] .custom-subtitle,
+html[data-admin-theme="dark"] .texts-grid .field label {
+  color: #e2e8f0;
+}

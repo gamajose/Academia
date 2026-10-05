@@ -166,6 +166,11 @@
           d.classList.add('hidden');
         }
       });
+      document.querySelectorAll('.student-goal-card.is-menu-open').forEach((c) => {
+        if (!c.contains(e.target)) {
+          c.classList.remove('is-menu-open');
+        }
+      });
     });
   }
 
@@ -179,12 +184,20 @@
     const dotsBtn = event.target.closest('.student-goal-dots-btn');
     if (dotsBtn) {
       event.stopPropagation();
+      const card = dotsBtn.closest('.student-goal-card');
       const menu = dotsBtn.nextElementSibling;
+      const willOpen = menu?.classList.contains('hidden');
       document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => {
         if (d !== menu) d.classList.add('hidden');
       });
+      document.querySelectorAll('.student-goal-card.is-menu-open').forEach((c) => {
+        if (c !== card) c.classList.remove('is-menu-open');
+      });
       document.getElementById('student-goals-dropdown')?.classList.add('hidden');
-      menu?.classList.toggle('hidden');
+      if (menu) {
+        menu.classList.toggle('hidden', !willOpen);
+        card?.classList.toggle('is-menu-open', willOpen);
+      }
       return;
     }
 
@@ -192,6 +205,7 @@
     if (editBtn) {
       event.stopPropagation();
       editBtn.closest('.student-feed-item-dropdown')?.classList.add('hidden');
+      editBtn.closest('.student-goal-card')?.classList.remove('is-menu-open');
       const goal = goalsById.get(editBtn.dataset.goalId);
       if (goal) openModal(goal);
       return;
@@ -201,6 +215,7 @@
     if (deleteBtn) {
       event.stopPropagation();
       deleteBtn.closest('.student-feed-item-dropdown')?.classList.add('hidden');
+      deleteBtn.closest('.student-goal-card')?.classList.remove('is-menu-open');
       const goal = goalsById.get(deleteBtn.dataset.goalId);
       if (goal) remove(goal.id);
       return;

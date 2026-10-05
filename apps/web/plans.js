@@ -139,6 +139,14 @@
         heroEl.style.backgroundPosition = 'center';
       }
     }
+    if (settings.plans_hero_title) {
+      const titleEl = document.querySelector('.public-plans-hero h1, #gym-name');
+      if (titleEl) titleEl.textContent = settings.plans_hero_title;
+    }
+    if (settings.plans_hero_subtitle) {
+      const subEl = document.querySelector('.public-plans-hero p:not(.eyebrow-light)');
+      if (subEl) subEl.textContent = settings.plans_hero_subtitle;
+    }
   }
 
   async function loadCatalog() {

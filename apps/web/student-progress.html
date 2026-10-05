@@ -61,6 +61,21 @@
       </article>
     </div>
 
+    <!-- App Push Notification Toast (Evolução) -->
+    <aside id="student-progress-toast" class="student-app-toast hidden" role="alert" aria-live="polite">
+      <div class="student-app-toast-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="student-app-toast-content">
+        <strong id="student-toast-title">Lembrete de medição</strong>
+        <p id="student-toast-desc">Sua medição mensal está disponível.</p>
+      </div>
+      <div class="student-app-toast-actions">
+        <button type="button" class="student-toast-action-btn" id="student-toast-action-btn">Registrar</button>
+        <button type="button" class="student-toast-close-btn" id="student-toast-close-btn" aria-label="Fechar notificação">×</button>
+      </div>
+    </aside>
+
     <div class="progress-top-toolbar">
       <div class="progress-browser-tabbar" role="tablist" aria-label="Navegação da evolução">
         <button type="button" class="progress-browser-tab active" id="tab-btn-initial" role="tab" aria-selected="true" aria-controls="progress-panel-initial">
@@ -71,7 +86,6 @@
         </button>
       </div>
       <div class="toolbar-actions progress-top-actions">
-        <span class="progress-reminder" id="student-progress-reminder" hidden></span>
         <div class="student-menu-container">
           <button class="icon-button student-workout-menu-btn" id="student-progress-menu-btn" type="button" aria-label="Opções de evolução" title="Opções" aria-expanded="false" aria-haspopup="menu">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>

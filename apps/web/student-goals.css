@@ -103,13 +103,19 @@
   background: #f8fcff !important;
   cursor: pointer !important;
   transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease !important;
+  overflow: visible !important;
+  z-index: 1 !important;
+}
+
+.student-goal-card.is-menu-open {
+  z-index: 100 !important;
 }
 
 .student-goal-card .student-feed-item-menu {
   position: absolute !important;
   top: 12px !important;
   right: 12px !important;
-  z-index: 20 !important;
+  z-index: 105 !important;
 }
 
 .student-goal-dots-btn {
