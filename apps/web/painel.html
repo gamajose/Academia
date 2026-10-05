@@ -14,25 +14,6 @@
   <main class="app-shell">
     <div id="login-card" class="hidden" style="display:none;"></div>
     <section class="dashboard" id="dashboard">
-      <!-- Cockpit Recepção: Single Minimalist Button that Expands into Search -->
-      <div class="cockpit-reception-bar">
-        <button id="cockpit-reception-toggle" class="cockpit-reception-trigger-btn" type="button" aria-expanded="false" title="Abrir recepção rápida">
-          <span class="pulse-indicator"></span> Recepção
-        </button>
-        <a class="cockpit-totem-btn button secondary" href="./totem.html" target="_blank" data-module-feature="totem" title="Abrir Totem Kiosk da Catraca" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:8px 14px;border-radius:10px;text-decoration:none;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>Totem</span>
-        </a>
-        <form id="cockpit-checkin-form" class="cockpit-checkin-form hidden" autocomplete="off">
-          <div class="cockpit-input-group">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input id="cockpit-checkin-input" type="text" placeholder="Aluno ou telefone..." required />
-            <button id="cockpit-checkin-btn" type="submit" class="button">Confirmar</button>
-            <button id="cockpit-checkin-close" type="button" class="cockpit-close-btn" aria-label="Fechar busca">×</button>
-          </div>
-          <div id="cockpit-checkin-status" class="cockpit-checkin-status hidden"></div>
-        </form>
-      </div>
 
       <div class="cards dashboard-summary-cards dashboard-core-cards">
         <a class="dashboard-summary-card members" href="./alunos.html"><span>Alunos ativos</span><strong id="active-members">0</strong><small>Ver cadastro e histórico</small></a>

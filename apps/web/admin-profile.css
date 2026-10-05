@@ -85,18 +85,20 @@ html[data-admin-shell="true"][data-admin-theme="dark"] .preferences-modal-card .
   object-fit: contain;
   background: #f8fafc;
   padding: 4px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.gym-logo-preview-row img:hover {
+  transform: scale(1.04);
+  border-color: #38bdf8;
 }
 html[data-admin-theme="dark"] .gym-logo-preview-row img {
   background: #0e1b2a;
   border-color: #34536e;
 }
-.gym-logo-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-.gym-logo-actions input {
+.gym-logo-preview-row button {
+  width: auto;
+  min-height: 38px;
+  padding: 0 16px;
   font-size: 13px;
-  padding: 6px 10px;
+  font-weight: 500;
 }

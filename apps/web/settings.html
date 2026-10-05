@@ -16,6 +16,103 @@
       <p class="status-line" id="module-settings-status" aria-live="polite"></p>
     </section>
 
+    <section class="panel payment-settings-panel" style="margin-top: 24px;">
+      <div class="module-settings-heading">
+        <div>
+          <h2>Métodos de Pagamento</h2>
+          <p>Configure as credenciais e parâmetros de recebimento para Pix, Cartão de Crédito e PayPal.</p>
+        </div>
+        <button id="save-payments-button" type="button">Salvar Pagamentos</button>
+      </div>
+
+      <div class="payment-tabs-nav" role="tablist">
+        <button type="button" class="tab-btn active" data-tab="pix">Pix (Dinâmico & Estático)</button>
+        <button type="button" class="tab-btn" data-tab="card">Cartão de Crédito</button>
+        <button type="button" class="tab-btn" data-tab="paypal">PayPal</button>
+      </div>
+
+      <div class="payment-tab-content" id="tab-pix">
+        <div class="form-grid">
+          <div class="field">
+            <label for="pay-pix-key">Chave Pix *</label>
+            <input id="pay-pix-key" placeholder="Ex.: CNPJ, e-mail, celular ou chave aleatória" />
+            <small>Chave principal para geração do QR Code dinâmico com valor da mensalidade.</small>
+          </div>
+          <div class="field">
+            <label for="pay-pix-receiver">Nome do Favorecido / Beneficiário</label>
+            <input id="pay-pix-receiver" placeholder="Ex.: BlueREC Academia Ltda" />
+            <small>Nome institucional que aparece no QR Code Pix.</small>
+          </div>
+          <div class="field">
+            <label for="pay-pix-bank">Banco / Instituição Financeira</label>
+            <input id="pay-pix-bank" placeholder="Ex.: Nubank, Banco do Brasil, Itaú, Inter..." />
+          </div>
+          <div class="field">
+            <label for="pay-pix-city">Cidade da Academia / Conta</label>
+            <input id="pay-pix-city" placeholder="Ex.: SAO PAULO ou RECIFE" />
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-tab-content hidden" id="tab-card">
+        <div class="form-grid">
+          <div class="field">
+            <label for="pay-card-provider">Gateway / Operadora</label>
+            <select id="pay-card-provider">
+              <option value="mercadopago">Mercado Pago</option>
+              <option value="asaas">Asaas</option>
+              <option value="stripe">Stripe</option>
+              <option value="pagseguro">PagSeguro</option>
+              <option value="cielo">Cielo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pay-card-installments">Parcelamento Máximo</label>
+            <select id="pay-card-installments">
+              <option value="1">1x (Apenas à vista)</option>
+              <option value="3">Até 3x</option>
+              <option value="6">Até 6x</option>
+              <option value="12" selected>Até 12x</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pay-card-public-key">Chave Pública (Public Key / Client ID)</label>
+            <input id="pay-card-public-key" placeholder="APP_USR-xxxx ou pk_live_xxxx" />
+          </div>
+          <div class="field">
+            <label for="pay-card-secret-key">Chave Secreta (Access Token / Secret Key)</label>
+            <input id="pay-card-secret-key" type="password" placeholder="APP_USR-xxxx ou sk_live_xxxx" />
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-tab-content hidden" id="tab-paypal">
+        <div class="form-grid">
+          <div class="field">
+            <label for="pay-paypal-email">E-mail Comercial (PayPal Business)</label>
+            <input id="pay-paypal-email" type="email" placeholder="financeiro@empresa.com.br" />
+          </div>
+          <div class="field">
+            <label for="pay-paypal-mode">Ambiente</label>
+            <select id="pay-paypal-mode">
+              <option value="live">Produção (Live)</option>
+              <option value="sandbox">Testes (Sandbox)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pay-paypal-client-id">Client ID</label>
+            <input id="pay-paypal-client-id" placeholder="AZDxjD9PRmz..." />
+          </div>
+          <div class="field">
+            <label for="pay-paypal-secret">Secret Key</label>
+            <input id="pay-paypal-secret" type="password" placeholder="ELqP01..." />
+          </div>
+        </div>
+      </div>
+
+      <p class="status-line" id="payment-settings-status" aria-live="polite" style="margin-top: 14px;"></p>
+    </section>
+
   </main>
   <script src="./nav.js?v=20260719-1"></script>
   <script src="./module-settings.js?v=20260716-3"></script>

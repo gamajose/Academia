@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./access-page.css?v=20260719-1" />
   <link rel="stylesheet" href="./admin-compact-pages.css?v=20260716-3" />
   <link rel="stylesheet" href="./admin-pagination.css?v=20260716-1" />
+  <link rel="stylesheet" href="./dashboard-evolution.css" />
 </head>
 <body class="admin-compact-page admin-access-page">
   <main class="app-shell">
@@ -20,11 +21,23 @@
 
     <section class="panel access-decisions-panel">
       <div class="toolbar">
-        <a class="button secondary totem-shortcut-btn" href="./totem.html" target="_blank" data-module-feature="totem" title="Abrir Totem da Catraca em tela cheia" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 12px;text-decoration:none;">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>Totem Catraca</span>
-        </a>
-        <button class="icon-button" id="access-filter-toggle" type="button" aria-label="Pesquisar credencial do aluno" title="Pesquisar credencial do aluno" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
+        <div class="cockpit-reception-bar">
+          <button id="access-reception-toggle" class="cockpit-reception-trigger-btn" type="button" aria-expanded="false" title="Abrir recepção rápida">
+            <span class="pulse-indicator"></span> Recepção
+          </button>
+          <form id="access-checkin-form" class="cockpit-checkin-form hidden" autocomplete="off">
+            <div class="cockpit-input-group">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="access-checkin-input" type="text" placeholder="Aluno ou telefone..." required />
+              <button id="access-checkin-btn" type="submit" class="button">Confirmar</button>
+              <button id="access-checkin-close" type="button" class="cockpit-close-btn" aria-label="Fechar busca">×</button>
+            </div>
+            <div id="access-checkin-status" class="cockpit-checkin-status hidden"></div>
+          </form>
+        </div>
+        <button class="icon-button" id="access-filter-toggle" type="button" aria-label="Credencial QR Code" title="Credencial QR Code" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
       </div>
       <div class="access-search-drawer hidden" id="access-filter-panel">
         <div class="access-member-filters inline-filter-panel">

@@ -44,7 +44,7 @@ function moduleForPath(pathname) {
 function commonStaffAccess(method, pathname, permissions = null) {
   const exactRead = [
     '/api/members', '/api/checkins/recent', '/api/dashboard/summary', '/api/me',
-    '/api/gym/profile', '/api/alerts', '/api/classes', '/api/classes/sessions/upcoming',
+    '/api/gym/profile', '/api/gym/payment-settings', '/api/alerts', '/api/classes', '/api/classes/sessions/upcoming',
     '/api/classes/session/roster', '/api/operations/live', '/api/operations/members',
     '/api/signups'
   ];

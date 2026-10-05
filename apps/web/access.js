@@ -159,6 +159,73 @@ function toggleAccessFilters() {
   if (!hidden) setTimeout(() => accessEl('access-member-search')?.focus(), 40);
   renderMembers();
 }
+// Quick Reception Check-in in Access page
+const receptionToggle = accessEl('access-reception-toggle');
+const receptionClose = accessEl('access-checkin-close');
+const checkinForm = accessEl('access-checkin-form');
+const checkinInput = accessEl('access-checkin-input');
+const checkinStatus = accessEl('access-checkin-status');
+const checkinBtn = accessEl('access-checkin-btn');
+
+function openReception() {
+  receptionToggle?.classList.add('hidden');
+  checkinForm?.classList.remove('hidden');
+  receptionToggle?.setAttribute('aria-expanded', 'true');
+  setTimeout(() => checkinInput?.focus(), 40);
+}
+
+function closeReception() {
+  checkinForm?.classList.add('hidden');
+  receptionToggle?.classList.remove('hidden');
+  receptionToggle?.setAttribute('aria-expanded', 'false');
+  if (checkinInput) checkinInput.value = '';
+  if (checkinStatus) checkinStatus.classList.add('hidden');
+}
+
+receptionToggle?.addEventListener('click', openReception);
+receptionClose?.addEventListener('click', closeReception);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && checkinForm && !checkinForm.classList.contains('hidden')) {
+    closeReception();
+  }
+});
+
+checkinForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const query = checkinInput?.value.trim();
+  if (!query) return;
+
+  if (checkinBtn) checkinBtn.disabled = true;
+  if (checkinStatus) {
+    checkinStatus.classList.remove('hidden', 'is-success', 'is-error');
+    checkinStatus.textContent = 'Registrando presença...';
+  }
+
+  try {
+    const res = await accessApi('/api/checkins/quick', {
+      method: 'POST',
+      body: JSON.stringify({ query })
+    });
+    if (checkinStatus) {
+      checkinStatus.classList.add('is-success');
+      checkinStatus.textContent = `✓ ${res.message || 'Presença confirmada!'}`;
+    }
+    if (checkinInput) checkinInput.value = '';
+    loadPage();
+    setTimeout(() => {
+      closeReception();
+    }, 2200);
+  } catch (err) {
+    if (checkinStatus) {
+      checkinStatus.classList.add('is-error');
+      checkinStatus.textContent = err.message || 'Aluno não encontrado ou inativo.';
+    }
+  } finally {
+    if (checkinBtn) checkinBtn.disabled = false;
+  }
+});
+
 accessEl('access-filter-toggle')?.addEventListener('click', toggleAccessFilters);
 accessEl('access-member-search').addEventListener('input', () => { accessMemberPage = 1; renderMembers(); });
 accessEl('access-member-filter').addEventListener('change', () => { accessMemberPage = 1; renderMembers(); });
