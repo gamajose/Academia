@@ -7,91 +7,133 @@
   <title>Meu perfil - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./admin-profile.css?v=20260716-2" />
+  <link rel="stylesheet" href="./admin-profile.css?v=20261005-1" />
 </head>
-<body>
-  <main class="app-shell">
-    <section class="grid profile-page-grid">
-      <form class="panel" id="profile-form">
-        <div class="profile-identity">
-          <button class="profile-identity-avatar" id="profile-photo-button" type="button" aria-label="Alterar foto do perfil" title="Alterar foto do perfil">J</button>
+<body class="admin-account-page">
+  <main class="app-shell profile-container">
+    <!-- Social Network Profile Header -->
+    <header class="profile-header-card">
+      <div class="profile-cover"></div>
+      <div class="profile-header-content">
+        <div class="profile-avatar-wrap">
+          <button class="profile-identity-avatar" id="profile-photo-button" type="button" aria-label="Alterar foto do perfil" title="Alterar foto do perfil">
+            <span id="profile-photo-letter">U</span>
+          </button>
           <input id="profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden />
         </div>
-        <div class="form-grid">
-          <div class="field"><label for="profile-name">Nome completo *</label><input id="profile-name" autocomplete="name" required /></div>
-          <div class="field"><label for="profile-email">E-mail *</label><input id="profile-email" type="email" autocomplete="email" required /></div>
-          <div class="field"><label for="profile-phone">Telefone / WhatsApp</label><input id="profile-phone" inputmode="tel" autocomplete="tel" /></div>
-          <div class="field"><label for="profile-cpf">CPF</label><input id="profile-cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" /></div>
-          <div class="field"><label for="profile-rg">RG</label><input id="profile-rg" maxlength="30" /></div>
-          <div class="field"><label for="profile-birth">Data de nascimento</label><input id="profile-birth" type="date" /></div>
+        <div class="profile-header-info">
+          <div class="profile-name-row">
+            <h1 class="profile-display-name" id="profile-display-name">Carregando...</h1>
+            <span class="profile-access-badge" id="profile-access-badge">Administrador</span>
+          </div>
+          <p class="profile-display-email" id="profile-display-email">-</p>
+          <div class="profile-header-actions">
+            <a class="profile-whatsapp-link hidden" id="profile-whatsapp" target="_blank" rel="noopener noreferrer">Conversar pelo WhatsApp</a>
+          </div>
         </div>
-        <div class="field"><label for="profile-job-title">Cargo</label><input id="profile-job-title" readonly /></div>
-        <a class="profile-whatsapp-link hidden" id="profile-whatsapp" target="_blank" rel="noopener noreferrer">Conversar pelo WhatsApp</a>
+      </div>
+    </header>
 
-        <section class="form-section">
-          <h4>Endereço</h4>
-          <div class="form-grid three">
-            <div class="field"><label for="profile-postal-code">CEP</label><input id="profile-postal-code" inputmode="numeric" maxlength="9" /></div>
-            <div class="field"><label for="profile-street">Rua / Avenida</label><input id="profile-street" autocomplete="street-address" /></div>
-            <div class="field"><label for="profile-address-number">Número</label><input id="profile-address-number" /></div>
-            <div class="field"><label for="profile-address-complement">Complemento</label><input id="profile-address-complement" /></div>
-            <div class="field"><label for="profile-neighborhood">Bairro</label><input id="profile-neighborhood" /></div>
-            <div class="field"><label for="profile-city">Cidade</label><input id="profile-city" /></div>
-            <div class="field"><label for="profile-state">Estado</label><input id="profile-state" maxlength="40" /></div>
-            <div class="field"><label for="profile-country">País</label><input id="profile-country" value="Brasil" /></div>
-          </div>
-        </section>
-        <div class="form-actions"><button type="submit">Salvar</button></div>
-        <p class="status-line" id="profile-status"></p>
-      </form>
+    <!-- Browser-like Tabs Container -->
+    <section class="profile-tabs-container">
+      <div class="profile-browser-tabbar" role="tablist" aria-label="Abas do perfil">
+        <button class="profile-browser-tab active" id="tab-btn-personal" role="tab" aria-selected="true" aria-controls="panel-personal" type="button">
+          Dados pessoais
+        </button>
+        <button class="profile-browser-tab" id="tab-btn-address" role="tab" aria-selected="false" aria-controls="panel-address" type="button">
+          Endereço
+        </button>
+        <button class="profile-browser-tab hidden" id="tab-btn-gym" role="tab" aria-selected="false" aria-controls="panel-gym" type="button">
+          Empresa
+        </button>
+        <button class="profile-browser-tab" id="tab-btn-security" role="tab" aria-selected="false" aria-controls="panel-security" type="button">
+          Segurança
+        </button>
+      </div>
 
-      <div class="grid profile-side-grid">
-        <section class="panel" id="gym-profile-panel">
-          <div class="field gym-logo-field">
-            <label>Logo da academia</label>
-            <div class="gym-logo-preview-row">
-              <img id="gym-logo-preview" src="./blue-rec-logo.png" alt="Logo da academia" width="56" height="56" style="cursor: pointer;" title="Clique para trocar a logo" />
-              <button type="button" class="button secondary" id="gym-logo-upload-btn">Escolher logo</button>
-              <input type="file" id="gym-logo-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" hidden />
+      <div class="profile-panels">
+        <!-- TAB 1: Dados Pessoais -->
+        <article class="profile-tab-panel" id="panel-personal" role="tabpanel" aria-labelledby="tab-btn-personal">
+          <form id="profile-form-personal">
+            <div class="form-grid">
+              <div class="field"><label for="profile-name">Nome completo *</label><input id="profile-name" autocomplete="name" required /></div>
+              <div class="field"><label for="profile-email">E-mail *</label><input id="profile-email" type="email" autocomplete="email" required /></div>
+              <div class="field"><label for="profile-phone">Telefone / WhatsApp</label><input id="profile-phone" inputmode="tel" autocomplete="tel" /></div>
+              <div class="field"><label for="profile-cpf">CPF</label><input id="profile-cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" /></div>
+              <div class="field"><label for="profile-rg">RG</label><input id="profile-rg" maxlength="30" /></div>
+              <div class="field"><label for="profile-birth">Data de nascimento</label><input id="profile-birth" type="date" /></div>
+              <div class="field span-full"><label for="profile-job-title">Cargo / Função</label><input id="profile-job-title" readonly /></div>
             </div>
-          </div>
-          <div class="field"><label for="gym-name">Nome da academia</label><input id="gym-name" /></div>
-          <div class="form-grid"><div class="field"><label for="gym-email">E-mail da academia</label><input id="gym-email" type="email" /></div><div class="field"><label for="gym-phone">Telefone da academia</label><input id="gym-phone" inputmode="tel" /></div></div>
-          <div class="field"><label for="gym-document">CNPJ / documento da academia</label><input id="gym-document" /></div>
-          <div class="field"><label for="gym-pix-key">Chave Pix padrão</label><input id="gym-pix-key" placeholder="Ex.: financeiro@academia.com.br ou CNPJ / celular" /></div>
-          <div class="field"><label for="gym-address">Endereço da academia</label><input id="gym-address" /></div>
-          <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
-          <div class="form-actions"><button id="save-gym-button" type="button">Salvar</button></div>
-        </section>
+            <div class="form-actions"><button type="submit" id="save-personal-button">Salvar dados pessoais</button></div>
+            <p class="status-line" id="profile-status"></p>
+          </form>
+        </article>
+
+        <!-- TAB 2: Endereço -->
+        <article class="profile-tab-panel hidden" id="panel-address" role="tabpanel" aria-labelledby="tab-btn-address">
+          <form id="profile-form-address">
+            <div class="form-grid three">
+              <div class="field"><label for="profile-postal-code">CEP</label><input id="profile-postal-code" inputmode="numeric" maxlength="9" /></div>
+              <div class="field"><label for="profile-street">Rua / Avenida</label><input id="profile-street" autocomplete="street-address" /></div>
+              <div class="field"><label for="profile-address-number">Número</label><input id="profile-address-number" /></div>
+              <div class="field"><label for="profile-address-complement">Complemento</label><input id="profile-address-complement" /></div>
+              <div class="field"><label for="profile-neighborhood">Bairro</label><input id="profile-neighborhood" /></div>
+              <div class="field"><label for="profile-city">Cidade</label><input id="profile-city" /></div>
+              <div class="field"><label for="profile-state">Estado</label><input id="profile-state" maxlength="40" /></div>
+              <div class="field"><label for="profile-country">País</label><input id="profile-country" value="Brasil" /></div>
+            </div>
+            <div class="form-actions"><button type="submit" id="save-address-button">Salvar endereço</button></div>
+            <p class="status-line" id="address-status"></p>
+          </form>
+        </article>
+
+        <!-- TAB 3: Empresa -->
+        <article class="profile-tab-panel hidden" id="panel-gym" role="tabpanel" aria-labelledby="tab-btn-gym">
+          <section id="gym-profile-panel">
+            <div class="field gym-logo-field">
+              <label>Logo da academia</label>
+              <div class="gym-logo-preview-row">
+                <img id="gym-logo-preview" src="./blue-rec-logo.png" alt="Logo da academia" width="56" height="56" style="cursor: pointer;" title="Clique para trocar a logo" />
+                <button type="button" class="button secondary" id="gym-logo-upload-btn">Escolher logo</button>
+                <input type="file" id="gym-logo-file" accept="image/jpeg,image/png,image/webp,image/svg+xml" hidden />
+              </div>
+            </div>
+            <div class="field"><label for="gym-name">Nome da academia</label><input id="gym-name" /></div>
+            <div class="form-grid"><div class="field"><label for="gym-email">E-mail da academia</label><input id="gym-email" type="email" /></div><div class="field"><label for="gym-phone">Telefone da academia</label><input id="gym-phone" inputmode="tel" /></div></div>
+            <div class="field"><label for="gym-document">CNPJ / documento da academia</label><input id="gym-document" /></div>
+            <div class="field"><label for="gym-pix-key">Chave Pix padrão</label><input id="gym-pix-key" placeholder="Ex.: financeiro@academia.com.br ou CNPJ / celular" /></div>
+            <div class="field"><label for="gym-address">Endereço da academia</label><input id="gym-address" /></div>
+            <div class="field"><label for="gym-timezone">Fuso horário do sistema</label><input id="gym-timezone" placeholder="America/Sao_Paulo" /></div>
+            <div class="form-actions"><button id="save-gym-button" type="button">Salvar dados da empresa</button></div>
+            <p class="status-line" id="gym-status"></p>
+          </section>
+        </article>
+
+        <!-- TAB 4: Segurança -->
+        <article class="profile-tab-panel hidden" id="panel-security" role="tabpanel" aria-labelledby="tab-btn-security">
+          <form id="profile-form-security">
+            <div class="form-grid single-col-narrow">
+              <div class="field">
+                <label for="password-current">Senha atual *</label>
+                <input id="password-current" type="password" autocomplete="current-password" required placeholder="Digite sua senha atual" />
+              </div>
+              <div class="field">
+                <label for="password-new">Nova senha *</label>
+                <input id="password-new" type="password" autocomplete="new-password" required minlength="8" placeholder="Mínimo de 8 caracteres" />
+              </div>
+              <div class="field">
+                <label for="password-confirm">Confirmar nova senha *</label>
+                <input id="password-confirm" type="password" autocomplete="new-password" required minlength="8" placeholder="Repita a nova senha" />
+              </div>
+            </div>
+            <div class="form-actions"><button type="submit" id="save-password-button">Alterar senha</button></div>
+            <p class="status-line" id="security-status"></p>
+          </form>
+        </article>
       </div>
     </section>
   </main>
-  <div class="modal hidden" id="preferences-modal" role="dialog" aria-modal="true" aria-labelledby="preferences-title">
-    <div class="modal-card preferences-modal-card">
-      <div class="modal-header">
-        <div><h3 id="preferences-title">Preferências</h3></div>
-        <button class="modal-close" id="close-preferences-button" type="button" aria-label="Fechar">×</button>
-      </div>
-      <div class="preferences-modal-grid">
-        <div class="field"><label for="profile-language">Idioma</label><select id="profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
-        <div class="field"><label for="profile-theme">Tema</label><select id="profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div>
-      </div>
-      <fieldset class="accent-picker">
-        <legend>Cor de destaque</legend>
-        <div class="accent-options" role="radiogroup" aria-label="Escolha a cor de destaque">
-          <label class="accent-option"><input type="radio" name="profile-accent" value="blue"><span class="accent-swatch accent-blue"></span><span>Azul</span></label>
-          <label class="accent-option"><input type="radio" name="profile-accent" value="cyan"><span class="accent-swatch accent-cyan"></span><span>Ciano</span></label>
-          <label class="accent-option"><input type="radio" name="profile-accent" value="violet"><span class="accent-swatch accent-violet"></span><span>Violeta</span></label>
-          <label class="accent-option"><input type="radio" name="profile-accent" value="green"><span class="accent-swatch accent-green"></span><span>Verde</span></label>
-          <label class="accent-option"><input type="radio" name="profile-accent" value="orange"><span class="accent-swatch accent-orange"></span><span>Laranja</span></label>
-          <label class="accent-option"><input type="radio" name="profile-accent" value="rose"><span class="accent-swatch accent-rose"></span><span>Rosa</span></label>
-        </div>
-      </fieldset>
-      <div class="form-actions preferences-modal-actions"><button class="secondary" id="cancel-preferences-button" type="button">Cancelar</button><button id="save-preferences-button" type="button">Salvar</button></div>
-      <p class="status-line" id="preferences-status"></p>
-    </div>
-  </div>
-  <script src="./nav.js?v=20260719-1"></script>
-  <script src="./account.js"></script>
+  <script src="./nav.js?v=20261005-1"></script>
+  <script src="./account.js?v=20261005-1"></script>
 </body>
 </html>

@@ -99,17 +99,18 @@ html[data-admin-shell="true"] body.admin-memberships-page .panel > .membership-f
   align-items: center;
 }
 .membership-card-menu-trigger {
-  width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  font-size: 18px !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  font-size: 22px !important;
   padding: 0 !important;
   line-height: 1 !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--line, #e2e8f0);
-  background: transparent;
-  color: var(--text, #171717);
-  cursor: pointer;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  cursor: pointer !important;
 }
 .membership-card-menu-dropdown {
   position: absolute;

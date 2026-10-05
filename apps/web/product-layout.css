@@ -128,46 +128,52 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
 .finance-status-card .modal-close,
 #finance-modal .modal-close,
 .pix-modal-card .modal-close {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .16s ease;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  opacity: 0.65 !important;
+  cursor: pointer !important;
+  transition: opacity .16s ease, color .16s ease !important;
   margin: 0 0 0 auto !important;
-  flex: 0 0 36px;
+  flex: 0 0 32px !important;
 }
 .finance-status-card .modal-close:hover,
 #finance-modal .modal-close:hover,
 .pix-modal-card .modal-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: scale(1.06);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--text, #0f172a) !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 html[data-admin-theme="dark"] .finance-status-card .modal-close,
 html[data-admin-theme="dark"] #finance-modal .modal-close,
 html[data-admin-theme="dark"] .pix-modal-card .modal-close {
-  border-color: #34536e;
-  background: #183047;
-  color: #e8f0f8;
+  border: none !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  opacity: 0.65 !important;
 }
 html[data-admin-theme="dark"] .finance-status-card .modal-close:hover,
 html[data-admin-theme="dark"] #finance-modal .modal-close:hover,
 html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
-  border-color: #38bdf8;
-  color: #38bdf8;
-  background: #204160;
+  border: none !important;
+  color: #f1f5f9 !important;
+  background: transparent !important;
+  opacity: 1 !important;
 }
 .finance-status-list { display: grid; gap: 12px; list-style: none; padding: 2px 0; margin: 0; max-height: 55vh; overflow-y: auto; }
 .finance-status-list li { display: grid; gap: 6px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; }
@@ -411,17 +417,18 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
   align-items: center;
 }
 .plan-card-menu-trigger {
-  width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  font-size: 18px !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  font-size: 22px !important;
   padding: 0 !important;
   line-height: 1 !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--line, #e2e8f0);
-  background: transparent;
-  color: var(--text, #171717);
-  cursor: pointer;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  cursor: pointer !important;
 }
 .plan-card-menu-dropdown {
   position: absolute;
@@ -541,17 +548,18 @@ html[data-admin-theme="dark"] .plan-card-menu-dropdown button:hover {
   align-items: center;
 }
 .finance-card-menu-trigger {
-  width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  font-size: 18px !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  font-size: 22px !important;
   padding: 0 !important;
   line-height: 1 !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--line, #e2e8f0);
-  background: transparent;
-  color: var(--text, #171717);
-  cursor: pointer;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  cursor: pointer !important;
 }
 .finance-card-menu-dropdown {
   position: absolute;

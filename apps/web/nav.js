@@ -223,8 +223,7 @@ function renderNavigation() {
       </button>
       <div class="profile-dropdown hidden" id="profile-dropdown">
         <a href="${pageUrl('account.html')}">Perfil</a>
-        <a href="${pageUrl('security.html')}">Segurança</a>
-        <a id="profile-preferences" href="${pageUrl('account.html')}&view=preferences">Preferências</a>
+        <a id="profile-preferences" href="#preferences">Preferências</a>
         <a id="profile-customization" href="${pageUrl('site-customization.html')}">Personalizar Site</a>
         <a id="profile-settings" href="${pageUrl('settings.html')}">Configurações</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
@@ -248,6 +247,11 @@ function renderNavigation() {
     event.stopPropagation();
     dropdown.classList.toggle('hidden');
     trigger.setAttribute('aria-expanded', String(!dropdown.classList.contains('hidden')));
+  });
+  document.getElementById('profile-preferences')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    dropdown?.classList.add('hidden');
+    openGlobalPreferencesModal();
   });
   document.getElementById('profile-logout')?.addEventListener('click', clearSession);
   document.addEventListener('click', () => dropdown?.classList.add('hidden'));
@@ -400,6 +404,115 @@ function openBrandModal() {
   modal.classList.remove('hidden');
 }
 
+function openGlobalPreferencesModal() {
+  let modal = document.getElementById('preferences-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.className = 'modal hidden';
+    modal.id = 'preferences-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'preferences-title');
+    modal.innerHTML = `
+      <div class="modal-card preferences-modal-card">
+        <div class="modal-header">
+          <div><h3 id="preferences-title">Preferências</h3></div>
+          <button class="modal-close" id="close-preferences-button" type="button" aria-label="Fechar">×</button>
+        </div>
+        <div class="preferences-modal-grid">
+          <div class="field"><label for="profile-language">Idioma</label><select id="profile-language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
+          <div class="field"><label for="profile-theme">Tema</label><select id="profile-theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="system">Automático</option></select></div>
+        </div>
+        <fieldset class="accent-picker">
+          <legend>Cor de destaque</legend>
+          <div class="accent-options" role="radiogroup" aria-label="Escolha a cor de destaque">
+            <label class="accent-option"><input type="radio" name="profile-accent" value="blue"><span class="accent-swatch accent-blue"></span><span>Azul</span></label>
+            <label class="accent-option"><input type="radio" name="profile-accent" value="cyan"><span class="accent-swatch accent-cyan"></span><span>Ciano</span></label>
+            <label class="accent-option"><input type="radio" name="profile-accent" value="violet"><span class="accent-swatch accent-violet"></span><span>Violeta</span></label>
+            <label class="accent-option"><input type="radio" name="profile-accent" value="green"><span class="accent-swatch accent-green"></span><span>Verde</span></label>
+            <label class="accent-option"><input type="radio" name="profile-accent" value="orange"><span class="accent-swatch accent-orange"></span><span>Laranja</span></label>
+            <label class="accent-option"><input type="radio" name="profile-accent" value="rose"><span class="accent-swatch accent-rose"></span><span>Rosa</span></label>
+          </div>
+        </fieldset>
+        <div class="form-actions preferences-modal-actions"><button class="secondary" id="cancel-preferences-button" type="button">Cancelar</button><button id="save-preferences-button" type="button">Salvar</button></div>
+        <p class="status-line" id="preferences-status"></p>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  const close = () => {
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+  modal.querySelector('#close-preferences-button')?.addEventListener('click', close);
+  modal.querySelector('#cancel-preferences-button')?.addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+  const preview = () => {
+    const lang = modal.querySelector('#profile-language')?.value || 'pt-BR';
+    const theme = modal.querySelector('#profile-theme')?.value || 'light';
+    const accent = modal.querySelector('input[name="profile-accent"]:checked')?.value || 'blue';
+    if (typeof applyAdminPreferences === 'function') {
+      applyAdminPreferences({ language: lang, theme, accent });
+    }
+  };
+  modal.querySelector('#profile-language')?.addEventListener('change', preview);
+  modal.querySelector('#profile-theme')?.addEventListener('change', preview);
+  modal.querySelectorAll('input[name="profile-accent"]').forEach((input) => input.addEventListener('change', preview));
+
+  const saveBtn = modal.querySelector('#save-preferences-button');
+  if (saveBtn && !saveBtn.dataset.wired) {
+    saveBtn.dataset.wired = 'true';
+    saveBtn.addEventListener('click', async () => {
+      const status = modal.querySelector('#preferences-status');
+      saveBtn.disabled = true;
+      if (status) status.textContent = 'Salvando preferências...';
+      try {
+        const lang = modal.querySelector('#profile-language')?.value || 'pt-BR';
+        const theme = modal.querySelector('#profile-theme')?.value || 'light';
+        const accent = modal.querySelector('input[name="profile-accent"]:checked')?.value || 'blue';
+        const preferences = { language: lang, theme, accent };
+
+        const token = localStorage.getItem('academiaToken') || '';
+        const host = window.location.hostname || 'localhost';
+        const api = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+
+        if (token) {
+          await fetch(`${api}/api/me/preferences`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(preferences)
+          });
+        }
+        localStorage.setItem('adminLanguage', preferences.language);
+        localStorage.setItem('adminTheme', preferences.theme);
+        localStorage.setItem('adminAccent', preferences.accent);
+        if (typeof applyAdminPreferences === 'function') applyAdminPreferences(preferences);
+        if (status) status.textContent = 'Preferências salvas.';
+        setTimeout(close, 500);
+      } catch (err) {
+        if (status) status.textContent = `Erro ao salvar preferências: ${err.message}`;
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  }
+
+  const currentLang = localStorage.getItem('adminLanguage') || 'pt-BR';
+  const currentTheme = localStorage.getItem('adminTheme') || 'light';
+  const currentAccent = localStorage.getItem('adminAccent') || 'blue';
+
+  const langSelect = modal.querySelector('#profile-language');
+  const themeSelect = modal.querySelector('#profile-theme');
+  const accentInput = modal.querySelector(`input[name="profile-accent"][value="${currentAccent}"]`);
+  if (langSelect) langSelect.value = currentLang;
+  if (themeSelect) themeSelect.value = currentTheme;
+  if (accentInput) accentInput.checked = true;
+
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
 function renderAdminMobileNavigation(current, pages, icons) {
   const bottomItems = [
     ['painel.html', 'painel', 'home'],
@@ -424,8 +537,7 @@ function renderAdminMobileNavigation(current, pages, icons) {
       <div class="admin-more-links">${extraPages.map(([href, , key]) => `<a data-page="${href}" href="${pageUrl(href)}"><span class="nav-icon">${adminIconSvg(icons[href])}</span><span data-mobile-nav-key="${key}">${labels[key]}</span></a>`).join('')}</div>
       <div class="admin-more-account">
         <a href="${pageUrl('account.html')}">${labels.perfil}</a>
-        <a href="${pageUrl('security.html')}">${labels.seguranca}</a>
-        <a href="${pageUrl('account.html')}&view=preferences">${labels.preferencias}</a>
+        <a id="admin-mobile-preferences" href="#preferences">${labels.preferencias}</a>
         <a href="${pageUrl('site-customization.html')}">Personalizar Site</a>
         <a href="${pageUrl('settings.html')}">${labels.configuracoes || 'Configurações'}</a>
         <button class="logout-item" id="admin-mobile-logout" type="button">${labels.sair}</button>
@@ -442,6 +554,11 @@ function renderAdminMobileNavigation(current, pages, icons) {
     trigger.setAttribute('aria-expanded', String(opening));
   });
   document.getElementById('admin-more-close')?.addEventListener('click', close);
+  document.getElementById('admin-mobile-preferences')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    close();
+    openGlobalPreferencesModal();
+  });
   document.getElementById('admin-mobile-logout')?.addEventListener('click', clearSession);
   menu?.addEventListener('click', (event) => event.stopPropagation());
   document.addEventListener('click', close);

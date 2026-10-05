@@ -45,32 +45,242 @@ html[data-admin-theme="dark"] .profile-dropdown button { color: #e8f0f8; }
 html[data-admin-theme="dark"] .profile-dropdown a:hover,
 html[data-admin-theme="dark"] .profile-dropdown button:hover { background: #183047; }
 
-.profile-identity { display: flex; align-items: center; gap: 14px; }
-.profile-identity-avatar { position: relative; display: grid; place-items: center; width: 64px; height: 64px; flex: 0 0 64px; overflow: hidden; border: 1px solid var(--line); border-radius: 50%; background: #eaf3ff; color: var(--accent); font-size: 24px; cursor: pointer; }
-.profile-identity-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.profile-identity-avatar::after { content: 'Alterar foto'; position: absolute; inset: auto 0 0; padding: 3px 0; background: rgba(8, 26, 43, .82); color: #fff; font-size: 9px; text-align: center; opacity: 0; transition: opacity .15s ease; }
-.profile-identity-avatar:hover::after, .profile-identity-avatar:focus-visible::after { opacity: 1; }
-.app-shell .profile-page-grid { grid-template-columns: minmax(0, 1.45fr) minmax(320px, .9fr); align-items: start; max-width: 1120px; margin-left: auto; margin-right: auto; }
-.app-shell .profile-side-grid { display: contents; }
-.app-shell .profile-side-grid #gym-profile-panel { min-width: 0; }
-html[data-admin-shell="true"] .preferences-modal-card { width: min(620px, calc(100vw - 32px)); max-width: 620px; min-width: 0; overflow-x: hidden; }
-.preferences-modal-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
-.preferences-modal-grid > *, .accent-options > * { min-width: 0; }
-.accent-picker { display: grid; gap: 12px; margin: 20px 0 0; padding: 0; border: 0; }
-.accent-picker legend { padding: 0; margin-bottom: 12px; font-size: 13px; font-weight: 800; }
-.accent-options { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.accent-option { display: grid; justify-items: center; gap: 6px; padding: 9px 4px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: 11px; cursor: pointer; }
-.accent-option:has(input:checked) { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
-.accent-option input { position: absolute; opacity: 0; pointer-events: none; }
-.accent-swatch { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--line); }
-.accent-blue { background: #1478d4; } .accent-cyan { background: #0891b2; } .accent-violet { background: #7c3aed; } .accent-green { background: #0f9f6e; } .accent-orange { background: #ea580c; } .accent-rose { background: #db2777; }
-.preferences-modal-actions { margin-top: 34px; gap: 14px; }
-html[data-admin-theme="dark"] .accent-option { border-color: #34536e; color: #a9bed1; }
-html[data-admin-theme="dark"] .preferences-modal-card { background: #122235; border-color: #29445d; }
-html[data-admin-shell="true"][data-admin-theme="dark"] .preferences-modal-card .modal-close { border-color: #34536e !important; background: #183047 !important; color: #e8f0f8 !important; }
-@media (max-width: 900px) { .app-shell .profile-page-grid { grid-template-columns: 1fr; } .app-shell .profile-side-grid { display: grid; } }
-@media (max-width: 760px) { .preferences-modal-grid { grid-template-columns: 1fr; } .accent-options { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* Social Profile Container and Header Card */
+.profile-container {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 40px;
+}
 
+.profile-header-card {
+  border: 1px solid var(--line, #cbd5e1);
+  border-radius: 16px;
+  background: var(--card, #fff);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.profile-cover {
+  height: 96px;
+  background: linear-gradient(135deg, var(--accent, #1478d4) 0%, #0284c7 50%, #0369a1 100%);
+}
+
+.profile-header-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  padding: 0 24px 20px;
+  margin-top: -44px;
+  position: relative;
+}
+
+.profile-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.profile-identity-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+  overflow: hidden;
+  border: 4px solid var(--card, #fff);
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: var(--accent, #1478d4);
+  font-size: 32px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.profile-identity-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-identity-avatar::after {
+  content: 'Alterar foto';
+  position: absolute;
+  inset: auto 0 0;
+  padding: 4px 0;
+  background: rgba(8, 26, 43, .85);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+.profile-identity-avatar:hover::after,
+.profile-identity-avatar:focus-visible::after {
+  opacity: 1;
+}
+
+.profile-identity-avatar:hover {
+  transform: scale(1.02);
+}
+
+.profile-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 2px;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profile-display-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text, #0f172a);
+  line-height: 1.2;
+}
+
+.profile-access-badge {
+  font-size: 11.5px;
+  font-weight: 750;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(20, 120, 212, 0.12);
+  color: var(--accent, #1478d4);
+}
+
+.profile-display-email {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted, #64748b);
+}
+
+.profile-header-actions {
+  margin-top: 4px;
+}
+
+.profile-whatsapp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #16a34a;
+  text-decoration: none;
+}
+
+.profile-whatsapp-link:hover {
+  text-decoration: underline;
+}
+
+/* Browser-like Tabs Container */
+.profile-tabs-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.profile-browser-tabbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--line, #cbd5e1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.profile-browser-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-browser-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  background: transparent;
+  color: var(--muted, #64748b);
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  position: relative;
+  transition: all .16s ease;
+  white-space: nowrap;
+}
+
+.profile-browser-tab:hover {
+  color: var(--text, #0f172a);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.profile-browser-tab.active {
+  background: var(--card, #ffffff);
+  border-color: var(--line, #cbd5e1);
+  color: var(--accent, #1478d4);
+  margin-bottom: -1px;
+  padding-bottom: 12px;
+  z-index: 2;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.profile-browser-tab.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent, #1478d4);
+  border-radius: 12px 12px 0 0;
+}
+
+.profile-browser-tab.hidden {
+  display: none !important;
+}
+
+.profile-panels {
+  width: 100%;
+}
+
+.profile-tab-panel {
+  padding: 24px;
+  border: 1px solid var(--line, #cbd5e1);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  background: var(--card, #ffffff);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.profile-tab-panel.hidden {
+  display: none !important;
+}
+
+.span-full {
+  grid-column: 1 / -1;
+}
+
+.single-col-narrow {
+  grid-template-columns: minmax(0, 420px);
+}
+
+/* Gym logo row */
 .gym-logo-preview-row {
   display: flex;
   align-items: center;
@@ -91,14 +301,69 @@ html[data-admin-shell="true"][data-admin-theme="dark"] .preferences-modal-card .
   transform: scale(1.04);
   border-color: #38bdf8;
 }
-html[data-admin-theme="dark"] .gym-logo-preview-row img {
-  background: #0e1b2a;
-  border-color: #34536e;
-}
 .gym-logo-preview-row button {
   width: auto;
   min-height: 38px;
   padding: 0 16px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 650;
+}
+
+/* Dark mode theme */
+html[data-admin-theme="dark"] .profile-header-card,
+html[data-admin-theme="dark"] .profile-tab-panel {
+  background: #122235;
+  border-color: #29445d;
+}
+
+html[data-admin-theme="dark"] .profile-identity-avatar {
+  border-color: #122235;
+  background: #102033;
+}
+
+html[data-admin-theme="dark"] .profile-browser-tabbar {
+  border-color: #29445d;
+}
+
+html[data-admin-theme="dark"] .profile-browser-tab {
+  color: #94a3b8;
+}
+
+html[data-admin-theme="dark"] .profile-browser-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+}
+
+html[data-admin-theme="dark"] .profile-browser-tab.active {
+  background: #122235;
+  border-color: #29445d;
+  color: #38bdf8;
+}
+
+html[data-admin-theme="dark"] .gym-logo-preview-row img {
+  background: #0e1b2a;
+  border-color: #34536e;
+}
+
+@media (max-width: 760px) {
+  .profile-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 16px 18px;
+    margin-top: -40px;
+  }
+  .profile-name-row {
+    justify-content: center;
+  }
+  .profile-tab-panel {
+    padding: 16px;
+  }
+  .single-col-narrow {
+    grid-template-columns: 1fr;
+  }
+  .profile-browser-tab {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
 }

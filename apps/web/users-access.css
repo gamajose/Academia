@@ -18,7 +18,7 @@
 
 body.modal-open { overflow: hidden; }
 .employee-list-panel { gap: 16px; }
-.employee-list-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; width: 100%; }
+.employee-list-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; }
 .employee-list-toolbar .toolbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-left: auto; }
 .employee-toolbar-mobile-menu { margin-left: 8px; }
 .employee-modal-card { position: relative; }
@@ -36,38 +36,44 @@ body.modal-open { overflow: hidden; }
 }
 .employee-modal-card .modal-close {
   position: static !important;
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 20px;
-  line-height: 1;
-  margin: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  transition: all .16s ease;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  opacity: 0.65 !important;
+  transition: opacity .16s ease, color .16s ease !important;
 }
 .employee-modal-card .modal-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: scale(1.05);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--text, #0f172a) !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 html[data-admin-theme="dark"] .employee-modal-card .modal-close {
-  border-color: #34536e;
-  background: #183047;
-  color: #e8f0f8;
+  border: none !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  opacity: 0.65 !important;
 }
 html[data-admin-theme="dark"] .employee-modal-card .modal-close:hover {
-  border-color: #38bdf8;
-  color: #38bdf8;
-  background: #204160;
+  border: none !important;
+  color: #f1f5f9 !important;
+  background: transparent !important;
+  opacity: 1 !important;
 }
 .employee-row-interactive { cursor: pointer; transition: background-color 0.15s ease; }
 .employee-row-interactive:hover { background-color: rgba(20, 120, 212, 0.04); }
@@ -138,7 +144,7 @@ html[data-admin-theme="dark"] .employee-modal-card .modal-close:hover {
   .employee-list-toolbar .toolbar-actions { display: none; }
   .employee-filter-panel { grid-template-columns: 1fr; padding: 12px; }
   .employee-toolbar-mobile-menu { display: block; margin-left: auto; }
-  .employee-menu-trigger { display: inline-flex; align-items: center; justify-content: center; width: 30px !important; min-width: 30px !important; height: 30px !important; min-height: 30px !important; padding: 0 !important; border: 1px solid #34536e; border-radius: 8px !important; background: transparent; color: #dceaf6; font-size: 21px; font-weight: 800; line-height: 1; }
+  .employee-menu-trigger { display: inline-flex; align-items: center; justify-content: center; width: 28px !important; min-width: 28px !important; height: 28px !important; min-height: 28px !important; padding: 0 !important; border: none !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; color: #dceaf6; font-size: 22px; font-weight: 800; line-height: 1; cursor: pointer; }
   .employee-list-panel .table-wrap { overflow: visible; }
   .employee-list-panel table, .employee-list-panel tbody { display: block; width: 100%; min-width: 0 !important; }
   .employee-list-panel thead { display: none; }

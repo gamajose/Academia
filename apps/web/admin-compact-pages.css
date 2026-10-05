@@ -548,12 +548,16 @@ body.admin-training-page .training-ai-icon {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 34px !important;
+  width: 28px !important;
   height: 34px !important;
-  min-width: 34px !important;
-  min-height: 34px !important;
+  min-width: 28px !important;
   padding: 0 !important;
-  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  color: var(--muted, #64748b) !important;
   margin: 0 !important;
 }
 

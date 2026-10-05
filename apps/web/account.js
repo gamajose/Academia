@@ -14,42 +14,25 @@ async function accountApi(path, options = {}) {
 }
 
 function digits(value) { return String(value || '').replace(/\D/g, ''); }
-function setAccountStatus(text) { if (account('profile-status')) account('profile-status').textContent = text; }
 function value(id) { return account(id)?.value?.trim() || ''; }
 function fill(id, text) { const el = account(id); if (el) el.value = text || ''; }
 
 function renderProfilePhoto(url, name) {
   const host = account('profile-photo-button');
+  if (!host) return;
   host.replaceChildren();
   host.dataset.photoUrl = url || '';
   if (url) {
     const image = document.createElement('img');
     image.src = url;
     image.alt = '';
-    image.onerror = () => { host.textContent = String(name || 'J').trim().charAt(0).toUpperCase() || 'J'; };
+    image.onerror = () => {
+      host.textContent = String(name || 'U').trim().charAt(0).toUpperCase() || 'U';
+    };
     host.appendChild(image);
-  } else host.textContent = String(name || 'J').trim().charAt(0).toUpperCase() || 'J';
-}
-
-function renderPreferences(preferences = {}) {
-  fill('profile-language', preferences.language || localStorage.getItem('adminLanguage') || 'pt-BR');
-  fill('profile-theme', preferences.theme || localStorage.getItem('adminTheme') || 'light');
-  const accent = preferences.accent || localStorage.getItem('adminAccent') || 'blue';
-  const accentInput = document.querySelector(`input[name="profile-accent"][value="${accent}"]`);
-  if (accentInput) accentInput.checked = true;
-}
-
-function selectedAccent() {
-  return document.querySelector('input[name="profile-accent"]:checked')?.value || 'blue';
-}
-
-function previewPreferences() {
-  if (typeof applyAdminPreferences !== 'function') return;
-  applyAdminPreferences({
-    language: value('profile-language'),
-    theme: value('profile-theme'),
-    accent: selectedAccent()
-  });
+  } else {
+    host.textContent = String(name || 'U').trim().charAt(0).toUpperCase() || 'U';
+  }
 }
 
 function roleText(profile, role) {
@@ -60,24 +43,79 @@ function roleText(profile, role) {
   return 'Recepção · atendimento e cadastros';
 }
 
+function switchTab(tabKey) {
+  const tabs = [
+    { key: 'personal', btn: 'tab-btn-personal', panel: 'panel-personal' },
+    { key: 'address', btn: 'tab-btn-address', panel: 'panel-address' },
+    { key: 'gym', btn: 'tab-btn-gym', panel: 'panel-gym' },
+    { key: 'security', btn: 'tab-btn-security', panel: 'panel-security' }
+  ];
+
+  tabs.forEach(({ key, btn, panel }) => {
+    const b = account(btn);
+    const p = account(panel);
+    const isActive = key === tabKey;
+    if (b) {
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    }
+    if (p) {
+      p.classList.toggle('hidden', !isActive);
+    }
+  });
+}
+
+function initTabs() {
+  account('tab-btn-personal')?.addEventListener('click', () => switchTab('personal'));
+  account('tab-btn-address')?.addEventListener('click', () => switchTab('address'));
+  account('tab-btn-gym')?.addEventListener('click', () => switchTab('gym'));
+  account('tab-btn-security')?.addEventListener('click', () => switchTab('security'));
+
+  const hash = window.location.hash.toLowerCase();
+  if (hash === '#endereco') switchTab('address');
+  else if (hash === '#empresa') switchTab('gym');
+  else if (hash === '#seguranca' || hash === '#segurança') switchTab('security');
+}
+
 function renderProfile(user) {
+  const name = user.name || 'Meu perfil';
   fill('profile-name', user.name);
   fill('profile-email', user.email);
   fill('profile-phone', user.phone);
   fill('profile-cpf', user.cpf);
   fill('profile-rg', user.rg);
   fill('profile-birth', user.birth_date ? String(user.birth_date).slice(0, 10) : '');
-  fill('profile-job-title', user.job_title || roleText(user.access_profile, user.role));
-  renderProfilePhoto(user.profile_photo_url, user.name);
-  renderPreferences(user.profile_preferences);
+  const jobLabel = user.job_title || roleText(user.access_profile, user.role);
+  fill('profile-job-title', jobLabel);
+
+  if (account('profile-display-name')) account('profile-display-name').textContent = name;
+  if (account('profile-display-email')) account('profile-display-email').textContent = user.email || '-';
   if (account('profile-access-badge')) {
     account('profile-access-badge').textContent = user.access_profile_name || roleText(user.access_profile, user.role);
   }
+
+  renderProfilePhoto(user.profile_photo_url, name);
+
   const address = user.address_details || {};
-  for (const [id, key] of [['profile-postal-code', 'postal_code'], ['profile-street', 'street'], ['profile-address-number', 'number'], ['profile-address-complement', 'complement'], ['profile-neighborhood', 'neighborhood'], ['profile-city', 'city'], ['profile-state', 'state'], ['profile-country', 'country']]) fill(id, address[key]);
+  fill('profile-postal-code', address.postal_code);
+  fill('profile-street', address.street);
+  fill('profile-address-number', address.number);
+  fill('profile-address-complement', address.complement);
+  fill('profile-neighborhood', address.neighborhood);
+  fill('profile-city', address.city);
+  fill('profile-state', address.state);
+  fill('profile-country', address.country || 'Brasil');
+
   const phone = digits(user.phone);
   const whatsapp = account('profile-whatsapp');
-  if (phone) { whatsapp.href = `https://wa.me/${phone}`; whatsapp.classList.remove('hidden'); }
+  if (whatsapp) {
+    if (phone) {
+      whatsapp.href = `https://wa.me/${phone}`;
+      whatsapp.classList.remove('hidden');
+    } else {
+      whatsapp.classList.add('hidden');
+    }
+  }
 }
 
 async function uploadProfilePhoto(file) {
@@ -96,69 +134,118 @@ async function loadProfile() {
     const user = await accountApi('/api/me');
     renderProfile(user);
     localStorage.setItem('academiaUserName', user.name || 'Meu perfil');
+    localStorage.setItem('academiaRole', user.role || '');
     localStorage.setItem('academiaAccessProfile', user.access_profile || '');
+
     const canManageGym = ['owner', 'admin'].includes(user.role);
-    account('gym-profile-panel').hidden = !canManageGym;
+    const gymTabBtn = account('tab-btn-gym');
+    if (gymTabBtn) gymTabBtn.classList.toggle('hidden', !canManageGym);
+
     await loadGym(canManageGym);
-    setAccountStatus('');
+
     if (new URLSearchParams(window.location.search).get('view') === 'preferences') {
-      account('preferences-modal').classList.remove('hidden');
-      account('preferences-modal').setAttribute('aria-hidden', 'false');
+      if (typeof openGlobalPreferencesModal === 'function') {
+        openGlobalPreferencesModal();
+      }
     }
-  } catch (error) { setAccountStatus(`Erro: ${error.message}`); }
+  } catch (error) {
+    if (account('profile-status')) account('profile-status').textContent = `Erro ao carregar perfil: ${error.message}`;
+  }
 }
 
 async function loadGym(canManageGym) {
   if (!canManageGym) return;
-  const gym = await accountApi('/api/gym/profile');
-  fill('gym-name', gym.name); fill('gym-email', gym.email); fill('gym-phone', gym.phone);
-  fill('gym-document', gym.document_number); fill('gym-address', gym.address); fill('gym-timezone', gym.timezone);
-  fill('gym-pix-key', gym.pix_key);
-  if (gym.logo_url) {
-    const preview = account('gym-logo-preview');
-    if (preview) {
-      preview.src = gym.logo_url;
-      preview.dataset.logoUrl = gym.logo_url;
+  try {
+    const gym = await accountApi('/api/gym/profile');
+    fill('gym-name', gym.name);
+    fill('gym-email', gym.email);
+    fill('gym-phone', gym.phone);
+    fill('gym-document', gym.document_number);
+    fill('gym-address', gym.address);
+    fill('gym-timezone', gym.timezone);
+    fill('gym-pix-key', gym.pix_key);
+    if (gym.logo_url) {
+      const preview = account('gym-logo-preview');
+      if (preview) {
+        preview.src = gym.logo_url;
+        preview.dataset.logoUrl = gym.logo_url;
+      }
     }
+    localStorage.setItem('gymLogoUrl', gym.logo_url || '');
+    localStorage.setItem('gymName', gym.name || '');
+    localStorage.setItem('gymPixKey', gym.pix_key || '');
+  } catch {
+    // Non-critical if gym profile fails
   }
-  localStorage.setItem('gymLogoUrl', gym.logo_url || '');
-  localStorage.setItem('gymName', gym.name || '');
-  localStorage.setItem('gymPixKey', gym.pix_key || '');
 }
 
-async function saveProfile(event) {
+function getFullProfilePayload(extraPhotoUrl = null) {
+  const photoUrl = extraPhotoUrl !== null ? extraPhotoUrl : (account('profile-photo-button')?.dataset?.photoUrl || '');
+  return {
+    name: value('profile-name'),
+    email: value('profile-email'),
+    phone: value('profile-phone'),
+    cpf: value('profile-cpf'),
+    rg: value('profile-rg'),
+    birth_date: value('profile-birth'),
+    profile_photo_url: photoUrl,
+    address_details: {
+      postal_code: value('profile-postal-code'),
+      street: value('profile-street'),
+      number: value('profile-address-number'),
+      complement: value('profile-address-complement'),
+      neighborhood: value('profile-neighborhood'),
+      city: value('profile-city'),
+      state: value('profile-state'),
+      country: value('profile-country') || 'Brasil'
+    }
+  };
+}
+
+async function savePersonal(event) {
   event.preventDefault();
+  const status = account('profile-status');
+  const btn = account('save-personal-button');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = 'Salvando dados pessoais...';
   try {
-    let photoUrl = account('profile-photo-button').dataset.photoUrl || '';
-    const file = account('profile-photo-file').files?.[0];
+    let photoUrl = account('profile-photo-button')?.dataset?.photoUrl || '';
+    const file = account('profile-photo-file')?.files?.[0];
     if (file) photoUrl = await uploadProfilePhoto(file);
-    await accountApi('/api/me/profile', { method: 'POST', body: JSON.stringify({
-      name: value('profile-name'), email: value('profile-email'), phone: value('profile-phone'),
-      cpf: value('profile-cpf'), rg: value('profile-rg'), birth_date: value('profile-birth'),
-      profile_photo_url: photoUrl,
-      address_details: { postal_code: value('profile-postal-code'), street: value('profile-street'), number: value('profile-address-number'), complement: value('profile-address-complement'), neighborhood: value('profile-neighborhood'), city: value('profile-city'), state: value('profile-state'), country: value('profile-country') }
-    }) });
+
+    await accountApi('/api/me/profile', { method: 'POST', body: JSON.stringify(getFullProfilePayload(photoUrl)) });
     localStorage.setItem('academiaUserName', value('profile-name'));
-    setAccountStatus('Perfil salvo com sucesso.');
-  } catch (error) { setAccountStatus(`Erro ao salvar perfil: ${error.message}`); }
+    if (account('profile-display-name')) account('profile-display-name').textContent = value('profile-name');
+    if (account('profile-display-email')) account('profile-display-email').textContent = value('profile-email');
+    if (status) status.textContent = 'Dados pessoais salvos com sucesso.';
+  } catch (error) {
+    if (status) status.textContent = `Erro ao salvar dados pessoais: ${error.message}`;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
-async function savePreferences() {
-  const status = account('preferences-status');
+async function saveAddress(event) {
+  event.preventDefault();
+  const status = account('address-status');
+  const btn = account('save-address-button');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = 'Salvando endereço...';
   try {
-    const preferences = { language: value('profile-language'), theme: value('profile-theme'), accent: selectedAccent() };
-    await accountApi('/api/me/preferences', { method: 'POST', body: JSON.stringify(preferences) });
-    localStorage.setItem('adminLanguage', preferences.language);
-    localStorage.setItem('adminTheme', preferences.theme);
-    localStorage.setItem('adminAccent', preferences.accent);
-    if (typeof applyAdminPreferences === 'function') applyAdminPreferences(preferences);
-    status.textContent = 'Preferências salvas.';
-    setAccountStatus('Preferências salvas.');
-    closePreferences();
-  } catch (error) { status.textContent = `Erro ao salvar preferências: ${error.message}`; }
+    await accountApi('/api/me/profile', { method: 'POST', body: JSON.stringify(getFullProfilePayload()) });
+    if (status) status.textContent = 'Endereço salvo com sucesso.';
+  } catch (error) {
+    if (status) status.textContent = `Erro ao salvar endereço: ${error.message}`;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 async function saveGym() {
+  const status = account('gym-status');
+  const btn = account('save-gym-button');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = 'Salvando dados da empresa...';
   try {
     let logoUrl = account('gym-logo-preview')?.dataset?.logoUrl || localStorage.getItem('gymLogoUrl') || '';
     const file = account('gym-logo-file')?.files?.[0];
@@ -188,10 +275,67 @@ async function saveGym() {
     localStorage.setItem('gymPixKey', updated.pix_key || '');
     window.dispatchEvent(new CustomEvent('academia:brand-updated', { detail: updated }));
     document.querySelectorAll('.top-nav-logo').forEach((img) => { if (updated.logo_url) img.src = updated.logo_url; });
-    setAccountStatus('Dados da academia salvos com sucesso.');
-  } catch (error) { setAccountStatus(`Erro ao salvar academia: ${error.message}`); }
+    if (status) status.textContent = 'Dados da empresa salvos com sucesso.';
+  } catch (error) {
+    if (status) status.textContent = `Erro ao salvar empresa: ${error.message}`;
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
+async function savePassword(event) {
+  event.preventDefault();
+  const status = account('security-status');
+  const currentPassword = value('password-current');
+  const newPassword = value('password-new');
+  const confirmPassword = value('password-confirm');
+
+  if (!currentPassword || !newPassword) {
+    if (status) status.textContent = 'Preencha a senha atual e a nova senha.';
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    if (status) status.textContent = 'A nova senha deve conter pelo menos 8 caracteres.';
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    if (status) status.textContent = 'A nova senha e a confirmação não coincidem.';
+    return;
+  }
+
+  const btn = account('save-password-button');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = 'Alterando senha...';
+
+  try {
+    await accountApi('/api/me/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword
+      })
+    });
+
+    fill('password-current', '');
+    fill('password-new', '');
+    fill('password-confirm', '');
+    if (status) status.textContent = 'Senha alterada com sucesso!';
+  } catch (error) {
+    if (error.message === 'senha_atual_invalida') {
+      if (status) status.textContent = 'Senha atual incorreta.';
+    } else if (error.message === 'senha_muito_curta') {
+      if (status) status.textContent = 'A nova senha deve ter no mínimo 8 caracteres.';
+    } else {
+      if (status) status.textContent = `Erro ao alterar senha: ${error.message}`;
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Logo upload triggers
 account('gym-logo-upload-btn')?.addEventListener('click', () => account('gym-logo-file')?.click());
 account('gym-logo-preview')?.addEventListener('click', () => account('gym-logo-file')?.click());
 account('gym-logo-file')?.addEventListener('change', (e) => {
@@ -206,27 +350,27 @@ account('gym-logo-file')?.addEventListener('change', (e) => {
   }
 });
 
-account('profile-form').addEventListener('submit', saveProfile);
-account('save-gym-button').addEventListener('click', saveGym);
-account('save-preferences-button').addEventListener('click', savePreferences);
-function closePreferences() {
-  const modal = account('preferences-modal');
-  modal.classList.add('hidden');
-  modal.setAttribute('aria-hidden', 'true');
-}
-account('close-preferences-button').addEventListener('click', closePreferences);
-account('cancel-preferences-button').addEventListener('click', closePreferences);
-account('preferences-modal').addEventListener('click', (event) => {
-  if (event.target === event.currentTarget) closePreferences();
-});
-account('profile-language').addEventListener('change', previewPreferences);
-account('profile-theme').addEventListener('change', previewPreferences);
-document.querySelectorAll('input[name="profile-accent"]').forEach((input) => input.addEventListener('change', previewPreferences));
-account('profile-photo-button').addEventListener('click', () => account('profile-photo-file').click());
-account('profile-photo-file').addEventListener('change', (event) => {
+// Photo upload triggers
+account('profile-photo-button')?.addEventListener('click', () => account('profile-photo-file')?.click());
+account('profile-photo-file')?.addEventListener('change', async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
-  renderProfilePhoto(URL.createObjectURL(file), value('profile-name'));
+  try {
+    const localUrl = URL.createObjectURL(file);
+    renderProfilePhoto(localUrl, value('profile-name'));
+    const uploadedUrl = await uploadProfilePhoto(file);
+    account('profile-photo-button').dataset.photoUrl = uploadedUrl;
+    await accountApi('/api/me/profile', { method: 'POST', body: JSON.stringify(getFullProfilePayload(uploadedUrl)) });
+    document.querySelectorAll('.profile-avatar img').forEach((img) => { img.src = uploadedUrl; });
+  } catch (err) {
+    alert(`Erro ao enviar foto: ${err.message}`);
+  }
 });
-account('profile-phone').addEventListener('input', (event) => { event.target.value = event.target.value; });
+
+account('profile-form-personal')?.addEventListener('submit', savePersonal);
+account('profile-form-address')?.addEventListener('submit', saveAddress);
+account('save-gym-button')?.addEventListener('click', saveGym);
+account('profile-form-security')?.addEventListener('submit', savePassword);
+
+initTabs();
 loadProfile();
