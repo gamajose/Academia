@@ -67,9 +67,20 @@
           ${goal.notes ? `<span class="student-goal-notes">${StudentPortal.escapeHtml(goal.notes)}</span>` : ''}
           <span class="badge ${goal.status === 'active' ? 'ok' : ''}">${goal.status === 'completed' ? 'Concluída' : 'Ativa'}</span>
         </div>
-        <div class="student-goal-actions">
-          <button class="student-goal-action" type="button" data-goal-action="edit" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" aria-label="Editar meta" title="Editar meta">${icon('edit')}</button>
-          <button class="student-goal-action is-danger" type="button" data-goal-action="delete" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" aria-label="Excluir meta" title="Excluir meta">${icon('trash')}</button>
+        <div class="student-feed-item-menu">
+          <button class="student-feed-dots-btn student-goal-dots-btn" type="button" aria-label="Opções da meta ${StudentPortal.escapeHtml(goal.goal_type || '')}" title="Opções" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>
+          </button>
+          <div class="student-feed-item-dropdown hidden" role="menu">
+            <button type="button" class="goal-item-edit-btn" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg>
+              <span>Editar meta</span>
+            </button>
+            <button type="button" class="goal-item-delete-btn is-danger" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg>
+              <span>Excluir meta</span>
+            </button>
+          </div>
         </div>`;
       list.appendChild(row);
     });
@@ -133,19 +144,79 @@
     }
   }
 
-  document.getElementById('student-goal-new').addEventListener('click', () => openModal());
+  function initGoalsMenu() {
+    const trigger = document.getElementById('student-goals-menu-btn');
+    const dropdown = document.getElementById('student-goals-dropdown');
+    if (!trigger || !dropdown) return;
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => d.classList.add('hidden'));
+      const isHidden = dropdown.classList.toggle('hidden');
+      trigger.setAttribute('aria-expanded', String(!isHidden));
+    });
+
+    document.getElementById('student-menu-new-goal')?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      openModal();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+      document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => {
+        if (!d.contains(e.target) && !e.target.closest('.student-goal-dots-btn')) {
+          d.classList.add('hidden');
+        }
+      });
+    });
+  }
+
+  document.getElementById('student-goal-new')?.addEventListener('click', () => openModal());
   document.getElementById('student-goal-close').addEventListener('click', closeModal);
   document.getElementById('student-goal-cancel').addEventListener('click', closeModal);
   modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
   form.addEventListener('submit', save);
   list.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-goal-action]');
+    const dotsBtn = event.target.closest('.student-goal-dots-btn');
+    if (dotsBtn) {
+      event.stopPropagation();
+      const menu = dotsBtn.nextElementSibling;
+      document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => {
+        if (d !== menu) d.classList.add('hidden');
+      });
+      document.getElementById('student-goals-dropdown')?.classList.add('hidden');
+      menu?.classList.toggle('hidden');
+      return;
+    }
+
+    const editBtn = event.target.closest('.goal-item-edit-btn');
+    if (editBtn) {
+      event.stopPropagation();
+      editBtn.closest('.student-feed-item-dropdown')?.classList.add('hidden');
+      const goal = goalsById.get(editBtn.dataset.goalId);
+      if (goal) openModal(goal);
+      return;
+    }
+
+    const deleteBtn = event.target.closest('.goal-item-delete-btn');
+    if (deleteBtn) {
+      event.stopPropagation();
+      deleteBtn.closest('.student-feed-item-dropdown')?.classList.add('hidden');
+      const goal = goalsById.get(deleteBtn.dataset.goalId);
+      if (goal) remove(goal.id);
+      return;
+    }
+
+    if (event.target.closest('.student-feed-item-dropdown')) return;
+
     const card = event.target.closest('.student-goal-card');
-    const goal = goalsById.get(button?.dataset.goalId || card?.dataset.goalId);
-    if (!goal) return;
-    if (button?.dataset.goalAction === 'edit' || !button) openModal(goal);
-    if (button?.dataset.goalAction === 'delete') remove(goal.id);
+    const goal = goalsById.get(card?.dataset.goalId);
+    if (goal) openModal(goal);
   });
   list.addEventListener('keydown', (event) => {
     if (!['Enter', ' '].includes(event.key) || event.target.closest('button')) return;
@@ -156,5 +227,6 @@
     openModal(goal);
   });
 
+  initGoalsMenu();
   load();
 }());

@@ -31,7 +31,6 @@
       </button>
       <div class="profile-dropdown hidden" id="student-profile-dropdown">
         <a href="./student-profile.html">Meu perfil</a>
-        <a href="./student-security.html">Segurança</a>
         <button class="logout-item" id="student-profile-logout" type="button">Sair</button>
       </div>
     </div>
@@ -40,8 +39,23 @@
   <main class="app-shell student-goals-shell">
     <section class="panel student-goals-panel" aria-labelledby="student-goals-title">
       <div class="student-goals-toolbar">
-        <h1 id="student-goals-title" class="sr-only">Minhas metas</h1>
-        <button class="primary-button student-goal-new icon-button" id="student-goal-new" type="button" aria-label="Nova meta" title="Nova meta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
+        <div class="student-workout-breadcrumb">
+          <span class="student-bc-section">Metas</span>
+          <span class="student-bc-sep">|</span>
+          <span class="student-bc-day">Minhas metas</span>
+        </div>
+        <div class="student-menu-container">
+          <button class="icon-button student-workout-menu-btn" id="student-goals-menu-btn" type="button" aria-label="Opções de metas" title="Opções" aria-expanded="false" aria-haspopup="menu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>
+          </button>
+          <div class="student-workout-dropdown hidden" id="student-goals-dropdown" role="menu">
+            <button type="button" id="student-menu-new-goal" role="menuitem">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              <span>Nova meta</span>
+            </button>
+          </div>
+        </div>
+        <button class="hidden" id="student-goal-new" type="button" aria-hidden="true"></button>
       </div>
       <ul id="student-goal-list" class="student-goal-list" aria-live="polite"></ul>
       <p class="status-line" id="student-goals-status" aria-live="polite"></p>
@@ -91,7 +105,7 @@
     </div>
   </div>
 
-  <script src="./student-shell.js?v=20261005-1"></script>
-  <script src="./student-goals.js?v=20260715-2"></script>
+  <script src="./student-shell.js?v=20261005-4"></script>
+  <script src="./student-goals.js?v=20261005-4"></script>
 </body>
 </html>

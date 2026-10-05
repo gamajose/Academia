@@ -476,6 +476,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
       `SELECT m.id, m.name, m.email, m.phone, m.phone_country_code, m.cpf, m.rg, m.birth_date,
               m.address, m.postal_code, m.street, m.address_number, m.address_complement,
               m.neighborhood, m.city, m.state, m.country, m.objective, m.allergies, m.notes,
+              m.photo_url,
               ma.email AS account_email
        FROM members m INNER JOIN member_accounts ma ON ma.member_id = m.id
        WHERE m.id = $1 AND m.gym_id = $2 AND ma.id = $3 LIMIT 1`,
@@ -493,16 +494,18 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 180) return send(res, 400, { error: 'email_invalido' });
     const duplicate = await query('SELECT id FROM member_accounts WHERE lower(email) = lower($1) AND id <> $2 LIMIT 1', [email, user.sub]);
     if (duplicate.rowCount) return send(res, 409, { error: 'email_ja_cadastrado' });
+    const photoUrl = input.photo_url !== undefined ? (String(input.photo_url || '').trim().slice(0, 1000) || null) : null;
     const result = await query(
       `UPDATE members SET name = $3, email = $4, phone = $5, phone_country_code = $6,
        cpf = $7, rg = $8, birth_date = $9, address = $10, postal_code = $11,
        street = $12, address_number = $13, address_complement = $14, neighborhood = $15,
        city = $16, state = $17, country = $18, objective = $19, allergies = $20, notes = $21,
+       photo_url = CASE WHEN $22::text IS NOT NULL THEN $22::text ELSE photo_url END,
        updated_at = now()
        WHERE id = $1 AND gym_id = $2
        RETURNING id, name, email, phone, phone_country_code, cpf, rg, birth_date,
                  address, postal_code, street, address_number, address_complement,
-                 neighborhood, city, state, country, objective, allergies, notes`,
+                 neighborhood, city, state, country, objective, allergies, notes, photo_url`,
       [user.member_id, user.gym_id, name, email, String(input.phone || '').trim() || null,
         String(input.phone_country_code || '+55').trim(), String(input.cpf || '').trim() || null,
         String(input.rg || '').trim() || null, input.birth_date || null, String(input.address || '').trim() || null,
@@ -511,7 +514,8 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
         String(input.neighborhood || '').trim() || null, String(input.city || '').trim() || null,
         String(input.state || '').trim() || null, String(input.country || 'Brasil').trim() || 'Brasil',
         String(input.objective || '').slice(0, 5000) || null, String(input.allergies || '').slice(0, 5000) || null,
-        String(input.notes || '').slice(0, 5000) || null]
+        String(input.notes || '').slice(0, 5000) || null,
+        photoUrl]
     );
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
     await query('UPDATE member_accounts SET email = $2, updated_at = now() WHERE id = $1 AND member_id = $3 AND gym_id = $4', [user.sub, email, user.member_id, user.gym_id]);

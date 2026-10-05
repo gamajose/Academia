@@ -253,7 +253,56 @@
 
   p('student-assessment-date').value = localDate();
   p('student-assessment-photo').addEventListener('change', (event) => { const file = event.target.files?.[0]; if (file) preview(URL.createObjectURL(file)); });
-  p('open-student-assessment').addEventListener('click', () => { p('student-assessment-modal').classList.remove('hidden'); setFormStatus(''); setTimeout(() => p('student-assessment-date').focus(), 0); });
+  function openNewAssessment() {
+    p('student-assessment-modal')?.classList.remove('hidden');
+    setFormStatus('');
+    setTimeout(() => p('student-assessment-date')?.focus(), 0);
+  }
+
+  function initProgressMenu() {
+    const trigger = p('student-progress-menu-btn');
+    const dropdown = p('student-progress-dropdown');
+    if (!trigger || !dropdown) return;
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = dropdown.classList.toggle('hidden');
+      trigger.setAttribute('aria-expanded', String(!isHidden));
+    });
+
+    p('student-menu-new-assessment')?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      openNewAssessment();
+    });
+
+    p('student-menu-view-summary')?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      p('student-progress-summary-panel')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    p('student-menu-view-analysis')?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      p('student-progress-analysis')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    p('student-menu-view-history')?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      p('student-progress-history-panel')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  p('open-student-assessment')?.addEventListener('click', openNewAssessment);
   p('student-assessment-close').addEventListener('click', closeAssessmentModal);
   p('student-assessment-cancel').addEventListener('click', closeAssessmentModal);
   p('student-assessment-modal').addEventListener('click', (event) => { if (event.target === p('student-assessment-modal')) closeAssessmentModal(); });
@@ -262,5 +311,6 @@
   p('student-goal-celebration-later').addEventListener('click', closeGoalCelebration);
   p('student-goal-celebration-new').addEventListener('click', () => { window.location.href = './student-goals.html?new=1'; });
   p('student-goal-celebration').addEventListener('click', (event) => { if (event.target === p('student-goal-celebration')) closeGoalCelebration(); });
+  initProgressMenu();
   load();
 }());
