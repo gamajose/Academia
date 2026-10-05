@@ -250,7 +250,17 @@
     if (!selectedEvent.exercises.length) {
       const noExercises = document.createElement('li');
       noExercises.className = 'student-feed-rest-card';
-      noExercises.innerHTML = '<div class="student-feed-rest-body"><strong>Ficha vazia</strong><p>Esta ficha ainda não possui exercícios cadastrados.<br>Toque nos três pontinhos no topo para adicionar exercícios.</p></div>';
+      noExercises.innerHTML = `
+        <div class="student-feed-rest-body">
+          <strong>Ficha vazia</strong>
+          <p>Esta ficha ainda não possui exercícios cadastrados.</p>
+          <button type="button" class="button student-feed-empty-add-btn" style="margin-top: 10px; font-size: 13px; padding: 6px 14px; border-radius: 8px;">+ Adicionar exercício</button>
+        </div>
+      `;
+      noExercises.querySelector('.student-feed-empty-add-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openExercisePicker();
+      });
       list.appendChild(noExercises);
       return;
     }
@@ -327,7 +337,13 @@
       overlay.innerHTML = `
         <div class="student-feed-meta-row">
           <strong class="student-feed-title">${text(item.exercise_name || 'Exercício')}</strong>
-          <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
+          <div class="student-feed-meta-actions">
+            <button type="button" class="student-feed-add-btn" title="Adicionar exercício ao treino" aria-label="Adicionar exercício">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Adicionar exercício</span>
+            </button>
+            <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
+          </div>
         </div>
         <div class="student-feed-badges">
           <span class="student-feed-badge primary">${sets} séries × ${reps}</span>
@@ -338,6 +354,10 @@
           <span>${text(selectedEvent.title || 'Treino')} · ${eventTime}${selectedEvent.notes ? ` · ${text(selectedEvent.notes)}` : ''}</span>
         </div>
       `;
+      overlay.querySelector('.student-feed-add-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openExercisePicker();
+      });
       card.appendChild(overlay);
 
       card.addEventListener('keydown', (event) => {

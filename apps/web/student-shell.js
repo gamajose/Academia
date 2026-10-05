@@ -128,8 +128,7 @@
   function renderAccountMenu(dropdown) {
     if (!dropdown) return;
     const items = [
-      ['./student-profile.html', 'Meu perfil'],
-      ['./student-security.html', 'Segurança']
+      ['./student-profile.html', 'Meu perfil']
     ];
     dropdown.replaceChildren();
     items.forEach(([href, label]) => {

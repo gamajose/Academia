@@ -315,6 +315,23 @@
   p('student-goal-celebration-later').addEventListener('click', closeGoalCelebration);
   p('student-goal-celebration-new').addEventListener('click', () => { window.location.href = './student-goals.html?new=1'; });
   p('student-goal-celebration').addEventListener('click', (event) => { if (event.target === p('student-goal-celebration')) closeGoalCelebration(); });
+  function switchProgressTab(tab) {
+    const isInitial = tab === 'initial';
+    p('tab-btn-initial')?.classList.toggle('active', isInitial);
+    p('tab-btn-initial')?.setAttribute('aria-selected', String(isInitial));
+    p('tab-btn-analysis')?.classList.toggle('active', !isInitial);
+    p('tab-btn-analysis')?.setAttribute('aria-selected', String(!isInitial));
+
+    p('progress-panel-initial')?.classList.toggle('hidden', !isInitial);
+    p('student-progress-analysis')?.classList.toggle('hidden', isInitial);
+  }
+
+  function initProgressTabs() {
+    p('tab-btn-initial')?.addEventListener('click', () => switchProgressTab('initial'));
+    p('tab-btn-analysis')?.addEventListener('click', () => switchProgressTab('analysis'));
+  }
+
   initProgressMenu();
+  initProgressTabs();
   load();
 }());

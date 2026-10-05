@@ -61,39 +61,49 @@
       </article>
     </div>
 
-    <section class="panel student-progress-baseline-panel" id="student-progress-baseline-panel">
-      <div class="toolbar">
-        <div>
-          <h3>Você começou com</h3>
-          <p class="section-help" id="student-progress-baseline-date">Comparação desde o início.</p>
-        </div>
-        <div class="toolbar-actions">
-          <span class="progress-reminder" id="student-progress-reminder" hidden></span>
-          <div class="student-menu-container">
-            <button class="icon-button student-workout-menu-btn" id="student-progress-menu-btn" type="button" aria-label="Opções de evolução" title="Opções" aria-expanded="false" aria-haspopup="menu">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>
-            </button>
-            <div class="student-workout-dropdown hidden" id="student-progress-dropdown" role="menu">
-              <button type="button" id="student-menu-new-assessment" role="menuitem">Nova medição</button>
-              <button type="button" id="student-menu-view-history" role="menuitem">Histórico de avaliações</button>
-            </div>
-          </div>
-          <button id="open-student-assessment" class="hidden" type="button" aria-hidden="true"></button>
-        </div>
+    <div class="progress-top-toolbar">
+      <div class="progress-browser-tabbar" role="tablist" aria-label="Navegação da evolução">
+        <button type="button" class="progress-browser-tab active" id="tab-btn-initial" role="tab" aria-selected="true" aria-controls="progress-panel-initial">
+          Inicial
+        </button>
+        <button type="button" class="progress-browser-tab" id="tab-btn-analysis" role="tab" aria-selected="false" aria-controls="student-progress-analysis">
+          ✦ Análise inteligente
+        </button>
       </div>
-      <div class="progress-baseline-grid" id="student-progress-baseline"></div>
-    </section>
-    <section class="panel student-progress-summary-panel" id="student-progress-summary-panel">
-      <div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div></div>
-      <div class="student-stat-grid progress-summary-grid" id="student-progress-summary"></div>
-    </section>
-
-    <div class="progress-browser-tabbar" role="tablist" aria-label="Aba de análise">
-      <button type="button" class="progress-browser-tab active" id="tab-btn-analysis" role="tab" aria-selected="true" aria-controls="student-progress-analysis">
-        ✦ Análise inteligente
-      </button>
+      <div class="toolbar-actions progress-top-actions">
+        <span class="progress-reminder" id="student-progress-reminder" hidden></span>
+        <div class="student-menu-container">
+          <button class="icon-button student-workout-menu-btn" id="student-progress-menu-btn" type="button" aria-label="Opções de evolução" title="Opções" aria-expanded="false" aria-haspopup="menu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>
+          </button>
+          <div class="student-workout-dropdown hidden" id="student-progress-dropdown" role="menu">
+            <button type="button" id="student-menu-new-assessment" role="menuitem">Nova medição</button>
+            <button type="button" id="student-menu-view-history" role="menuitem">Histórico de avaliações</button>
+          </div>
+        </div>
+        <button id="open-student-assessment" class="hidden" type="button" aria-hidden="true"></button>
+      </div>
     </div>
-    <section class="panel progress-analysis-panel" id="student-progress-analysis" role="tabpanel" aria-labelledby="tab-btn-analysis"></section>
+
+    <!-- ABA 1: Painel Inicial (Você começou com + Resumo) -->
+    <div id="progress-panel-initial" class="progress-tab-pane" role="tabpanel" aria-labelledby="tab-btn-initial">
+      <section class="panel student-progress-baseline-panel" id="student-progress-baseline-panel">
+        <div class="toolbar">
+          <div>
+            <h3>Você começou com</h3>
+            <p class="section-help" id="student-progress-baseline-date">Comparação desde o início.</p>
+          </div>
+        </div>
+        <div class="progress-baseline-grid" id="student-progress-baseline"></div>
+      </section>
+      <section class="panel student-progress-summary-panel" id="student-progress-summary-panel">
+        <div class="toolbar"><div><h3>Resumo mais recente</h3><p class="section-help" id="student-progress-summary-date"></p></div></div>
+        <div class="student-stat-grid progress-summary-grid" id="student-progress-summary"></div>
+      </section>
+    </div>
+
+    <!-- ABA 2: Painel Análise Inteligente (Levado para o topo) -->
+    <section class="panel progress-analysis-panel progress-tab-pane hidden" id="student-progress-analysis" role="tabpanel" aria-labelledby="tab-btn-analysis"></section>
     <p class="status-line" id="student-progress-status" aria-live="polite"></p>
 
     <!-- Modal / Tela Sobreposta: Histórico de avaliações -->

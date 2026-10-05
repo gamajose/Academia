@@ -122,11 +122,11 @@
   height: 32px !important;
   min-height: 32px !important;
   max-height: 32px !important;
-  border-radius: 8px !important;
-  background: #eef4fb !important;
-  border: 1px solid #c9dceb !important;
-  color: #24405a !important;
-  box-shadow: 0 1px 4px rgba(8, 31, 53, 0.08) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  box-shadow: none !important;
   cursor: pointer !important;
   padding: 0 !important;
   opacity: 1 !important;
@@ -136,9 +136,10 @@
 
 .student-goal-dots-btn:hover,
 .student-goal-dots-btn:focus-visible {
-  background: #e1edf8 !important;
-  border-color: #1478d4 !important;
+  background: transparent !important;
+  border: none !important;
   color: #1478d4 !important;
+  transform: scale(1.15) !important;
   outline: none !important;
 }
 
@@ -149,17 +150,18 @@
 }
 
 html[data-student-theme="dark"] body.student-page .student-goal-dots-btn {
-  background: #182a3d !important;
-  border-color: #34536e !important;
-  color: #cbd5e1 !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
 }
 
 html[data-student-theme="dark"] body.student-page .student-goal-dots-btn:hover,
 html[data-student-theme="dark"] body.student-page .student-goal-dots-btn:focus-visible {
-  background: #203a55 !important;
-  border-color: #38bdf8 !important;
+  background: transparent !important;
+  border: none !important;
   color: #38bdf8 !important;
+  transform: scale(1.15) !important;
 }
 
 .student-goal-card:hover,
@@ -403,9 +405,11 @@ html[data-student-theme="dark"] .student-goal-form .modal-close:hover {
   color: #24405a;
 }
 
+html[data-student-theme="dark"] body.student-page .student-goals-toolbar .page-section-title,
+html[data-student-theme="dark"] body.student-page .student-goals-toolbar h2,
 html[data-student-theme="dark"] body.student-page .student-goals-toolbar h1,
 html[data-student-theme="dark"] body.student-page .student-goal-form h2 {
-  color: #edf6ff;
+  color: #ffffff !important;
 }
 
 html[data-student-theme="dark"] body.student-page .student-goals-toolbar p,

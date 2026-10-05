@@ -81,8 +81,32 @@
     });
   }
 
+  const profileTabs = ['personal', 'bio', 'contact', 'address'];
+
+  function switchProfileModalTab(targetTab) {
+    profileTabs.forEach((tab) => {
+      const btn = p(`profile-tab-btn-${tab}`);
+      const pane = p(`profile-panel-${tab}`);
+      const isActive = tab === targetTab;
+      if (btn) {
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
+      }
+      if (pane) {
+        pane.classList.toggle('hidden', !isActive);
+      }
+    });
+  }
+
+  function initProfileTabs() {
+    profileTabs.forEach((tab) => {
+      p(`profile-tab-btn-${tab}`)?.addEventListener('click', () => switchProfileModalTab(tab));
+    });
+  }
+
   function openProfileModal() {
     if (currentProfileData) fillForm(currentProfileData);
+    switchProfileModalTab('personal');
     p('student-profile-form-status').textContent = '';
     p('student-profile-modal')?.classList.remove('hidden');
     setTimeout(() => p('profile-name')?.focus(), 50);
@@ -326,5 +350,6 @@
   p('student-password-form')?.addEventListener('submit', savePassword);
 
   initProfileMenu();
+  initProfileTabs();
   load();
 }());

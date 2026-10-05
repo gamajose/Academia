@@ -16,11 +16,11 @@
 .progress-reminder { padding: 8px 11px; border: 1px solid #f0c879; border-radius: 999px; background: #fff7df; color: #8a5a00; font-size: 12px; font-weight: 700; }
 .student-progress-upload-preview { min-height: 140px; display: grid; place-items: center; overflow: hidden; border: 1px dashed #b7cee3; border-radius: 12px; background: #f7fbff; color: #60778b; font-size: 13px; }
 .student-progress-upload-preview img { display: block; width: 100%; max-height: 280px; object-fit: contain; }
-.progress-browser-tabbar {
+.progress-top-toolbar {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  padding: 0 4px;
+  justify-content: space-between;
+  gap: 8px;
   border-bottom: 1px solid var(--line, #cfe2f4);
   margin-top: 14px;
   margin-bottom: -1px;
@@ -28,26 +28,53 @@
   z-index: 2;
 }
 
+.progress-browser-tabbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.progress-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
 .progress-browser-tab {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 18px;
+  padding: 9px 16px;
   border: 1px solid var(--line, #cfe2f4);
   border-bottom: none;
   border-radius: 12px 12px 0 0;
-  background: #f4faff;
-  color: var(--accent, #1478d4);
+  background: #f1f5f9;
+  color: #64748b;
   font-size: 13.5px;
-  font-weight: 750;
+  font-weight: 600;
   cursor: pointer;
   position: relative;
   transition: all .16s ease;
   white-space: nowrap;
 }
 
-.progress-browser-tab::after {
+.progress-browser-tab:hover:not(.active) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.progress-browser-tab.active {
+  background: #ffffff;
+  color: var(--accent, #1478d4);
+  font-weight: 750;
+  border-bottom: 1px solid #ffffff;
+  margin-bottom: -1px;
+}
+
+.progress-browser-tab.active::after {
   content: '';
   position: absolute;
   top: 0;
@@ -58,7 +85,16 @@
   border-radius: 12px 12px 0 0;
 }
 
-.progress-analysis-panel { border-color: #b9dcff; background: linear-gradient(135deg, #f4faff, #fff); border-top-left-radius: 0 !important; }
+.progress-tab-pane.hidden {
+  display: none !important;
+}
+
+.student-progress-baseline-panel {
+  border-top-left-radius: 0 !important;
+  margin-top: 0 !important;
+}
+
+.progress-analysis-panel { border-color: #b9dcff; background: linear-gradient(135deg, #f4faff, #fff); border-top-left-radius: 0 !important; margin-top: 0 !important; }
 .progress-analysis { display: grid; gap: 12px; }
 .progress-analysis h3, .progress-analysis p { margin: 0; }
 .progress-analysis-copy { color: #405d73; line-height: 1.55; }
@@ -98,9 +134,23 @@ html[data-student-theme="dark"] body.student-page .student-progress-upload-previ
 html[data-student-theme="dark"] body.student-page .progress-analysis-panel { border-color: #29445d; background: #102033; color: #a9bed1; }
 html[data-student-theme="dark"] body.student-page .progress-analysis-projection > div { border-color: #34536e; background: #122235; }
 html[data-student-theme="dark"] body.student-page .progress-analysis-metric { border-color: #34536e; background: #122235; }
+html[data-student-theme="dark"] body.student-page .progress-top-toolbar,
 html[data-student-theme="dark"] body.student-page .progress-browser-tabbar { border-color: #29445d; }
-html[data-student-theme="dark"] body.student-page .progress-browser-tab { border-color: #29445d; background: #102033; color: #38bdf8; }
-html[data-student-theme="dark"] body.student-page .progress-browser-tab::after { background: #38bdf8; }
+html[data-student-theme="dark"] body.student-page .progress-browser-tab {
+  border-color: #29445d;
+  background: #0f1c2b;
+  color: #94a3b8;
+}
+html[data-student-theme="dark"] body.student-page .progress-browser-tab:hover:not(.active) {
+  background: #142436;
+  color: #f1f5f9;
+}
+html[data-student-theme="dark"] body.student-page .progress-browser-tab.active {
+  background: #102033;
+  color: #38bdf8;
+  border-bottom-color: #102033;
+}
+html[data-student-theme="dark"] body.student-page .progress-browser-tab.active::after { background: #38bdf8; }
 html[data-student-theme="dark"] body.student-page .progress-analysis-metric > strong,
 html[data-student-theme="dark"] body.student-page .progress-analysis-metric-heading b { color: #8fc9ff; }
 html[data-student-theme="dark"] body.student-page #student-progress-list > li { border-color: #34536e; background: #102033; color: #e8f0f8; }
