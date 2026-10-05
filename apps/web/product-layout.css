@@ -403,3 +403,207 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
   .modal-card { padding: 16px !important; border-radius: 14px !important; max-width: calc(100vw - 16px) !important; }
   .toolbar { gap: 8px !important; margin-bottom: 8px !important; }
 }
+
+/* Planos 3-dots actions and mobile 2-column grid */
+.plan-card-actions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.plan-card-menu-trigger {
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 18px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--line, #e2e8f0);
+  background: transparent;
+  color: var(--text, #171717);
+  cursor: pointer;
+}
+.plan-card-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 145px;
+  background: var(--card, #fff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.22);
+  display: grid;
+  padding: 4px;
+  z-index: 1300 !important;
+}
+.plan-card-menu-dropdown.hidden {
+  display: none !important;
+}
+.plan-card-menu-dropdown button {
+  width: 100% !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  background: transparent !important;
+  color: var(--text, #171717) !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+}
+.plan-card-menu-dropdown button:hover {
+  background: color-mix(in srgb, var(--accent, #1478d4) 12%, transparent) !important;
+  color: var(--accent, #1478d4) !important;
+}
+html[data-admin-theme="dark"] .plan-card-menu-trigger {
+  border-color: #34536e;
+  color: #e8f0f8;
+}
+html[data-admin-theme="dark"] .plan-card-menu-dropdown {
+  background: #122235;
+  border-color: #29445d;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+}
+html[data-admin-theme="dark"] .plan-card-menu-dropdown button {
+  color: #dceaf6 !important;
+}
+html[data-admin-theme="dark"] .plan-card-menu-dropdown button:hover {
+  background: #183c5c !important;
+  color: #38bdf8 !important;
+}
+
+@media (max-width: 760px) {
+  #plans-page-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  #plans-page-list > li {
+    padding: 10px 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    position: relative !important;
+  }
+  #plans-page-list .entity-main {
+    padding-right: 32px;
+  }
+  #plans-page-list .plan-card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  /* Financeiro summary mobile compact grid */
+  .finance-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+  .finance-summary article {
+    min-height: 58px !important;
+    padding: 8px 6px !important;
+    border-radius: 10px !important;
+  }
+  .finance-summary article strong {
+    font-size: 15px !important;
+  }
+  .finance-summary article span {
+    font-size: 10px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Finance table mobile: hide amount and due columns to eliminate horizontal scroll */
+  .finance-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .finance-table th,
+  .finance-table td {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+  }
+  .finance-table .col-amount,
+  .finance-table .col-due {
+    display: none !important;
+  }
+  .finance-actions-col,
+  .finance-actions-cell {
+    width: 44px !important;
+    text-align: right !important;
+  }
+}
+
+/* Finance 3-dots actions */
+.finance-card-actions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.finance-card-menu-trigger {
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 18px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--line, #e2e8f0);
+  background: transparent;
+  color: var(--text, #171717);
+  cursor: pointer;
+}
+.finance-card-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 155px;
+  background: var(--card, #fff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.22);
+  display: grid;
+  padding: 4px;
+  z-index: 1300 !important;
+}
+.finance-card-menu-dropdown.hidden {
+  display: none !important;
+}
+.finance-card-menu-dropdown button {
+  width: 100% !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  background: transparent !important;
+  color: var(--text, #171717) !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+}
+.finance-card-menu-dropdown button:hover {
+  background: color-mix(in srgb, var(--accent, #1478d4) 12%, transparent) !important;
+  color: var(--accent, #1478d4) !important;
+}
+html[data-admin-theme="dark"] .finance-card-menu-trigger {
+  border-color: #34536e;
+  color: #e8f0f8;
+}
+html[data-admin-theme="dark"] .finance-card-menu-dropdown {
+  background: #122235;
+  border-color: #29445d;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+}
+html[data-admin-theme="dark"] .finance-card-menu-dropdown button {
+  color: #dceaf6 !important;
+}
+html[data-admin-theme="dark"] .finance-card-menu-dropdown button:hover {
+  background: #183c5c !important;
+  color: #38bdf8 !important;
+}
+#financial-list tr {
+  position: relative;
+}
+#financial-list tr.menu-open {
+  z-index: 1200 !important;
+}

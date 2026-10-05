@@ -52,7 +52,50 @@ html[data-admin-theme="dark"] .modal-card .modal-close {
   color: #e8f0f8 !important;
 }
 
-@media (max-width: 680px) {
-  .signup-card { align-items: stretch; flex-direction: column; }
-  .signup-card-actions { justify-content: flex-start; }
+@media (max-width: 760px) {
+  .pre-enrollment-toolbar {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .pre-enrollment-toolbar .toolbar-actions.compact-toolbar-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+  #open-check-code-btn {
+    width: auto !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+  }
+  #signup-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .signup-card {
+    padding: 10px 12px !important;
+    align-items: stretch !important;
+    flex-direction: column !important;
+    border-radius: 12px !important;
+    gap: 8px !important;
+  }
+  .signup-card-content strong {
+    font-size: 13px !important;
+  }
+  .signup-card-content span {
+    font-size: 11px !important;
+  }
+  .signup-card-content small {
+    font-size: 10px !important;
+  }
+  .signup-card-actions {
+    justify-content: flex-start !important;
+    gap: 6px !important;
+  }
+  .signup-card-actions .mini-button {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+  }
 }

@@ -101,11 +101,31 @@ function renderMembers() {
   }
 }
 
+let currentDecisions = [];
+let decisionPage = 1;
+const DECISION_PAGE_SIZE = 10;
+
 function renderDecisions(rows) {
-  const list = accessEl('access-decision-list'); list.innerHTML = '';
-  accessEl('access-decision-count').textContent = String(rows.length);
-  if (!rows.length) { const empty = document.createElement('li'); empty.className = 'empty-state'; empty.textContent = 'Nenhuma decisão registrada ainda.'; list.appendChild(empty); return; }
-  for (const item of rows.slice(0, 50)) {
+  if (Array.isArray(rows)) currentDecisions = rows;
+  const list = accessEl('access-decision-list');
+  list.innerHTML = '';
+  accessEl('access-decision-count').textContent = String(currentDecisions.length);
+  const pag = accessEl('access-decision-pagination');
+  if (!currentDecisions.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.textContent = 'Nenhuma decisão registrada ainda.';
+    list.appendChild(empty);
+    if (pag) pag.innerHTML = '';
+    return;
+  }
+
+  const total = currentDecisions.length;
+  const totalPages = Math.max(1, Math.ceil(total / DECISION_PAGE_SIZE));
+  decisionPage = Math.min(decisionPage, totalPages);
+  const pageItems = currentDecisions.slice((decisionPage - 1) * DECISION_PAGE_SIZE, decisionPage * DECISION_PAGE_SIZE);
+
+  for (const item of pageItems) {
     const row = document.createElement('li'); row.className = 'access-decision-row';
     const main = document.createElement('div');
     const name = document.createElement('strong');
@@ -142,6 +162,18 @@ function renderDecisions(rows) {
     actions.append(actionsRow);
     row.append(main, actions);
     list.appendChild(row);
+  }
+
+  if (pag && window.AdminPagination) {
+    window.AdminPagination.render(pag, {
+      page: decisionPage,
+      total,
+      pageSize: DECISION_PAGE_SIZE,
+      onChange: (newPage) => {
+        decisionPage = newPage;
+        renderDecisions();
+      }
+    });
   }
 }
 

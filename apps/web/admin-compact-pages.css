@@ -379,19 +379,26 @@ body.admin-training-page .training-ai-icon {
     line-height: 1;
   }
 
+  #students-list li {
+    position: relative;
+  }
+  #students-list li:has(.mobile-card-menu-dropdown:not(.hidden)) {
+    z-index: 1200 !important;
+  }
+
   body.admin-compact-page .mobile-card-menu-dropdown {
     position: absolute;
     top: calc(100% + 5px);
     right: 0;
-    z-index: 20;
+    z-index: 1300 !important;
     display: grid;
-    width: 132px;
-    overflow: hidden;
-    padding: 4px;
+    width: 145px;
+    overflow: visible;
+    padding: 6px;
     border: 1px solid #34536e;
-    border-radius: 9px;
+    border-radius: 12px;
     background: #122235;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, .3);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, .55);
   }
 
   body.admin-compact-page .mobile-card-menu-dropdown button,

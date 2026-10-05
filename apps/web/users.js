@@ -130,6 +130,10 @@ function createPresenceCell(user) {
 function closeEmployeeMenus() {
   document.querySelectorAll('.employee-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
   document.querySelectorAll('.employee-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('#users-table tr').forEach((el) => {
+    el.classList.remove('menu-open');
+    el.style.zIndex = '';
+  });
 }
 
 function employeeRowMenu(user) {
@@ -145,23 +149,37 @@ function employeeRowMenu(user) {
   dropdown.className = 'employee-menu-dropdown hidden';
   const details = document.createElement('button');
   details.type = 'button';
-  details.textContent = 'Ver ou editar informações';
+  details.textContent = 'Editar funcionário';
   details.addEventListener('click', () => { closeEmployeeMenus(); editUser(user); });
   const toggle = document.createElement('button');
   toggle.type = 'button';
   toggle.className = user.is_active ? 'danger' : '';
   toggle.textContent = user.is_active ? 'Desativar funcionário' : 'Ativar funcionário';
   toggle.addEventListener('click', () => { closeEmployeeMenus(); void toggleUser(user); });
+  const perms = document.createElement('button');
+  perms.type = 'button';
+  perms.textContent = 'Permissões';
+  perms.addEventListener('click', () => {
+    closeEmployeeMenus();
+    openPermissionsManager();
+  });
   trigger.addEventListener('click', (event) => {
     event.stopPropagation();
     const opening = dropdown.classList.contains('hidden');
+    const tr = wrap.closest('tr');
     closeEmployeeMenus();
-    dropdown.classList.toggle('hidden', !opening);
-    trigger.setAttribute('aria-expanded', String(opening));
+    if (opening) {
+      dropdown.classList.remove('hidden');
+      trigger.setAttribute('aria-expanded', 'true');
+      if (tr) {
+        tr.classList.add('menu-open');
+        tr.style.zIndex = '1200';
+      }
+    }
   });
   wrap.addEventListener('click', (event) => event.stopPropagation());
   wrap.addEventListener('keydown', (event) => event.stopPropagation());
-  dropdown.append(details, toggle);
+  dropdown.append(details, toggle, perms);
   wrap.append(trigger, dropdown);
   return wrap;
 }

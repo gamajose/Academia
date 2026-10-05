@@ -80,6 +80,7 @@ function whatsappLink(phone) {
 function closeStudentCardMenus() {
   document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
   document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('#students-list li').forEach((li) => li.style.removeProperty('z-index'));
 }
 
 function studentMobileMenu(item, whatsappUrl = '') {
@@ -98,19 +99,22 @@ function studentMobileMenu(item, whatsappUrl = '') {
     whatsapp.href = whatsappUrl;
     whatsapp.target = '_blank';
     whatsapp.rel = 'noopener noreferrer';
-    whatsapp.textContent = 'Abrir WhatsApp';
+    whatsapp.textContent = 'WhatsApp';
     whatsapp.addEventListener('click', closeStudentCardMenus);
     dropdown.appendChild(whatsapp);
   }
   const credential = document.createElement('button');
   credential.dataset.moduleFeature = 'access';
-  credential.type = 'button'; credential.textContent = 'Abrir QR Code';
+  credential.type = 'button';
+  credential.textContent = 'QR Code';
   credential.addEventListener('click', () => { closeStudentCardMenus(); openCredentialPreview(item); });
   const edit = document.createElement('button');
-  edit.type = 'button'; edit.textContent = 'Editar cadastro';
+  edit.type = 'button';
+  edit.textContent = 'Editar cadastro';
   edit.addEventListener('click', () => { closeStudentCardMenus(); openModal(item); });
   const status = document.createElement('button');
-  status.type = 'button'; status.className = item.status === 'active' ? 'danger' : '';
+  status.type = 'button';
+  status.className = item.status === 'active' ? 'danger' : '';
   status.textContent = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno';
   status.addEventListener('click', () => { closeStudentCardMenus(); void toggle(item); });
   if (window.AcademiaModules?.isEnabled?.('access') !== false) dropdown.appendChild(credential);
@@ -121,6 +125,10 @@ function studentMobileMenu(item, whatsappUrl = '') {
     closeStudentCardMenus();
     dropdown.classList.toggle('hidden', !opening);
     trigger.setAttribute('aria-expanded', String(opening));
+    if (opening) {
+      const parentLi = wrap.closest('li');
+      if (parentLi) parentLi.style.setProperty('z-index', '1100', 'important');
+    }
   });
   wrap.addEventListener('click', (event) => event.stopPropagation());
   wrap.addEventListener('keydown', (event) => event.stopPropagation());
@@ -667,9 +675,8 @@ function render() {
     li.textContent = 'Nenhum aluno encontrado.';
     list.appendChild(li);
   }
-  $('student-count').textContent = filtered.length
-    ? (filtered.length <= pageSize ? `${filtered.length} de ${rows.length} aluno(s)` : `${start + 1}-${Math.min(start + pageSize, filtered.length)} de ${filtered.length} aluno(s)`)
-    : `0 de ${rows.length} aluno(s)`;
+  const countEl = $('student-count');
+  if (countEl) countEl.textContent = '';
   renderPagination(filtered.length, totalPages);
 }
 

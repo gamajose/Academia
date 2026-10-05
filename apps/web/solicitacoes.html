@@ -14,24 +14,31 @@
   <main class="app-shell">
     <section class="panel pre-enrollment-panel" id="received-signups-panel">
       <div class="toolbar pre-enrollment-toolbar">
-        <div class="pre-enrollment-heading">
-          <span class="signup-count" id="signup-count">0</span>
+        <div class="toolbar-actions compact-toolbar-actions">
+          <button id="open-check-code-btn" class="button primary" type="button">Validar código</button>
+          <button class="icon-button" id="signup-search-toggle" type="button" aria-label="Pesquisar solicitações" title="Pesquisar solicitações"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
         </div>
-        <button class="icon-button" id="signup-search-toggle" type="button" aria-label="Pesquisar solicitações" title="Pesquisar solicitações"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
       </div>
       <div class="signup-search-wrap hidden"><input id="signup-search" placeholder="Buscar por nome, plano, status ou código" /></div>
       <p class="status-line" id="signup-status"></p>
       <ul id="signup-list"></ul>
       <div class="signup-pagination" id="signup-pagination"></div>
     </section>
-
-    <section class="panel pre-enrollment-panel pre-enrollment-validation-panel">
-      <h3>Validar código apresentado na recepção</h3>
-      <input id="check-code" placeholder="Código apresentado pelo aluno" />
-        <button id="check-code-button">Validar código</button>
-      <p class="status-line" id="check-code-status"></p>
-    </section>
   </main>
+
+  <div class="modal hidden" id="check-code-modal" role="dialog" aria-modal="true" aria-labelledby="check-code-title">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="check-code-title" style="margin: 0; font-size: 18px;">Validar código</h3>
+        <button class="secondary modal-close" id="close-check-code-modal" type="button" aria-label="Fechar" title="Fechar">×</button>
+      </div>
+      <div style="display: grid; gap: 12px; margin-top: 14px;">
+        <input id="check-code" placeholder="Código apresentado pelo aluno" style="font-size: 15px;" />
+        <button id="check-code-button" class="button primary">Verificar liberação</button>
+        <p class="status-line" id="check-code-status" style="margin: 0; min-height: 24px;"></p>
+      </div>
+    </div>
+  </div>
 
   <div class="modal hidden" id="qr-modal">
     <div class="modal-card" style="text-align:center; max-width:520px;">

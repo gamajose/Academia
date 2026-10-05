@@ -404,13 +404,55 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
 
   .exercise-card-tag {
     flex-shrink: 0 !important;
-    padding: 4px 10px !important;
-    border-radius: 999px !important;
+    width: fit-content !important;
+    margin-top: 4px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
     background: #edf5fc !important;
     color: var(--accent, #1478d4) !important;
     font-size: 11px !important;
     font-weight: 800 !important;
     text-transform: capitalize !important;
+  }
+
+  .exercise-library-actions.desktop-actions {
+    display: none !important;
+  }
+  .exercise-toolbar-mobile-menu {
+    display: block !important;
+    position: relative !important;
+    margin-left: auto;
+  }
+  .exercise-toolbar-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 1000;
+    display: grid;
+    min-width: 170px;
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--line, #34536e);
+    background: var(--card, #122235);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  }
+  .exercise-toolbar-dropdown button {
+    display: flex;
+    align-items: center;
+    width: 100% !important;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text, #dceaf6);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+  }
+  .exercise-toolbar-dropdown button:hover {
+    background: rgba(20, 120, 212, 0.18);
   }
 
   /* Mobile media: Spacious 4:3 frame, NEVER cropped */

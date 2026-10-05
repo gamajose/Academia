@@ -410,9 +410,7 @@ function renderAll({ libraryOnly = false } = {}) {
   });
   const libraryStatus = t('exercise-library-status');
   if (libraryStatus) {
-    libraryStatus.textContent = visibleExercises.length > TRAINING_PAGE_SIZE
-      ? `Mostrando ${((exercisePage - 1) * TRAINING_PAGE_SIZE) + 1}-${Math.min(exercisePage * TRAINING_PAGE_SIZE, visibleExercises.length)} de ${visibleExercises.length} exercícios.`
-      : `${visibleExercises.length} exercício(s) encontrado(s).`;
+    libraryStatus.textContent = '';
   }
   for (const item of renderedExercises) {
     const row = document.createElement('li');
@@ -460,13 +458,13 @@ function renderAll({ libraryOnly = false } = {}) {
     const detail = document.createElement('span');
     detail.className = 'exercise-card-detail';
     detail.textContent = `${level?.name || item.level || 'Geral'}${secondaryMuscles}${status}`;
-    main.append(name, detail);
 
     const tag = document.createElement('span');
     tag.className = 'exercise-card-tag';
     tag.textContent = primaryMuscle;
 
-    header.append(main, tag);
+    main.append(name, detail, tag);
+    header.append(main);
 
     const media = document.createElement('div');
     media.className = 'video-preview-slot exercise-card-media';
@@ -1547,6 +1545,27 @@ function closeTrainingModal(id) {
 ].forEach(([buttonId, modalId]) => t(buttonId)?.addEventListener('click', () => openTrainingModal(modalId)));
 t('open-exercise-button')?.addEventListener('click', () => openExerciseForm());
 t('open-plan-levels-button')?.addEventListener('click', () => openTrainingModal('training-levels-modal'));
+
+const mobileMenuTrigger = t('exercise-toolbar-trigger');
+const mobileMenuDropdown = t('exercise-toolbar-dropdown');
+mobileMenuTrigger?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  mobileMenuDropdown?.classList.toggle('hidden');
+});
+document.addEventListener('click', () => mobileMenuDropdown?.classList.add('hidden'));
+
+t('mobile-new-exercise')?.addEventListener('click', () => {
+  mobileMenuDropdown?.classList.add('hidden');
+  openExerciseForm();
+});
+t('mobile-search-exercise')?.addEventListener('click', () => {
+  mobileMenuDropdown?.classList.add('hidden');
+  t('toggle-exercise-search')?.click();
+});
+t('mobile-ai-exercise')?.addEventListener('click', () => {
+  mobileMenuDropdown?.classList.add('hidden');
+  t('open-review-button')?.click();
+});
 t('toggle-exercise-search')?.addEventListener('click', () => {
   const filters = t('exercise-library-filters');
   const isOpen = filters?.classList.toggle('hidden') === false;

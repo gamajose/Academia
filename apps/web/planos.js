@@ -63,12 +63,55 @@ function render() {
       <span>${money(plan.price_cents)} · ${plan.duration_days} dia(s)</span>
       <span>${plainText(plan.description || '').slice(0, 110) || 'Sem descrição'} · <span class="badge ${plan.is_active ? 'ok' : 'bad'}">${plan.is_active ? 'Ativo' : 'Inativo'}</span></span>`;
     const actions = document.createElement('div');
-    actions.className = 'entity-actions';
-    const edit = window.AcademiaIcons.button('edit', 'Editar plano');
-    edit.addEventListener('click', (event) => { event.stopPropagation(); openPlan(plan); });
-    const toggleButton = button(plan.is_active ? '⊘' : '●', (event) => { event.stopPropagation(); toggle(plan); }, 'icon-button');
-    toggleButton.title = plan.is_active ? 'Desativar plano' : 'Ativar plano'; toggleButton.setAttribute('aria-label', toggleButton.title);
-    actions.append(edit, toggleButton);
+    actions.className = 'plan-card-actions';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'icon-button plan-card-menu-trigger';
+    trigger.setAttribute('aria-label', `Ações do plano ${plan.name}`);
+    trigger.textContent = '⋮';
+
+    const menu = document.createElement('div');
+    menu.className = 'plan-card-menu-dropdown hidden';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Editar plano';
+    editBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      li.classList.remove('menu-open');
+      openPlan(plan);
+    });
+
+    const toggleButton = document.createElement('button');
+    toggleButton.type = 'button';
+    toggleButton.textContent = plan.is_active ? 'Desativar plano' : 'Ativar plano';
+    toggleButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      li.classList.remove('menu-open');
+      toggle(plan);
+    });
+
+    menu.append(editBtn, toggleButton);
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const willOpen = menu.classList.contains('hidden');
+      document.querySelectorAll('.plan-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
+      document.querySelectorAll('#plans-page-list li').forEach((el) => {
+        el.classList.remove('menu-open');
+        el.style.zIndex = '';
+      });
+      if (willOpen) {
+        menu.classList.remove('hidden');
+        li.classList.add('menu-open');
+        li.style.zIndex = '1200';
+      }
+    });
+
+    actions.append(trigger, menu);
     li.append(main, actions);
     list.appendChild(li);
   }
@@ -160,7 +203,7 @@ async function load() {
     rows = result.data || [];
     currentPage = 1;
     render();
-    $('plans-status').textContent = `${rows.length} plano(s) carregado(s).`;
+    $('plans-status').textContent = '';
   } catch (error) {
     $('plans-status').textContent = `Erro: ${error.message}`;
   }
@@ -213,5 +256,14 @@ $('plan-form').addEventListener('submit', save);
 $('plan-price-page').addEventListener('blur', (event) => {
   const value = numberFromCurrency(event.target.value);
   event.target.value = value > 0 ? currencyInput(value) : '';
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.plan-card-actions')) {
+    document.querySelectorAll('.plan-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
+    document.querySelectorAll('#plans-page-list li').forEach((el) => {
+      el.classList.remove('menu-open');
+      el.style.zIndex = '';
+    });
+  }
 });
 load();

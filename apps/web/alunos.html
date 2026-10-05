@@ -17,8 +17,8 @@
     <section class="panel">
       <div class="toolbar students-toolbar">
         <div class="student-toolbar-actions">
-          <button id="new-student-button" class="icon-button" type="button" aria-label="Cadastrar aluno" title="Cadastrar aluno"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-          <button id="student-search-toggle" class="icon-button" type="button" aria-label="Pesquisar e filtrar alunos" title="Pesquisar e filtrar alunos" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></button>
+          <button id="new-student-button" class="button primary student-add-btn" type="button">Adicionar novo aluno</button>
+          <button id="student-search-toggle" class="icon-button student-more-btn" type="button" aria-label="Pesquisar e filtrar alunos" title="Mais opções / Pesquisar" aria-expanded="false" style="font-size:22px;line-height:1;width:34px;height:34px;">⋮</button>
         </div>
       </div>
       <div id="student-search-wrap" class="student-search-wrap student-filter-panel hidden">
@@ -65,7 +65,6 @@
           <span id="student-active-filters" class="hidden" aria-live="polite"></span>
         </div>
       </div>
-      <span id="student-count" class="student-count" aria-live="polite"></span>
       <p class="status-line" id="students-status" aria-live="polite"></p>
       <ul id="students-list"></ul>
       <div class="student-pagination" id="student-pagination" aria-label="Paginação de alunos"></div>

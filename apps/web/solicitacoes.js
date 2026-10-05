@@ -52,7 +52,7 @@ function render() {
   const term = (s('signup-search').value || '').toLowerCase();
   list.innerHTML = '';
   const filtered = rows.filter((item) => `${item.name} ${item.plan_name || ''} ${item.status} ${item.payment_status || ''} ${item.enrollment_code || ''}`.toLowerCase().includes(term));
-  s('signup-count').textContent = `${filtered.length}`;
+  if (s('signup-count')) s('signup-count').textContent = `${filtered.length}`;
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   currentPage = Math.min(currentPage, totalPages);
   const visibleRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -175,5 +175,19 @@ s('signup-search-toggle').onclick = () => {
 s('signup-search').oninput = () => { currentPage = 1; render(); };
 s('check-code-button').onclick = checkCode;
 s('close-qr-modal').onclick = closeQr;
+
+s('open-check-code-btn')?.addEventListener('click', () => {
+  s('check-code-modal')?.classList.remove('hidden');
+  s('check-code-status').textContent = '';
+  s('check-code').value = '';
+  setTimeout(() => s('check-code')?.focus(), 50);
+});
+s('close-check-code-modal')?.addEventListener('click', () => {
+  s('check-code-modal')?.classList.add('hidden');
+});
+s('check-code-modal')?.addEventListener('click', (e) => {
+  if (e.target === s('check-code-modal')) s('check-code-modal').classList.add('hidden');
+});
+
 load();
 startRealtime();

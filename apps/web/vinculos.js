@@ -95,38 +95,84 @@ function render() {
     tr.tabIndex = 0;
     tr.setAttribute('role', 'button');
     tr.title = 'Abrir edição da matrícula';
-    tr.innerHTML = `<td><span class="membership-member-name ${memberNameTone(item)}">${item.member_name || '-'}</span></td><td>${item.plan_name || '-'}</td><td>${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td></td>`;
+    tr.innerHTML = `<td><span class="membership-member-name ${memberNameTone(item)}">${item.member_name || '-'}</span></td><td class="col-plan">${item.plan_name || '-'}</td><td class="col-amount">${money(item.plan_price_cents)}</td><td><span class="membership-status ${status}">${membershipStatusLabel(status)}</span></td><td class="membership-date col-created">${dateOnly(item.starts_at)}</td><td class="membership-date">${dateOnly(item.ends_at)}</td><td class="membership-actions-cell"></td>`;
     tr.addEventListener('click', () => openModal(item));
-    tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
+    tr.addEventListener('keydown', (event) => { if (event.target.closest('button, .membership-card-menu-dropdown')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openModal(item); } });
     const actions = tr.lastElementChild;
     const actionRow = document.createElement('div');
-    actionRow.className = 'membership-action-row';
-    const editButton = window.AcademiaIcons.button('edit', 'Editar matrícula');
-    editButton.addEventListener('click', (event) => { event.stopPropagation(); openModal(item); });
-    actionRow.appendChild(editButton);
+    actionRow.className = 'membership-card-actions';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'icon-button membership-card-menu-trigger';
+    trigger.setAttribute('aria-label', `Ações da matrícula de ${item.member_name || 'aluno'}`);
+    trigger.textContent = '⋮';
+
+    const menu = document.createElement('div');
+    menu.className = 'membership-card-menu-dropdown hidden';
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = 'Editar';
+    editBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      tr.classList.remove('menu-open');
+      openModal(item);
+    });
 
     const contractBtn = document.createElement('button');
     contractBtn.type = 'button';
-    contractBtn.className = 'icon-button';
-    contractBtn.title = 'Emitir contrato de adesão';
-    contractBtn.setAttribute('aria-label', 'Emitir contrato de adesão');
-    contractBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>';
-    contractBtn.addEventListener('click', (event) => { event.stopPropagation(); openContractModal(item); });
-    actionRow.appendChild(contractBtn);
+    contractBtn.textContent = 'Contrato';
+    contractBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      tr.classList.remove('menu-open');
+      openContractModal(item);
+    });
 
     const receiptBtn = document.createElement('button');
     receiptBtn.type = 'button';
-    receiptBtn.className = 'icon-button';
-    receiptBtn.title = 'Emitir recibo';
-    receiptBtn.setAttribute('aria-label', 'Emitir recibo');
-    receiptBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>';
-    receiptBtn.addEventListener('click', (event) => { event.stopPropagation(); openReceiptModal(item); });
-    actionRow.appendChild(receiptBtn);
+    receiptBtn.textContent = 'Recibo';
+    receiptBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      tr.classList.remove('menu-open');
+      openReceiptModal(item);
+    });
 
-    actionRow.appendChild(mini(status === 'active' ? '⊘' : '●', (event) => { event.stopPropagation(); if (status === 'active') return cancelLink(item); }, status !== 'active'));
-    actionRow.lastElementChild.className = 'icon-button';
-    actionRow.lastElementChild.title = status === 'active' ? 'Cancelar matrícula' : 'Matrícula encerrada';
-    actionRow.lastElementChild.setAttribute('aria-label', actionRow.lastElementChild.title);
+    menu.append(editBtn, contractBtn, receiptBtn);
+
+    if (status === 'active') {
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'danger';
+      cancelBtn.textContent = 'Cancelar matrícula';
+      cancelBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        menu.classList.add('hidden');
+        tr.classList.remove('menu-open');
+        cancelLink(item);
+      });
+      menu.appendChild(cancelBtn);
+    }
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const willOpen = menu.classList.contains('hidden');
+      document.querySelectorAll('.membership-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
+      document.querySelectorAll('#link-list tr').forEach((el) => {
+        el.classList.remove('menu-open');
+        el.style.zIndex = '';
+      });
+      if (willOpen) {
+        menu.classList.remove('hidden');
+        tr.classList.add('menu-open');
+        tr.style.zIndex = '1200';
+      }
+    });
+
+    actionRow.append(trigger, menu);
     actions.appendChild(actionRow);
     list.appendChild(tr);
   }
@@ -410,4 +456,13 @@ v('cancel-link-button').onclick = closeModal;
 v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });
 v('link-search').oninput = () => { currentPage = 1; render(); };
 ['link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => v(id).addEventListener('change', () => { currentPage = 1; render(); }));
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.membership-card-actions')) {
+    document.querySelectorAll('.membership-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
+    document.querySelectorAll('#link-list tr').forEach((el) => {
+      el.classList.remove('menu-open');
+      el.style.zIndex = '';
+    });
+  }
+});
 load();

@@ -130,23 +130,91 @@ function draw() {
     const label = statusLabel(item);
     tr.innerHTML = `
       <td class="finance-member-name">${item.member_name || '-'}</td>
-      <td>${brl(item.amount_cents)}</td>
+      <td class="col-amount">${brl(item.amount_cents)}</td>
       <td><span class="badge ${statusClass(label)}">${label}</span></td>
-      <td class="finance-date-cell">${item.paid_at ? `<strong>Recebido em</strong><span>${dateTime(item.paid_at)}</span>` : `<strong>Vencimento</strong><span>${dateOnly(item.due_date)}</span>`}</td>
+      <td class="finance-date-cell col-due">${item.paid_at ? `<strong>Recebido em</strong><span>${dateTime(item.paid_at)}</span>` : `<strong>Vencimento</strong><span>${dateOnly(item.due_date)}</span>`}</td>
       <td>${methodLabel(item.method)}</td>
-      <td></td>
+      <td class="finance-actions-cell"></td>
     `;
     const actions = tr.querySelector('td:last-child');
     tr.addEventListener('click', () => openM(item));
-    tr.addEventListener('keydown', (event) => { if (event.target.closest('button')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openM(item); } });
-    actions.appendChild(actionButton('Ajustar', (event) => { event.stopPropagation(); openM(item); }));
+    tr.addEventListener('keydown', (event) => { if (event.target.closest('button, .finance-card-menu-dropdown')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openM(item); } });
+
+    const actionWrap = document.createElement('div');
+    actionWrap.className = 'finance-card-actions';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'icon-button finance-card-menu-trigger';
+    trigger.setAttribute('aria-label', `Ações financeiras de ${item.member_name || 'aluno'}`);
+    trigger.textContent = '⋮';
+
+    const menu = document.createElement('div');
+    menu.className = 'finance-card-menu-dropdown hidden';
+
+    const adjustBtn = document.createElement('button');
+    adjustBtn.type = 'button';
+    adjustBtn.textContent = 'Ajustar';
+    adjustBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      tr.classList.remove('menu-open');
+      openM(item);
+    });
+    menu.appendChild(adjustBtn);
+
     if (item.status !== 'paid') {
-      const pixBtn = actionButton('Cobrar Pix', (event) => { event.stopPropagation(); openPixModal(item); });
-      pixBtn.style.setProperty('background', '#0284c7', 'important');
-      pixBtn.style.setProperty('color', '#ffffff', 'important');
-      actions.appendChild(pixBtn);
+      const pixBtn = document.createElement('button');
+      pixBtn.type = 'button';
+      pixBtn.textContent = 'Cobrar Pix';
+      pixBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        menu.classList.add('hidden');
+        tr.classList.remove('menu-open');
+        openPixModal(item);
+      });
+      menu.appendChild(pixBtn);
+
+      const markPaidBtn = document.createElement('button');
+      markPaidBtn.type = 'button';
+      markPaidBtn.textContent = 'Marcar como recebido';
+      markPaidBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        menu.classList.add('hidden');
+        tr.classList.remove('menu-open');
+        pay(item);
+      });
+      menu.appendChild(markPaidBtn);
     }
-    actions.appendChild(actionButton(item.status === 'paid' ? 'Recebido' : 'Marcar como recebido', (event) => { event.stopPropagation(); pay(item); }, item.status === 'paid'));
+
+    const detailsBtn = document.createElement('button');
+    detailsBtn.type = 'button';
+    detailsBtn.textContent = 'Ver detalhes';
+    detailsBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu.classList.add('hidden');
+      tr.classList.remove('menu-open');
+      openM(item);
+    });
+    menu.appendChild(detailsBtn);
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const willOpen = menu.classList.contains('hidden');
+      document.querySelectorAll('.finance-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
+      document.querySelectorAll('#financial-list tr').forEach((el) => {
+        el.classList.remove('menu-open');
+        el.style.zIndex = '';
+      });
+      if (willOpen) {
+        menu.classList.remove('hidden');
+        tr.classList.add('menu-open');
+        tr.style.zIndex = '1200';
+      }
+    });
+
+    actionWrap.append(trigger, menu);
+    actions.appendChild(actionWrap);
     list.appendChild(tr);
   }
 
@@ -441,6 +509,16 @@ f('pix-mark-paid-btn')?.addEventListener('click', () => {
 f('close-pix-modal')?.addEventListener('click', closePixModal);
 f('pix-charge-modal')?.addEventListener('click', (e) => {
   if (e.target === f('pix-charge-modal')) closePixModal();
+});
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.finance-card-actions')) {
+    document.querySelectorAll('.finance-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
+    document.querySelectorAll('#financial-list tr').forEach((el) => {
+      el.classList.remove('menu-open');
+      el.style.zIndex = '';
+    });
+  }
 });
 
 load();

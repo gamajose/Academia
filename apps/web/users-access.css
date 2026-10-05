@@ -142,10 +142,12 @@ html[data-admin-theme="dark"] .employee-modal-card .modal-close:hover {
   .employee-list-panel .table-wrap { overflow: visible; }
   .employee-list-panel table, .employee-list-panel tbody { display: block; width: 100%; min-width: 0 !important; }
   .employee-list-panel thead { display: none; }
-  .employee-list-panel tbody { display: grid; gap: 8px; }
-  .employee-list-panel tbody tr { position: relative; display: grid; gap: 3px; min-width: 0; padding: 11px 42px 11px 12px; border: 1px solid #29445d; border-radius: 11px; background: #122235; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+  .employee-list-panel tbody { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+  .employee-list-panel tbody tr { position: relative !important; display: grid !important; gap: 3px !important; min-width: 0 !important; padding: 10px 34px 10px 10px !important; border: 1px solid #29445d !important; border-radius: 11px !important; background: #122235 !important; box-shadow: 0 8px 20px rgba(0,0,0,.12) !important; }
+  .employee-list-panel tbody tr.menu-open { z-index: 1200 !important; }
+  .employee-menu-dropdown { z-index: 1300 !important; }
   .employee-list-panel tbody td { display: block; min-width: 0; padding: 0 !important; border: 0 !important; color: #dceaf6 !important; text-align: left !important; }
-  .employee-list-panel tbody td:first-child { overflow: hidden; font-size: 14px; font-weight: 750; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+  .employee-list-panel tbody td:first-child { overflow: hidden; font-size: 13px; font-weight: 750; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
   .employee-list-panel tbody td:nth-child(2),
   .employee-list-panel tbody td:nth-child(4),
   .employee-list-panel tbody td:nth-child(5) { display: none; }
@@ -157,7 +159,7 @@ html[data-admin-theme="dark"] .employee-modal-card .modal-close:hover {
   .employee-action-buttons { display: none !important; }
   .employee-row-mobile-menu { display: block; }
   .employee-list-panel .presence-legend { display: none; }
-  .employee-list-panel .employee-empty-row { display: block !important; padding: 8px !important; }
+  .employee-list-panel .employee-empty-row { display: block !important; padding: 8px !important; grid-column: 1 / -1 !important; }
   .permissions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .access-profile-card { grid-template-columns: 1fr; }
   .access-profile-actions { justify-content: flex-start; }
