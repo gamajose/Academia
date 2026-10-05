@@ -199,27 +199,44 @@
     if (p('student-selected-date-weekday')) p('student-selected-date-weekday').textContent = '';
     const dayTitle = p('student-selected-date-title');
     if (dayTitle) dayTitle.textContent = dayLabel;
-    const actions = p('student-event-detail-actions');
+
+    const planNameEl = p('student-workout-plan-name');
+    const planSepEl = p('student-bc-plan-sep');
+    const menuAddExercise = p('student-menu-add-exercise');
+    const menuEditEvent = p('student-menu-edit-event');
+    const menuDeleteEvent = p('student-menu-delete-event');
+
     const list = p('student-event-exercise-list');
     list.replaceChildren();
     updateLiveHero(selectedEvent);
+
     if (!selectedEvent) {
       panel.classList.remove('hidden');
-      actions.classList.add('hidden');
+      if (planNameEl) planNameEl.textContent = 'Descanso';
+      if (planSepEl) planSepEl.classList.remove('hidden');
+      if (menuAddExercise) menuAddExercise.classList.add('hidden');
+      if (menuEditEvent) menuEditEvent.classList.add('hidden');
+      if (menuDeleteEvent) menuDeleteEvent.classList.add('hidden');
+
       p('student-event-detail-title').textContent = 'Descanso';
       p('student-event-detail-time').textContent = dayLabel;
       p('student-event-detail-notes').textContent = '';
       p('student-event-detail-notes').hidden = true;
+
       const emptyDay = document.createElement('li');
-      emptyDay.className = 'empty-state student-day-rest-empty';
-      emptyDay.innerHTML = '<strong>Dia livre / Descanso</strong><span>Nenhum treino programado para este dia.<br>Deslize na tela para navegar entre os dias.</span>';
+      emptyDay.className = 'student-feed-rest-card';
+      emptyDay.innerHTML = '<div class="student-feed-rest-body"><span class="student-feed-rest-icon">✦</span><strong>Dia livre ou descanso</strong><p>Nenhum treino programado para hoje.<br>Deslize horizontalmente para navegar pelos outros dias.</p></div>';
       list.appendChild(emptyDay);
       return;
     }
+
     panel.classList.remove('hidden');
-    actions.classList.remove('hidden');
-    p('student-add-event-exercise-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
-    p('student-delete-event-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
+    if (planNameEl) planNameEl.textContent = selectedEvent.title || 'Minha ficha';
+    if (planSepEl) planSepEl.classList.remove('hidden');
+    if (menuAddExercise) menuAddExercise.classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
+    if (menuEditEvent) menuEditEvent.classList.remove('hidden');
+    if (menuDeleteEvent) menuDeleteEvent.classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
+
     p('student-event-detail-title').textContent = selectedEvent.title;
     p('student-event-detail-time').textContent = `${dayLabel} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
     if (selectedEvent.notes && selectedEvent.notes.trim()) {
@@ -229,60 +246,108 @@
       p('student-event-detail-notes').hidden = true;
       p('student-event-detail-notes').textContent = '';
     }
-    if (!selectedEvent.exercises.length) return;
-    selectedEvent.exercises.forEach((item) => {
-      const row = document.createElement('li');
-      row.className = 'entity-card student-workout-exercise-row';
-      const media = document.createElement('div');
-      media.className = 'student-exercise-inline-media';
-      appendExerciseMedia(media, item, { controls: false });
-      if (!media.children.length) {
-        media.innerHTML = '<svg viewBox="0 0 24 24" class="student-exercise-media-placeholder" aria-hidden="true"><path d="M6 5v14M18 5v14M4 8h4M16 8h4M4 16h4M16 16h4M6 12h12"/></svg>';
+
+    if (!selectedEvent.exercises.length) {
+      const noExercises = document.createElement('li');
+      noExercises.className = 'student-feed-rest-card';
+      noExercises.innerHTML = '<div class="student-feed-rest-body"><strong>Ficha vazia</strong><p>Esta ficha ainda não possui exercícios cadastrados.<br>Toque nos três pontinhos no topo para adicionar exercícios.</p></div>';
+      list.appendChild(noExercises);
+      return;
+    }
+
+    selectedEvent.exercises.forEach((item, index) => {
+      const card = document.createElement('li');
+      card.className = 'student-feed-card';
+      card.tabIndex = 0;
+      card.setAttribute('role', 'article');
+      card.setAttribute('aria-label', `Exercício ${index + 1}: ${item.exercise_name || 'Exercício'}`);
+
+      // Media container (dominant feed video/animation)
+      const mediaWrap = document.createElement('div');
+      mediaWrap.className = 'student-feed-media';
+      appendExerciseMedia(mediaWrap, item, { controls: false });
+      if (!mediaWrap.children.length) {
+        mediaWrap.innerHTML = '<div class="student-feed-placeholder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M18 5v14M4 8h4M16 8h4M4 16h4M16 16h4M6 12h12"/></svg><span>Toque para ver demonstração</span></div>';
       }
-      row.appendChild(media);
-      const main = document.createElement('div');
-      main.className = 'entity-main';
+      mediaWrap.addEventListener('click', () => openExercise(item));
+      card.appendChild(mediaWrap);
+
+      // Top floating 3-dots menu for this exercise
+      const menuContainer = document.createElement('div');
+      menuContainer.className = 'student-feed-item-menu';
+      const dotsBtn = document.createElement('button');
+      dotsBtn.type = 'button';
+      dotsBtn.className = 'student-feed-dots-btn';
+      dotsBtn.setAttribute('aria-label', `Opções de ${item.exercise_name || 'exercício'}`);
+      dotsBtn.setAttribute('title', 'Opções do exercício');
+      dotsBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/></svg>';
+
+      const menuDropdown = document.createElement('div');
+      menuDropdown.className = 'student-feed-item-dropdown hidden';
+      menuDropdown.innerHTML = `
+        <button type="button" class="feed-item-edit-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg><span>Editar exercício</span></button>
+        <button type="button" class="feed-item-delete-btn is-danger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg><span>Excluir exercício</span></button>
+      `;
+
+      dotsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => {
+          if (d !== menuDropdown) d.classList.add('hidden');
+        });
+        p('student-workout-dropdown')?.classList.add('hidden');
+        menuDropdown.classList.toggle('hidden');
+      });
+
+      menuDropdown.querySelector('.feed-item-edit-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuDropdown.classList.add('hidden');
+        openExercisePicker(item);
+      });
+
+      menuDropdown.querySelector('.feed-item-delete-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuDropdown.classList.add('hidden');
+        removeEventExercise(item);
+      });
+
+      menuContainer.append(dotsBtn, menuDropdown);
+      card.appendChild(menuContainer);
+
+      // Bottom overlay (Instagram style)
+      const overlay = document.createElement('div');
+      overlay.className = 'student-feed-overlay';
+      overlay.addEventListener('click', () => openExercise(item));
+
       const primaryGroup = item.muscle_group_primary || item.muscle_group || '';
       const sets = text(item.sets || '-');
       const reps = text(item.reps || '-');
       const rest = item.rest_seconds != null ? `${text(item.rest_seconds)}s` : '-';
-      main.innerHTML = `<strong class="student-exercise-row-title">${text(item.exercise_name || 'Exercício')}</strong><div class="student-exercise-row-meta"><span>${sets} séries × ${reps}</span><span class="student-meta-dot">·</span><span>${rest} descanso</span></div>${primaryGroup ? `<span class="student-exercise-row-tag">${text(primaryGroup)}</span>` : ''}`;
-      row.appendChild(main);
-      row.tabIndex = 0;
-      row.setAttribute('role', 'button');
-      row.setAttribute('aria-label', `Ver detalhes de ${item.exercise_name || 'exercício'}`);
-      row.addEventListener('click', () => openExercise(item));
-      row.addEventListener('keydown', (event) => {
+      const eventTime = `${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
+
+      overlay.innerHTML = `
+        <div class="student-feed-meta-row">
+          <strong class="student-feed-title">${text(item.exercise_name || 'Exercício')}</strong>
+          <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
+        </div>
+        <div class="student-feed-badges">
+          <span class="student-feed-badge primary">${sets} séries × ${reps}</span>
+          <span class="student-feed-badge secondary">${rest} descanso</span>
+          ${primaryGroup ? `<span class="student-feed-badge muscle">${text(primaryGroup)}</span>` : ''}
+        </div>
+        <div class="student-feed-caption">
+          <span>${text(selectedEvent.title || 'Treino')} · ${eventTime}${selectedEvent.notes ? ` · ${text(selectedEvent.notes)}` : ''}</span>
+        </div>
+      `;
+      card.appendChild(overlay);
+
+      card.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           openExercise(item);
         }
       });
-      const rowActions = document.createElement('div');
-      rowActions.className = 'entity-actions';
-      const edit = document.createElement('button');
-      edit.type = 'button';
-      edit.className = 'student-detail-icon-action compact';
-      edit.setAttribute('aria-label', `Editar ${item.exercise_name || 'exercício'}`);
-      edit.title = 'Editar exercício';
-      edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 16zM14.5 7.5l2 2"/></svg>';
-      edit.addEventListener('click', (event) => {
-        event.stopPropagation();
-        openExercisePicker(item);
-      });
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'student-detail-icon-action compact is-danger';
-      remove.setAttribute('aria-label', `Remover ${item.exercise_name || 'exercício'}`);
-      remove.title = 'Remover exercício';
-      remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v6M14 11v6"/></svg>';
-      remove.addEventListener('click', (event) => {
-        event.stopPropagation();
-        removeEventExercise(item);
-      });
-      rowActions.append(edit, remove);
-      row.appendChild(rowActions);
-      list.appendChild(row);
+
+      list.appendChild(card);
     });
   }
 
@@ -552,8 +617,64 @@
   on('student-event-form', 'submit', saveEvent); on('student-event-editor-close', 'click', closeEventEditor); on('student-event-editor-cancel', 'click', closeEventEditor); on('student-edit-event-button', 'click', () => openEventEditor(selectedEvent)); on('student-add-event-exercise-button', 'click', () => openExercisePicker()); on('student-import-calendar-button', 'click', importToCalendar); on('student-delete-event-button', 'click', removeEvent);
   on('student-exercise-search', 'focus', () => { p('student-exercise-results')?.classList.add('is-open'); renderExerciseResults(); }); on('student-exercise-search', 'input', () => { p('student-exercise-results')?.classList.add('is-open'); renderExerciseResults(); }); on('student-exercise-search', 'blur', () => setTimeout(() => { const list = p('student-exercise-results'); if (list && !list.contains(document.activeElement)) list.classList.remove('is-open'); }, 120)); on('student-event-exercise-form', 'submit', saveEventExercise); on('student-clear-picked-exercise', 'click', () => clearPickedExercise(false)); on('student-exercise-picker-close', 'click', closeExercisePicker); on('student-private-exercise-form', 'submit', savePrivateExercise); on('student-private-exercise-close', 'click', closePrivateExercise); on('student-private-exercise-cancel', 'click', closePrivateExercise); on('student-exercise-close', 'click', () => p('student-exercise-modal')?.classList.add('hidden'));
   [p('student-event-editor-modal'), p('student-exercise-picker-modal'), p('student-private-exercise-modal'), p('student-exercise-modal')].filter(Boolean).forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) modal.classList.add('hidden'); }));
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') document.querySelectorAll('.modal:not(.hidden)').forEach((modal) => modal.classList.add('hidden')); });
+  function initWorkoutMenu() {
+    const trigger = p('student-workout-menu-btn');
+    const dropdown = p('student-workout-dropdown');
+    if (!trigger || !dropdown) return;
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => d.classList.add('hidden'));
+      const isHidden = dropdown.classList.toggle('hidden');
+      trigger.setAttribute('aria-expanded', String(!isHidden));
+    });
+
+    on('student-menu-add-exercise', 'click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      openExercisePicker();
+    });
+    on('student-menu-edit-event', 'click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      openEventEditor(selectedEvent);
+    });
+    on('student-menu-new-event', 'click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      openEventEditor();
+    });
+    on('student-menu-my-plan', 'click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      openMyPlan();
+    });
+    on('student-menu-import-calendar', 'click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      importToCalendar();
+    });
+    on('student-menu-delete-event', 'click', () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      removeEvent();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+      document.querySelectorAll('.student-feed-item-dropdown:not(.hidden)').forEach((d) => {
+        if (!d.contains(e.target) && !e.target.closest('.student-feed-dots-btn')) {
+          d.classList.add('hidden');
+        }
+      });
+    });
+  }
+
   window.StudentWorkout = { getEvents: () => events };
   initSwipeGestures();
+  initWorkoutMenu();
   load();
 }());
