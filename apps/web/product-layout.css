@@ -95,7 +95,18 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
 #plan-modal .plan-modal-actions { margin-top: 28px; }
 #student-form-panel .student-modal-actions { margin-top: 28px; }
 .finance-filter-actions span { margin-right: auto; color: #68716b; font-size: 13px; font-weight: 700; }
-.finance-status-card { width: min(680px, 94vw); }
+.finance-status-card {
+  width: min(480px, calc(100vw - 32px)) !important;
+  max-width: 480px;
+  border-radius: 18px;
+  padding: 22px;
+}
+.finance-modal-card {
+  width: min(460px, calc(100vw - 32px)) !important;
+  max-width: 460px;
+  border-radius: 18px;
+  padding: 22px;
+}
 .finance-status-card .toolbar,
 #finance-modal .toolbar,
 .pix-modal-card .modal-header {
@@ -103,8 +114,8 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--line);
 }
 .finance-status-card .toolbar h3,
@@ -133,7 +144,7 @@ html[data-admin-shell="true"] body.admin-finance-page .panel > .finance-filter-p
   color: var(--muted);
   cursor: pointer;
   transition: all .16s ease;
-  margin: 0;
+  margin: 0 0 0 auto !important;
   flex: 0 0 36px;
 }
 .finance-status-card .modal-close:hover,

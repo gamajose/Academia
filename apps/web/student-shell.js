@@ -92,8 +92,8 @@
     const items = [
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
       ['progress', './student-progress.html', 'chart', 'Evolução'],
-      ['access', './student-access.html', 'qr', 'Acesso'],
-      ['profile', './student-profile.html', 'profile', 'Perfil']
+      ['goals', './student-goals.html', 'target', 'Metas'],
+      ['access', './student-access.html', 'qr', 'Acesso']
     ];
     items.forEach(([key, href, iconText, label]) => {
       const link = document.createElement('a');
@@ -170,7 +170,7 @@
         link.querySelector('.nav-label').textContent = translations[getLocale()]?.[navigationLabels[key]] || navigationLabels[key];
       }
     });
-    const mobileCurrent = current === 'security' || current === 'profile' ? 'profile' : current === 'progress' ? 'progress' : current === 'access' ? 'access' : 'training';
+    const mobileCurrent = current === 'goals' ? 'goals' : current === 'progress' ? 'progress' : current === 'access' ? 'access' : current === 'training' ? 'training' : '';
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 

@@ -50,10 +50,14 @@
 
   <div class="modal hidden" id="student-goal-modal" role="dialog" aria-modal="true" aria-labelledby="student-goal-modal-title">
     <div class="modal-card student-goal-form">
-      <button class="modal-close" id="student-goal-close" type="button" aria-label="Fechar">&times;</button>
-      <p class="eyebrow student-goal-modal-eyebrow">Objetivo pessoal</p>
-      <h2 id="student-goal-modal-title" class="student-goal-modal-heading">Nova meta</h2>
-      <p class="modal-description">Registre o que você quer alcançar e acompanhe sua evolução.</p>
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow student-goal-modal-eyebrow">Objetivo pessoal</p>
+          <h2 id="student-goal-modal-title" class="student-goal-modal-heading">Nova meta</h2>
+          <p class="modal-description">Registre o que você quer alcançar e acompanhe sua evolução.</p>
+        </div>
+        <button class="modal-close" id="student-goal-close" type="button" aria-label="Fechar">&times;</button>
+      </div>
       <form id="student-goal-form">
         <input id="student-goal-id" type="hidden" />
         <div class="field-grid two-columns">
@@ -87,7 +91,7 @@
     </div>
   </div>
 
-  <script src="./student-shell.js?v=20260719-2"></script>
+  <script src="./student-shell.js?v=20261005-1"></script>
   <script src="./student-goals.js?v=20260715-2"></script>
 </body>
 </html>
