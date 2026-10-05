@@ -50,41 +50,61 @@
 .training-active-field input { width: auto; min-height: auto; }
 .entity-card[role="button"] { cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .entity-card[role="button"]:hover, .entity-card[role="button"]:focus-visible { border-color: #1d6fd6; box-shadow: 0 10px 24px rgba(29, 111, 214, .12); outline: none; transform: translateY(-1px); }
-.exercise-view-modal-card { width: min(900px, 96vw); }
-.plan-view-modal-card { width: min(940px, 96vw); }
-.plan-view-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-.plan-view-summary span { padding: 7px 10px; border-radius: 999px; background: #edf5fc; color: var(--accent); font-size: 12px; font-weight: 800; }
-.plan-view-days { display: grid; gap: 16px; }
-.plan-view-day { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdff; }
+.exercise-view-modal-card { width: min(440px, calc(100vw - 24px)) !important; max-width: 440px; border-radius: 16px; padding: 16px; }
+.plan-view-modal-card { width: min(640px, calc(100vw - 24px)) !important; max-width: 640px; border-radius: 16px; padding: 16px; }
+.plan-view-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.plan-view-summary span { padding: 5px 8px; border-radius: 999px; background: #edf5fc; color: var(--accent); font-size: 11.5px; font-weight: 800; }
+.plan-view-days { display: grid; gap: 12px; }
+.plan-view-day { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fbfdff; }
 .plan-view-day h4, .plan-view-day p { margin: 0; }
-.plan-view-day p { color: var(--muted); font-size: 13px; }
-.plan-view-exercises { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.plan-view-exercises li { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
-.plan-view-exercises small { color: var(--muted); }
-@media (max-width: 650px) { .plan-view-exercises li { grid-template-columns: 1fr; gap: 5px; } }
-@media (max-width: 620px) { .entity-card { align-items: center; flex-wrap: wrap; } .entity-card .entity-main { flex: 1 1 150px; } .entity-actions { width: auto; } }
-.student-progress-upload-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.student-progress-upload-preview { min-height: 180px; margin-top: 18px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 14px; color: var(--muted); overflow: hidden; background: rgba(20, 120, 212, .04); }
-.student-progress-upload-preview img { display: block; width: 100%; max-height: 280px; object-fit: contain; }
-.student-progress-history-photo { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.plan-view-day p { color: var(--muted); font-size: 12.5px; }
+.plan-view-exercises { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-view-exercises li { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-size: 13px; }
+.plan-view-exercises small { color: var(--muted); font-size: 11px; }
+@media (max-width: 650px) { .plan-view-exercises li { grid-template-columns: 1fr; gap: 4px; } }
+@media (max-width: 620px) { .entity-card { align-items: center; } .entity-card .entity-main { flex: 1 1 auto; } }
+.student-progress-upload-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.student-progress-upload-preview { min-height: 140px; margin-top: 12px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); overflow: hidden; background: rgba(20, 120, 212, .04); }
+.student-progress-upload-preview img { display: block; width: 100%; max-height: 240px; object-fit: contain; }
+.student-progress-history-photo { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
 @media (max-width: 760px) { .student-progress-upload-grid { grid-template-columns: 1fr; } }
-.exercise-view-layout { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1fr); gap: 22px; }
-.exercise-view-media { min-height: 250px; display: grid; place-items: center; padding: 12px; border: 1px solid var(--line, #e0d8cc); border-radius: 14px; background: #101814; }
-.exercise-view-media .exercise-video-preview, .exercise-view-media .exercise-gif-preview { width: 100%; max-height: 360px; }
-.exercise-view-media .exercise-image-preview { display: block; width: 100%; max-height: 360px; object-fit: contain; border-radius: 12px; }
+.exercise-view-layout { display: flex; flex-direction: column; gap: 12px; }
+.exercise-view-media { min-height: 160px; max-height: 220px; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #243c55; border-radius: 12px; background: #08111c; overflow: hidden; }
+.exercise-view-media .exercise-video-preview, .exercise-view-media .exercise-gif-preview { width: 100%; max-height: 200px; object-fit: contain; }
+.exercise-view-media .exercise-image-preview, .exercise-view-media img { display: block; width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; }
 .exercise-view-media .mini-button { margin: 0; background: #fff; color: #171717; }
-.exercise-view-media-empty { color: #d7e4df; font-size: 13px; text-align: center; }
-.exercise-view-copy { display: grid; gap: 18px; align-content: start; }
-.exercise-view-copy h4 { margin: 0 0 7px; }
-.exercise-view-copy p { margin: 0; line-height: 1.6; white-space: pre-wrap; }
-.exercise-view-tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.exercise-view-muscles { display: grid; gap: 10px; }
-.exercise-view-muscle-chip { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid #dbe8f4; border-radius: 10px; background: #f5faff; }
-.exercise-view-muscle-chip strong { color: var(--muted, #68716b); font-size: 12px; font-weight: 500; }
-.exercise-view-muscle-chip span { color: #3d5870; font-weight: 500; }
-.exercise-view-tags span { display: grid; gap: 4px; padding: 11px 12px; border: 1px solid var(--line, #e0d8cc); border-radius: 10px; background: #fbfdff; }
-.exercise-view-tags strong { color: #687b8d; font-size: 12px; font-weight: 500; }
-.exercise-view-tags em { color: #3d5870; font-style: normal; font-weight: 500; }
+.exercise-view-media-empty { color: #8fa6b8; font-size: 12px; text-align: center; }
+.exercise-view-copy { display: grid; gap: 10px; align-content: start; }
+.exercise-view-copy h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 750; }
+.exercise-view-copy p { margin: 0; line-height: 1.45; font-size: 12.5px; white-space: pre-wrap; }
+.exercise-view-tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.exercise-view-muscles { display: grid; gap: 6px; }
+.exercise-view-muscle-chip { display: grid; gap: 2px; padding: 6px 10px; border: 1px solid #dbe8f4; border-radius: 8px; background: #f5faff; }
+.exercise-view-muscle-chip strong { color: var(--muted, #68716b); font-size: 11px; font-weight: 600; }
+.exercise-view-muscle-chip span { color: #3d5870; font-weight: 600; font-size: 12px; }
+.exercise-view-tags span { display: grid; gap: 2px; padding: 6px 10px; border: 1px solid var(--line, #e0d8cc); border-radius: 8px; background: #fbfdff; }
+.exercise-view-tags strong { color: #687b8d; font-size: 11px; font-weight: 600; }
+.exercise-view-tags em { color: #3d5870; font-style: normal; font-weight: 600; font-size: 12px; }
+html[data-student-theme="dark"] body.student-page .exercise-view-tags span,
+html[data-student-theme="dark"] body.student-page .exercise-view-muscle-chip {
+  border-color: #243c55 !important;
+  background: #182a3d !important;
+  color: #e8f0f8 !important;
+}
+html[data-student-theme="dark"] body.student-page .exercise-view-tags strong,
+html[data-student-theme="dark"] body.student-page .exercise-view-muscle-chip strong {
+  color: #38bdf8 !important;
+}
+html[data-student-theme="dark"] body.student-page .exercise-view-tags em,
+html[data-student-theme="dark"] body.student-page .exercise-view-muscle-chip span {
+  color: #ffffff !important;
+}
+html[data-student-theme="dark"] body.student-page .exercise-view-copy h4 {
+  color: #ffffff !important;
+}
+html[data-student-theme="dark"] body.student-page .exercise-view-copy p {
+  color: #cbd5e1 !important;
+}
 .training-levels-panel { margin-bottom: 18px; }
 .training-hero { display: block; }
 .training-hero-title-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; }

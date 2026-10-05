@@ -1,5 +1,7 @@
 .student-page[data-student-page="progress"] .app-shell {
-  width: min(900px, calc(100% - 48px));
+  width: min(900px, calc(100% - 16px));
+  padding-top: 8px !important;
+  padding-bottom: 56px !important;
 }
 
 .student-assessment-form { display: grid; gap: 16px; }

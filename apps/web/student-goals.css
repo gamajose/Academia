@@ -1,12 +1,14 @@
 .student-goals-shell {
-  width: min(900px, calc(100% - 48px));
-  padding-top: 32px;
+  width: min(900px, calc(100% - 16px));
+  padding-top: 8px !important;
+  padding-bottom: 56px !important;
 }
 
 .student-goals-panel {
-  width: min(980px, 100%);
+  width: 100%;
   margin-inline: auto;
-  gap: 16px;
+  gap: 8px !important;
+  padding: 12px 14px !important;
 }
 
 .student-goals-panel.is-single-goal {

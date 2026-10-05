@@ -397,4 +397,9 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
   .student-view-registration-actions { width: 100%; margin-left: 0; }
   .student-view-registration-actions .button { flex: 1 1 0; }
   .student-training-review-overview, .student-training-review-items { grid-template-columns: 1fr; }
+  .app-shell { width: calc(100% - 14px) !important; padding-top: 6px !important; }
+  .panel { padding: 10px 12px !important; gap: 8px !important; border-radius: 12px !important; }
+  .modal { padding: 8px !important; }
+  .modal-card { padding: 16px !important; border-radius: 14px !important; max-width: calc(100vw - 16px) !important; }
+  .toolbar { gap: 8px !important; margin-bottom: 8px !important; }
 }

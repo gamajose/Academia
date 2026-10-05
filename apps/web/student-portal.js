@@ -137,7 +137,15 @@
     const list = p('student-event-list');
     list.replaceChildren();
     const dayEvents = eventForDate(selectedDate).filter((event) => !event.is_weekly || event.exercises?.length);
-    if (!dayEvents.length) return;
+    if (!dayEvents.length) {
+      list.classList.add('hidden');
+      return;
+    }
+    if (dayEvents.length === 1 && selectedEvent?.id === dayEvents[0].id) {
+      list.classList.add('hidden');
+      return;
+    }
+    list.classList.remove('hidden');
     dayEvents.forEach((event) => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -180,7 +188,7 @@
   function renderEventDetail() {
     const panel = p('student-event-detail-panel');
     const weekday = weekdayForDate(selectedDate);
-    p('student-selected-date-weekday').textContent = 'Ficha semanal';
+    p('student-selected-date-weekday').textContent = '';
     p('student-selected-date-title').textContent = weekdayLabel(weekday);
     const actions = p('student-event-detail-actions');
     const list = p('student-event-exercise-list');
@@ -192,6 +200,7 @@
       p('student-event-detail-title').textContent = 'Treino do dia';
       p('student-event-detail-time').textContent = '';
       p('student-event-detail-notes').textContent = '';
+      p('student-event-detail-notes').hidden = true;
       return;
     }
     panel.classList.remove('hidden');
@@ -200,14 +209,22 @@
     p('student-delete-event-button').classList.toggle('hidden', Boolean(selectedEvent.is_weekly));
     p('student-event-detail-title').textContent = selectedEvent.title;
     p('student-event-detail-time').textContent = `${weekdayLabel(weekday)} · ${timeLabel(selectedEvent.start_time)}${selectedEvent.end_time ? ` - ${timeLabel(selectedEvent.end_time)}` : ''}`;
-    p('student-event-detail-notes').textContent = selectedEvent.notes || 'Sem observações para este treino.';
+    if (selectedEvent.notes && selectedEvent.notes.trim()) {
+      p('student-event-detail-notes').hidden = false;
+      p('student-event-detail-notes').textContent = selectedEvent.notes;
+    } else {
+      p('student-event-detail-notes').hidden = true;
+      p('student-event-detail-notes').textContent = '';
+    }
     if (!selectedEvent.exercises.length) return;
     selectedEvent.exercises.forEach((item) => {
       const row = document.createElement('li'); row.className = 'entity-card student-workout-exercise-row';
+      const media = document.createElement('div'); media.className = 'student-exercise-inline-media'; appendExerciseMedia(media, item);
+      if (media.children.length) row.appendChild(media);
       const main = document.createElement('div'); main.className = 'entity-main';
-      main.innerHTML = `<strong>${text(item.exercise_name || 'Exercício')}</strong><span>${text(item.sets || '-')} séries · ${text(item.reps || '-')} repetições · ${text(item.rest_seconds ?? '-')}s de descanso</span><span>${text([item.is_private ? 'Exercício personalizado' : 'Catálogo da academia', item.muscle_group_primary || item.muscle_group].filter(Boolean).join(' · '))}</span>`;
-      const media = document.createElement('div'); media.className = 'student-exercise-inline-media'; appendExerciseMedia(media, item); if (!media.children.length) media.hidden = true;
-      main.appendChild(media); row.appendChild(main);
+      const primaryGroup = item.muscle_group_primary || item.muscle_group || '';
+      main.innerHTML = `<strong class="student-exercise-row-title">${text(item.exercise_name || 'Exercício')}</strong><span class="student-exercise-row-meta">${text(item.sets || '-')} séries · ${text(item.reps || '-')} repetições · ${text(item.rest_seconds ?? '-')}s descanso</span>${primaryGroup ? `<span class="student-exercise-row-tag">${text(primaryGroup)}</span>` : ''}`;
+      row.appendChild(main);
       row.tabIndex = 0; row.setAttribute('role', 'button'); row.setAttribute('aria-label', `Ver detalhes de ${item.exercise_name || 'exercício'}`);
       row.addEventListener('click', () => openExercise(item));
       row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openExercise(item); } });
