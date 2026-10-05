@@ -1,0 +1,190 @@
+(function () {
+  const host = window.location.hostname || 'localhost';
+  const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+  const token = localStorage.getItem('academiaToken') || '';
+
+  const statusEl = document.getElementById('customization-status');
+  const btnTop = document.getElementById('btn-save-top');
+  const btnBottom = document.getElementById('btn-save-bottom');
+
+  const fields = {
+    home_hero_image: {
+      input: document.getElementById('inp-home-hero'),
+      preview: document.getElementById('preview-home-hero'),
+      file: document.getElementById('file-home-hero')
+    },
+    home_structure_image: {
+      input: document.getElementById('inp-home-structure'),
+      preview: document.getElementById('preview-home-structure'),
+      file: document.getElementById('file-home-structure')
+    },
+    home_coaching_image: {
+      input: document.getElementById('inp-home-coaching'),
+      preview: document.getElementById('preview-home-coaching'),
+      file: document.getElementById('file-home-coaching')
+    },
+    plans_hero_image: {
+      input: document.getElementById('inp-plans-hero'),
+      preview: document.getElementById('preview-plans-hero'),
+      file: document.getElementById('file-plans-hero')
+    },
+    button_color: {
+      picker: document.getElementById('picker-button-color'),
+      input: document.getElementById('inp-button-color'),
+      preview: document.getElementById('preview-button-cta')
+    },
+    instagram_url: {
+      input: document.getElementById('inp-instagram-url')
+    }
+  };
+
+  function setStatus(msg, isError = false) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color = isError ? '#ef4444' : '#1478d4';
+  }
+
+  function updateColor(color) {
+    if (!color) return;
+    if (fields.button_color.picker) fields.button_color.picker.value = color;
+    if (fields.button_color.input) fields.button_color.input.value = color;
+    if (fields.button_color.preview) fields.button_color.preview.style.backgroundColor = color;
+  }
+
+  // Bind color picker events
+  fields.button_color.picker?.addEventListener('input', (e) => {
+    updateColor(e.target.value);
+  });
+  fields.button_color.input?.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      updateColor(val);
+    }
+  });
+
+  // Bind image upload and preview events
+  ['home_hero_image', 'home_structure_image', 'home_coaching_image', 'plans_hero_image'].forEach((key) => {
+    const item = fields[key];
+    if (!item) return;
+
+    item.input?.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val && item.preview) item.preview.src = val;
+    });
+
+    const triggerBtn = document.querySelector(`[data-target="${item.file?.id}"]`);
+    triggerBtn?.addEventListener('click', () => item.file?.click());
+
+    item.file?.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (item.preview) item.preview.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      setStatus('Enviando imagem...');
+      try {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+
+        const res = await fetch(`${API}/api/editor/images`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.location) throw new Error(data.error || 'Falha no envio');
+
+        if (item.input) item.input.value = data.location;
+        if (item.preview) item.preview.src = data.location;
+        setStatus('Imagem carregada.');
+      } catch (err) {
+        setStatus(`Erro no upload: ${err.message}`, true);
+      }
+    });
+  });
+
+  async function loadSettings() {
+    try {
+      const res = await fetch(`${API}/api/gym/site-settings`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const s = data.site_settings || {};
+
+      if (s.home_hero_image && fields.home_hero_image.input) {
+        fields.home_hero_image.input.value = s.home_hero_image;
+        fields.home_hero_image.preview.src = s.home_hero_image;
+      }
+      if (s.home_structure_image && fields.home_structure_image.input) {
+        fields.home_structure_image.input.value = s.home_structure_image;
+        fields.home_structure_image.preview.src = s.home_structure_image;
+      }
+      if (s.home_coaching_image && fields.home_coaching_image.input) {
+        fields.home_coaching_image.input.value = s.home_coaching_image;
+        fields.home_coaching_image.preview.src = s.home_coaching_image;
+      }
+      if (s.plans_hero_image && fields.plans_hero_image.input) {
+        fields.plans_hero_image.input.value = s.plans_hero_image;
+        fields.plans_hero_image.preview.src = s.plans_hero_image;
+      }
+      if (s.button_color) {
+        updateColor(s.button_color);
+      } else {
+        updateColor('#1478d4');
+      }
+      if (s.instagram_url && fields.instagram_url.input) {
+        fields.instagram_url.input.value = s.instagram_url;
+      }
+    } catch (_) {}
+  }
+
+  async function saveSettings() {
+    [btnTop, btnBottom].forEach((btn) => { if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; } });
+    setStatus('Salvando alterações...');
+
+    const payload = {
+      site_settings: {
+        home_hero_image: fields.home_hero_image.input?.value.trim() || undefined,
+        home_structure_image: fields.home_structure_image.input?.value.trim() || undefined,
+        home_coaching_image: fields.home_coaching_image.input?.value.trim() || undefined,
+        plans_hero_image: fields.plans_hero_image.input?.value.trim() || undefined,
+        button_color: fields.button_color.input?.value.trim() || undefined,
+        instagram_url: fields.instagram_url.input?.value.trim() || undefined
+      }
+    };
+
+    try {
+      const res = await fetch(`${API}/api/gym/site-settings`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Falha ao salvar');
+
+      setStatus('Alterações salvas com sucesso!');
+      setTimeout(() => setStatus(''), 3000);
+    } catch (err) {
+      setStatus(`Erro: ${err.message}`, true);
+    } finally {
+      [btnTop, btnBottom].forEach((btn) => { if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; } });
+    }
+  }
+
+  btnTop?.addEventListener('click', saveSettings);
+  btnBottom?.addEventListener('click', saveSettings);
+  document.getElementById('customization-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveSettings();
+  });
+
+  loadSettings();
+})();

@@ -57,4 +57,46 @@ async function loadPlans() {
   }
 }
 
+async function loadSiteConfig() {
+  try {
+    const response = await fetch(`${API}/api/public/site-config`, { headers: { Accept: 'application/json' } });
+    if (!response.ok) return;
+    const data = await response.json();
+    const settings = data?.gym?.site_settings;
+    if (!settings || typeof settings !== 'object') return;
+
+    if (settings.button_color) {
+      document.documentElement.style.setProperty('--wolf', settings.button_color);
+    }
+    if (settings.instagram_url) {
+      document.querySelectorAll('.nav-instagram, #header-instagram-link, a[href*="instagram.com"]').forEach((el) => {
+        el.href = settings.instagram_url;
+      });
+    }
+    if (settings.home_hero_image) {
+      const heroEl = document.querySelector('.hero-visual');
+      if (heroEl) {
+        heroEl.style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.46)), url('${settings.home_hero_image}')`;
+      }
+    }
+    if (settings.home_structure_image) {
+      const structEl = document.querySelector('.image-strength');
+      if (structEl) {
+        structEl.style.backgroundImage = `url('${settings.home_structure_image}')`;
+      }
+    }
+    if (settings.home_coaching_image) {
+      const coachEl = document.querySelector('.split-photo');
+      if (coachEl) {
+        coachEl.style.backgroundImage = `linear-gradient(180deg, transparent, rgba(0,0,0,.22)), url('${settings.home_coaching_image}')`;
+      }
+      const coachImg = document.querySelector('.image-coach');
+      if (coachImg) {
+        coachImg.style.backgroundImage = `url('${settings.home_coaching_image}')`;
+      }
+    }
+  } catch (_) {}
+}
+
 loadPlans();
+loadSiteConfig();

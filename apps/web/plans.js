@@ -121,6 +121,26 @@
     if (plans.length) select.insertAdjacentHTML('beforeend', plans.map((plan) => `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)} — ${money(plan.price_cents)}</option>`).join(''));
   }
 
+  function applySettings(settings) {
+    if (!settings || typeof settings !== 'object') return;
+    if (settings.button_color) {
+      document.documentElement.style.setProperty('--wolf', settings.button_color);
+    }
+    if (settings.instagram_url) {
+      document.querySelectorAll('.nav-instagram, #header-instagram-link, a[href*="instagram.com"]').forEach((el) => {
+        el.href = settings.instagram_url;
+      });
+    }
+    if (settings.plans_hero_image) {
+      const heroEl = document.querySelector('.public-plans-hero');
+      if (heroEl) {
+        heroEl.style.backgroundImage = `linear-gradient(135deg, rgba(61, 17, 17, 0.8), rgba(13, 92, 167, 0.9)), url('${settings.plans_hero_image}')`;
+        heroEl.style.backgroundSize = 'cover';
+        heroEl.style.backgroundPosition = 'center';
+      }
+    }
+  }
+
   async function loadCatalog() {
     renderCatalog({ plans: samplePlans, classes: sampleClasses });
     try {
@@ -128,8 +148,14 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível carregar os planos.');
       renderCatalog(data);
+      if (data.gym?.site_settings) {
+        applySettings(data.gym.site_settings);
+      } else {
+        fetch(`${apiBase}/api/public/site-config`).then((r) => r.json()).then((d) => applySettings(d?.gym?.site_settings)).catch(() => {});
+      }
     } catch (_) {
       renderCatalog({ plans: samplePlans, classes: sampleClasses });
+      fetch(`${apiBase}/api/public/site-config`).then((r) => r.json()).then((d) => applySettings(d?.gym?.site_settings)).catch(() => {});
     }
   }
 

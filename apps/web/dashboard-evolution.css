@@ -128,9 +128,24 @@
 }
 
 @media (max-width: 760px) {
-  .dashboard-core-cards,
+  .dashboard-core-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
   .dashboard-alert-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .cockpit-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(240px, 84vw);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 10px;
+  }
+  .cockpit-card {
+    scroll-snap-align: start;
+    padding: 12px 10px;
   }
 
   .dashboard-assessment-grid {

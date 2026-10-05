@@ -225,6 +225,7 @@ function renderNavigation() {
         <a href="${pageUrl('account.html')}">Perfil</a>
         <a href="${pageUrl('security.html')}">Segurança</a>
         <a id="profile-preferences" href="${pageUrl('account.html')}&view=preferences">Preferências</a>
+        <a id="profile-customization" href="${pageUrl('site-customization.html')}">Personalizar Site</a>
         <a id="profile-settings" href="${pageUrl('settings.html')}">Configurações</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
       </div>
@@ -425,6 +426,7 @@ function renderAdminMobileNavigation(current, pages, icons) {
         <a href="${pageUrl('account.html')}">${labels.perfil}</a>
         <a href="${pageUrl('security.html')}">${labels.seguranca}</a>
         <a href="${pageUrl('account.html')}&view=preferences">${labels.preferencias}</a>
+        <a href="${pageUrl('site-customization.html')}">Personalizar Site</a>
         <a href="${pageUrl('settings.html')}">${labels.configuracoes || 'Configurações'}</a>
         <button class="logout-item" id="admin-mobile-logout" type="button">${labels.sair}</button>
       </div>

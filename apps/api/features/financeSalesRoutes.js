@@ -231,9 +231,16 @@ async function closeCash(req,res,user,helpers){
   return helpers.send(res,200,{session:result.rows[0],difference_cents:Number(result.rows[0].closing_balance_cents)-expected});
 }
 
+async function publicSiteConfig(res,url,helpers){
+  const slug=url.searchParams.get('gym_slug');
+  const gym=await helpers.query("SELECT id,name,slug,logo_url,phone,email,site_settings FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status='active' ORDER BY created_at LIMIT 1",[slug||null]);
+  if(!gym.rowCount) return helpers.send(res,404,{error:'academia_nao_encontrada'});
+  return helpers.send(res,200,{gym:gym.rows[0],site_settings:gym.rows[0].site_settings||{}});
+}
+
 async function publicCatalog(res,url,helpers){
   const slug=url.searchParams.get('gym_slug');
-  const gym=await helpers.query("SELECT id,name,slug FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status='active' ORDER BY created_at LIMIT 1",[slug||null]);
+  const gym=await helpers.query("SELECT id,name,slug,logo_url,site_settings FROM gyms WHERE ($1::text IS NULL OR slug=$1) AND status='active' ORDER BY created_at LIMIT 1",[slug||null]);
   if(!gym.rowCount) return helpers.send(res,404,{error:'academia_nao_encontrada'});
   const [plans,classes]=await Promise.all([
     helpers.query(
@@ -243,7 +250,7 @@ async function publicCatalog(res,url,helpers){
        ORDER BY is_featured DESC,price_cents,name`,[gym.rows[0].id]),
     helpers.query('SELECT id,name,description,room,capacity,duration_minutes,level FROM gym_classes WHERE gym_id=$1 AND is_active=true ORDER BY name',[gym.rows[0].id])
   ]);
-  return helpers.send(res,200,{gym:gym.rows[0],plans:plans.rows,classes:classes.rows});
+  return helpers.send(res,200,{gym:gym.rows[0],site_settings:gym.rows[0].site_settings||{},plans:plans.rows,classes:classes.rows});
 }
 
 async function createLead(req,res,helpers){
@@ -323,6 +330,7 @@ async function manualUnlock(req,res,user,helpers){
 }
 
 async function handleFinanceSalesRoutes(req,res,user,url,helpers){
+  if(req.method==='GET'&&url.pathname==='/api/public/site-config') return publicSiteConfig(res,url,helpers);
   if(req.method==='GET'&&url.pathname==='/api/public/catalog') return publicCatalog(res,url,helpers);
   if(req.method==='POST'&&url.pathname==='/api/public/leads') return createLead(req,res,helpers);
   if(!user) return false;

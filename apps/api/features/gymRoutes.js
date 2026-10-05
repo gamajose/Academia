@@ -10,11 +10,33 @@ async function handleGymRoutes(req, res, user, url, helpers) {
 
   if (req.method === 'GET' && url.pathname === '/api/gym/profile') {
     const result = await query(
-      'SELECT id, name, slug, status, phone, email, address, document_number, timezone, logo_url, pix_key, payment_settings, created_at, updated_at FROM gyms WHERE id = $1 LIMIT 1',
+      'SELECT id, name, slug, status, phone, email, address, document_number, timezone, logo_url, pix_key, payment_settings, site_settings, created_at, updated_at FROM gyms WHERE id = $1 LIMIT 1',
       [user.gym_id]
     );
     if (!result.rowCount) return send(res, 404, { error: 'academia_nao_encontrada' });
     return send(res, 200, result.rows[0]);
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/gym/site-settings') {
+    const result = await query(
+      'SELECT site_settings, name, logo_url FROM gyms WHERE id = $1 LIMIT 1',
+      [user.gym_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'academia_nao_encontrada' });
+    return send(res, 200, { name: result.rows[0].name, logo_url: result.rows[0].logo_url, site_settings: result.rows[0].site_settings || {} });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/gym/site-settings') {
+    if (!canManageGym(user)) return send(res, 403, { error: 'sem_permissao' });
+    const input = await body(req);
+    const settings = input.site_settings !== undefined ? input.site_settings : input;
+    const result = await query(
+      'UPDATE gyms SET site_settings = $2::jsonb, updated_at = now() WHERE id = $1 RETURNING site_settings',
+      [user.gym_id, JSON.stringify(settings || {})]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'academia_nao_encontrada' });
+    await recordAudit(user, 'update', 'gym_site_settings', user.gym_id, { site_settings: result.rows[0].site_settings });
+    return send(res, 200, { site_settings: result.rows[0].site_settings });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/gym/profile') {
@@ -33,9 +55,10 @@ async function handleGymRoutes(req, res, user, url, helpers) {
          logo_url = CASE WHEN $8::boolean THEN $9 ELSE logo_url END,
          pix_key = CASE WHEN $10::boolean THEN $11 ELSE pix_key END,
          payment_settings = CASE WHEN $12::boolean THEN $13::jsonb ELSE payment_settings END,
+         site_settings = CASE WHEN $14::boolean THEN $15::jsonb ELSE site_settings END,
          updated_at = now()
        WHERE id = $1
-       RETURNING id, name, slug, status, phone, email, address, document_number, timezone, logo_url, pix_key, payment_settings, updated_at`,
+       RETURNING id, name, slug, status, phone, email, address, document_number, timezone, logo_url, pix_key, payment_settings, site_settings, updated_at`,
       [
         user.gym_id,
         input.name || null,
@@ -49,7 +72,9 @@ async function handleGymRoutes(req, res, user, url, helpers) {
         finalPixKey !== undefined,
         finalPixKey || null,
         input.payment_settings !== undefined,
-        JSON.stringify(input.payment_settings || {})
+        JSON.stringify(input.payment_settings || {}),
+        input.site_settings !== undefined,
+        JSON.stringify(input.site_settings || {})
       ]
     );
     if (!result.rowCount) return send(res, 404, { error: 'academia_nao_encontrada' });

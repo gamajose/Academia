@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <script src="./ui-bootstrap.js?v=20260718-1"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personalizar Site - BlueREC Academia</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./site-customization.css" />
+</head>
+<body>
+  <main class="app-shell customization-shell">
+    <div class="customization-header">
+      <h1>Personalização do Site</h1>
+      <button type="button" class="btn-save" id="btn-save-top">Salvar</button>
+    </div>
+
+    <form id="customization-form" class="customization-sections">
+      <!-- Início -->
+      <section class="custom-card">
+        <h2>Página Inicial</h2>
+        <div class="images-grid">
+          <div class="image-block">
+            <label>Destaque Principal (Hero)</label>
+            <div class="image-preview-box">
+              <img id="preview-home-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Hero" />
+            </div>
+            <div class="image-controls">
+              <button type="button" class="btn-upload" data-target="file-home-hero">Escolher imagem</button>
+              <input type="file" id="file-home-hero" accept="image/*" hidden />
+              <input type="url" id="inp-home-hero" placeholder="Link da imagem" />
+            </div>
+          </div>
+
+          <div class="image-block">
+            <label>Estrutura</label>
+            <div class="image-preview-box">
+              <img id="preview-home-structure" src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1000&q=85" alt="Estrutura" />
+            </div>
+            <div class="image-controls">
+              <button type="button" class="btn-upload" data-target="file-home-structure">Escolher imagem</button>
+              <input type="file" id="file-home-structure" accept="image/*" hidden />
+              <input type="url" id="inp-home-structure" placeholder="Link da imagem" />
+            </div>
+          </div>
+
+          <div class="image-block">
+            <label>Acompanhamento</label>
+            <div class="image-preview-box">
+              <img id="preview-home-coaching" src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&q=88" alt="Acompanhamento" />
+            </div>
+            <div class="image-controls">
+              <button type="button" class="btn-upload" data-target="file-home-coaching">Escolher imagem</button>
+              <input type="file" id="file-home-coaching" accept="image/*" hidden />
+              <input type="url" id="inp-home-coaching" placeholder="Link da imagem" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Planos e Cores -->
+      <section class="custom-card">
+        <h2>Planos e Aulas</h2>
+        <div class="images-grid">
+          <div class="image-block">
+            <label>Fundo do Topo (Planos)</label>
+            <div class="image-preview-box">
+              <img id="preview-plans-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Topo Planos" />
+            </div>
+            <div class="image-controls">
+              <button type="button" class="btn-upload" data-target="file-plans-hero">Escolher imagem</button>
+              <input type="file" id="file-plans-hero" accept="image/*" hidden />
+              <input type="url" id="inp-plans-hero" placeholder="Link da imagem" />
+            </div>
+          </div>
+
+          <div class="image-block">
+            <label>Cor dos Botões (CTA)</label>
+            <div class="color-picker-row">
+              <div class="color-input-wrap">
+                <input type="color" id="picker-button-color" value="#1478d4" />
+                <input type="text" id="inp-button-color" class="color-hex-input" value="#1478d4" maxlength="7" />
+              </div>
+              <button type="button" id="preview-button-cta" class="color-preview-btn">Exemplo de Botão</button>
+            </div>
+          </div>
+
+          <div class="image-block">
+            <label>Instagram</label>
+            <input type="url" id="inp-instagram-url" placeholder="https://www.instagram.com/sua_academia" />
+          </div>
+        </div>
+      </section>
+
+      <div class="customization-footer">
+        <div id="customization-status" class="customization-status" aria-live="polite"></div>
+        <button type="button" class="btn-save" id="btn-save-bottom">Salvar</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="./nav.js"></script>
+  <script src="./site-customization.js"></script>
+</body>
+</html>

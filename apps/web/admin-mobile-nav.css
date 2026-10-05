@@ -29,19 +29,19 @@
 
   .admin-more { display: block; justify-self: end; }
   .admin-more-trigger {
-    width: 46px !important;
-    min-width: 46px;
-    height: 46px;
-    min-height: 46px;
-    padding: 0;
-    border: 1px solid rgba(255,255,255,.18);
-    border-radius: 14px;
-    background: rgba(255,255,255,.1);
-    color: #fff;
-    font-size: 27px;
-    line-height: 1;
-    letter-spacing: 0;
-    box-shadow: none;
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: #fff !important;
+    font-size: 19px !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+    box-shadow: none !important;
   }
 
   .admin-more-menu {
@@ -161,8 +161,57 @@
   html[data-admin-shell="true"] .hero { margin-bottom: 22px; }
   html[data-admin-shell="true"] .hero h1 { font-size: clamp(36px, 11vw, 48px); }
   html[data-admin-shell="true"] .hero p { font-size: 16px; line-height: 1.55; }
-  html[data-admin-shell="true"] .dashboard-summary-cards { grid-template-columns: 1fr; gap: 12px; }
-  html[data-admin-shell="true"] .dashboard-summary-card { min-height: 132px; }
+  html[data-admin-shell="true"] .dashboard-core-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+  html[data-admin-shell="true"] .dashboard-alert-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+  html[data-admin-shell="true"] .dashboard-summary-card {
+    min-height: 56px !important;
+    padding: 6px 4px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 2px !important;
+  }
+  html[data-admin-shell="true"] .dashboard-summary-card span {
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+  html[data-admin-shell="true"] .dashboard-summary-card strong {
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+    font-weight: 850 !important;
+  }
+  html[data-admin-shell="true"] .dashboard-summary-card small {
+    display: none !important;
+  }
+  html[data-admin-shell="true"] .cockpit-grid {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(240px, 84vw) !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 10px !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  html[data-admin-shell="true"] .cockpit-card {
+    scroll-snap-align: start !important;
+    padding: 12px 10px !important;
+    border-radius: 13px !important;
+  }
   html[data-admin-shell="true"] .modal-card { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
 
   html[data-admin-theme="dark"][data-admin-shell="true"] .admin-mobile-nav,
