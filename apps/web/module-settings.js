@@ -2,7 +2,7 @@
   const defaults = {
     dashboard: true, members: true, plans: true, memberships: true,
     pre_enrollments: true, finance: true, alerts: true, training: true,
-    assessments: true, access: true, users: true, totem: true
+    assessments: true, access: true, users: true
   };
   const storageKey = 'academiaEnabledModules';
 

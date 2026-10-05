@@ -9,8 +9,7 @@ const DEFAULT_MODULES = Object.freeze({
   training: true,
   assessments: true,
   access: true,
-  users: true,
-  totem: true
+  users: true
 });
 
 function normalizeModules(value = {}) {

@@ -202,6 +202,14 @@ async function load() {
     currentPage = 1;
     draw();
     f('reports-status').textContent = '';
+    rq('/api/gym/payment-settings').then((res) => {
+      if (res?.payment_settings?.pix?.key || res?.pix_key) {
+        localStorage.setItem('gymPixKey', res.payment_settings?.pix?.key || res.pix_key);
+      }
+      if (res?.payment_settings?.pix?.receiver_name) {
+        localStorage.setItem('gymPixReceiver', res.payment_settings.pix.receiver_name);
+      }
+    }).catch(() => {});
   } catch (error) {
     f('reports-status').textContent = `Erro: ${error.message}`;
   }
@@ -319,7 +327,19 @@ f('finance-filter-toggle')?.addEventListener('click', toggleFinanceFilters);
 f('finance-download-csv')?.addEventListener('click', () => downloadExport('csv').catch((error) => { f('reports-status').textContent = `Erro ao exportar CSV: ${error.message}`; }));
 f('finance-download-pdf')?.addEventListener('click', () => downloadExport('pdf').catch((error) => { f('reports-status').textContent = `Erro ao exportar PDF: ${error.message}`; }));
 f('close-finance-modal')?.addEventListener('click', closeM);
+f('finance-modal')?.addEventListener('click', (e) => { if (e.target === f('finance-modal')) closeM(); });
+f('close-finance-status-modal')?.addEventListener('click', closeFinanceStatus);
+f('finance-status-modal')?.addEventListener('click', (e) => { if (e.target === f('finance-status-modal')) closeFinanceStatus(); });
 f('finance-adjust-button')?.addEventListener('click', adjust);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeM();
+    closeFinanceStatus();
+    closePixModal();
+  }
+});
+
 for (const [selector, kind] of [['.finance-pending', 'pending'], ['.finance-overdue', 'overdue'], ['.finance-paid', 'paid'], ['.finance-open', 'open'], ['.finance-paid-count', 'paid']]) {
   document.querySelector(selector)?.addEventListener('click', () => openFinanceStatus(kind));
   document.querySelector(selector)?.setAttribute('tabindex', '0');
@@ -339,7 +359,7 @@ function openPixModal(item) {
   const modal = f('pix-charge-modal');
   if (!modal) return;
 
-  const gymName = localStorage.getItem('gymName') || 'BlueREC Academia';
+  const gymName = localStorage.getItem('gymPixReceiver') || localStorage.getItem('gymName') || 'BlueREC Academia';
   const pixKey = localStorage.getItem('gymPixKey') || 'financeiro@academia.com.br';
   const amountBrl = Number(item.amount_cents || 0) / 100;
   const formattedAmount = brl(item.amount_cents);

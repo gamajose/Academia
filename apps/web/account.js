@@ -14,9 +14,9 @@ async function accountApi(path, options = {}) {
 }
 
 function digits(value) { return String(value || '').replace(/\D/g, ''); }
-function setAccountStatus(text) { account('profile-status').textContent = text; }
-function value(id) { return account(id).value.trim(); }
-function fill(id, text) { account(id).value = text || ''; }
+function setAccountStatus(text) { if (account('profile-status')) account('profile-status').textContent = text; }
+function value(id) { return account(id)?.value?.trim() || ''; }
+function fill(id, text) { const el = account(id); if (el) el.value = text || ''; }
 
 function renderProfilePhoto(url, name) {
   const host = account('profile-photo-button');
@@ -70,7 +70,9 @@ function renderProfile(user) {
   fill('profile-job-title', user.job_title || roleText(user.access_profile, user.role));
   renderProfilePhoto(user.profile_photo_url, user.name);
   renderPreferences(user.profile_preferences);
-  account('profile-access-badge').textContent = user.access_profile_name || roleText(user.access_profile, user.role);
+  if (account('profile-access-badge')) {
+    account('profile-access-badge').textContent = user.access_profile_name || roleText(user.access_profile, user.role);
+  }
   const address = user.address_details || {};
   for (const [id, key] of [['profile-postal-code', 'postal_code'], ['profile-street', 'street'], ['profile-address-number', 'number'], ['profile-address-complement', 'complement'], ['profile-neighborhood', 'neighborhood'], ['profile-city', 'city'], ['profile-state', 'state'], ['profile-country', 'country']]) fill(id, address[key]);
   const phone = digits(user.phone);
@@ -112,10 +114,12 @@ async function loadGym(canManageGym) {
   fill('gym-name', gym.name); fill('gym-email', gym.email); fill('gym-phone', gym.phone);
   fill('gym-document', gym.document_number); fill('gym-address', gym.address); fill('gym-timezone', gym.timezone);
   fill('gym-pix-key', gym.pix_key);
-  fill('gym-logo-url', gym.logo_url);
   if (gym.logo_url) {
     const preview = account('gym-logo-preview');
-    if (preview) preview.src = gym.logo_url;
+    if (preview) {
+      preview.src = gym.logo_url;
+      preview.dataset.logoUrl = gym.logo_url;
+    }
   }
   localStorage.setItem('gymLogoUrl', gym.logo_url || '');
   localStorage.setItem('gymName', gym.name || '');
@@ -156,13 +160,15 @@ async function savePreferences() {
 
 async function saveGym() {
   try {
-    let logoUrl = value('gym-logo-url');
+    let logoUrl = account('gym-logo-preview')?.dataset?.logoUrl || localStorage.getItem('gymLogoUrl') || '';
     const file = account('gym-logo-file')?.files?.[0];
     if (file) {
       logoUrl = await uploadProfilePhoto(file);
-      fill('gym-logo-url', logoUrl);
       const preview = account('gym-logo-preview');
-      if (preview) preview.src = logoUrl;
+      if (preview) {
+        preview.src = logoUrl;
+        preview.dataset.logoUrl = logoUrl;
+      }
     }
     const updated = await accountApi('/api/gym/profile', {
       method: 'POST',
@@ -187,6 +193,7 @@ async function saveGym() {
 }
 
 account('gym-logo-upload-btn')?.addEventListener('click', () => account('gym-logo-file')?.click());
+account('gym-logo-preview')?.addEventListener('click', () => account('gym-logo-file')?.click());
 account('gym-logo-file')?.addEventListener('change', (e) => {
   const file = e.target.files?.[0];
   if (file) {
@@ -197,11 +204,6 @@ account('gym-logo-file')?.addEventListener('change', (e) => {
     };
     reader.readAsDataURL(file);
   }
-});
-account('gym-logo-url')?.addEventListener('input', (e) => {
-  const val = e.target.value.trim();
-  const preview = account('gym-logo-preview');
-  if (preview && val) preview.src = val;
 });
 
 account('profile-form').addEventListener('submit', saveProfile);
