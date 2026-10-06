@@ -2,6 +2,21 @@
   display: none;
 }
 
+body.admin-dashboard-page .app-shell,
+html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
+  padding-top: 10px !important;
+}
+
+.dashboard {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.dashboard-core-cards,
+.dashboard > .cards:first-child {
+  margin-top: 0 !important;
+}
+
 .dashboard-core-cards {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

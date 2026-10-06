@@ -552,3 +552,14 @@ html[data-admin-shell="true"] #access-profile-modal .access-profile-form {
   html[data-admin-shell="true"] .membership-filter-modal-card .membership-filter-grid { grid-template-columns: 1fr !important; }
   html[data-admin-shell="true"] .membership-filter-modal-card .membership-filter-grid .field:first-child { grid-column: auto !important; }
 }
+
+html[data-admin-theme="dark"][data-admin-shell="true"] .exercise-card-tag,
+html[data-admin-theme="dark"][data-admin-shell="true"] .exercise-feed-tag,
+html[data-admin-theme="dark"] .exercise-card-tag,
+html[data-admin-theme="dark"] .exercise-feed-tag,
+html[data-admin-theme="dark"] body.admin-training-page .exercise-card-tag,
+html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
+  background: #18334e !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}

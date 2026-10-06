@@ -3,6 +3,15 @@ body.admin-compact-page .app-shell {
   padding-top: 8px !important;
 }
 
+body.admin-dashboard-page .app-shell {
+  padding-top: 10px !important;
+}
+
+body.admin-dashboard-page .dashboard-core-cards,
+body.admin-dashboard-page .dashboard > .cards:first-child {
+  margin-top: 0 !important;
+}
+
 body.admin-compact-page .panel h2,
 body.admin-compact-page .panel h3 {
   letter-spacing: -.015em;
@@ -28,21 +37,21 @@ body.admin-training-page .training-ai-button {
   flex: 0 0 auto !important;
   width: auto !important;
   min-width: 0 !important;
-  min-height: 28px !important;
-  height: 28px !important;
-  padding: 0 10px !important;
-  border-radius: 7px !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 5px !important;
   white-space: nowrap !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
 }
 
 body.admin-training-page .training-ai-icon {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
 }
 
@@ -251,12 +260,20 @@ body.admin-training-page #panel-plans .toolbar {
   body.admin-training-page .exercise-card-tag,
   body.admin-training-page .exercise-feed-tag {
     font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 4px 10px !important;
-    border-radius: 999px !important;
+    font-weight: 750 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
     background: #edf5fc !important;
     color: var(--accent, #1478d4) !important;
+    border: 1px solid rgba(20, 120, 212, 0.15) !important;
     flex-shrink: 0 !important;
+    width: fit-content !important;
+    max-width: max-content !important;
+    justify-self: start !important;
+    align-self: start !important;
+    display: inline-flex !important;
+    line-height: 1.2 !important;
+    box-sizing: border-box !important;
   }
 
   body.admin-training-page #exercise-list .entity-card .video-preview-slot,

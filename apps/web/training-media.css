@@ -255,15 +255,23 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
   }
 
   .exercise-card-tag {
-    display: inline-block !important;
+    display: inline-flex !important;
+    width: fit-content !important;
+    max-width: max-content !important;
+    justify-self: start !important;
+    align-self: start !important;
+    flex: 0 0 auto !important;
     margin-top: 3px !important;
-    padding: 2px 8px !important;
-    border-radius: 999px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
     background: #edf5fc !important;
     color: var(--accent, #1478d4) !important;
+    border: 1px solid rgba(20, 120, 212, 0.15) !important;
     font-size: 11px !important;
     font-weight: 750 !important;
     text-transform: capitalize !important;
+    line-height: 1.2 !important;
+    box-sizing: border-box !important;
   }
 
   /* Desktop media: NEVER cropped/cut off */
@@ -419,6 +427,15 @@ html[data-admin-theme="dark"] .compact-exercise-btn.training-ai-button {
   color: #38bdf8 !important;
 }
 
+html[data-admin-theme="dark"] .exercise-card-tag,
+html[data-admin-theme="dark"] .exercise-feed-tag,
+html[data-admin-theme="dark"] body.admin-training-page .exercise-card-tag,
+html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
+  background: #18334e !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
 /* Mobile view (<= 768px): Instagram-style feed, responsive, full visibility */
 @media (max-width: 768px) {
   body.admin-training-page #exercise-list {
@@ -468,15 +485,22 @@ html[data-admin-theme="dark"] .compact-exercise-btn.training-ai-button {
 
   .exercise-card-tag {
     flex-shrink: 0 !important;
+    display: inline-flex !important;
     width: fit-content !important;
+    max-width: max-content !important;
+    justify-self: start !important;
+    align-self: start !important;
     margin-top: 4px !important;
     padding: 3px 8px !important;
     border-radius: 6px !important;
     background: #edf5fc !important;
     color: var(--accent, #1478d4) !important;
+    border: 1px solid rgba(20, 120, 212, 0.15) !important;
     font-size: 11px !important;
     font-weight: 800 !important;
     text-transform: capitalize !important;
+    line-height: 1.2 !important;
+    box-sizing: border-box !important;
   }
 
   .exercise-toolbar-centered {
@@ -497,12 +521,23 @@ html[data-admin-theme="dark"] .compact-exercise-btn.training-ai-button {
   }
   .compact-exercise-btn {
     flex: 1 1 0 !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    padding: 0 6px !important;
-    font-size: 11.5px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
     text-align: center !important;
     min-width: 0 !important;
+  }
+
+  body.admin-training-page .training-ai-button {
+    flex: 1 1 0 !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+    font-weight: 750 !important;
   }
 
   /* Mobile media: Spacious 4:3 frame, NEVER cropped */
