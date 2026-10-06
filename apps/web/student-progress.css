@@ -44,10 +44,6 @@
   min-width: 0 !important;
 }
 
-.tab-label-mobile {
-  display: none;
-}
-
 .progress-top-actions,
 .progress-top-toolbar .progress-top-actions,
 .toolbar-actions.progress-top-actions {
@@ -184,12 +180,6 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
 }
 
 @media (max-width: 640px) {
-  .tab-label-desktop {
-    display: none !important;
-  }
-  .tab-label-mobile {
-    display: inline !important;
-  }
   .progress-top-toolbar {
     display: flex !important;
     flex-direction: row !important;
@@ -197,16 +187,6 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
     align-items: flex-end !important;
     justify-content: space-between !important;
     width: 100% !important;
-    gap: 4px !important;
-  }
-  .progress-browser-tabbar {
-    gap: 2px !important;
-    padding: 0 2px !important;
-    flex: 0 0 auto !important;
-  }
-  .progress-browser-tab {
-    padding: 8px 10px !important;
-    font-size: 12px !important;
   }
   .progress-top-actions,
   .progress-top-toolbar .progress-top-actions,
