@@ -145,3 +145,19 @@ html[data-admin-theme="dark"] .settings-browser-tab.active {
 .payment-tab-content.hidden {
   display: none !important;
 }
+
+@media (max-width: 640px) {
+  .payment-tabs-nav {
+    display: flex !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+  .payment-tabs-nav .tab-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+}

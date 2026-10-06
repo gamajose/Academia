@@ -213,6 +213,15 @@
     border-radius: 13px !important;
   }
   html[data-admin-shell="true"] .modal-card { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
+  html[data-admin-shell="true"] .modal {
+    padding: 8px !important;
+    overflow-x: hidden !important;
+  }
+  html[data-admin-shell="true"] .modal > .modal-card {
+    width: 100% !important;
+    max-width: calc(100vw - 16px) !important;
+    min-width: 0 !important;
+  }
 
   html[data-admin-theme="dark"][data-admin-shell="true"] .admin-mobile-nav,
   html[data-admin-theme="dark"][data-admin-shell="true"] .admin-more-menu { border-color: #29445d; background: rgba(13,29,45,.98); color: #e8f0f8; }

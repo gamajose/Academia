@@ -628,10 +628,12 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .cockpit-tab-panel {
   }
   .cockpit-browser-tab {
     flex: 1 1 0 !important;
+    min-width: 0 !important;
     padding: 10px 4px !important;
-    font-size: 11px !important;
+    font-size: 11.5px !important;
     text-align: center !important;
     border-radius: 9px 9px 0 0 !important;
+    white-space: nowrap !important;
   }
   .cockpit-tab-panel {
     padding: 14px 12px !important;

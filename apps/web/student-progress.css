@@ -87,6 +87,16 @@
   border-radius: 12px 12px 0 0;
 }
 
+@media (max-width: 640px) {
+  .progress-browser-tabbar {
+    gap: 2px;
+  }
+  .progress-browser-tab {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
 .progress-tab-pane.hidden {
   display: none !important;
 }

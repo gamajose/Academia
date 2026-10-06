@@ -409,9 +409,17 @@ html[data-admin-theme="dark"] .gym-logo-preview-row img {
   .single-col-narrow {
     grid-template-columns: 1fr;
   }
+  .profile-browser-tabbar {
+    display: flex !important;
+    gap: 3px !important;
+  }
   .profile-browser-tab {
-    padding: 9px 14px;
-    font-size: 13px;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 9px 4px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
   }
   button.profile-identity-avatar,
   .profile-identity-avatar {

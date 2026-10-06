@@ -494,8 +494,40 @@ html[data-admin-theme="dark"] .employee-modal-card .employee-form-header {
   .permissions-modal-header { top: -20px; margin: -20px -20px 0; padding: 20px; }
   .permissions-modal-toolbar { align-items: stretch; }
   .permissions-modal-toolbar > button { width: 100% !important; }
+  .employee-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+  .employee-form-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    overflow: visible !important;
+    border-bottom: 0 !important;
+  }
+  .employee-form-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 6px 4px !important;
+    border: 1px solid var(--line, #e2e8f0) !important;
+    border-radius: 9px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.15 !important;
+    font-size: 11.5px !important;
+    text-align: center !important;
+  }
+  .employee-form-tab.active {
+    border-color: var(--accent, #1478d4) !important;
+    background: color-mix(in srgb, var(--accent, #1478d4) 8%, transparent) !important;
+  }
 }
 
 @media (max-width: 480px) {
   .permissions-grid { grid-template-columns: 1fr; }
+  .employee-row-two { grid-template-columns: 1fr !important; }
 }

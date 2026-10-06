@@ -1592,6 +1592,21 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
   border-radius: 10px 10px 0 0 !important;
 }
 
+@media (max-width: 640px) {
+  .profile-modal-tabbar {
+    display: flex !important;
+    gap: 2px !important;
+  }
+  .profile-modal-tab {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 8px 3px !important;
+    font-size: 11.5px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+}
+
 .profile-modal-pane.hidden {
   display: none !important;
 }
