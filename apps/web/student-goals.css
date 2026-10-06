@@ -44,21 +44,21 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 36px !important;
-  min-width: 36px !important;
-  max-width: 36px !important;
-  height: 36px !important;
-  min-height: 36px !important;
-  max-height: 36px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
   padding: 0 !important;
-  border-radius: 10px !important;
-  background: rgba(20, 120, 212, 0.12) !important;
-  border: 1px solid rgba(20, 120, 212, 0.28) !important;
-  color: #1478d4 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #64748b !important;
   cursor: pointer !important;
   margin-left: auto !important;
-  box-shadow: none !important;
-  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease !important;
+  transition: color .15s ease, opacity .15s ease !important;
 }
 
 .student-goal-add-btn:hover,
@@ -67,20 +67,21 @@
 .student-goal-add-btn:focus-visible,
 .student-goal-new:focus-visible,
 #student-goal-new:focus-visible {
-  background: #1478d4 !important;
-  border-color: #1478d4 !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
+  background: transparent !important;
+  border: none !important;
+  color: #1478d4 !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .student-goal-add-btn svg,
 .student-goal-new svg,
 #student-goal-new svg {
-  width: 20px !important;
-  height: 20px !important;
+  width: 22px !important;
+  height: 22px !important;
   fill: none !important;
   stroke: currentColor !important;
-  stroke-width: 2.3 !important;
+  stroke-width: 2.2 !important;
   stroke-linecap: round !important;
   stroke-linejoin: round !important;
 }
@@ -529,18 +530,18 @@ html[data-student-theme="dark"] body.student-page .student-goal-form .secondary-
 
 html[data-student-theme="dark"] body.student-page .student-goal-add-btn,
 html[data-student-theme="dark"] body.student-page .student-goals-toolbar #student-goal-new {
-  background: rgba(56, 189, 248, 0.14) !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
-  color: #38bdf8 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
 }
 
 html[data-student-theme="dark"] body.student-page .student-goal-add-btn:hover,
 html[data-student-theme="dark"] body.student-page .student-goals-toolbar #student-goal-new:hover,
 html[data-student-theme="dark"] body.student-page .student-goal-add-btn:focus-visible,
 html[data-student-theme="dark"] body.student-page .student-goals-toolbar #student-goal-new:focus-visible {
-  background: #0284c7 !important;
-  border-color: #38bdf8 !important;
-  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+  color: #38bdf8 !important;
 }
 
 @media (max-width: 680px) {
@@ -559,13 +560,16 @@ html[data-student-theme="dark"] body.student-page .student-goals-toolbar #studen
   .student-goal-add-btn,
   .student-goal-new,
   #student-goal-new {
-    width: 36px !important;
-    min-width: 36px !important;
-    max-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    max-height: 36px !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
     padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     margin-left: auto !important;
     align-self: center !important;
   }

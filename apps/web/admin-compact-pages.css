@@ -233,23 +233,30 @@ body.admin-training-page #panel-plans .toolbar {
   }
 
   body.admin-training-page #plan-list > li {
-    position: relative;
+    position: relative !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    justify-content: flex-start !important;
-    gap: 8px !important;
-    padding: 14px 16px !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 12px 42px 12px 14px !important;
     border-radius: 14px !important;
     text-align: left !important;
+    min-height: 60px !important;
+    box-sizing: border-box !important;
   }
 
   body.admin-training-page #plan-list .plan-card-top-bar {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    width: 100% !important;
+    justify-content: center !important;
+    width: auto !important;
     margin: 0 !important;
+    padding: 0 !important;
+    z-index: 5 !important;
   }
 
   body.admin-training-page #plan-list .entity-main {
@@ -865,13 +872,14 @@ html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-d
 
 @media (min-width: 769px) {
   body.admin-training-page #plan-list > li {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
+    position: relative !important;
+    padding: 12px 44px 12px 16px !important;
   }
   body.admin-training-page #plan-list .plan-card-top-bar {
-    order: 2 !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
     width: auto !important;
-    margin-left: auto !important;
+    margin: 0 !important;
   }
 }

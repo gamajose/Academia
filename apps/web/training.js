@@ -605,7 +605,7 @@ function renderAll({ libraryOnly = false } = {}) {
     const detail = document.createElement('span');
     detail.textContent = `${level?.name || item.level} · ${item.age_days || 0} dias`;
     main.append(name, detail);
-    row.append(topBar, main);
+    row.append(main, topBar);
     planList.appendChild(row);
   }
   if (!renderedPlans.length) {
