@@ -61,14 +61,19 @@
 
   <div class="modal hidden" id="employee-form-panel" role="dialog" aria-modal="true" aria-labelledby="employee-form-title" aria-hidden="true">
     <form class="modal-card employee-modal-card employee-form" id="employee-form">
-      <h3 id="employee-form-title" class="sr-only">Cadastrar funcionário</h3>
+      <div class="employee-form-header">
+        <h3 id="employee-form-title">Cadastrar funcionário</h3>
+        <button type="button" id="close-employee-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
+      </div>
       <input id="user-id" type="hidden" />
 
-      <section class="form-section">
-        <div class="form-section-header">
-          <h4>Dados pessoais</h4>
-          <button type="button" id="close-employee-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
-        </div>
+      <div class="employee-form-tabs" role="tablist" aria-label="Abas do cadastro do funcionário">
+        <button type="button" class="employee-form-tab active" data-employee-tab="personal" role="tab" aria-selected="true" aria-controls="employee-tab-panel-personal">Dados pessoais</button>
+        <button type="button" class="employee-form-tab" data-employee-tab="permissions" role="tab" aria-selected="false" aria-controls="employee-tab-panel-permissions">Permissões de acesso</button>
+        <button type="button" class="employee-form-tab" data-employee-tab="address" role="tab" aria-selected="false" aria-controls="employee-tab-panel-address">Endereço</button>
+      </div>
+
+      <section class="form-section employee-form-panel" id="employee-tab-panel-personal" role="tabpanel">
         <div class="form-grid three">
           <div class="field"><label for="user-name">Nome completo *</label><input id="user-name" autocomplete="name" required /></div>
           <div class="field"><label for="user-email">E-mail *</label><input id="user-email" type="email" autocomplete="email" required /></div>
@@ -81,14 +86,13 @@
         </div>
       </section>
 
-      <section class="form-section">
-        <h4>Perfil de acesso</h4>
+      <section class="form-section employee-form-panel hidden" id="employee-tab-panel-permissions" role="tabpanel">
         <div class="form-grid">
           <input id="user-role" type="hidden" value="staff" />
           <div class="field">
             <div class="employee-access-profile-row">
               <select id="user-access-profile" aria-label="Perfil de acesso" required></select>
-              <button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Novo perfil de acesso" title="Novo perfil de acesso"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+              <button id="new-inline-profile-button" class="icon-button" type="button" aria-label="Nova permissão para acesso" title="Nova permissão para acesso"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
             </div>
             <small id="user-role-preview">O perfil define os módulos que este funcionário pode acessar.</small>
           </div>
@@ -96,8 +100,7 @@
         <p class="section-help sr-only" id="permission-help"></p>
       </section>
 
-      <section class="form-section">
-        <h4>Endereço</h4>
+      <section class="form-section employee-form-panel hidden" id="employee-tab-panel-address" role="tabpanel">
         <div class="form-grid three">
           <div class="field"><label for="user-postal-code">CEP</label><input id="user-postal-code" inputmode="numeric" maxlength="9" /></div>
           <div class="field"><label for="user-street">Rua / Avenida</label><input id="user-street" /></div>
@@ -125,7 +128,7 @@
           <h3 id="permissions-manager-title">Gerenciar permissões</h3>
         </div>
         <div class="modal-header-actions">
-          <button id="new-access-profile-button" class="icon-button" type="button" aria-label="Novo perfil" title="Novo perfil"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+          <button id="new-access-profile-button" class="icon-button" type="button" aria-label="Nova permissão para acesso" title="Nova permissão para acesso"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
           <button type="button" id="close-permissions-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
         </div>
       </div>
@@ -139,9 +142,7 @@
     <form id="access-profile-form" class="modal-card access-profile-form">
       <div class="modal-header">
         <div>
-          <p class="eyebrow">Permissões</p>
-          <h3 id="access-profile-modal-title">Novo perfil de acesso</h3>
-          <p>Defina exatamente os módulos que este perfil poderá visualizar e operar.</p>
+          <h3 id="access-profile-modal-title">Nova permissão para acesso</h3>
         </div>
         <button type="button" id="close-access-profile-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
       </div>

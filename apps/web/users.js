@@ -564,6 +564,8 @@ function openPermissionsEditor(profile = null) {
   modal.setAttribute('aria-hidden', 'false');
   get('access-profile-id').value = profile?.id || '';
   get('access-profile-name').value = profile?.name || '';
+  const title = get('access-profile-modal-title');
+  if (title) title.textContent = profile ? 'Editar permissão para acesso' : 'Nova permissão para acesso';
   get('save-access-profile-button').textContent = profile ? 'Salvar alterações' : 'Salvar perfil';
   renderPermissionInputs(profile?.permissions || {});
   syncModalState();
@@ -577,6 +579,8 @@ function closePermissionsEditor() {
   get('access-profile-modal')?.setAttribute('aria-hidden', 'true');
   form.reset();
   get('access-profile-id').value = '';
+  const title = get('access-profile-modal-title');
+  if (title) title.textContent = 'Nova permissão para acesso';
   get('save-access-profile-button').textContent = 'Salvar perfil';
   renderPermissionInputs();
   syncModalState();
@@ -705,6 +709,17 @@ function setField(id, value) {
   if (field) field.value = value || '';
 }
 
+function setEmployeeFormTab(tabKey = 'personal') {
+  document.querySelectorAll('.employee-form-tab').forEach((tab) => {
+    const isActive = tab.dataset.employeeTab === tabKey;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', String(isActive));
+  });
+  document.querySelectorAll('.employee-form-panel').forEach((panel) => {
+    panel.classList.toggle('hidden', panel.id !== `employee-tab-panel-${tabKey}`);
+  });
+}
+
 function resetForm() {
   const form = get('employee-form');
   if (!form) return;
@@ -717,6 +732,7 @@ function resetForm() {
   get('user-password').required = true;
   get('user-password-field').querySelector('label').textContent = 'Senha inicial *';
   renderProfileSelect(accessProfiles.find((profile) => profile.is_active)?.slug || '');
+  setEmployeeFormTab('personal');
 }
 
 function openUserModal() {
@@ -777,17 +793,47 @@ async function saveUser(event) {
   event.preventDefault();
   const id = get('user-id').value;
   const isEditing = Boolean(id);
+
+  const name = get('user-name').value.trim();
+  if (!name) {
+    setEmployeeFormTab('personal');
+    setFormStatus('Informe o nome completo.');
+    get('user-name').focus();
+    return;
+  }
+  const email = get('user-email').value.trim();
+  if (!email) {
+    setEmployeeFormTab('personal');
+    setFormStatus('Informe o e-mail.');
+    get('user-email').focus();
+    return;
+  }
+  const password = get('user-password').value;
+  if (!isEditing && (!password || password.length < 8)) {
+    setEmployeeFormTab('personal');
+    setFormStatus('A senha inicial deve possuir no mínimo 8 caracteres.');
+    get('user-password').focus();
+    return;
+  }
+  const accessProfile = get('user-access-profile').value;
+  if (!accessProfile) {
+    setEmployeeFormTab('permissions');
+    setFormStatus('Selecione um perfil de acesso.');
+    get('user-access-profile').focus();
+    return;
+  }
+
   const payload = {
     user_id: id || undefined,
-    name: get('user-name').value.trim(),
-    email: get('user-email').value.trim(),
+    name,
+    email,
     phone: get('user-phone').value.trim(),
     cpf: get('user-cpf').value.trim(),
     rg: get('user-rg').value.trim(),
     birth_date: get('user-birth').value || null,
     job_title: get('user-job-title').value.trim(),
     role: get('user-role').value,
-    access_profile: get('user-access-profile').value,
+    access_profile: accessProfile,
     address_details: {
       postal_code: get('user-postal-code').value.trim(),
       street: get('user-street').value.trim(),
@@ -891,6 +937,9 @@ function bindEvents() {
   });
   get('cancel-access-profile-button')?.addEventListener('click', closePermissionsEditor);
   get('access-profile-form')?.addEventListener('submit', saveAccessProfile);
+  document.querySelectorAll('.employee-form-tab').forEach((tab) => {
+    tab.addEventListener('click', () => setEmployeeFormTab(tab.dataset.employeeTab));
+  });
 }
 
 async function init() {

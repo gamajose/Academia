@@ -22,17 +22,71 @@ body.modal-open { overflow: hidden; }
 .employee-list-toolbar .toolbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-left: auto; }
 .employee-toolbar-mobile-menu { margin-left: 8px; }
 .employee-modal-card { position: relative; }
-.employee-modal-card .form-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
+.employee-modal-card .form-section-header,
+.employee-form-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 14px !important;
 }
-.employee-modal-card .form-section-header h4 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text);
+.employee-modal-card .form-section-header h4,
+.employee-form-header h3 {
+  margin: 0 !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+}
+
+.employee-form-tabs {
+  display: flex !important;
+  gap: 6px !important;
+  border-bottom: 1px solid var(--line, #e2e8f0) !important;
+  margin-bottom: 18px !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+.employee-form-tabs::-webkit-scrollbar {
+  display: none !important;
+}
+.employee-form-tab {
+  padding: 8px 14px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--muted, #64748b) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  border-bottom: 2px solid transparent !important;
+  white-space: nowrap !important;
+  transition: all .15s ease !important;
+}
+.employee-form-tab:hover {
+  color: var(--text, #171717) !important;
+}
+.employee-form-tab.active {
+  color: var(--accent, #1478d4) !important;
+  border-bottom-color: var(--accent, #1478d4) !important;
+  font-weight: 700 !important;
+}
+.employee-form-panel.hidden {
+  display: none !important;
+}
+
+html[data-admin-theme="dark"] .employee-form-header h3 {
+  color: #e8f0f8 !important;
+}
+html[data-admin-theme="dark"] .employee-form-tabs {
+  border-bottom-color: #29445d !important;
+}
+html[data-admin-theme="dark"] .employee-form-tab {
+  color: #94a3b8 !important;
+}
+html[data-admin-theme="dark"] .employee-form-tab:hover {
+  color: #e8f0f8 !important;
+}
+html[data-admin-theme="dark"] .employee-form-tab.active {
+  color: #38bdf8 !important;
+  border-bottom-color: #38bdf8 !important;
 }
 .employee-modal-card .modal-close {
   position: static !important;
@@ -288,7 +342,21 @@ html:not([data-admin-theme="dark"]) .access-profile-menu-dropdown button.danger:
 }
 
 .employee-modal-card { width: min(1120px, 96vw); }
-.employee-modal-card .modal-header { position: sticky; top: -28px; z-index: 4; margin: -28px -28px 20px; padding: 24px 28px 18px; border-bottom: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
+.employee-modal-card .modal-header,
+.employee-modal-card .employee-form-header {
+  position: sticky;
+  top: -28px;
+  z-index: 4;
+  margin: -28px -28px 16px;
+  padding: 22px 28px 16px;
+  border-bottom: 1px solid #ebe4da;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(12px);
+}
+html[data-admin-theme="dark"] .employee-modal-card .employee-form-header {
+  border-bottom-color: #29445d;
+  background: rgba(18, 34, 53, 0.97);
+}
 .employee-form-actions { position: sticky; bottom: -28px; z-index: 3; margin: 4px -28px -28px; padding: 18px 28px 24px; border-top: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
 
 .permissions-modal-card { width: min(1040px, 96vw); display: grid; gap: 18px; max-height: min(88vh, 920px); overflow: auto; }
@@ -333,8 +401,8 @@ html:not([data-admin-theme="dark"]) .access-profile-menu-dropdown button.danger:
   .permissions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .access-profile-card { grid-template-columns: 1fr; }
   .access-profile-actions { justify-content: flex-start; }
-  .employee-list-toolbar .toolbar-actions > * { width: 100% !important; }
-  .employee-modal-card .modal-header { top: -20px; margin: -20px -20px 18px; padding: 20px; }
+  .employee-modal-card .modal-header,
+  .employee-modal-card .employee-form-header { top: -20px; margin: -20px -20px 14px; padding: 16px 20px; }
   .employee-form-actions { bottom: -20px; margin: 4px -20px -20px; padding: 16px 20px 20px; }
   .permissions-modal-header { top: -20px; margin: -20px -20px 0; padding: 20px; }
   .permissions-modal-toolbar { align-items: stretch; }
