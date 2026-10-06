@@ -62,7 +62,7 @@
     if (fields.button_color.preview) fields.button_color.preview.style.backgroundColor = color;
   }
 
-  // Bind color picker events
+  // Bind color picker
   fields.button_color.picker?.addEventListener('input', (e) => {
     updateColor(e.target.value);
   });
@@ -73,7 +73,7 @@
     }
   });
 
-  // Bind image upload and preview events
+  // Bind image upload & preview events
   ['home_hero_image', 'home_structure_image', 'home_coaching_image', 'plans_hero_image'].forEach((key) => {
     const item = fields[key];
     if (!item) return;
@@ -101,22 +101,72 @@
         const formData = new FormData();
         formData.append('file', file, file.name);
 
-        const res = await fetch(`${API}/api/editor/images`, {
+        const uploadRes = await fetch(`${API}/api/editor/images`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: formData
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.location) throw new Error(data.error || 'Falha no envio');
+        const uploadData = await uploadRes.json().catch(() => ({}));
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Erro no envio da imagem');
 
-        if (item.input) item.input.value = data.location;
-        if (item.preview) item.preview.src = data.location;
-        setStatus('Imagem carregada.');
+        if (uploadData.location) {
+          if (item.input) item.input.value = uploadData.location;
+          if (item.preview) item.preview.src = uploadData.location;
+          setStatus('Imagem enviada! Não se esqueça de salvar as alterações.');
+        }
       } catch (err) {
-        setStatus(`Erro no upload: ${err.message}`, true);
+        setStatus(`Erro no envio: ${err.message}`, true);
       }
     });
   });
+
+  // Tab Switching Logic
+  const tabs = [
+    { key: 'hero', btnId: 'tab-btn-hero', panelId: 'panel-hero' },
+    { key: 'structure', btnId: 'tab-btn-structure', panelId: 'panel-structure' },
+    { key: 'coaching', btnId: 'tab-btn-coaching', panelId: 'panel-coaching' },
+    { key: 'plans', btnId: 'tab-btn-plans', panelId: 'panel-plans' },
+    { key: 'style', btnId: 'tab-btn-style', panelId: 'panel-style' }
+  ];
+
+  function switchTab(key) {
+    tabs.forEach((tab) => {
+      const btn = document.getElementById(tab.btnId);
+      const panel = document.getElementById(tab.panelId);
+      const isActive = tab.key === key;
+      if (btn) {
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
+      }
+      if (panel) {
+        panel.classList.toggle('hidden', !isActive);
+      }
+    });
+  }
+
+  tabs.forEach((tab) => {
+    document.getElementById(tab.btnId)?.addEventListener('click', () => switchTab(tab.key));
+  });
+
+  function handleInitialHash() {
+    const hash = window.location.hash.toLowerCase().replace('#', '');
+    const map = {
+      hero: 'hero',
+      principal: 'hero',
+      estrutura: 'structure',
+      structure: 'structure',
+      acompanhamento: 'coaching',
+      coaching: 'coaching',
+      planos: 'plans',
+      plans: 'plans',
+      estetica: 'style',
+      integracoes: 'style',
+      style: 'style'
+    };
+    if (map[hash]) {
+      switchTab(map[hash]);
+    }
+  }
 
   async function loadSettings() {
     try {
@@ -154,7 +204,12 @@
       if (s.google_client_id && fields.google_client_id.input) {
         fields.google_client_id.input.value = s.google_client_id;
       }
-      ['home_hero_title', 'home_hero_subtitle', 'home_structure_title', 'home_structure_desc', 'home_coaching_title', 'home_coaching_desc', 'plans_hero_title', 'plans_hero_subtitle'].forEach((k) => {
+      [
+        'home_hero_title', 'home_hero_subtitle',
+        'home_structure_title', 'home_structure_desc',
+        'home_coaching_title', 'home_coaching_desc',
+        'plans_hero_title', 'plans_hero_subtitle'
+      ].forEach((k) => {
         if (s[k] && fields[k]?.input) {
           fields[k].input.value = s[k];
         }
@@ -163,7 +218,12 @@
   }
 
   async function saveSettings() {
-    [btnTop, btnBottom].forEach((btn) => { if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; } });
+    [btnTop, btnBottom].forEach((btn) => {
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+      }
+    });
     setStatus('Salvando alterações...');
 
     const payload = {
@@ -199,11 +259,16 @@
       if (!res.ok) throw new Error(data.error || 'Falha ao salvar');
 
       setStatus('Alterações salvas com sucesso!');
-      setTimeout(() => setStatus(''), 3000);
+      setTimeout(() => setStatus(''), 4000);
     } catch (err) {
       setStatus(`Erro: ${err.message}`, true);
     } finally {
-      [btnTop, btnBottom].forEach((btn) => { if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; } });
+      [btnTop, btnBottom].forEach((btn) => {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Salvar alterações';
+        }
+      });
     }
   }
 
@@ -214,5 +279,6 @@
     saveSettings();
   });
 
+  handleInitialHash();
   loadSettings();
 })();

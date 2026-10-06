@@ -7,7 +7,6 @@
   <title>Configurações - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./settings.css?v=20261005-1" />
-  <link rel="stylesheet" href="./site-customization.css?v=20261005-1" />
 </head>
 <body>
   <main class="app-shell settings-shell">
@@ -17,9 +16,6 @@
       </button>
       <button type="button" class="settings-browser-tab" id="tab-btn-payments" role="tab" aria-selected="false" aria-controls="panel-payments">
         Pagamentos
-      </button>
-      <button type="button" class="settings-browser-tab" id="tab-btn-site" role="tab" aria-selected="false" aria-controls="panel-site">
-        Personalizar site
       </button>
     </div>
 
@@ -138,157 +134,17 @@
       </div>
     </section>
 
-    <!-- TAB 3: Personalizar site -->
-    <section class="settings-tab-panel hidden" id="panel-site" role="tabpanel" aria-labelledby="tab-btn-site">
-      <div class="customization-header" style="margin-bottom: 16px;">
-        <div>
-          <h2 style="margin: 0 0 4px; font-size: 20px;">Personalização do Site</h2>
-          <p style="margin: 0; font-size: 13px; color: var(--muted);">Fotos de destaque da página inicial, fundo de planos, cor dos botões e link do Instagram.</p>
-        </div>
-        <button type="button" class="btn-save" id="btn-save-top">Salvar</button>
-      </div>
-
-      <form id="customization-form" class="customization-sections">
-        <!-- Início -->
-        <section class="custom-card">
-          <h2>Página Inicial</h2>
-          <div class="images-grid">
-            <div class="image-block">
-              <label>Destaque Principal (Hero)</label>
-              <div class="image-preview-box">
-                <img id="preview-home-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Hero" />
-              </div>
-              <div class="image-controls">
-                <button type="button" class="btn-upload" data-target="file-home-hero">Escolher imagem</button>
-                <input type="file" id="file-home-hero" accept="image/*" hidden />
-                <input type="url" id="inp-home-hero" placeholder="Link da imagem" />
-              </div>
-            </div>
-
-            <div class="image-block">
-              <label>Estrutura</label>
-              <div class="image-preview-box">
-                <img id="preview-home-structure" src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1000&q=85" alt="Estrutura" />
-              </div>
-              <div class="image-controls">
-                <button type="button" class="btn-upload" data-target="file-home-structure">Escolher imagem</button>
-                <input type="file" id="file-home-structure" accept="image/*" hidden />
-                <input type="url" id="inp-home-structure" placeholder="Link da imagem" />
-              </div>
-            </div>
-
-            <div class="image-block">
-              <label>Acompanhamento</label>
-              <div class="image-preview-box">
-                <img id="preview-home-coaching" src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&q=88" alt="Acompanhamento" />
-              </div>
-              <div class="image-controls">
-                <button type="button" class="btn-upload" data-target="file-home-coaching">Escolher imagem</button>
-                <input type="file" id="file-home-coaching" accept="image/*" hidden />
-                <input type="url" id="inp-home-coaching" placeholder="Link da imagem" />
-              </div>
-            </div>
-          </div>
-
-          <h3 class="custom-subtitle">Textos da Página Inicial</h3>
-          <div class="texts-grid">
-            <div class="field">
-              <label for="inp-home-hero-title">Título Principal (Hero)</label>
-              <input type="text" id="inp-home-hero-title" placeholder="Ex.: Treino bem orientado. Evolução que você consegue acompanhar." />
-            </div>
-            <div class="field">
-              <label for="inp-home-hero-subtitle">Subtítulo Principal</label>
-              <input type="text" id="inp-home-hero-subtitle" placeholder="Ex.: Estrutura completa, professores próximos e uma experiência simples..." />
-            </div>
-            <div class="field">
-              <label for="inp-home-structure-title">Título de Estrutura</label>
-              <input type="text" id="inp-home-structure-title" placeholder="Ex.: Uma academia preparada para fazer parte da sua rotina" />
-            </div>
-            <div class="field">
-              <label for="inp-home-structure-desc">Descrição de Estrutura</label>
-              <input type="text" id="inp-home-structure-desc" placeholder="Ex.: Ambiente organizado, acompanhamento de verdade..." />
-            </div>
-            <div class="field">
-              <label for="inp-home-coaching-title">Título de Acompanhamento</label>
-              <input type="text" id="inp-home-coaching-title" placeholder="Ex.: Você não precisa descobrir tudo sozinho." />
-            </div>
-            <div class="field">
-              <label for="inp-home-coaching-desc">Descrição de Acompanhamento</label>
-              <input type="text" id="inp-home-coaching-desc" placeholder="Ex.: O treino é mais eficiente quando existe orientação, revisão e constância." />
-            </div>
-          </div>
-        </section>
-
-        <!-- Planos e Cores -->
-        <section class="custom-card">
-          <h2>Planos e Aulas</h2>
-          <div class="images-grid">
-            <div class="image-block">
-              <label>Fundo do Topo (Planos)</label>
-              <div class="image-preview-box">
-                <img id="preview-plans-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Topo Planos" />
-              </div>
-              <div class="image-controls">
-                <button type="button" class="btn-upload" data-target="file-plans-hero">Escolher imagem</button>
-                <input type="file" id="file-plans-hero" accept="image/*" hidden />
-                <input type="url" id="inp-plans-hero" placeholder="Link da imagem" />
-              </div>
-            </div>
-
-            <div class="image-block">
-              <label>Cor dos Botões (CTA)</label>
-              <div class="color-picker-row">
-                <div class="color-input-wrap">
-                  <input type="color" id="picker-button-color" value="#1478d4" />
-                  <input type="text" id="inp-button-color" class="color-hex-input" value="#1478d4" maxlength="7" />
-                </div>
-                <button type="button" id="preview-button-cta" class="color-preview-btn">Exemplo de Botão</button>
-              </div>
-            </div>
-
-            <div class="image-block">
-              <label>Instagram</label>
-              <input type="url" id="inp-instagram-url" placeholder="https://www.instagram.com/sua_academia" />
-            </div>
-
-            <div class="image-block" style="grid-column: 1 / -1;">
-              <label for="inp-google-client-id">Google Client ID (Google Cloud / Firebase)</label>
-              <input type="text" id="inp-google-client-id" placeholder="Ex.: 1234567890-abcdefg.apps.googleusercontent.com" />
-            </div>
-          </div>
-
-          <h3 class="custom-subtitle">Textos da Página de Planos</h3>
-          <div class="texts-grid">
-            <div class="field">
-              <label for="inp-plans-hero-title">Título (Hero de Planos)</label>
-              <input type="text" id="inp-plans-hero-title" placeholder="Ex.: Encontre o plano ideal para sua rotina." />
-            </div>
-            <div class="field">
-              <label for="inp-plans-hero-subtitle">Subtítulo (Hero de Planos)</label>
-              <input type="text" id="inp-plans-hero-subtitle" placeholder="Ex.: Compare as opções com calma..." />
-            </div>
-          </div>
-        </section>
-
-        <div class="customization-footer">
-          <div id="customization-status" class="customization-status" aria-live="polite"></div>
-          <button type="button" class="btn-save" id="btn-save-bottom">Salvar</button>
-        </div>
-      </form>
-    </section>
   </main>
 
   <script src="./nav.js?v=20261005-2"></script>
   <script src="./module-settings.js?v=20261005-1"></script>
   <script src="./settings-client.js?v=20261005-1"></script>
-  <script src="./site-customization.js?v=20261005-1"></script>
   <script>
     (function() {
       function switchTab(key) {
         const tabs = [
           { key: 'modules', btn: 'tab-btn-modules', panel: 'panel-modules' },
-          { key: 'payments', btn: 'tab-btn-payments', panel: 'panel-payments' },
-          { key: 'site', btn: 'tab-btn-site', panel: 'panel-site' }
+          { key: 'payments', btn: 'tab-btn-payments', panel: 'panel-payments' }
         ];
         tabs.forEach(t => {
           const b = document.getElementById(t.btn);
@@ -306,11 +162,12 @@
 
       document.getElementById('tab-btn-modules')?.addEventListener('click', () => switchTab('modules'));
       document.getElementById('tab-btn-payments')?.addEventListener('click', () => switchTab('payments'));
-      document.getElementById('tab-btn-site')?.addEventListener('click', () => switchTab('site'));
 
       const hash = window.location.hash.toLowerCase();
       if (hash === '#pagamentos' || hash === '#payments') switchTab('payments');
-      else if (hash === '#site' || hash === '#personalizar-site') switchTab('site');
+      else if (hash === '#site' || hash === '#personalizar-site') {
+        window.location.replace('./site-customization.html');
+      }
     })();
   </script>
 </body>

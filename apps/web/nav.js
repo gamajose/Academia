@@ -73,9 +73,9 @@ function applyAdminPreferences(preferences = {}) {
 }
 
 const adminNavLabels = {
-  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acessos', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', configuracoes: 'Configurações', sair: 'Sair', mais: 'Mais' },
-  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', configuracoes: 'Settings', sair: 'Sign out', mais: 'More' },
-  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Accesos', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', configuracoes: 'Configuración', sair: 'Salir', mais: 'Más' }
+  'pt-BR': { painel: 'Painel', alunos: 'Alunos', planos: 'Planos', matriculas: 'Matrículas', pre: 'Pré-matrículas', financeiro: 'Financeiro', alertas: 'Alertas', treinos: 'Treinos', avaliacoes: 'Avaliações', acesso: 'Acessos', funcionarios: 'Funcionários', perfil: 'Perfil', seguranca: 'Segurança', preferencias: 'Preferências', configuracoes: 'Configurações', personalizar_site: 'Personalizar site', sair: 'Sair', mais: 'Mais' },
+  en: { painel: 'Dashboard', alunos: 'Members', planos: 'Plans', matriculas: 'Memberships', pre: 'Pre-enrollments', financeiro: 'Finance', alertas: 'Alerts', treinos: 'Training', avaliacoes: 'Assessments', acesso: 'Access', funcionarios: 'Staff', perfil: 'Profile', seguranca: 'Security', preferencias: 'Preferences', configuracoes: 'Settings', personalizar_site: 'Customize site', sair: 'Sign out', mais: 'More' },
+  es: { painel: 'Panel', alunos: 'Alumnos', planos: 'Planes', matriculas: 'Matrículas', pre: 'Preinscripciones', financeiro: 'Finanzas', alertas: 'Alertas', treinos: 'Entrenamientos', avaliacoes: 'Evaluaciones', acesso: 'Accesos', funcionarios: 'Personal', perfil: 'Perfil', seguranca: 'Seguridad', preferencias: 'Preferencias', configuracoes: 'Configuración', personalizar_site: 'Personalizar sitio', sair: 'Salir', mais: 'Más' }
 };
 
 function applyAdminLanguage(language = 'pt-BR') {
@@ -86,9 +86,9 @@ function applyAdminLanguage(language = 'pt-BR') {
   });
   const profileLinks = document.querySelectorAll('#profile-dropdown a');
   if (profileLinks[0]) profileLinks[0].textContent = labels.perfil;
-  if (profileLinks[1]) profileLinks[1].textContent = labels.seguranca;
-  if (profileLinks[2]) profileLinks[2].textContent = labels.preferencias;
-  if (profileLinks[3]) profileLinks[3].textContent = labels.configuracoes;
+  if (profileLinks[1]) profileLinks[1].textContent = labels.preferencias;
+  if (profileLinks[2]) profileLinks[2].textContent = labels.configuracoes;
+  if (profileLinks[3]) profileLinks[3].textContent = labels.personalizar_site;
   const logout = document.getElementById('profile-logout');
   if (logout) logout.textContent = labels.sair;
   document.querySelectorAll('[data-mobile-nav-key]').forEach((element) => {
@@ -154,7 +154,7 @@ function applyNavPermissions(user) {
     const enabled = !module || (user.enabled_modules || window.AcademiaModules?.cached?.() || {})[module] !== false;
     link.hidden = !enabled || !canSeePage(href, role, accessProfile, user.access_permissions || null);
   });
-  const settingsLinks = document.querySelectorAll('#profile-settings, .admin-more-account a[href*="settings.html"]');
+  const settingsLinks = document.querySelectorAll('#profile-settings, #profile-site-customization, .admin-more-account a[href*="settings.html"], .admin-more-account a[href*="site-customization.html"]');
   settingsLinks.forEach((link) => { link.hidden = !['owner', 'admin'].includes(role); });
   document.querySelectorAll('[data-module-feature]').forEach((element) => {
     element.hidden = (user.enabled_modules || window.AcademiaModules?.cached?.() || {})[element.dataset.moduleFeature] === false;
@@ -192,7 +192,7 @@ function renderNavigation() {
   document.querySelectorAll('a[href*="permissions.html"], a[href*="student-accounts.html"]').forEach((link) => link.remove());
 
   const current = pageName(window.location.pathname) || 'painel.html';
-  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
+  const adminPages = ['painel.html', 'alunos.html', 'planos.html', 'vinculos.html', 'solicitacoes.html', 'financeiro.html', 'alerts.html', 'training.html', 'assessments.html', 'access.html', 'users.html', 'account.html', 'security.html', 'settings.html', 'site-customization.html', 'exports.html', 'reports.html', 'student-report.html', 'assessment-actions.html'];
   if (adminPages.includes(current)) document.documentElement.dataset.adminShell = 'true';
   const pages = [
     ['painel.html', 'Painel', 'painel'], ['alunos.html', 'Alunos', 'alunos'], ['planos.html', 'Planos', 'planos'],
@@ -225,6 +225,7 @@ function renderNavigation() {
         <a href="${pageUrl('account.html')}">Perfil</a>
         <a id="profile-preferences" href="#preferences">Preferências</a>
         <a id="profile-settings" href="${pageUrl('settings.html')}">Configurações</a>
+        <a id="profile-site-customization" href="${pageUrl('site-customization.html')}">Personalizar site</a>
         <button class="logout-item" id="profile-logout" type="button">Sair</button>
       </div>
     </div>`;
@@ -538,6 +539,7 @@ function renderAdminMobileNavigation(current, pages, icons) {
         <a href="${pageUrl('account.html')}">${labels.perfil}</a>
         <a id="admin-mobile-preferences" href="#preferences">${labels.preferencias}</a>
         <a href="${pageUrl('settings.html')}">${labels.configuracoes || 'Configurações'}</a>
+        <a href="${pageUrl('site-customization.html')}">${labels.personalizar_site || 'Personalizar site'}</a>
         <button class="logout-item" id="admin-mobile-logout" type="button">${labels.sair}</button>
       </div>
     </div>`;

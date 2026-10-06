@@ -6,100 +6,222 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Personalizar Site - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./site-customization.css" />
+  <link rel="stylesheet" href="./site-customization.css?v=20261006-1" />
 </head>
 <body>
   <main class="app-shell customization-shell">
     <div class="customization-header">
-      <h1>Personalização do Site</h1>
-      <button type="button" class="btn-save" id="btn-save-top">Salvar</button>
+      <div>
+        <h1>Personalização do Site</h1>
+        <p>Altere imagens, textos, cores e integrações da página pública da academia.</p>
+      </div>
+      <button type="button" class="btn-save" id="btn-save-top">Salvar alterações</button>
     </div>
 
-    <form id="customization-form" class="customization-sections">
-      <!-- Início -->
-      <section class="custom-card">
-        <h2>Página Inicial</h2>
-        <div class="images-grid">
-          <div class="image-block">
-            <label>Destaque Principal (Hero)</label>
-            <div class="image-preview-box">
-              <img id="preview-home-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Hero" />
-            </div>
-            <div class="image-controls">
-              <button type="button" class="btn-upload" data-target="file-home-hero">Escolher imagem</button>
-              <input type="file" id="file-home-hero" accept="image/*" hidden />
-              <input type="url" id="inp-home-hero" placeholder="Link da imagem" />
-            </div>
-          </div>
+    <!-- Navegação por Abas (Sessões) -->
+    <div class="customization-browser-tabbar" role="tablist" aria-label="Abas de personalização">
+      <button type="button" class="customization-browser-tab active" id="tab-btn-hero" role="tab" aria-selected="true" aria-controls="panel-hero" data-tab="hero">
+        Destaque Principal
+      </button>
+      <button type="button" class="customization-browser-tab" id="tab-btn-structure" role="tab" aria-selected="false" aria-controls="panel-structure" data-tab="structure">
+        Estrutura
+      </button>
+      <button type="button" class="customization-browser-tab" id="tab-btn-coaching" role="tab" aria-selected="false" aria-controls="panel-coaching" data-tab="coaching">
+        Acompanhamento
+      </button>
+      <button type="button" class="customization-browser-tab" id="tab-btn-plans" role="tab" aria-selected="false" aria-controls="panel-plans" data-tab="plans">
+        Planos e Aulas
+      </button>
+      <button type="button" class="customization-browser-tab" id="tab-btn-style" role="tab" aria-selected="false" aria-controls="panel-style" data-tab="style">
+        Estética & Integrações
+      </button>
+    </div>
 
-          <div class="image-block">
-            <label>Estrutura</label>
-            <div class="image-preview-box">
-              <img id="preview-home-structure" src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1000&q=85" alt="Estrutura" />
-            </div>
-            <div class="image-controls">
-              <button type="button" class="btn-upload" data-target="file-home-structure">Escolher imagem</button>
-              <input type="file" id="file-home-structure" accept="image/*" hidden />
-              <input type="url" id="inp-home-structure" placeholder="Link da imagem" />
-            </div>
+    <form id="customization-form">
+      <!-- ABA 1: Destaque Principal (Hero) -->
+      <section class="customization-tab-panel" id="panel-hero" role="tabpanel" aria-labelledby="tab-btn-hero">
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h2>Destaque Principal da Página Inicial</h2>
+            <p>A imagem de abertura e a mensagem de boas-vindas visíveis no topo da página inicial.</p>
           </div>
-
-          <div class="image-block">
-            <label>Acompanhamento</label>
-            <div class="image-preview-box">
-              <img id="preview-home-coaching" src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&q=88" alt="Acompanhamento" />
+          <div class="session-editor-grid">
+            <div class="session-image-col">
+              <label>Imagem de Destaque (Hero)</label>
+              <div class="image-preview-box">
+                <img id="preview-home-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Prévia Destaque Principal" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-home-hero">Escolher imagem</button>
+                <input type="file" id="file-home-hero" accept="image/*" hidden />
+                <input type="url" id="inp-home-hero" placeholder="Ou cole o link direto da imagem" />
+              </div>
             </div>
-            <div class="image-controls">
-              <button type="button" class="btn-upload" data-target="file-home-coaching">Escolher imagem</button>
-              <input type="file" id="file-home-coaching" accept="image/*" hidden />
-              <input type="url" id="inp-home-coaching" placeholder="Link da imagem" />
+            <div class="session-text-col">
+              <div class="field">
+                <label for="inp-home-hero-title">Título Principal (Hero)</label>
+                <input type="text" id="inp-home-hero-title" placeholder="Ex.: Treino bem orientado. Evolução que você consegue acompanhar." />
+              </div>
+              <div class="field">
+                <label for="inp-home-hero-subtitle">Subtítulo Principal</label>
+                <textarea id="inp-home-hero-subtitle" rows="4" placeholder="Ex.: Estrutura completa, professores próximos e uma experiência simples..."></textarea>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Planos e Cores -->
-      <section class="custom-card">
-        <h2>Planos e Aulas</h2>
-        <div class="images-grid">
-          <div class="image-block">
-            <label>Fundo do Topo (Planos)</label>
-            <div class="image-preview-box">
-              <img id="preview-plans-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Topo Planos" />
-            </div>
-            <div class="image-controls">
-              <button type="button" class="btn-upload" data-target="file-plans-hero">Escolher imagem</button>
-              <input type="file" id="file-plans-hero" accept="image/*" hidden />
-              <input type="url" id="inp-plans-hero" placeholder="Link da imagem" />
-            </div>
+      <!-- ABA 2: Estrutura -->
+      <section class="customization-tab-panel hidden" id="panel-structure" role="tabpanel" aria-labelledby="tab-btn-structure">
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h2>Sessão de Estrutura</h2>
+            <p>Apresentação das instalações, equipamentos e ambiente da academia.</p>
           </div>
-
-          <div class="image-block">
-            <label>Cor dos Botões (CTA)</label>
-            <div class="color-picker-row">
-              <div class="color-input-wrap">
-                <input type="color" id="picker-button-color" value="#1478d4" />
-                <input type="text" id="inp-button-color" class="color-hex-input" value="#1478d4" maxlength="7" />
+          <div class="session-editor-grid">
+            <div class="session-image-col">
+              <label>Imagem da Estrutura</label>
+              <div class="image-preview-box">
+                <img id="preview-home-structure" src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1000&q=85" alt="Prévia Estrutura" />
               </div>
-              <button type="button" id="preview-button-cta" class="color-preview-btn">Exemplo de Botão</button>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-home-structure">Escolher imagem</button>
+                <input type="file" id="file-home-structure" accept="image/*" hidden />
+                <input type="url" id="inp-home-structure" placeholder="Ou cole o link direto da imagem" />
+              </div>
+            </div>
+            <div class="session-text-col">
+              <div class="field">
+                <label for="inp-home-structure-title">Título da Seção de Estrutura</label>
+                <input type="text" id="inp-home-structure-title" placeholder="Ex.: Uma academia preparada para fazer parte da sua rotina" />
+              </div>
+              <div class="field">
+                <label for="inp-home-structure-desc">Descrição da Estrutura</label>
+                <textarea id="inp-home-structure-desc" rows="4" placeholder="Ex.: Ambiente organizado, acompanhamento de verdade e foco no seu bem-estar..."></textarea>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="image-block">
-            <label>Instagram</label>
-            <input type="url" id="inp-instagram-url" placeholder="https://www.instagram.com/sua_academia" />
+      <!-- ABA 3: Acompanhamento -->
+      <section class="customization-tab-panel hidden" id="panel-coaching" role="tabpanel" aria-labelledby="tab-btn-coaching">
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h2>Sessão de Acompanhamento</h2>
+            <p>Destaque para o suporte dos instrutores, fichas guiadas e orientação aos alunos.</p>
+          </div>
+          <div class="session-editor-grid">
+            <div class="session-image-col">
+              <label>Imagem de Acompanhamento</label>
+              <div class="image-preview-box">
+                <img id="preview-home-coaching" src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&q=88" alt="Prévia Acompanhamento" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-home-coaching">Escolher imagem</button>
+                <input type="file" id="file-home-coaching" accept="image/*" hidden />
+                <input type="url" id="inp-home-coaching" placeholder="Ou cole o link direto da imagem" />
+              </div>
+            </div>
+            <div class="session-text-col">
+              <div class="field">
+                <label for="inp-home-coaching-title">Título de Acompanhamento</label>
+                <input type="text" id="inp-home-coaching-title" placeholder="Ex.: Você não precisa descobrir tudo sozinho." />
+              </div>
+              <div class="field">
+                <label for="inp-home-coaching-desc">Descrição de Acompanhamento</label>
+                <textarea id="inp-home-coaching-desc" rows="4" placeholder="Ex.: O treino é mais eficiente quando existe orientação, revisão e constância..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 4: Planos e Aulas -->
+      <section class="customization-tab-panel hidden" id="panel-plans" role="tabpanel" aria-labelledby="tab-btn-plans">
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h2>Página de Planos e Modalidades</h2>
+            <p>Imagem de fundo do topo e textos da página de apresentação dos planos e valores.</p>
+          </div>
+          <div class="session-editor-grid">
+            <div class="session-image-col">
+              <label>Fundo do Topo (Hero de Planos)</label>
+              <div class="image-preview-box">
+                <img id="preview-plans-hero" src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=88" alt="Prévia Planos" />
+              </div>
+              <div class="image-controls">
+                <button type="button" class="btn-upload" data-target="file-plans-hero">Escolher imagem</button>
+                <input type="file" id="file-plans-hero" accept="image/*" hidden />
+                <input type="url" id="inp-plans-hero" placeholder="Ou cole o link direto da imagem" />
+              </div>
+            </div>
+            <div class="session-text-col">
+              <div class="field">
+                <label for="inp-plans-hero-title">Título (Hero de Planos)</label>
+                <input type="text" id="inp-plans-hero-title" placeholder="Ex.: Encontre o plano ideal para sua rotina." />
+              </div>
+              <div class="field">
+                <label for="inp-plans-hero-subtitle">Subtítulo (Hero de Planos)</label>
+                <textarea id="inp-plans-hero-subtitle" rows="4" placeholder="Ex.: Compare as opções com calma e escolha a que melhor se adapta aos seus objetivos..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA 5: Estética & Integrações -->
+      <section class="customization-tab-panel hidden" id="panel-style" role="tabpanel" aria-labelledby="tab-btn-style">
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h2>Estética e Integrações</h2>
+            <p>Personalize as cores dos botões, redes sociais e configurações de acesso externo.</p>
+          </div>
+          <div class="style-integrations-grid">
+            <!-- Cor dos botões -->
+            <div class="style-block-card">
+              <h3>Cor dos Botões (CTA Principal)</h3>
+              <div class="color-picker-row">
+                <div class="color-input-wrap">
+                  <input type="color" id="picker-button-color" value="#1478d4" aria-label="Seletor de cor do botão" />
+                  <input type="text" id="inp-button-color" class="color-hex-input" value="#1478d4" maxlength="7" />
+                </div>
+                <button type="button" id="preview-button-cta" class="color-preview-btn">Exemplo de Botão</button>
+              </div>
+              <small style="color: var(--muted); font-size: 12px;">Cor aplicada aos botões principais de matrícula e ação do site.</small>
+            </div>
+
+            <!-- Redes Sociais / Instagram -->
+            <div class="style-block-card">
+              <h3>Redes Sociais</h3>
+              <div class="field">
+                <label for="inp-instagram-url">Instagram da Academia</label>
+                <input type="url" id="inp-instagram-url" placeholder="https://www.instagram.com/sua_academia" />
+                <small>Link do perfil exibido ao lado do logo no topo do site.</small>
+              </div>
+            </div>
+
+            <!-- Login Google / Gmail / Firebase -->
+            <div class="style-block-card">
+              <h3>Acesso com Conta Google / Gmail</h3>
+              <div class="field">
+                <label for="inp-google-client-id">Google Client ID (Google Cloud / Firebase)</label>
+                <input type="text" id="inp-google-client-id" placeholder="Ex.: 1234567890-abcdefg.apps.googleusercontent.com" />
+                <small>Habilita o botão oficial de continuar com o Google para alunos, equipe e visitantes.</small>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <div class="customization-footer">
         <div id="customization-status" class="customization-status" aria-live="polite"></div>
-        <button type="button" class="btn-save" id="btn-save-bottom">Salvar</button>
+        <button type="button" class="btn-save" id="btn-save-bottom">Salvar alterações</button>
       </div>
     </form>
   </main>
 
-  <script src="./nav.js"></script>
-  <script src="./site-customization.js"></script>
+  <script src="./nav.js?v=20261005-2"></script>
+  <script src="./site-customization.js?v=20261006-1"></script>
 </body>
 </html>
