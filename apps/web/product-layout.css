@@ -409,6 +409,59 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
   .toolbar { gap: 8px !important; margin-bottom: 8px !important; }
 }
 
+/* Status toggle dot and title row for plans and students */
+.entity-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  line-height: 1.25 !important;
+}
+
+.status-toggle-dot {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  max-width: 12px !important;
+  min-height: 12px !important;
+  max-height: 12px !important;
+  border-radius: 50% !important;
+  border: 2px solid #fff !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: transform .15s ease, filter .15s ease, background-color .15s ease !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+.status-toggle-dot:hover {
+  transform: scale(1.3) !important;
+  filter: brightness(1.1) !important;
+}
+
+.status-toggle-dot.is-active {
+  background: #22c55e !important;
+}
+
+.status-toggle-dot.is-inactive {
+  background: #ef4444 !important;
+}
+
+.student-warning-triangle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  margin: 0 2px !important;
+  line-height: 1 !important;
+}
+
+html[data-admin-theme="dark"] .status-toggle-dot {
+  border-color: #122235 !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
 /* Planos 3-dots actions and mobile 2-column grid */
 #plans-page-list > li.entity-card {
   display: flex !important;

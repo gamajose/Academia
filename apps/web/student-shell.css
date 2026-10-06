@@ -1267,9 +1267,7 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
 }
 
 .student-profile-cover {
-  position: relative !important;
-  height: 120px !important;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 45%, #1e3a8a 100%) !important;
+  display: none !important;
 }
 
 .student-profile-cover::before {
@@ -1303,15 +1301,15 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
 }
 
 .student-profile-header-body {
-  padding: 0 16px 16px !important;
+  padding: 20px 16px 16px !important;
   position: relative !important;
 }
 
 .student-profile-avatar-section {
   display: flex !important;
-  align-items: flex-end !important;
+  align-items: center !important;
   gap: 16px !important;
-  margin-top: -44px !important;
+  margin-top: 0 !important;
   margin-bottom: 14px !important;
   flex-wrap: nowrap !important;
 }

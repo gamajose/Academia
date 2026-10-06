@@ -59,9 +59,19 @@ function render() {
     const main = document.createElement('div');
     main.className = 'entity-main';
     main.innerHTML = `
-      <strong>${plan.name}</strong>
+      <div class="entity-title-row">
+        <button type="button" class="status-toggle-dot ${plan.is_active ? 'is-active' : 'is-inactive'}" title="${plan.is_active ? 'Plano ativo (clique para desativar)' : 'Plano inativo (clique para ativar)'}" aria-label="${plan.is_active ? 'Desativar plano' : 'Ativar plano'}"></button>
+        <strong>${plan.name}</strong>
+      </div>
       <span>${money(plan.price_cents)} · ${plan.duration_days} dia(s)</span>
-      <span>${plainText(plan.description || '').slice(0, 110) || 'Sem descrição'} · <span class="badge ${plan.is_active ? 'ok' : 'bad'}">${plan.is_active ? 'Ativo' : 'Inativo'}</span></span>`;
+      <span>${plainText(plan.description || '').slice(0, 110) || 'Sem descrição'}</span>`;
+
+    const statusDot = main.querySelector('.status-toggle-dot');
+    statusDot?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggle(plan);
+    });
+
     const actions = document.createElement('div');
     actions.className = 'plan-card-actions';
 
@@ -84,17 +94,7 @@ function render() {
       openPlan(plan);
     });
 
-    const toggleButton = document.createElement('button');
-    toggleButton.type = 'button';
-    toggleButton.textContent = plan.is_active ? 'Desativar plano' : 'Ativar plano';
-    toggleButton.addEventListener('click', (event) => {
-      event.stopPropagation();
-      menu.classList.add('hidden');
-      li.classList.remove('menu-open');
-      toggle(plan);
-    });
-
-    menu.append(editBtn, toggleButton);
+    menu.append(editBtn);
 
     trigger.addEventListener('click', (event) => {
       event.stopPropagation();
