@@ -524,6 +524,14 @@ html[data-admin-theme="dark"] .student-view-info-tab-panels p {
   .tab-label-desktop { display: none !important; }
   .tab-label-mobile { display: inline !important; }
   .student-form-tab { padding: 8px 10px !important; font-size: 12px !important; }
+  .student-view-info-tabs { gap: 3px !important; padding: 4px !important; }
+  .student-view-info-tab {
+    padding: 6px 4px !important;
+    font-size: 10.5px !important;
+    min-height: 28px !important;
+    letter-spacing: -0.2px !important;
+    text-align: center !important;
+  }
 }
 
 

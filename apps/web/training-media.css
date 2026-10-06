@@ -160,16 +160,56 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
 @media (max-width: 760px) { .exercise-library-filters { grid-template-columns: 1fr; } }
 .training-level-list { display: grid; gap: 8px; list-style: none; padding: 0; margin: 0; }
 .training-level-list > li { border: 1px solid var(--line, #e0d8cc); border-radius: 12px; padding: 10px 12px; background: #fff; }
-.training-level-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 10px; align-items: center; }
-.training-level-row input[type="text"], .training-level-row > input:not([type]) { min-height: 40px; }
+.training-level-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+.training-level-row input[type="text"], .training-level-row > input:not([type]) {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 6px 10px !important;
+}
+.training-level-row .status-toggle-dot {
+  flex-shrink: 0 !important;
+  cursor: pointer !important;
+}
+.training-level-row .mini-button {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  flex-shrink: 0 !important;
+}
+.training-level-row .training-action-icon {
+  flex-shrink: 0 !important;
+  margin-left: 2px !important;
+}
 .training-level-active { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--muted, #68716b); font-size: 13px; }
 .training-level-active input { width: auto; }
 
 @media (max-width: 620px) {
   .video-source-fields { padding: 13px; }
   .exercise-video-preview { width: 100%; }
-  .training-level-form, .training-level-row { grid-template-columns: 1fr; align-items: stretch; }
-  .training-level-row button { justify-self: start; }
+  .training-level-form { grid-template-columns: 1fr; align-items: stretch; }
+  .training-level-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+  .training-level-row input[type="text"], .training-level-row > input:not([type]) {
+    min-height: 34px !important;
+    height: 34px !important;
+    font-size: 13px !important;
+    padding: 4px 8px !important;
+  }
+  .training-level-row .mini-button {
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+  .training-level-row button { justify-self: auto; }
   .training-week-calendar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .plan-day-exercise-row { grid-template-columns: minmax(0, 1fr) 38px; }
   .plan-day-exercise-row .field:first-child { grid-column: 1 / -1; }

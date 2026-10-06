@@ -186,21 +186,45 @@ function renderTrainingLevels() {
     const item = document.createElement('li');
     const form = document.createElement('form');
     form.className = 'training-level-row';
+
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = `status-toggle-dot ${level.is_active ? 'is-active' : 'is-inactive'}`;
+    dot.title = level.is_active ? 'Nível ativo (clique para desativar)' : 'Nível inativo (clique para ativar)';
+    dot.setAttribute('aria-label', level.is_active ? 'Desativar nível' : 'Ativar nível');
+    dot.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextActive = !level.is_active;
+      level.is_active = nextActive;
+      dot.className = `status-toggle-dot ${nextActive ? 'is-active' : 'is-inactive'}`;
+      dot.title = nextActive ? 'Nível ativo (clique para desativar)' : 'Nível inativo (clique para ativar)';
+      dot.setAttribute('aria-label', nextActive ? 'Desativar nível' : 'Ativar nível');
+      try {
+        await api('/api/training/levels/update', {
+          method: 'POST',
+          body: JSON.stringify({ id: level.id, name: input.value.trim(), is_active: nextActive })
+        });
+        setTrainingLevelStatus(`Nível "${level.name}" ${nextActive ? 'ativado' : 'desativado'}.`);
+        await loadBase();
+      } catch (error) {
+        level.is_active = !nextActive;
+        dot.className = `status-toggle-dot ${level.is_active ? 'is-active' : 'is-inactive'}`;
+        setTrainingLevelStatus(`Erro: ${error.message}`);
+      }
+    });
+
     const input = document.createElement('input');
     input.value = level.name;
     input.maxLength = 60;
     input.required = true;
     input.setAttribute('aria-label', `Nome do nivel ${level.name}`);
-    const activeLabel = document.createElement('label');
-    activeLabel.className = 'training-level-active';
-    const active = document.createElement('input');
-    active.type = 'checkbox';
-    active.checked = level.is_active;
-    activeLabel.append(active, document.createTextNode(' Ativo'));
+
     const save = document.createElement('button');
     save.type = 'submit';
     save.className = 'mini-button';
     save.textContent = 'Salvar';
+
     const remove = trainingActionIcon('delete', 'Excluir este nível', 'danger');
     remove.addEventListener('click', async () => {
       if (!window.confirm(`Excluir o nível "${level.name}"?`)) return;
@@ -216,14 +240,15 @@ function renderTrainingLevels() {
         remove.disabled = false;
       }
     });
-    form.append(input, activeLabel, save, remove);
+
+    form.append(dot, input, save, remove);
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       save.disabled = true;
       try {
         await api('/api/training/levels/update', {
           method: 'POST',
-          body: JSON.stringify({ id: level.id, name: input.value.trim(), is_active: active.checked })
+          body: JSON.stringify({ id: level.id, name: input.value.trim(), is_active: level.is_active })
         });
         setTrainingLevelStatus('Nivel atualizado.');
         await loadBase();
