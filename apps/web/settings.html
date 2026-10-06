@@ -42,13 +42,12 @@
             <h2>Métodos de Pagamento</h2>
             <p>Configure as credenciais e parâmetros de recebimento para Pix, Cartão de Crédito e PayPal.</p>
           </div>
-          <button id="save-payments-button" type="button">Salvar Pagamentos</button>
         </div>
 
         <div class="payment-tabs-nav" role="tablist">
-          <button type="button" class="tab-btn active" data-tab="pix"><span class="tab-label-desktop">Pix (Dinâmico & Estático)</span><span class="tab-label-mobile">Pix</span></button>
-          <button type="button" class="tab-btn" data-tab="card"><span class="tab-label-desktop">Cartão de Crédito</span><span class="tab-label-mobile">Cartão</span></button>
-          <button type="button" class="tab-btn" data-tab="paypal"><span class="tab-label-desktop">PayPal</span><span class="tab-label-mobile">PayPal</span></button>
+          <button type="button" class="tab-btn active" data-tab="pix">Pix</button>
+          <button type="button" class="tab-btn" data-tab="card">Cartão</button>
+          <button type="button" class="tab-btn" data-tab="paypal">PayPal</button>
         </div>
 
         <div class="payment-tab-content" id="tab-pix">
@@ -131,6 +130,9 @@
         </div>
 
         <p class="status-line" id="payment-settings-status" aria-live="polite" style="margin-top: 14px;"></p>
+        <div class="form-actions" style="margin-top: 16px; display: flex; justify-content: flex-end;">
+          <button id="save-payments-button" type="button">Salvar</button>
+        </div>
       </div>
     </section>
 

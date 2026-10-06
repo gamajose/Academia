@@ -444,6 +444,25 @@ html[data-admin-theme="dark"] .employee-modal-card .employee-form-header {
 }
 .employee-form-actions { position: sticky; bottom: -28px; z-index: 3; margin: 4px -28px -28px; padding: 18px 28px 24px; border-top: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
 
+#save-user-button {
+  background: rgba(20, 120, 212, 0.88) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+
+#cancel-user-button {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+html[data-admin-theme="dark"] #cancel-user-button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
 .permissions-modal-card { width: min(1040px, 96vw); display: grid; gap: 18px; max-height: min(88vh, 920px); overflow: auto; }
 .access-profile-form { width: min(900px, 94vw); max-height: min(88vh, 900px); overflow: auto; }
 #access-profile-modal { z-index: 10020 !important; }

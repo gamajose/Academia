@@ -227,8 +227,8 @@ body.admin-training-page #panel-plans .toolbar {
 
   body.admin-training-page #plan-list {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
     align-items: stretch !important;
   }
 
@@ -238,9 +238,9 @@ body.admin-training-page #panel-plans .toolbar {
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: flex-start !important;
-    gap: 4px !important;
-    padding: 8px 10px !important;
-    border-radius: 11px;
+    gap: 6px !important;
+    padding: 12px 14px !important;
+    border-radius: 12px;
     text-align: left !important;
   }
 
@@ -262,17 +262,17 @@ body.admin-training-page #panel-plans .toolbar {
 
   body.admin-training-page #plan-list .entity-main strong {
     text-align: left !important;
-    font-size: 12px !important;
+    font-size: 14px !important;
     line-height: 1.3 !important;
     word-break: break-word !important;
   }
 
   body.admin-training-page #plan-list .entity-main span {
     text-align: left !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     color: var(--muted) !important;
-    margin-top: 2px !important;
-    line-height: 1.25 !important;
+    margin-top: 3px !important;
+    line-height: 1.35 !important;
   }
 
   #plan-modal .modal-header h3,

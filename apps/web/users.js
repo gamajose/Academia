@@ -828,7 +828,7 @@ function editUser(user) {
   ]) setField(id, address[key]);
 
   get('employee-form-title').textContent = 'Editar funcionário';
-  get('save-user-button').textContent = 'Salvar alterações';
+  get('save-user-button').textContent = 'Salvar';
   get('user-password').required = false;
   get('user-password-field').querySelector('label').textContent = 'Nova senha (opcional)';
   openUserModal();

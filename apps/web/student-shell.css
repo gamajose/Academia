@@ -623,6 +623,13 @@ button.student-feed-dots-btn:focus-visible {
   flex-shrink: 0 !important;
 }
 
+.student-feed-badges-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
 .student-feed-badges {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -1605,6 +1612,20 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
     text-align: center !important;
     white-space: nowrap !important;
   }
+  .student-social-profile-shell {
+    padding-top: 44px !important;
+  }
+  .student-profile-avatar-section {
+    margin-top: 3px !important;
+  }
+}
+
+#student-profile-save {
+  background: rgba(20, 120, 212, 0.88) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
 }
 
 .profile-modal-pane.hidden {

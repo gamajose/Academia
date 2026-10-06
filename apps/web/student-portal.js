@@ -337,18 +337,18 @@
       overlay.innerHTML = `
         <div class="student-feed-meta-row">
           <strong class="student-feed-title">${text(item.exercise_name || 'Exercício')}</strong>
-          <div class="student-feed-meta-actions-col">
-            <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
-            <button type="button" class="student-feed-add-btn" title="Adicionar exercício ao treino" aria-label="Adicionar exercício">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>Adicionar exercício</span>
-            </button>
-          </div>
+          <span class="student-feed-index">${index + 1}/${selectedEvent.exercises.length}</span>
         </div>
-        <div class="student-feed-badges">
-          <span class="student-feed-badge primary">${sets} séries × ${reps}</span>
-          <span class="student-feed-badge secondary">${rest} descanso</span>
-          ${primaryGroup ? `<span class="student-feed-badge muscle">${text(primaryGroup)}</span>` : ''}
+        <div class="student-feed-badges-row">
+          <div class="student-feed-badges">
+            <span class="student-feed-badge primary">${sets} séries × ${reps}</span>
+            <span class="student-feed-badge secondary">${rest} descanso</span>
+            ${primaryGroup ? `<span class="student-feed-badge muscle">${text(primaryGroup)}</span>` : ''}
+          </div>
+          <button type="button" class="student-feed-add-btn" title="Adicionar exercício ao treino" aria-label="Adicionar exercício">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Adicionar exercício</span>
+          </button>
         </div>
         <div class="student-feed-caption">
           <span>${text(selectedEvent.title || 'Treino')} · ${eventTime}${selectedEvent.notes ? ` · ${text(selectedEvent.notes)}` : ''}</span>

@@ -262,7 +262,7 @@
     } finally {
       if (btnSave) {
         btnSave.disabled = false;
-        btnSave.textContent = 'Salvar alterações';
+        btnSave.textContent = 'Salvar';
       }
     }
   }

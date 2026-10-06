@@ -213,7 +213,7 @@
       formStatus.textContent = messages[error.message] || `Erro: ${error.message}`;
     } finally {
       button.disabled = false;
-      button.textContent = 'Salvar alterações';
+      button.textContent = 'Salvar';
     }
   }
 

@@ -758,7 +758,8 @@ function render() {
         ${hasWarning ? `<span class="student-warning-triangle" title="${warningTitle}" aria-label="${warningTitle}"><svg viewBox="0 0 24 24" width="16" height="16" fill="#f59e0b" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13" stroke="#fff" stroke-width="2"/><circle cx="12" cy="17" r="1" fill="#fff" stroke="none"/></svg></span>` : ''}
         <strong>${item.name}</strong>
       </div>
-      <span class="student-card-contact">${[item.email || 'Sem e-mail', item.phone ? formatPhone(item.phone) : 'Sem telefone'].filter(Boolean).join(' · ')}</span>
+      <span class="student-card-email">${item.email || 'Sem e-mail'}</span>
+      <span class="student-card-phone">${item.phone ? formatPhone(item.phone) : 'Sem telefone'}</span>
       <span class="student-card-tags">${overdue > 0 ? `<span class="badge bad">Em atraso ${brl(overdue)}</span>` : ''}<span class="student-info-chip ${item.training_plan_id ? 'has-content' : 'empty-content'}">${item.training_plan_id ? `Ficha ativa · ${item.training_exercise_count || 0} exercício(s)` : 'Sem ficha ativa'}</span><span class="student-info-chip ${item.latest_assessment_date ? 'has-history' : 'empty-content'}">${item.latest_assessment_date ? `Histórico desde ${dateOnly(item.latest_assessment_date)}` : 'Sem histórico de avaliação'}</span></span>`;
 
     const statusDot = main.querySelector('.status-toggle-dot');
@@ -768,7 +769,7 @@ function render() {
     });
     const whatsapp = whatsappLink(item.phone);
     const actions = document.createElement('div');
-    actions.className = 'entity-actions';
+    actions.className = 'entity-actions student-card-actions';
     if (whatsapp) {
       whatsapp.addEventListener('click', (event) => event.stopPropagation());
       actions.appendChild(whatsapp);
@@ -880,6 +881,8 @@ function initPhoneWidget() {
     separateDialCode: true,
     nationalMode: true,
     showSelectedDialCode: true,
+    countrySearch: true,
+    dropdownContainer: document.body,
     autoPlaceholder: 'aggressive',
     formatAsYouType: true,
     utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/utils.js'

@@ -54,18 +54,23 @@
     document.querySelector('.student-goals-panel')?.classList.toggle('is-single-goal', goals.length <= 1);
     goals.forEach((goal) => {
       goalsById.set(String(goal.id), goal);
+      const isCompleted = goal.status === 'completed';
+      const isActive = goal.status === 'active';
       const row = document.createElement('li');
-      row.className = `student-goal-card${goal.status === 'completed' ? ' is-completed' : ''}`;
+      row.className = `student-goal-card${isCompleted ? ' is-completed' : ''}`;
       row.dataset.goalId = goal.id;
       row.tabIndex = 0;
       row.setAttribute('role', 'button');
       row.setAttribute('aria-label', `Editar meta ${goal.goal_type || ''}`.trim());
       row.innerHTML = `
         <div class="entity-main">
-          <strong>${StudentPortal.escapeHtml(goal.goal_type || 'Meta')}</strong>
+          <div style="display:inline-flex; align-items:center; gap:8px;">
+            ${isCompleted ? '' : `<button type="button" class="status-toggle-dot ${isActive ? 'is-active' : 'is-inactive'}" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" title="${isActive ? 'Meta ativa (clique para desativar)' : 'Meta desativada (clique para ativar)'}" aria-label="${isActive ? 'Meta ativa' : 'Meta desativada'}"></button>`}
+            <strong>${StudentPortal.escapeHtml(goal.goal_type || 'Meta')}</strong>
+            ${isCompleted ? '<span class="badge ok">Concluída</span>' : ''}
+          </div>
           <span>Alvo: ${StudentPortal.escapeHtml(formatTarget(goal.target_value))} · Prazo: ${StudentPortal.escapeHtml(formatDate(goal.target_date))}</span>
           ${goal.notes ? `<span class="student-goal-notes">${StudentPortal.escapeHtml(goal.notes)}</span>` : ''}
-          <span class="badge ${goal.status === 'active' ? 'ok' : ''}">${goal.status === 'completed' ? 'Concluída' : 'Ativa'}</span>
         </div>
         <div class="student-feed-item-menu">
           <button class="student-feed-dots-btn student-goal-dots-btn" type="button" aria-label="Opções da meta ${StudentPortal.escapeHtml(goal.goal_type || '')}" title="Opções" aria-expanded="false">
@@ -76,6 +81,24 @@
             <button type="button" class="goal-item-delete-btn is-danger" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" role="menuitem">Excluir meta</button>
           </div>
         </div>`;
+
+      const dot = row.querySelector('.status-toggle-dot');
+      if (dot) {
+        dot.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const nextStatus = isActive ? 'paused' : 'active';
+          try {
+            await StudentPortal.api(`/api/student/goals/${encodeURIComponent(goal.id)}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ status: nextStatus })
+            });
+            await load();
+          } catch (err) {
+            alert(`Não foi possível atualizar o status da meta: ${err.message}`);
+          }
+        });
+      }
+
       list.appendChild(row);
     });
     if (!goals.length) {

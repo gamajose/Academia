@@ -27,14 +27,18 @@
       <article class="modal-card student-assessment-modal-card">
         <div class="modal-header"><div><h3 id="student-assessment-modal-title">Nova medição</h3><p>Registre seus dados e acompanhe sua evolução.</p></div><button class="modal-close" id="student-assessment-close" type="button" aria-label="Fechar">×</button></div>
         <form id="student-assessment-form" class="student-assessment-form">
-        <div class="student-assessment-grid">
-          <div class="field"><label for="student-assessment-date">Data</label><input id="student-assessment-date" type="date" /></div>
+        <div class="field"><label for="student-assessment-date">Data</label><input id="student-assessment-date" type="date" /></div>
+        <div class="assessment-form-row-three">
           <div class="field"><label for="student-weight">Peso (kg)</label><input id="student-weight" type="number" min="0" step="0.01" /></div>
           <div class="field"><label for="student-height">Altura (cm)</label><input id="student-height" type="number" min="0" step="0.01" /></div>
-          <div class="field"><label for="student-fat">Gordura corporal (%)</label><input id="student-fat" type="number" min="0" step="0.01" /></div>
+          <div class="field"><label for="student-fat">Gordura (%)</label><input id="student-fat" type="number" min="0" step="0.01" /></div>
+        </div>
+        <div class="assessment-form-row-three">
           <div class="field"><label for="student-waist">Cintura (cm)</label><input id="student-waist" type="number" min="0" step="0.01" /></div>
           <div class="field"><label for="student-chest">Peito (cm)</label><input id="student-chest" type="number" min="0" step="0.01" /></div>
           <div class="field"><label for="student-hip">Quadril (cm)</label><input id="student-hip" type="number" min="0" step="0.01" /></div>
+        </div>
+        <div class="assessment-form-row-two">
           <div class="field"><label for="student-biceps">Bíceps (cm)</label><input id="student-biceps" type="number" min="0" step="0.01" /></div>
           <div class="field"><label for="student-thigh">Coxas (cm)</label><input id="student-thigh" type="number" min="0" step="0.01" /></div>
         </div>
@@ -79,8 +83,6 @@
           <div class="student-workout-dropdown hidden" id="student-progress-dropdown" role="menu">
             <button type="button" id="student-menu-new-assessment" role="menuitem">Nova medição</button>
             <button type="button" id="student-menu-view-history" role="menuitem">Histórico de avaliações</button>
-            <button type="button" id="student-menu-toggle-notification" role="menuitem">Ativar notificações no celular</button>
-            <button type="button" id="student-menu-test-notification" role="menuitem">Testar notificação no celular</button>
           </div>
         </div>
         <button id="open-student-assessment" class="hidden" type="button" aria-hidden="true"></button>

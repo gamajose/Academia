@@ -99,7 +99,18 @@ function renderProfile(user) {
   const address = user.address_details || {};
   fill('profile-postal-code', address.postal_code);
   fill('profile-street', address.street);
-  fill('profile-address-number', address.number);
+  const numVal = address.number || '';
+  fill('profile-address-number', numVal);
+  const noNumCb = account('profile-no-number');
+  if (noNumCb) {
+    if (numVal.toUpperCase() === 'S/N' || numVal.toLowerCase() === 'sem número') {
+      noNumCb.checked = true;
+      if (account('profile-address-number')) account('profile-address-number').disabled = true;
+    } else {
+      noNumCb.checked = false;
+      if (account('profile-address-number')) account('profile-address-number').disabled = false;
+    }
+  }
   fill('profile-address-complement', address.complement);
   fill('profile-neighborhood', address.neighborhood);
   fill('profile-city', address.city);
@@ -192,7 +203,7 @@ function getFullProfilePayload(extraPhotoUrl = null) {
     address_details: {
       postal_code: value('profile-postal-code'),
       street: value('profile-street'),
-      number: value('profile-address-number'),
+      number: account('profile-no-number')?.checked ? 'S/N' : value('profile-address-number'),
       complement: value('profile-address-complement'),
       neighborhood: value('profile-neighborhood'),
       city: value('profile-city'),
@@ -371,6 +382,19 @@ account('profile-form-personal')?.addEventListener('submit', savePersonal);
 account('profile-form-address')?.addEventListener('submit', saveAddress);
 account('save-gym-button')?.addEventListener('click', saveGym);
 account('profile-form-security')?.addEventListener('submit', savePassword);
+
+account('profile-no-number')?.addEventListener('change', (e) => {
+  const numInput = account('profile-address-number');
+  if (!numInput) return;
+  if (e.target.checked) {
+    numInput.value = 'S/N';
+    numInput.disabled = true;
+  } else {
+    if (numInput.value.toUpperCase() === 'S/N') numInput.value = '';
+    numInput.disabled = false;
+    numInput.focus();
+  }
+});
 
 initTabs();
 loadProfile();

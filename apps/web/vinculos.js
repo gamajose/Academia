@@ -247,7 +247,7 @@ function openModal(item = {}) {
   v('link-member').disabled = Boolean(editingLinkId);
   v('link-plan').value = item.plan_id || '';
   v('link-start').value = String(item.starts_at || '').slice(0, 10);
-  v('save-link-button').textContent = editingLinkId ? 'Salvar alterações' : 'Salvar matrícula';
+  v('save-link-button').textContent = 'Salvar';
   v('link-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   setTimeout(() => v('link-member').focus(), 50);
@@ -260,7 +260,7 @@ function closeModal() {
   editingLinkId = '';
   v('link-member').disabled = false;
   v('link-modal-title').textContent = 'Nova matrícula';
-  v('save-link-button').textContent = 'Salvar matrícula';
+  v('save-link-button').textContent = 'Salvar';
 }
 
 async function save() {

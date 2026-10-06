@@ -632,17 +632,18 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
   const studentGoalMatch = url.pathname.match(/^\/api\/student\/goals\/([0-9a-f-]+)$/i);
   if (isStudent(user) && studentGoalMatch && ['PATCH', 'PUT', 'DELETE'].includes(req.method)) {
     const goalId = studentGoalMatch[1];
-    const existing = await query('SELECT id FROM member_goals WHERE id = $1 AND gym_id = $2 AND member_id = $3 LIMIT 1', [goalId, user.gym_id, user.member_id]);
+    const existing = await query('SELECT id, goal_type, target_value, target_date, status, notes FROM member_goals WHERE id = $1 AND gym_id = $2 AND member_id = $3 LIMIT 1', [goalId, user.gym_id, user.member_id]);
     if (!existing.rowCount) return send(res, 404, { error: 'meta_nao_encontrada' });
     if (req.method === 'DELETE') {
       await query('DELETE FROM member_goals WHERE id = $1 AND gym_id = $2 AND member_id = $3', [goalId, user.gym_id, user.member_id]);
       return send(res, 200, { status: 'meta_excluida' });
     }
     const input = await body(req);
-    const goalType = studentText(input.goal_type, '', 120);
-    const targetDate = String(input.target_date || '').trim();
-    const targetValue = studentNumber(input.target_value);
-    const goalStatus = ['active', 'completed'].includes(String(input.status || '')) ? String(input.status) : 'active';
+    const prev = existing.rows[0];
+    const goalType = input.goal_type !== undefined ? studentText(input.goal_type, '', 120) : prev.goal_type;
+    const targetDate = input.target_date !== undefined ? String(input.target_date || '').trim() : (prev.target_date ? String(prev.target_date).slice(0, 10) : '');
+    const targetValue = input.target_value !== undefined ? studentNumber(input.target_value) : prev.target_value;
+    const goalStatus = input.status !== undefined && ['active', 'completed', 'inactive', 'paused'].includes(String(input.status)) ? String(input.status) : prev.status;
     const hasTargetValue = input.target_value !== undefined && input.target_value !== null && input.target_value !== '';
     if (!goalType || (targetDate && !validCalendarDate(targetDate)) || (hasTargetValue && targetValue === null)) return send(res, 400, { error: 'dados_invalidos' });
     const result = await query(
@@ -651,7 +652,7 @@ async function handleStudentRoutes(req, res, user, url, helpers) {
            status = $7, notes = $8, updated_at = now()
        WHERE id = $1 AND gym_id = $2 AND member_id = $3
        RETURNING id, goal_type, target_value, target_date, status, notes, created_at, updated_at`,
-      [goalId, user.gym_id, user.member_id, goalType, targetValue, targetDate, goalStatus, studentText(input.notes, '', 2000) || null]
+      [goalId, user.gym_id, user.member_id, goalType, targetValue, targetDate, goalStatus, input.notes !== undefined ? (studentText(input.notes, '', 2000) || null) : prev.notes]
     );
     return send(res, 200, result.rows[0]);
   }

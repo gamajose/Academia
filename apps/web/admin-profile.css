@@ -435,3 +435,25 @@ html[data-admin-theme="dark"] .gym-logo-preview-row img {
     padding: 0 !important;
   }
 }
+
+#save-personal-button,
+#save-address-button,
+#save-gym-button {
+  background: rgba(20, 120, 212, 0.88) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+
+.employee-row-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .employee-row-two {
+    gap: 8px;
+  }
+}
+
