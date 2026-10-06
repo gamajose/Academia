@@ -64,13 +64,13 @@
       row.setAttribute('aria-label', `Editar meta ${goal.goal_type || ''}`.trim());
       row.innerHTML = `
         <div class="entity-main">
-          <div style="display:inline-flex; align-items:center; gap:8px;">
-            ${isCompleted ? '' : `<button type="button" class="status-toggle-dot ${isActive ? 'is-active' : 'is-inactive'}" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" title="${isActive ? 'Meta ativa (clique para desativar)' : 'Meta desativada (clique para ativar)'}" aria-label="${isActive ? 'Meta ativa' : 'Meta desativada'}"></button>`}
+          <div class="student-goal-title-row">
             <strong>${StudentPortal.escapeHtml(goal.goal_type || 'Meta')}</strong>
-            ${isCompleted ? '<span class="badge ok">Concluída</span>' : ''}
+            ${isCompleted ? '' : `<button type="button" class="status-toggle-dot ${isActive ? 'is-active' : 'is-inactive'}" data-goal-id="${StudentPortal.escapeHtml(goal.id)}" title="${isActive ? 'Meta ativa (clique para desativar)' : 'Meta inativa (clique para ativar)'}" aria-label="${isActive ? 'Desativar meta' : 'Ativar meta'}"></button>`}
           </div>
           <span>Alvo: ${StudentPortal.escapeHtml(formatTarget(goal.target_value))} · Prazo: ${StudentPortal.escapeHtml(formatDate(goal.target_date))}</span>
           ${goal.notes ? `<span class="student-goal-notes">${StudentPortal.escapeHtml(goal.notes)}</span>` : ''}
+          ${isCompleted ? '<span class="badge">Concluída</span>' : ''}
         </div>
         <div class="student-feed-item-menu">
           <button class="student-feed-dots-btn student-goal-dots-btn" type="button" aria-label="Opções da meta ${StudentPortal.escapeHtml(goal.goal_type || '')}" title="Opções" aria-expanded="false">
@@ -85,8 +85,10 @@
       const dot = row.querySelector('.status-toggle-dot');
       if (dot) {
         dot.addEventListener('click', async (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          const nextStatus = isActive ? 'paused' : 'active';
+          const nextStatus = isActive ? 'inactive' : 'active';
+          dot.disabled = true;
           try {
             await StudentPortal.api(`/api/student/goals/${encodeURIComponent(goal.id)}`, {
               method: 'PATCH',
@@ -94,6 +96,7 @@
             });
             await load();
           } catch (err) {
+            dot.disabled = false;
             alert(`Não foi possível atualizar o status da meta: ${err.message}`);
           }
         });
@@ -245,6 +248,7 @@
     }
 
     if (event.target.closest('.student-feed-item-dropdown')) return;
+    if (event.target.closest('.status-toggle-dot')) return;
 
     const card = event.target.closest('.student-goal-card');
     const goal = goalsById.get(card?.dataset.goalId);
