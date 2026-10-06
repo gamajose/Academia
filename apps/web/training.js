@@ -59,6 +59,7 @@ function trainingMobileMenu(label, items) {
       event.stopPropagation();
       dropdown.classList.add('hidden');
       trigger.setAttribute('aria-expanded', 'false');
+      wrap.closest('li')?.style.removeProperty('z-index');
       await item.run(action);
     });
     dropdown.appendChild(action);
@@ -68,8 +69,12 @@ function trainingMobileMenu(label, items) {
     const willOpen = dropdown.classList.contains('hidden');
     document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
     document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+    document.querySelectorAll('#exercise-list li, #plan-list li').forEach((li) => li.style.removeProperty('z-index'));
     dropdown.classList.toggle('hidden', !willOpen);
     trigger.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) {
+      wrap.closest('li')?.style.setProperty('z-index', '1200', 'important');
+    }
   });
   wrap.addEventListener('click', (event) => event.stopPropagation());
   wrap.addEventListener('keydown', (event) => event.stopPropagation());
@@ -80,6 +85,7 @@ function trainingMobileMenu(label, items) {
 document.addEventListener('click', () => {
   document.querySelectorAll('.mobile-card-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
   document.querySelectorAll('.mobile-card-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('#exercise-list li, #plan-list li').forEach((li) => li.style.removeProperty('z-index'));
 });
 
 function setTrainingStatus(text) {
@@ -510,44 +516,16 @@ function renderAll({ libraryOnly = false } = {}) {
     });
     actionRow.appendChild(mobileAddBtn);
 
-    const actions = document.createElement('div');
-    actions.className = 'entity-actions';
-
-    const addIconBtn = trainingActionIcon('plus', `Adicionar ${item.name} à ficha`, 'exercise-add-btn');
-    addIconBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      selectExerciseForPlan(item);
-    });
-    actions.appendChild(addIconBtn);
-
+    const menuItems = [
+      { label: 'Adicionar à ficha', run: () => selectExerciseForPlan(item) }
+    ];
     if (canManageTrainingLevels()) {
-      const edit = trainingActionIcon('edit', `Editar ${item.name}`);
-      edit.addEventListener('click', (event) => {
-        event.stopPropagation();
-        openExerciseForm(item);
-      });
-      const remove = item.is_active === false
-        ? document.createElement('button')
-        : trainingActionIcon('delete', `Excluir ${item.name}`, 'danger');
-      if (item.is_active === false) {
-        remove.type = 'button';
-        remove.className = 'mini-button secondary';
-        remove.textContent = 'Ativar';
-        remove.title = `Ativar ${item.name}`;
-      }
-      remove.addEventListener('click', async (event) => {
-        event.stopPropagation();
-        await toggleExercise(item, remove);
-      });
-      actions.append(edit, remove);
+      menuItems.push(
+        { label: 'Editar', run: () => openExerciseForm(item) },
+        { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
+      );
     }
-    actionRow.appendChild(actions);
-
-    actionRow.appendChild(trainingMobileMenu(`Opções de ${item.name}`, [
-      { label: 'Adicionar à ficha', run: () => selectExerciseForPlan(item) },
-      { label: 'Editar', run: () => openExerciseForm(item) },
-      { label: item.is_active === false ? 'Ativar' : 'Excluir', danger: item.is_active !== false, run: (button) => toggleExercise(item, button) }
-    ]));
+    actionRow.appendChild(trainingMobileMenu(`Opções de ${item.name}`, menuItems));
 
     footer.appendChild(actionRow);
     row.append(header, media, footer);
@@ -581,7 +559,10 @@ function renderAll({ libraryOnly = false } = {}) {
     row.tabIndex = 0;
     row.setAttribute('role', 'button');
     row.setAttribute('aria-label', `Visualizar ficha de ${item.member_name}`);
-    row.addEventListener('click', () => openPlanDetails(item));
+    row.addEventListener('click', (event) => {
+      if (event.target.closest('.mobile-card-menu, button, input, select')) return;
+      openPlanDetails(item);
+    });
     row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlanDetails(item); } });
     const main = document.createElement('div');
     main.className = 'entity-main';
@@ -593,20 +574,6 @@ function renderAll({ libraryOnly = false } = {}) {
     main.append(name, detail);
     row.appendChild(main);
     if (canManageTrainingLevels()) {
-      const actions = document.createElement('div');
-      actions.className = 'entity-actions';
-      const edit = trainingActionIcon('edit', `Editar ficha de ${item.member_name}`);
-      edit.addEventListener('click', (event) => {
-        event.stopPropagation();
-        openPlanForm(item);
-      });
-      const remove = trainingActionIcon('delete', `Excluir ficha de ${item.member_name}`, 'danger');
-      remove.addEventListener('click', async (event) => {
-        event.stopPropagation();
-        await deletePlan(item, remove);
-      });
-      actions.append(edit, remove);
-      row.appendChild(actions);
       row.appendChild(trainingMobileMenu(`Opções da ficha de ${item.member_name}`, [
         { label: 'Editar', run: () => openPlanForm(item) },
         { label: 'Excluir', danger: true, run: (button) => deletePlan(item, button) }

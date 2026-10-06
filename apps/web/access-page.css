@@ -255,13 +255,7 @@ html[data-admin-theme="dark"] .access-decision-row .badge.ok {
   border-color: rgba(34, 197, 94, 0.4) !important;
 }
 
-.access-decision-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  width: auto;
-}
-.access-decision-details summary {
+.access-decision-toggle-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -277,18 +271,16 @@ html[data-admin-theme="dark"] .access-decision-row .badge.ok {
   border-radius: 8px;
   background: transparent;
   color: var(--text);
-  list-style: none;
   transition: all .16s ease;
   flex: 0 0 auto !important;
 }
-.access-decision-details summary:hover {
+.access-decision-toggle-btn:hover,
+.access-decision-toggle-btn.is-open {
   background: rgba(0, 0, 0, 0.05);
   border-color: var(--accent);
 }
-.access-decision-details summary::-webkit-details-marker {
-  display: none;
-}
-.access-decision-details p {
+
+.access-decision-explanation {
   width: auto;
   max-width: 360px;
   margin: 6px 0 0 0;
@@ -302,7 +294,20 @@ html[data-admin-theme="dark"] .access-decision-row .badge.ok {
   word-break: break-word;
   text-align: left;
 }
-html[data-admin-theme="dark"] .access-decision-details p {
+.access-decision-explanation.hidden {
+  display: none !important;
+}
+
+html[data-admin-theme="dark"] .access-decision-toggle-btn {
+  border-color: #29445d;
+  color: #dceaf6;
+}
+html[data-admin-theme="dark"] .access-decision-toggle-btn:hover,
+html[data-admin-theme="dark"] .access-decision-toggle-btn.is-open {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #38bdf8;
+}
+html[data-admin-theme="dark"] .access-decision-explanation {
   background: #0f1d2b;
   border-color: #243c52;
   color: #a9bed1;

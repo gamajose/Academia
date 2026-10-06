@@ -7,7 +7,7 @@
   <title>Treinos - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./training-media.css?v=20261006-1" />
+  <link rel="stylesheet" href="./training-media.css?v=20261006-2" />
   <link rel="stylesheet" href="./admin-compact-pages.css?v=20261006-1" />
   <link rel="stylesheet" href="./admin-pagination.css?v=20260716-1" />
 </head>
@@ -77,15 +77,22 @@
   </div>
 
   <div class="modal hidden" id="exercise-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-title" aria-hidden="true">
-    <section class="modal-card training-modal-card">
-      <div class="modal-header" style="justify-content: flex-end;"><h3 id="exercise-title" class="sr-only">Novo exercício</h3><button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button></div>
+    <section class="modal-card training-modal-card exercise-form-modal-card">
+      <div class="modal-header exercise-modal-header">
+        <h3 id="exercise-title">Novo exercício</h3>
+        <button type="button" id="close-exercise-modal" class="secondary modal-close" aria-label="Fechar">×</button>
+      </div>
       <input id="exercise-name" placeholder="Nome do exercício" />
-      <input id="exercise-group" placeholder="Músculo principal. Ex.: Peito" />
-      <input id="exercise-secondary-muscles" placeholder="Músculos secundários. Ex.: Tríceps, Ombros" />
-      <input id="exercise-equipment" placeholder="Equipamento" />
-      <div class="field"><label for="exercise-level">Nível do exercício</label><select id="exercise-level"><option value="">Carregando níveis...</option></select></div>
+      <div class="exercise-form-two-cols">
+        <input id="exercise-group" placeholder="Músculo principal. Ex.: Peito" />
+        <input id="exercise-secondary-muscles" placeholder="Músculos secundários. Ex.: Tríceps, Ombros" />
+      </div>
+      <div class="exercise-form-two-cols">
+        <input id="exercise-equipment" placeholder="Equipamento" />
+        <div class="field" style="margin:0;"><select id="exercise-level"><option value="">Carregando níveis...</option></select></div>
+      </div>
       <label class="training-active-field"><input id="exercise-active" type="checkbox" checked /> Exercício ativo no catálogo</label>
-      <textarea id="exercise-instructions" placeholder="Instruções de execução"></textarea>
+      <textarea id="exercise-instructions" placeholder="Instruções de execução" rows="2"></textarea>
       <div class="video-source-fields">
         <div class="field"><label for="exercise-video-source">Como adicionar a demonstração</label><select id="exercise-video-source"><option value="upload">Escolher GIF ou vídeo da máquina</option><option value="link">Usar link da internet</option></select></div>
         <div class="field" id="exercise-video-upload-field"><label for="exercise-video-file">Arquivo de demonstração</label><input id="exercise-video-file" type="file" accept="image/gif,video/mp4,video/webm,video/ogg,video/quicktime" /><small>GIF, MP4, WebM, OGG ou MOV. Limite de 50 MB.</small></div>
@@ -207,7 +214,7 @@
 <script src="./training-media.js"></script>
 <script src="./icon-utils.js"></script>
 <script src="./admin-pagination.js?v=20260716-2"></script>
-<script src="./training.js?v=20260719-4"></script>
+<script src="./training.js?v=20261006-2"></script>
 <script src="./training-review-ui.js?v=20260719-2"></script>
 </body>
 </html>

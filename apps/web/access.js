@@ -141,10 +141,14 @@ function renderDecisions(rows) {
     badge.className = `badge ${item.allowed ? 'ok' : 'bad'}`;
     badge.textContent = item.allowed ? 'Liberado' : 'Bloqueado';
 
-    const details = document.createElement('details'); details.className = 'access-decision-details';
-    const summary = document.createElement('summary'); summary.textContent = 'Ver decisão';
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'access-decision-toggle-btn';
+    toggleBtn.textContent = 'Ver decisão';
+    toggleBtn.setAttribute('aria-expanded', 'false');
 
     const explanation = document.createElement('p');
+    explanation.className = 'access-decision-explanation hidden';
     const detailParts = [];
     const reasonText = accessReasonLabel(item.reason);
     if (item.message && item.message !== item.reason && item.message !== 'membership_grace_expired') {
@@ -157,9 +161,16 @@ function renderDecisions(rows) {
     }
     explanation.textContent = detailParts.join(' · ') || (item.allowed ? 'Entrada autorizada.' : 'Acesso bloqueado.');
 
-    details.append(summary, explanation);
-    actionsRow.append(badge, details);
-    actions.append(actionsRow);
+    toggleBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const willOpen = explanation.classList.contains('hidden');
+      explanation.classList.toggle('hidden', !willOpen);
+      toggleBtn.setAttribute('aria-expanded', String(willOpen));
+      toggleBtn.classList.toggle('is-open', willOpen);
+    });
+
+    actionsRow.append(badge, toggleBtn);
+    actions.append(actionsRow, explanation);
     row.append(main, actions);
     list.appendChild(row);
   }

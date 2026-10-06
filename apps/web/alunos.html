@@ -7,7 +7,7 @@
   <title>Alunos - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./product-layout.css?v=20260720-1" />
+  <link rel="stylesheet" href="./product-layout.css?v=20261006-2" />
   <link rel="stylesheet" href="./access-credential.css?v=20260719-1" />
   <link rel="stylesheet" href="./admin-compact-pages.css?v=20260716-3" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
@@ -72,15 +72,22 @@
   </main>
 
   <div class="modal hidden" id="student-form-panel" role="dialog" aria-modal="true" aria-label="Cadastro de aluno">
-    <form class="modal-card" id="student-form" novalidate>
-      <div class="modal-header">
+    <form class="modal-card student-form-modal-card" id="student-form" novalidate>
+      <div class="modal-header student-form-header">
+        <h3 id="student-form-title">Adicionar aluno</h3>
         <button type="button" id="close-student-modal" class="secondary modal-close" aria-label="Fechar" title="Fechar">×</button>
       </div>
 
       <input id="student-id" type="hidden" />
 
-      <section class="form-section">
-        <h4>Dados pessoais</h4>
+      <div class="student-form-tabs" role="tablist" aria-label="Abas do cadastro do aluno">
+        <button type="button" class="student-form-tab active" data-student-tab="personal" role="tab" aria-selected="true" aria-controls="student-tab-panel-personal">Dados pessoais</button>
+        <button type="button" class="student-form-tab" data-student-tab="emergency" role="tab" aria-selected="false" aria-controls="student-tab-panel-emergency">Contato de emergência</button>
+        <button type="button" class="student-form-tab" data-student-tab="address" role="tab" aria-selected="false" aria-controls="student-tab-panel-address">Endereço</button>
+        <button type="button" class="student-form-tab" data-student-tab="health" role="tab" aria-selected="false" aria-controls="student-tab-panel-health">Saúde, objetivos e observações</button>
+      </div>
+
+      <section class="form-section student-form-panel" id="student-tab-panel-personal" role="tabpanel">
         <div class="form-grid three">
           <div class="field"><label for="student-name">Nome completo *</label><input id="student-name" autocomplete="name" required /></div>
           <div class="field"><label for="student-cpf">CPF</label><input id="student-cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" /></div>
@@ -93,17 +100,15 @@
         </div>
       </section>
 
-      <section class="form-section">
-        <h4>Contato de emergência</h4>
-        <p class="section-help">Pessoa que deve ser contatada em caso de necessidade.</p>
+      <section class="form-section student-form-panel hidden" id="student-tab-panel-emergency" role="tabpanel">
+        <p class="section-help" style="margin-top:0;">Pessoa que deve ser contatada em caso de necessidade.</p>
         <div class="form-grid">
           <div class="field"><label for="student-emergency-name">Nome do contato</label><input id="student-emergency-name" /></div>
           <div class="field"><label for="student-emergency-phone">Telefone do contato</label><input id="student-emergency-phone" inputmode="tel" placeholder="(32) 9 9919-2233" /></div>
         </div>
       </section>
 
-      <section class="form-section">
-        <h4>Endereço</h4>
+      <section class="form-section student-form-panel hidden" id="student-tab-panel-address" role="tabpanel">
         <div class="form-grid three">
           <div class="field"><label for="student-postal-code">CEP</label><input id="student-postal-code" inputmode="numeric" maxlength="9" placeholder="00000-000" /></div>
           <div class="field"><label for="student-street">Rua / Avenida</label><input id="student-street" autocomplete="street-address" /></div>
@@ -116,9 +121,8 @@
         </div>
       </section>
 
-      <section class="form-section">
-        <h4>Saúde, objetivo e observações</h4>
-        <p class="section-help">Use a barra de ferramentas para organizar textos, listas, destaques e orientações detalhadas.</p>
+      <section class="form-section student-form-panel hidden" id="student-tab-panel-health" role="tabpanel">
+        <p class="section-help" style="margin-top:0;">Use a barra de ferramentas para organizar textos, listas, destaques e orientações detalhadas.</p>
         <div class="rich-field"><label for="student-objective">Objetivo do aluno</label><textarea id="student-objective" class="rich-editor" data-placeholder="Descreva os objetivos e a rotina que o aluno deseja construir."></textarea></div>
         <div class="rich-field"><label for="student-allergies">Alergias e restrições</label><textarea id="student-allergies" class="rich-editor" data-placeholder="Registre alergias, restrições e cuidados importantes."></textarea></div>
         <div class="rich-field"><label for="student-medical">Observações clínicas</label><textarea id="student-medical" class="rich-editor" data-placeholder="Adicione informações clínicas relevantes para o acompanhamento."></textarea></div>
@@ -210,6 +214,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <script src="./rich-editor.js"></script>
 <script src="./icon-utils.js"></script>
-<script src="./alunos.js?v=20260720-1"></script>
+<script src="./alunos.js?v=20261006-2"></script>
 </body>
 </html>

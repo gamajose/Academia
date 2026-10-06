@@ -52,6 +52,49 @@ html[data-admin-theme="dark"] .modal-card .modal-close {
   color: #e8f0f8 !important;
 }
 
+/* Matching button sizes for Validar código and Pesquisar */
+.pre-enrollment-toolbar .compact-toolbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#open-check-code-btn {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  line-height: 32px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#signup-search-toggle {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#signup-search-toggle svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
 @media (max-width: 760px) {
   .pre-enrollment-toolbar {
     flex-direction: row !important;
@@ -61,13 +104,18 @@ html[data-admin-theme="dark"] .modal-card .modal-close {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    width: auto !important;
   }
   #open-check-code-btn {
     width: auto !important;
-    padding: 8px 14px !important;
-    font-size: 13px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 12.5px !important;
+    line-height: 32px !important;
   }
   #signup-list {
     display: grid !important;

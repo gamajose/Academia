@@ -359,7 +359,10 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
   }
 
   .exercise-card .mobile-card-menu {
-    display: none !important;
+    display: inline-flex !important;
+    position: relative !important;
+    align-items: center !important;
+    margin-left: auto !important;
   }
 }
 
@@ -880,3 +883,166 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .mobile-tab-btn.active {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+/* =========================================================
+   UNIFIED 3-DOTS ACTIONS & COMPACT EXERCISE MODAL
+   ========================================================= */
+body.admin-training-page #panel-plans .entity-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+}
+
+body.admin-training-page #panel-plans .mobile-card-menu {
+  display: inline-flex !important;
+  position: relative !important;
+  align-items: center !important;
+  margin-left: auto !important;
+}
+
+body.admin-training-page .mobile-card-menu-dropdown {
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  right: 0 !important;
+  z-index: 1300 !important;
+  min-width: 155px !important;
+  width: max-content !important;
+  padding: 5px !important;
+  border-radius: 10px !important;
+  background: var(--card, #ffffff) !important;
+  border: 1px solid var(--line, #e2e8f0) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18) !important;
+  display: grid !important;
+  gap: 2px !important;
+}
+
+body.admin-training-page .mobile-card-menu-dropdown.hidden {
+  display: none !important;
+}
+
+body.admin-training-page .mobile-card-menu-dropdown button {
+  width: 100% !important;
+  padding: 8px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  color: var(--text, #1e293b) !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: background .15s ease !important;
+}
+
+body.admin-training-page .mobile-card-menu-dropdown button:hover {
+  background: #f1f5f9 !important;
+}
+
+body.admin-training-page .mobile-card-menu-dropdown button.danger {
+  color: #ef4444 !important;
+}
+
+body.admin-training-page .mobile-card-menu-dropdown button.danger:hover {
+  background: #fef2f2 !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page .mobile-card-menu-dropdown {
+  background: #112236 !important;
+  border-color: #223a54 !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page .mobile-card-menu-dropdown button {
+  color: #e2e8f0 !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page .mobile-card-menu-dropdown button:hover {
+  background: #1a334d !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page .mobile-card-menu-dropdown button.danger {
+  color: #f87171 !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page .mobile-card-menu-dropdown button.danger:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Compact exercise modal */
+.exercise-form-modal-card {
+  position: relative !important;
+  width: min(640px, 95vw) !important;
+  max-height: 94vh !important;
+  padding: 16px 20px 14px !important;
+  gap: 8px !important;
+  overflow-y: auto !important;
+}
+
+.exercise-modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin: 0 0 4px 0 !important;
+  padding: 0 30px 0 0 !important;
+}
+
+.exercise-modal-header #exercise-title {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--text, #1e293b) !important;
+}
+
+#exercise-modal #close-exercise-modal {
+  position: absolute !important;
+  top: 12px !important;
+  right: 14px !important;
+  font-size: 20px !important;
+  margin: 0 !important;
+  z-index: 10 !important;
+}
+
+.exercise-form-two-cols {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+
+#exercise-modal input,
+#exercise-modal select {
+  height: 34px !important;
+  min-height: 34px !important;
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+  box-sizing: border-box !important;
+}
+
+#exercise-modal textarea#exercise-instructions {
+  height: 48px !important;
+  min-height: 48px !important;
+  resize: vertical !important;
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+}
+
+#exercise-modal .video-source-fields {
+  display: grid !important;
+  gap: 6px !important;
+  margin-top: 2px !important;
+}
+
+#exercise-modal .exercise-video-preview,
+#exercise-modal .exercise-gif-preview {
+  max-height: 90px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  border-radius: 6px !important;
+}
+
+#exercise-modal .form-actions {
+  margin-top: 4px !important;
+}
+

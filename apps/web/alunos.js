@@ -803,9 +803,24 @@ function selectPhoneCountry(countryCode) {
   phoneWidget.setCountry(country?.iso2 || 'br');
 }
 
+function setStudentFormTab(tabKey) {
+  document.querySelectorAll('.student-form-tab').forEach((tab) => {
+    const isActive = tab.dataset.studentTab === tabKey;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-selected', String(isActive));
+  });
+  document.querySelectorAll('.student-form-panel').forEach((panel) => {
+    panel.classList.toggle('hidden', panel.id !== `student-tab-panel-${tabKey}`);
+  });
+}
+
 function openModal(item = {}) {
   $('student-form-panel').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  if ($('student-form-title')) {
+    $('student-form-title').textContent = item?.id ? 'Editar cadastro' : 'Adicionar aluno';
+  }
+  setStudentFormTab('personal');
   setValue('student-id', item.id);
   setValue('student-name', item.name);
   setValue('student-cpf', item.cpf ? formatCpf(item.cpf) : '');
@@ -859,16 +874,16 @@ async function save(event) {
   event.preventDefault();
   const email = val('student-email');
   const cpf = digits(val('student-cpf'));
-  if (!val('student-name')) { $('students-status').textContent = 'Informe o nome completo.'; $('student-name').focus(); return; }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('students-status').textContent = 'Informe um e-mail válido.'; $('student-email').focus(); return; }
-  if (cpf && cpf.length !== 11) { $('students-status').textContent = 'O CPF deve possuir 11 dígitos.'; $('student-cpf').focus(); return; }
+  if (!val('student-name')) { setStudentFormTab('personal'); $('students-status').textContent = 'Informe o nome completo.'; $('student-name').focus(); return; }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStudentFormTab('personal'); $('students-status').textContent = 'Informe um e-mail válido.'; $('student-email').focus(); return; }
+  if (cpf && cpf.length !== 11) { setStudentFormTab('personal'); $('students-status').textContent = 'O CPF deve possuir 11 dígitos.'; $('student-cpf').focus(); return; }
 
   const countryCode = phoneCountryCode();
   const phoneError = validatePhoneField(val('student-phone'), countryCode);
-  if (phoneError) { $('students-status').textContent = phoneError; $('student-phone').focus(); return; }
+  if (phoneError) { setStudentFormTab('personal'); $('students-status').textContent = phoneError; $('student-phone').focus(); return; }
   const emergencyName = val('student-emergency-name');
   const emergencyPhone = digits(val('student-emergency-phone'));
-  if (emergencyPhone && emergencyPhone.length !== 11) { $('students-status').textContent = 'O telefone de emergência deve ter 11 dígitos no Brasil.'; $('student-emergency-phone').focus(); return; }
+  if (emergencyPhone && emergencyPhone.length !== 11) { setStudentFormTab('emergency'); $('students-status').textContent = 'O telefone de emergência deve ter 11 dígitos no Brasil.'; $('student-emergency-phone').focus(); return; }
   const richIds = ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'];
   let richValues;
   try {
@@ -1071,6 +1086,7 @@ $('student-search-toggle').onclick = () => {
 };
 $('close-student-modal').onclick = closeModal;
 $('close-student-view-modal').onclick = closeStudentViewModal;
+document.querySelectorAll('.student-form-tab').forEach((button) => button.addEventListener('click', () => setStudentFormTab(button.dataset.studentTab)));
 document.querySelectorAll('[data-student-view-tab]').forEach((button) => button.addEventListener('click', () => setStudentViewTab(button.dataset.studentViewTab)));
 $('student-view-new-assessment').onclick = openStudentAssessmentModal;
 $('student-view-summary').onclick = openStudentSummary;
