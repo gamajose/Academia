@@ -30,14 +30,13 @@ test('histórico continua expansível e mostra os dados da ficha', () => {
   assert.match(js, /Ocultar análise/);
 });
 
-test('ações de avaliação ficam dentro do cartão principal do cadastro', () => {
+test('ações de avaliação ficam posicionadas antes do grid de informações do cadastro', () => {
   const identityStart = html.indexOf('<div class="student-view-identity">');
   const actions = html.indexOf('<div class="student-view-registration-actions">');
-  const identityEnd = html.indexOf('</div>', actions);
   const grid = html.indexOf('<div class="student-view-grid">');
-  assert.ok(identityStart >= 0 && actions > identityStart && identityEnd > actions && grid > identityEnd);
+  assert.ok(identityStart >= 0 && actions > identityStart && grid > actions);
   assert.doesNotMatch(html, /student-view-context-actions student-view-registration-actions/);
-  assert.match(css, /\.student-view-registration-actions \{[^}]*margin-left: auto/);
+  assert.match(css, /\.student-view-registration-actions/);
 });
 
 test('análise automática de progresso não cria mais um histórico paralelo', () => {

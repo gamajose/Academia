@@ -616,7 +616,9 @@ async function openStudentView(item) {
   setStudentViewTab('registration');
   setStudentInfoTab('objective');
   $('student-view-name').textContent = item.name || 'Aluno';
-  $('student-view-contact').textContent = [item.email, item.phone ? formatPhone(item.phone) : ''].filter(Boolean).join(' · ') || 'Sem contato informado';
+  if ($('student-view-email')) $('student-view-email').textContent = item.email ? ` · ${item.email}` : '';
+  if ($('student-view-phone')) $('student-view-phone').textContent = item.phone ? formatPhone(item.phone) : '';
+  if ($('student-view-contact')) $('student-view-contact').textContent = [item.email, item.phone ? formatPhone(item.phone) : ''].filter(Boolean).join(' · ') || 'Sem contato informado';
   const isActive = item.status === 'active';
   const statusDot = $('student-view-status-dot');
   if (statusDot) {
@@ -1258,7 +1260,12 @@ document.querySelectorAll('[data-student-view-tab]').forEach((button) => button.
 document.querySelectorAll('[data-student-info-tab]').forEach((button) => button.addEventListener('click', () => setStudentInfoTab(button.dataset.studentInfoTab)));
 $('student-view-new-assessment').onclick = openStudentAssessmentModal;
 $('student-view-summary').onclick = openStudentSummary;
-$('student-view-ai-history-button').onclick = openStudentAiHistoryModal;
+$('student-view-ai-reload-button')?.addEventListener('click', () => {
+  if (activeStudentView) void loadStudentAi(activeStudentView.id);
+});
+if ($('student-view-ai-history-button')) {
+  $('student-view-ai-history-button').onclick = openStudentAiHistoryModal;
+}
 $('student-view-new-goal').onclick = openStudentGoalModal;
 $('student-assessment-form').addEventListener('submit', saveStudentAssessment);
 $('student-goal-form').addEventListener('submit', saveStudentGoal);
