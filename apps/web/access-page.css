@@ -363,4 +363,68 @@ html[data-admin-theme="dark"] .access-decision-explanation {
   .access-member-filters { grid-template-columns: 1fr; }
   .access-member-row { align-items: flex-start; flex-direction: column; }
   .access-member-meta { justify-content: flex-start; }
+
+  /* Mobile decision row: wraps explanation onto a full-width line underneath so date and student name are never crushed */
+  .access-decision-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+  }
+  .access-decision-row > div:first-child {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  .access-decision-actions {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+  .access-decision-actions-row {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+  .access-decision-explanation {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 11.5px !important;
+    padding: 6px 10px !important;
+    margin: 6px 0 0 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Compact Cockpit Reception on mobile */
+  .cockpit-checkin-form {
+    max-width: 250px !important;
+  }
+  .cockpit-input-group {
+    gap: 5px !important;
+  }
+  .cockpit-input-group svg {
+    width: 12px !important;
+    height: 12px !important;
+    margin-left: 7px !important;
+    margin-right: -22px !important;
+  }
+  .cockpit-input-group input#access-checkin-input {
+    height: 26px !important;
+    min-height: 26px !important;
+    font-size: 11.5px !important;
+    padding: 0 6px 0 24px !important;
+    max-width: 125px !important;
+    border-radius: 6px !important;
+  }
+  .cockpit-input-group button.button#access-checkin-btn {
+    height: 26px !important;
+    min-height: 26px !important;
+    font-size: 11.5px !important;
+    padding: 0 8px !important;
+    border-radius: 6px !important;
+    font-weight: 650 !important;
+  }
+  .cockpit-close-btn {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    font-size: 15px !important;
+  }
 }

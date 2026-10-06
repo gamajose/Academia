@@ -34,11 +34,11 @@ body.admin-compact-page .icon-button svg {
 }
 
 body.admin-training-page .training-ai-button {
-  flex: 0 0 auto !important;
+  flex: 0 0 auto;
   width: auto !important;
   min-width: 0 !important;
-  min-height: 34px !important;
-  height: 34px !important;
+  min-height: 36px !important;
+  height: 36px !important;
   padding: 0 12px !important;
   border-radius: 8px !important;
   display: inline-flex !important;
@@ -48,6 +48,19 @@ body.admin-training-page .training-ai-button {
   white-space: nowrap !important;
   font-size: 12px !important;
   font-weight: 750 !important;
+  background: var(--accent, #1478d4) !important;
+  color: #fff !important;
+  border: 1px solid var(--accent, #1478d4) !important;
+}
+
+body.admin-training-page .training-ai-button .training-ai-icon {
+  color: #fff !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page .training-ai-button {
+  background: #0284c7 !important;
+  border-color: #38bdf8 !important;
+  color: #fff !important;
 }
 
 body.admin-training-page .training-ai-icon {
@@ -213,18 +226,96 @@ body.admin-training-page #panel-plans .toolbar {
   }
 
   body.admin-training-page #plan-list {
-    gap: 8px;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+    gap: 8px !important;
+    align-items: stretch !important;
   }
 
   body.admin-training-page #plan-list > li {
     position: relative;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start !important;
-    justify-content: stretch !important;
-    gap: 9px;
-    padding: 11px 12px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+    padding: 8px 10px !important;
     border-radius: 11px;
+    text-align: left !important;
+  }
+
+  body.admin-training-page #plan-list .plan-card-top-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  body.admin-training-page #plan-list .entity-main {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  body.admin-training-page #plan-list .entity-main strong {
+    text-align: left !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+  }
+
+  body.admin-training-page #plan-list .entity-main span {
+    text-align: left !important;
+    font-size: 11px !important;
+    color: var(--muted) !important;
+    margin-top: 2px !important;
+    line-height: 1.25 !important;
+  }
+
+  #plan-modal .modal-header h3,
+  #plan-modal #plan-title {
+    display: none !important;
+  }
+
+  #plan-modal .modal-header {
+    min-height: 24px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .plan-level-picker {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    align-items: flex-end !important;
+  }
+
+  .plan-level-picker .field {
+    margin-bottom: 0 !important;
+  }
+
+  .plan-level-picker select#plan-level {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    box-sizing: border-box !important;
+  }
+
+  body.admin-compact-page .plan-level-picker #open-plan-levels-button,
+  html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    align-self: flex-end !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
   body.admin-training-page #exercise-list > li {
@@ -769,5 +860,18 @@ html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-d
     font-size: 11.5px !important;
     padding: 0 9px !important;
     line-height: 1 !important;
+  }
+}
+
+@media (min-width: 769px) {
+  body.admin-training-page #plan-list > li {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  body.admin-training-page #plan-list .plan-card-top-bar {
+    order: 2 !important;
+    width: auto !important;
+    margin-left: auto !important;
   }
 }

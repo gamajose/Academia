@@ -589,6 +589,14 @@ function renderAll({ libraryOnly = false } = {}) {
       openPlanDetails(item);
     });
     row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlanDetails(item); } });
+    const topBar = document.createElement('div');
+    topBar.className = 'plan-card-top-bar';
+    if (canManageTrainingLevels()) {
+      topBar.appendChild(trainingMobileMenu(`Opções da ficha de ${item.member_name}`, [
+        { label: 'Editar', run: () => openPlanForm(item) },
+        { label: 'Excluir', danger: true, run: (button) => deletePlan(item, button) }
+      ]));
+    }
     const main = document.createElement('div');
     main.className = 'entity-main';
     const level = trainingLevels.find((candidate) => candidate.slug === item.level);
@@ -597,13 +605,7 @@ function renderAll({ libraryOnly = false } = {}) {
     const detail = document.createElement('span');
     detail.textContent = `${level?.name || item.level} · ${item.age_days || 0} dias`;
     main.append(name, detail);
-    row.appendChild(main);
-    if (canManageTrainingLevels()) {
-      row.appendChild(trainingMobileMenu(`Opções da ficha de ${item.member_name}`, [
-        { label: 'Editar', run: () => openPlanForm(item) },
-        { label: 'Excluir', danger: true, run: (button) => deletePlan(item, button) }
-      ]));
-    }
+    row.append(topBar, main);
     planList.appendChild(row);
   }
   if (!renderedPlans.length) {
