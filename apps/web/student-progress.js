@@ -138,16 +138,8 @@
       ['Cintura', value(latest, 'waist_cm', ' cm')]
     ].map(([label, content]) => `<div class="student-stat"><span>${label}</span><strong>${escape(content)}</strong></div>`).join('');
     p('student-progress-summary-date').textContent = latest ? `Última medição em ${dateLabel(latest.assessment_date)}` : 'Nenhuma medição registrada ainda.';
-    if (!latest) {
-      showProgressToast('Primeira medição', 'Faça sua primeira medição para acompanhar sua evolução.');
-      return;
-    }
-    const last = new Date(`${String(latest.assessment_date).slice(0, 10)}T12:00:00`);
-    const days = Math.floor((Date.now() - last.getTime()) / 86400000);
-    if (days >= 30) {
-      showProgressToast('Medição mensal', 'Sua medição mensal já está disponível!');
-    } else {
-      hideProgressToast();
+    if (window.PushNotificationManager) {
+      window.PushNotificationManager.checkMonthlyMeasurement(assessments);
     }
   }
 
@@ -226,6 +218,7 @@
       historyPage = 1;
       renderBaselineDashboard(assessments[0], baseline); renderSummary(assessments); renderAnalysis(clientAnalysis(assessments[0], baseline, progressData.analysis), assessments, progressData.recent_analysis); renderHistory(assessments);
       showGoalCelebration([...(progressData.completed_goals || []), ...clientCompletedGoals]);
+      checkUrlAction();
     } catch (error) { setStatus(`Erro: ${error.message}`, true); }
   }
 
@@ -295,6 +288,24 @@
       openHistoryModal();
     });
 
+    p('student-menu-toggle-notification')?.addEventListener('click', async () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      if (window.PushNotificationManager) {
+        await window.PushNotificationManager.requestPermission();
+        updateNotificationMenuLabel();
+      }
+    });
+
+    p('student-menu-test-notification')?.addEventListener('click', async () => {
+      dropdown.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      if (window.PushNotificationManager) {
+        await window.PushNotificationManager.sendTestNotification();
+        updateNotificationMenuLabel();
+      }
+    });
+
     document.addEventListener('click', (e) => {
       if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
         dropdown.classList.add('hidden');
@@ -303,24 +314,20 @@
     });
   }
 
-  function showProgressToast(title, desc) {
-    const toast = p('student-progress-toast');
-    if (!toast) return;
-    const titleEl = p('student-toast-title');
-    const descEl = p('student-toast-desc');
-    if (titleEl) titleEl.textContent = title;
-    if (descEl) descEl.textContent = desc;
-    toast.classList.remove('hidden');
-  }
-  function hideProgressToast() {
-    p('student-progress-toast')?.classList.add('hidden');
+  function updateNotificationMenuLabel() {
+    const btn = p('student-menu-toggle-notification');
+    if (!btn || !window.PushNotificationManager) return;
+    const isGranted = window.PushNotificationManager.getPermission() === 'granted';
+    btn.textContent = isGranted ? 'Notificações no celular (Ativas ✓)' : 'Ativar notificações no celular';
   }
 
-  p('student-toast-action-btn')?.addEventListener('click', () => {
-    hideProgressToast();
-    openNewAssessment();
-  });
-  p('student-toast-close-btn')?.addEventListener('click', hideProgressToast);
+  function checkUrlAction() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'new-measurement') {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      openNewAssessment();
+    }
+  }
 
   p('open-student-assessment')?.addEventListener('click', openNewAssessment);
   p('student-assessment-close').addEventListener('click', closeAssessmentModal);

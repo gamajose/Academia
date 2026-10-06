@@ -36,6 +36,9 @@
     instagram_url: {
       input: document.getElementById('inp-instagram-url')
     },
+    google_client_id: {
+      input: document.getElementById('inp-google-client-id')
+    },
     home_hero_title: { input: document.getElementById('inp-home-hero-title') },
     home_hero_subtitle: { input: document.getElementById('inp-home-hero-subtitle') },
     home_structure_title: { input: document.getElementById('inp-home-structure-title') },
@@ -148,6 +151,9 @@
       if (s.instagram_url && fields.instagram_url.input) {
         fields.instagram_url.input.value = s.instagram_url;
       }
+      if (s.google_client_id && fields.google_client_id.input) {
+        fields.google_client_id.input.value = s.google_client_id;
+      }
       ['home_hero_title', 'home_hero_subtitle', 'home_structure_title', 'home_structure_desc', 'home_coaching_title', 'home_coaching_desc', 'plans_hero_title', 'plans_hero_subtitle'].forEach((k) => {
         if (s[k] && fields[k]?.input) {
           fields[k].input.value = s[k];
@@ -168,6 +174,7 @@
         plans_hero_image: fields.plans_hero_image.input?.value.trim() || undefined,
         button_color: fields.button_color.input?.value.trim() || undefined,
         instagram_url: fields.instagram_url.input?.value.trim() || undefined,
+        google_client_id: fields.google_client_id.input?.value.trim() || undefined,
         home_hero_title: fields.home_hero_title.input?.value.trim() || undefined,
         home_hero_subtitle: fields.home_hero_subtitle.input?.value.trim() || undefined,
         home_structure_title: fields.home_structure_title.input?.value.trim() || undefined,

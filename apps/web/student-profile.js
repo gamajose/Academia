@@ -346,10 +346,37 @@
     }
   });
 
+  function updateNotifyButtonState() {
+    const btnText = p('student-notify-btn-text');
+    if (!btnText || !window.PushNotificationManager) return;
+    const isGranted = window.PushNotificationManager.getPermission() === 'granted';
+    btnText.textContent = isGranted ? 'Notificações ativas ✓' : 'Ativar notificações';
+  }
+
+  p('student-quick-notify-btn')?.addEventListener('click', async () => {
+    if (!window.PushNotificationManager) return;
+    if (window.PushNotificationManager.getPermission() === 'granted') {
+      const ok = await window.PushNotificationManager.sendTestNotification();
+      if (ok) {
+        p('student-profile-status').textContent = 'Notificação de teste enviada para seu celular/relógio!';
+        setTimeout(() => { p('student-profile-status').textContent = ''; }, 4000);
+      }
+    } else {
+      const granted = await window.PushNotificationManager.requestPermission();
+      updateNotifyButtonState();
+      if (granted) {
+        await window.PushNotificationManager.sendTestNotification();
+        p('student-profile-status').textContent = 'Notificações ativadas com sucesso!';
+        setTimeout(() => { p('student-profile-status').textContent = ''; }, 4000);
+      }
+    }
+  });
+
   p('student-profile-form')?.addEventListener('submit', saveProfile);
   p('student-password-form')?.addEventListener('submit', savePassword);
 
   initProfileMenu();
   initProfileTabs();
+  updateNotifyButtonState();
   load();
 }());

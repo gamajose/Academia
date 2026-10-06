@@ -1,18 +1,25 @@
 const { hashPassword, randomToken, signToken } = require('../lib/security');
 
-function googleClientIds() {
-  return [process.env.GOOGLE_WEB_CLIENT_ID, process.env.GOOGLE_MOBILE_CLIENT_ID, process.env.GOOGLE_CLIENT_ID]
+function googleClientIds(additional = []) {
+  return [
+    process.env.GOOGLE_WEB_CLIENT_ID,
+    process.env.GOOGLE_MOBILE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_ID,
+    ...additional
+  ]
     .map((value) => String(value || '').trim())
     .filter(Boolean);
 }
 
-async function verifyGoogleToken(idToken) {
+async function verifyGoogleToken(idToken, additionalClientIds = []) {
   const token = String(idToken || '').trim();
   if (!token) throw new Error('token_google_obrigatorio');
   const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
   const data = await response.json().catch(() => ({}));
-  if (!response.ok || data.iss !== 'https://accounts.google.com' || data.email_verified !== 'true' || !data.email) throw new Error('token_google_invalido');
-  const clientIds = googleClientIds();
+  if (!response.ok || (data.iss !== 'https://accounts.google.com' && data.iss !== 'accounts.google.com') || data.email_verified !== 'true' || !data.email) {
+    throw new Error('token_google_invalido');
+  }
+  const clientIds = googleClientIds(additionalClientIds);
   if (!clientIds.length) throw new Error('google_nao_configurado');
   if (!clientIds.includes(data.aud)) throw new Error('token_google_invalido');
   return data;
@@ -33,14 +40,29 @@ function authResponse(account, accountType) {
 
 async function handleGoogleAuthRoutes(req, res, user, url, helpers) {
   const { send, body, query } = helpers;
-  if (req.method === 'GET' && url.pathname === '/api/auth/google/config') {
-    return send(res, 200, { enabled: Boolean(process.env.GOOGLE_WEB_CLIENT_ID || process.env.GOOGLE_CLIENT_ID), client_id: process.env.GOOGLE_WEB_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || null });
+
+  let gymClientId = null;
+  const gymResult = await query("SELECT id, site_settings FROM gyms WHERE status = 'active' ORDER BY created_at ASC LIMIT 1");
+  if (gymResult.rowCount && gymResult.rows[0].site_settings?.google_client_id) {
+    gymClientId = String(gymResult.rows[0].site_settings.google_client_id).trim();
   }
+
+  const effectiveClientId = process.env.GOOGLE_WEB_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || gymClientId || null;
+
+  if (req.method === 'GET' && url.pathname === '/api/auth/google/config') {
+    return send(res, 200, {
+      enabled: Boolean(effectiveClientId),
+      client_id: effectiveClientId
+    });
+  }
+
   if (req.method !== 'POST' || url.pathname !== '/api/auth/google') return false;
-  if (!googleClientIds().length) return send(res, 503, { error: 'google_nao_configurado' });
+  if (!effectiveClientId && !googleClientIds().length) return send(res, 503, { error: 'google_nao_configurado' });
 
   let identity;
-  try { identity = await verifyGoogleToken((await body(req)).id_token); } catch (error) {
+  try {
+    identity = await verifyGoogleToken((await body(req)).id_token, gymClientId ? [gymClientId] : []);
+  } catch (error) {
     return send(res, error.message === 'google_nao_configurado' ? 503 : 401, { error: error.message || 'token_google_invalido' });
   }
   const email = String(identity.email).trim().toLowerCase();
@@ -60,7 +82,7 @@ async function handleGoogleAuthRoutes(req, res, user, url, helpers) {
   if (visitor.rowCount && visitor.rows[0].is_active) return send(res, 200, authResponse(visitor.rows[0], 'visitor'));
   if (staff.rowCount || student.rowCount || visitor.rowCount) return send(res, 403, { error: 'conta_inativa' });
 
-  const gym = await query("SELECT id FROM gyms WHERE status = 'active' ORDER BY created_at ASC LIMIT 1");
+  const gym = gymResult.rowCount ? gymResult : await query("SELECT id FROM gyms WHERE status = 'active' ORDER BY created_at ASC LIMIT 1");
   if (!gym.rowCount) return send(res, 503, { error: 'academia_indisponivel' });
   const created = await query(
     `INSERT INTO visitor_accounts (gym_id, name, email, phone, secret_hash)

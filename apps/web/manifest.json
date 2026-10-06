@@ -1,0 +1,17 @@
+{
+  "name": "BlueREC Academia",
+  "short_name": "BlueREC",
+  "description": "Sistema de gestão e treinos da BlueREC Academia",
+  "start_url": "./student-portal.html",
+  "display": "standalone",
+  "background_color": "#091428",
+  "theme_color": "#0953a8",
+  "icons": [
+    {
+      "src": "./blue-rec-logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
