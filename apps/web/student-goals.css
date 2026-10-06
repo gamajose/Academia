@@ -38,34 +38,51 @@
   font-size: 13px;
 }
 
-.student-goal-new {
-  flex: 0 0 auto;
-  min-height: 38px;
-  padding: 8px 14px;
-  background: #1478d4;
-  color: #fff;
-  font-weight: 500;
+.student-goal-add-btn,
+.student-goal-new,
+#student-goal-new {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  background: rgba(20, 120, 212, 0.12) !important;
+  border: 1px solid rgba(20, 120, 212, 0.28) !important;
+  color: #1478d4 !important;
+  cursor: pointer !important;
+  margin-left: auto !important;
+  box-shadow: none !important;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease !important;
 }
 
-.student-goal-new {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
-  min-height: 40px;
-  padding: 0;
-  border-radius: 8px;
+.student-goal-add-btn:hover,
+.student-goal-new:hover,
+#student-goal-new:hover,
+.student-goal-add-btn:focus-visible,
+.student-goal-new:focus-visible,
+#student-goal-new:focus-visible {
+  background: #1478d4 !important;
+  border-color: #1478d4 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
 }
 
-.student-goal-new svg {
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
+.student-goal-add-btn svg,
+.student-goal-new svg,
+#student-goal-new svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.3 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
 }
 
 .student-goal-form { position: relative; }
@@ -510,6 +527,22 @@ html[data-student-theme="dark"] body.student-page .student-goal-form .secondary-
   color: #edf6ff;
 }
 
+html[data-student-theme="dark"] body.student-page .student-goal-add-btn,
+html[data-student-theme="dark"] body.student-page .student-goals-toolbar #student-goal-new {
+  background: rgba(56, 189, 248, 0.14) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #38bdf8 !important;
+}
+
+html[data-student-theme="dark"] body.student-page .student-goal-add-btn:hover,
+html[data-student-theme="dark"] body.student-page .student-goals-toolbar #student-goal-new:hover,
+html[data-student-theme="dark"] body.student-page .student-goal-add-btn:focus-visible,
+html[data-student-theme="dark"] body.student-page .student-goals-toolbar #student-goal-new:focus-visible {
+  background: #0284c7 !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+}
+
 @media (max-width: 680px) {
   .student-goals-shell {
     width: min(100% - 28px, 900px);
@@ -519,16 +552,22 @@ html[data-student-theme="dark"] body.student-page .student-goal-form .secondary-
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: flex-end !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
   }
 
-  .student-goal-new {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    min-height: 40px;
-    padding: 0;
-    align-self: flex-start;
+  .student-goal-add-btn,
+  .student-goal-new,
+  #student-goal-new {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 !important;
+    margin-left: auto !important;
+    align-self: center !important;
   }
 
   .student-goal-list,
