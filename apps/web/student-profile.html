@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./premium-ui.css?v=20260715-2" />
   <link rel="stylesheet" href="./blue-theme.css?v=20260715-2" />
   <link rel="stylesheet" href="./student-shell.css?v=20261005-5" />
+  <link rel="stylesheet" href="./product-layout.css?v=20261006-5" />
   <link rel="manifest" href="./manifest.json" />
 </head>
 <body class="student-page" data-student-page="profile">
@@ -168,15 +169,49 @@
 
           <!-- ABA 4: Endereço -->
           <div class="profile-modal-pane hidden" id="profile-panel-address" role="tabpanel" aria-labelledby="profile-tab-btn-address">
-            <div class="form-grid three">
-              <div class="field"><label for="profile-postal-code">CEP</label><input id="profile-postal-code" /></div>
-              <div class="field"><label for="profile-street">Rua</label><input id="profile-street" /></div>
-              <div class="field"><label for="profile-address-number">Número</label><input id="profile-address-number" /></div>
-            </div>
-            <div class="form-grid three">
-              <div class="field"><label for="profile-neighborhood">Bairro</label><input id="profile-neighborhood" /></div>
-              <div class="field"><label for="profile-city">Cidade</label><input id="profile-city" /></div>
-              <div class="field"><label for="profile-state">Estado</label><input id="profile-state" /></div>
+            <div class="student-address-container">
+              <div class="student-address-row row-cep-street">
+                <div class="field field-cep">
+                  <label for="profile-postal-code">CEP</label>
+                  <input id="profile-postal-code" inputmode="numeric" maxlength="9" placeholder="00000-000" />
+                </div>
+                <div class="field field-street">
+                  <label for="profile-street">Rua / Logradouro</label>
+                  <input id="profile-street" placeholder="Rua, avenida..." />
+                </div>
+              </div>
+
+              <div class="student-address-row row-number-compl-neighborhood">
+                <div class="field field-number">
+                  <label for="profile-address-number">Nº</label>
+                  <input id="profile-address-number" maxlength="8" placeholder="123" />
+                </div>
+                <div class="field field-complement">
+                  <label for="profile-address-complement">Complemento</label>
+                  <input id="profile-address-complement" placeholder="Apto, bloco..." />
+                </div>
+                <div class="field field-neighborhood">
+                  <label for="profile-neighborhood">Bairro</label>
+                  <input id="profile-neighborhood" placeholder="Bairro" />
+                </div>
+              </div>
+
+              <div class="student-address-row row-city-state-country">
+                <div class="field field-city">
+                  <label for="profile-city">Cidade</label>
+                  <input id="profile-city" placeholder="Cidade" />
+                </div>
+                <div class="field field-uf">
+                  <label for="profile-state">UF</label>
+                  <input id="profile-state" maxlength="2" placeholder="UF" style="text-transform: uppercase;" />
+                </div>
+                <div class="field field-country">
+                  <label for="profile-country">País</label>
+                  <select id="profile-country" class="country-select">
+                    <option value="Brasil" selected>Brasil</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 

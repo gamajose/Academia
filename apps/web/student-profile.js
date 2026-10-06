@@ -1,6 +1,6 @@
 (function () {
   const p = (id) => document.getElementById(id);
-  const fields = ['name', 'birth_date', 'cpf', 'rg', 'email', 'phone', 'postal_code', 'street', 'address_number', 'neighborhood', 'city', 'state', 'objective', 'allergies', 'notes'];
+  const fields = ['name', 'birth_date', 'cpf', 'rg', 'email', 'phone', 'postal_code', 'street', 'address_number', 'address_complement', 'neighborhood', 'city', 'state', 'country', 'objective', 'allergies', 'notes'];
   let currentProfileData = null;
 
   function text(val) { return StudentPortal.escapeHtml(val == null ? '' : String(val)); }
@@ -372,11 +372,69 @@
     }
   });
 
+  let profileCepLookupTimer = null;
+  async function lookupProfileCep(rawCep) {
+    const clean = String(rawCep || '').replace(/\D/g, '');
+    if (clean.length !== 8) return;
+    clearTimeout(profileCepLookupTimer);
+    profileCepLookupTimer = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.erro) return;
+        if (data.logradouro && p('profile-street')) p('profile-street').value = data.logradouro;
+        if (data.bairro && p('profile-neighborhood')) p('profile-neighborhood').value = data.bairro;
+        if (data.localidade && p('profile-city')) p('profile-city').value = data.localidade;
+        if (data.uf && p('profile-state')) p('profile-state').value = data.uf.toUpperCase();
+        if (p('profile-country')) p('profile-country').value = 'Brasil';
+        p('profile-address-number')?.focus();
+      } catch (_) {}
+    }, 250);
+  }
+
+  async function populateProfileCountries() {
+    const select = p('profile-country');
+    if (!select) return;
+    const fallbackCountries = ['Brasil', 'Afeganistão', 'África do Sul', 'Albânia', 'Alemanha', 'Andorra', 'Angola', 'Argentina', 'Austrália', 'Áustria', 'Bélgica', 'Bolívia', 'Canadá', 'Chile', 'China', 'Colômbia', 'Coreia do Sul', 'Costa Rica', 'Cuba', 'Dinamarca', 'Egito', 'Espanha', 'Estados Unidos', 'França', 'Grécia', 'Irlanda', 'Itália', 'Japão', 'México', 'Noruega', 'Paraguai', 'Peru', 'Portugal', 'Reino Unido', 'Suécia', 'Suíça', 'Uruguai', 'Venezuela'];
+    try {
+      const res = await fetch('https://restcountries.com/v3.1/all?fields=name,translations');
+      if (res.ok) {
+        const list = await res.json();
+        const names = list.map(c => c.translations?.por?.common || c.name?.common).filter(Boolean);
+        const unique = Array.from(new Set(names)).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        const curr = select.value || 'Brasil';
+        select.innerHTML = '';
+        unique.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          if (c === curr || (curr === 'Brasil' && c === 'Brasil')) opt.selected = true;
+          select.appendChild(opt);
+        });
+        return;
+      }
+    } catch (_) {}
+    const curr = select.value || 'Brasil';
+    select.innerHTML = '';
+    fallbackCountries.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      if (c === curr) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  p('profile-postal-code')?.addEventListener('input', (e) => lookupProfileCep(e.target.value));
+  p('profile-postal-code')?.addEventListener('blur', (e) => lookupProfileCep(e.target.value));
+
   p('student-profile-form')?.addEventListener('submit', saveProfile);
   p('student-password-form')?.addEventListener('submit', savePassword);
 
   initProfileMenu();
   initProfileTabs();
+  void populateProfileCountries();
   updateNotifyButtonState();
   load();
 }());

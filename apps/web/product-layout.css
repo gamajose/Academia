@@ -48,7 +48,12 @@
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .quick-card { text-decoration: none; color: #171717; border: 1px solid #ded6ca; border-radius: 8px; padding: 18px; background: #fff; }
 .quick-card strong { display: block; color: #1478d4; font-size: 18px; margin-bottom: 8px; }
-.finance-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.finance-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.finance-summary .finance-pending { grid-column: span 2; }
+.finance-summary .finance-overdue { grid-column: span 2; }
+.finance-summary .finance-paid { grid-column: span 2; }
+.finance-summary .finance-open { grid-column: 2 / span 2; }
+.finance-summary .finance-paid-count { grid-column: 4 / span 2; }
 .finance-summary article { min-height: 118px; display: grid; align-content: center; gap: 5px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
 .finance-summary article:hover, .finance-summary article:focus-visible { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 10px 24px rgba(20, 120, 212, .12); outline: none; }
 .finance-summary article strong { font-size: 25px; }
@@ -666,7 +671,25 @@ html[data-admin-theme="dark"] .status-toggle-dot {
 #plans-page-list > li.entity-card {
   display: flex !important;
   justify-content: space-between !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+#plans-page-list .entity-main {
+  text-align: left !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+}
+#plans-page-list .entity-title-row {
+  justify-content: flex-start !important;
   align-items: center !important;
+  text-align: left !important;
+  width: 100% !important;
+}
+#plans-page-list .entity-main strong,
+#plans-page-list .entity-main span {
+  text-align: left !important;
+  display: block !important;
+  width: 100% !important;
 }
 .plan-card-actions {
   position: relative;
@@ -747,11 +770,25 @@ html[data-admin-theme="dark"] .plan-card-menu-dropdown button:hover {
   #plans-page-list > li {
     padding: 10px 12px !important;
     flex-direction: column !important;
-    align-items: stretch !important;
+    align-items: flex-start !important;
+    text-align: left !important;
     position: relative !important;
   }
   #plans-page-list .entity-main {
-    padding-right: 32px;
+    padding-right: 28px !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  #plans-page-list .entity-title-row {
+    justify-content: flex-start !important;
+    align-items: center !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  #plans-page-list .entity-main strong,
+  #plans-page-list .entity-main span {
+    text-align: left !important;
   }
   #plans-page-list .plan-card-actions {
     position: absolute;
@@ -759,10 +796,25 @@ html[data-admin-theme="dark"] .plan-card-menu-dropdown button:hover {
     right: 8px;
   }
 
-  /* Financeiro summary mobile compact grid */
+  /* Financeiro summary mobile: 3 on top row, 2 centered on second row */
   .finance-summary {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     gap: 6px !important;
+  }
+  .finance-summary .finance-pending {
+    grid-column: 1 / span 2 !important;
+  }
+  .finance-summary .finance-overdue {
+    grid-column: 3 / span 2 !important;
+  }
+  .finance-summary .finance-paid {
+    grid-column: 5 / span 2 !important;
+  }
+  .finance-summary .finance-open {
+    grid-column: 2 / span 2 !important;
+  }
+  .finance-summary .finance-paid-count {
+    grid-column: 4 / span 2 !important;
   }
   .finance-summary article {
     min-height: 58px !important;
@@ -1119,4 +1171,80 @@ html[data-admin-theme="dark"] .button.secondary:not(.modal-close):hover {
   border-color: rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
 }
+
+/* Plan modal tabs and 2-column rows */
+.plan-form-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+.plan-form-tab {
+  padding: 8px 14px !important;
+  border-radius: 9px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  border: 1px solid var(--line) !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: all .16s ease !important;
+}
+.plan-form-tab.active,
+.plan-form-tab[aria-selected="true"] {
+  background: rgba(20, 120, 212, 0.12) !important;
+  border-color: rgba(20, 120, 212, 0.35) !important;
+  color: var(--accent) !important;
+}
+html[data-admin-theme="dark"] .plan-form-tab.active {
+  background: rgba(56, 189, 248, 0.16) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+}
+.plan-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 560px) {
+  .plan-form-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+/* Finance modal two-item row (Desconto & Taxa) */
+.finance-form-row-two {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+@media (max-width: 560px) {
+  .finance-form-row-two {
+    gap: 8px !important;
+  }
+}
+
+/* Employee personal fields layout */
+.employee-personal-container {
+  display: grid;
+  gap: 12px;
+}
+.employee-row-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .employee-row-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
 

@@ -25,23 +25,29 @@
   <div class="modal hidden" id="plan-modal" role="dialog" aria-modal="true" aria-label="Cadastro de plano">
     <form class="modal-card" id="plan-form">
       <div class="modal-header">
+        <h3 id="plan-modal-title">Cadastro de plano</h3>
         <button class="secondary modal-close" type="button" id="close-plan-modal" aria-label="Fechar" title="Fechar">×</button>
       </div>
       <input id="plan-id" type="hidden" />
 
-      <section class="form-section">
-        <h4>Informações principais</h4>
-        <div class="form-grid">
+      <div class="plan-form-tabs" role="tablist" aria-label="Abas do plano">
+        <button type="button" class="plan-form-tab active" data-plan-tab="main" role="tab" aria-selected="true" aria-controls="plan-tab-panel-main">Informações principais</button>
+        <button type="button" class="plan-form-tab" data-plan-tab="presentation" role="tab" aria-selected="false" aria-controls="plan-tab-panel-presentation">Apresentação do plano</button>
+      </div>
+
+      <section class="form-section plan-form-panel" id="plan-tab-panel-main" role="tabpanel">
+        <div class="plan-form-row">
           <div class="field"><label for="plan-name-page">Nome do plano *</label><input id="plan-name-page" required placeholder="Ex.: Performance" /></div>
           <div class="field"><label for="plan-price-page">Preço mensal *</label><input id="plan-price-page" inputmode="decimal" placeholder="R$ 129,90" required /></div>
+        </div>
+        <div class="plan-form-row">
           <div class="field"><label for="plan-duration-value">Duração do plano *</label><input id="plan-duration-value" type="number" min="1" value="1" required /></div>
           <div class="field"><label for="plan-duration-unit">Unidade da duração</label><select id="plan-duration-unit"><option value="months">Mês(es)</option><option value="days">Dia(s)</option></select></div>
         </div>
       </section>
 
-      <section class="form-section">
-        <h4>Apresentação do plano</h4>
-        <p class="section-help">Use a barra para aplicar negrito, itálico, listas, links, cor e imagens.</p>
+      <section class="form-section plan-form-panel hidden" id="plan-tab-panel-presentation" role="tabpanel">
+        <p class="section-help" style="margin-top:0;">Use a barra para aplicar negrito, itálico, listas, links, cor e imagens.</p>
 
         <div class="rich-field">
           <label>Descrição</label>

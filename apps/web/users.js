@@ -868,6 +868,14 @@ async function saveUser(event) {
     return;
   }
 
+  const cpf = get('user-cpf').value.trim();
+  if (cpf && cpf.length !== 11) {
+    setEmployeeFormTab('personal');
+    setFormStatus('O CPF deve conter exatamente 11 números.');
+    get('user-cpf').focus();
+    return;
+  }
+
   const payload = {
     user_id: id || undefined,
     name,
@@ -944,7 +952,66 @@ function startRealtimeUpdates() {
   });
 }
 
+let employeeCepLookupTimer = null;
+async function lookupEmployeeCep(rawCep) {
+  const clean = String(rawCep || '').replace(/\D/g, '');
+  if (clean.length !== 8) return;
+  clearTimeout(employeeCepLookupTimer);
+  employeeCepLookupTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.erro) return;
+      if (data.logradouro) setField('user-street', data.logradouro);
+      if (data.bairro) setField('user-neighborhood', data.bairro);
+      if (data.localidade) setField('user-city', data.localidade);
+      if (data.uf) setField('user-state', data.uf.toUpperCase());
+      setField('user-country', 'Brasil');
+      get('user-address-number')?.focus();
+    } catch (_) {}
+  }, 250);
+}
+
+async function populateEmployeeCountries() {
+  const select = get('user-country');
+  if (!select) return;
+  const fallbackCountries = ['Brasil', 'Afeganistão', 'África do Sul', 'Albânia', 'Alemanha', 'Andorra', 'Angola', 'Argentina', 'Austrália', 'Áustria', 'Bélgica', 'Bolívia', 'Canadá', 'Chile', 'China', 'Colômbia', 'Coreia do Sul', 'Costa Rica', 'Cuba', 'Dinamarca', 'Egito', 'Espanha', 'Estados Unidos', 'França', 'Grécia', 'Irlanda', 'Itália', 'Japão', 'México', 'Noruega', 'Paraguai', 'Peru', 'Portugal', 'Reino Unido', 'Suécia', 'Suíça', 'Uruguai', 'Venezuela'];
+  try {
+    const res = await fetch('https://restcountries.com/v3.1/all?fields=name,translations');
+    if (res.ok) {
+      const list = await res.json();
+      const names = list.map(c => c.translations?.por?.common || c.name?.common).filter(Boolean);
+      const unique = Array.from(new Set(names)).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      const curr = select.value || 'Brasil';
+      select.innerHTML = '';
+      unique.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        if (c === curr || (curr === 'Brasil' && c === 'Brasil')) opt.selected = true;
+        select.appendChild(opt);
+      });
+      return;
+    }
+  } catch (_) {}
+  const curr = select.value || 'Brasil';
+  select.innerHTML = '';
+  fallbackCountries.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    if (c === curr) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
 function bindEvents() {
+  get('user-cpf')?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
+  });
+  get('user-postal-code')?.addEventListener('input', (e) => lookupEmployeeCep(e.target.value));
+  get('user-postal-code')?.addEventListener('blur', (e) => lookupEmployeeCep(e.target.value));
   get('user-access-profile')?.addEventListener('change', updateProfileHelp);
   get('employee-form')?.addEventListener('submit', saveUser);
   get('new-user-button')?.addEventListener('click', newUser);
@@ -989,6 +1056,7 @@ function bindEvents() {
 
 async function init() {
   bindEvents();
+  void populateEmployeeCountries();
   if (!usersToken) {
     setStatus('Faça login no painel antes de acessar funcionários.');
     return;

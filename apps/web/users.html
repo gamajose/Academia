@@ -74,15 +74,21 @@
       </div>
 
       <section class="form-section employee-form-panel" id="employee-tab-panel-personal" role="tabpanel">
-        <div class="form-grid three">
+        <div class="employee-personal-container">
           <div class="field"><label for="user-name">Nome completo *</label><input id="user-name" autocomplete="name" required /></div>
           <div class="field"><label for="user-email">E-mail *</label><input id="user-email" type="email" autocomplete="email" required /></div>
-          <div class="field"><label for="user-phone">Telefone / WhatsApp</label><input id="user-phone" inputmode="tel" autocomplete="tel" /></div>
-          <div class="field"><label for="user-cpf">CPF</label><input id="user-cpf" inputmode="numeric" maxlength="14" /></div>
-          <div class="field"><label for="user-rg">RG</label><input id="user-rg" maxlength="30" /></div>
-          <div class="field"><label for="user-birth">Data de nascimento</label><input id="user-birth" type="date" /></div>
-          <div class="field"><label for="user-job-title">Cargo</label><input id="user-job-title" placeholder="Ex.: Recepcionista, Personal trainer" /></div>
-          <div class="field" id="user-password-field"><label for="user-password">Senha inicial *</label><input id="user-password" type="password" autocomplete="new-password" minlength="8" /></div>
+          <div class="employee-row-two">
+            <div class="field"><label for="user-phone">Telefone / WhatsApp</label><input id="user-phone" inputmode="tel" autocomplete="tel" /></div>
+            <div class="field"><label for="user-birth">Data de nascimento</label><input id="user-birth" type="date" /></div>
+          </div>
+          <div class="employee-row-two">
+            <div class="field"><label for="user-cpf">CPF</label><input id="user-cpf" inputmode="numeric" maxlength="11" placeholder="Somente 11 números" pattern="\d{11}" /></div>
+            <div class="field"><label for="user-rg">RG</label><input id="user-rg" maxlength="30" placeholder="RG livre" /></div>
+          </div>
+          <div class="employee-row-two">
+            <div class="field"><label for="user-job-title">Cargo</label><input id="user-job-title" placeholder="Ex.: Recepcionista, Personal trainer" /></div>
+            <div class="field" id="user-password-field"><label for="user-password">Senha inicial *</label><input id="user-password" type="password" autocomplete="new-password" minlength="8" /></div>
+          </div>
         </div>
       </section>
 
@@ -101,15 +107,49 @@
       </section>
 
       <section class="form-section employee-form-panel hidden" id="employee-tab-panel-address" role="tabpanel">
-        <div class="form-grid three">
-          <div class="field"><label for="user-postal-code">CEP</label><input id="user-postal-code" inputmode="numeric" maxlength="9" /></div>
-          <div class="field"><label for="user-street">Rua / Avenida</label><input id="user-street" /></div>
-          <div class="field"><label for="user-address-number">Número</label><input id="user-address-number" /></div>
-          <div class="field"><label for="user-address-complement">Complemento</label><input id="user-address-complement" /></div>
-          <div class="field"><label for="user-neighborhood">Bairro</label><input id="user-neighborhood" /></div>
-          <div class="field"><label for="user-city">Cidade</label><input id="user-city" /></div>
-          <div class="field"><label for="user-state">Estado</label><input id="user-state" /></div>
-          <div class="field"><label for="user-country">País</label><input id="user-country" value="Brasil" /></div>
+        <div class="student-address-container">
+          <div class="student-address-row row-cep-street">
+            <div class="field field-cep">
+              <label for="user-postal-code">CEP</label>
+              <input id="user-postal-code" inputmode="numeric" maxlength="9" placeholder="00000-000" />
+            </div>
+            <div class="field field-street">
+              <label for="user-street">Rua / Logradouro</label>
+              <input id="user-street" placeholder="Rua, avenida..." />
+            </div>
+          </div>
+
+          <div class="student-address-row row-number-compl-neighborhood">
+            <div class="field field-number">
+              <label for="user-address-number">Nº</label>
+              <input id="user-address-number" maxlength="8" placeholder="123" />
+            </div>
+            <div class="field field-complement">
+              <label for="user-address-complement">Complemento</label>
+              <input id="user-address-complement" placeholder="Apto, bloco..." />
+            </div>
+            <div class="field field-neighborhood">
+              <label for="user-neighborhood">Bairro</label>
+              <input id="user-neighborhood" placeholder="Bairro" />
+            </div>
+          </div>
+
+          <div class="student-address-row row-city-state-country">
+            <div class="field field-city">
+              <label for="user-city">Cidade</label>
+              <input id="user-city" placeholder="Cidade" />
+            </div>
+            <div class="field field-uf">
+              <label for="user-state">UF</label>
+              <input id="user-state" maxlength="2" placeholder="UF" style="text-transform: uppercase;" />
+            </div>
+            <div class="field field-country">
+              <label for="user-country">País</label>
+              <select id="user-country" class="country-select">
+                <option value="Brasil" selected>Brasil</option>
+              </select>
+            </div>
+          </div>
         </div>
       </section>
 

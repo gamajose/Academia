@@ -44,9 +44,11 @@
     <div class="modal-card finance-modal-card">
       <div class="toolbar"><h3 id="finance-title">Lançamento</h3><button class="secondary modal-close" id="close-finance-modal" aria-label="Fechar" title="Fechar">×</button></div>
       <input id="finance-payment-id" type="hidden" />
-      <div class="grid finance-form-grid">
-        <div class="field"><label for="finance-discount">Desconto</label><input id="finance-discount" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor abatido do lançamento.</small></div>
-        <div class="field"><label for="finance-fee">Taxa ou juros</label><input id="finance-fee" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor acrescentado ao lançamento.</small></div>
+      <div class="finance-form-grid">
+        <div class="finance-form-row-two">
+          <div class="field"><label for="finance-discount">Desconto</label><input id="finance-discount" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor abatido do lançamento.</small></div>
+          <div class="field"><label for="finance-fee">Taxa ou juros</label><input id="finance-fee" type="number" min="0" step="0.01" placeholder="R$ 0,00" /><small>Valor acrescentado ao lançamento.</small></div>
+        </div>
         <div class="field"><label for="finance-status">Situação do pagamento</label><select id="finance-status"><option value="pending">Pendente</option><option value="paid">Recebido</option><option value="overdue">Vencido / não pago</option><option value="cancelled">Cancelado</option></select></div>
         <div class="field"><label for="finance-method">Forma de pagamento</label><select id="finance-method"><option value="manual">Manual</option><option value="pix">Pix</option><option value="paypal">PayPal</option><option value="card">Cartão</option><option value="cash">Dinheiro</option><option value="transfer">Transferência</option><option value="demo">Demonstração</option><option value="other">Outro</option></select></div>
       </div>

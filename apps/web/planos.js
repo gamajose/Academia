@@ -172,9 +172,23 @@ function durationToDays() {
   return $('plan-duration-unit').value === 'months' ? value * 30 : value;
 }
 
+function setPlanTab(tabKey) {
+  document.querySelectorAll('.plan-form-tab').forEach((tab) => {
+    const active = tab.getAttribute('data-plan-tab') === tabKey;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.plan-form-panel').forEach((panel) => {
+    panel.classList.toggle('hidden', panel.id !== `plan-tab-panel-${tabKey}`);
+  });
+}
+
 function openPlan(plan = {}) {
   $('plan-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  setPlanTab('main');
+  const titleEl = $('plan-modal-title');
+  if (titleEl) titleEl.textContent = plan.id ? 'Editar plano' : 'Novo plano';
   const richIds = ['plan-description-page', 'plan-benefits-page', 'plan-rules-page'];
   AcademiaRichEditor.setScope(richIds, `plan:${plan.id || 'new'}`);
   $('plan-id').value = plan.id || '';
@@ -256,6 +270,9 @@ $('plan-form').addEventListener('submit', save);
 $('plan-price-page').addEventListener('blur', (event) => {
   const value = numberFromCurrency(event.target.value);
   event.target.value = value > 0 ? currencyInput(value) : '';
+});
+document.querySelectorAll('[data-plan-tab]').forEach((btn) => {
+  btn.addEventListener('click', () => setPlanTab(btn.dataset.planTab));
 });
 document.addEventListener('click', (event) => {
   if (!event.target.closest('.plan-card-actions')) {
