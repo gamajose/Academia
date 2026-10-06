@@ -439,11 +439,12 @@ html[data-admin-theme="dark"] .gym-logo-preview-row img {
 #save-personal-button,
 #save-address-button,
 #save-gym-button {
-  background: rgba(20, 120, 212, 0.88) !important;
+  background: rgba(20, 120, 212, 0.72) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
+  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
 }
 
 .employee-row-two {

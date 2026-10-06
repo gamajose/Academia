@@ -288,37 +288,12 @@
       openHistoryModal();
     });
 
-    p('student-menu-toggle-notification')?.addEventListener('click', async () => {
-      dropdown.classList.add('hidden');
-      trigger.setAttribute('aria-expanded', 'false');
-      if (window.PushNotificationManager) {
-        await window.PushNotificationManager.requestPermission();
-        updateNotificationMenuLabel();
-      }
-    });
-
-    p('student-menu-test-notification')?.addEventListener('click', async () => {
-      dropdown.classList.add('hidden');
-      trigger.setAttribute('aria-expanded', 'false');
-      if (window.PushNotificationManager) {
-        await window.PushNotificationManager.sendTestNotification();
-        updateNotificationMenuLabel();
-      }
-    });
-
     document.addEventListener('click', (e) => {
       if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
         dropdown.classList.add('hidden');
         trigger.setAttribute('aria-expanded', 'false');
       }
     });
-  }
-
-  function updateNotificationMenuLabel() {
-    const btn = p('student-menu-toggle-notification');
-    if (!btn || !window.PushNotificationManager) return;
-    const isGranted = window.PushNotificationManager.getPermission() === 'granted';
-    btn.textContent = isGranted ? 'Notificações no celular (Ativas ✓)' : 'Ativar notificações no celular';
   }
 
   function checkUrlAction() {

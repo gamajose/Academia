@@ -546,7 +546,43 @@ html[data-admin-theme="dark"] #cancel-user-button {
   }
 }
 
+.employee-form-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+.employee-form-actions #save-user-button {
+  background: rgba(20, 120, 212, 0.72) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
+  min-height: 42px !important;
+  font-weight: 750 !important;
+  font-size: 14px !important;
+}
+.employee-form-actions #cancel-user-button {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+  color: var(--text, #1e293b) !important;
+  min-height: 42px !important;
+  font-weight: 750 !important;
+  font-size: 14px !important;
+}
+html[data-admin-theme="dark"] .employee-form-actions #cancel-user-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
 @media (max-width: 480px) {
   .permissions-grid { grid-template-columns: 1fr; }
-  .employee-row-two { grid-template-columns: 1fr !important; }
+  .employee-row-two {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
 }

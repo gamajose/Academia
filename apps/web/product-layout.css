@@ -61,7 +61,7 @@
 .finance-summary .finance-pending strong, .finance-summary .finance-open strong { color: #b45309; }
 .finance-summary .finance-overdue strong { color: #b91c1c; }
 .finance-summary .finance-paid strong, .finance-summary .finance-paid-count strong { color: #15803d; }
-.dashboard-summary-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.dashboard-summary-cards { grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .profile-side-grid { grid-template-columns: 1fr; }
 .dashboard-summary-card { display: grid; align-content: center; gap: 7px; min-height: 142px; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: #fff; color: var(--text); text-decoration: none; box-shadow: var(--shadow); transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .dashboard-summary-card:hover, .dashboard-summary-card:focus-visible { border-color: var(--accent); box-shadow: 0 14px 34px rgba(29, 111, 214, .14); outline: none; transform: translateY(-2px); }
@@ -322,7 +322,7 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
 @media (max-width: 1100px) { .finance-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .quick-grid, .finance-summary { grid-template-columns: 1fr; } .toolbar-actions a { width: 100%; } }
 @media (max-width: 900px) { .finance-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) {
+@media (max-width: 768px) {
   .finance-filter-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
@@ -348,11 +348,12 @@ html[data-admin-theme="dark"] .pix-modal-card .modal-close:hover {
   .finance-filter-actions #finance-apply-filters {
     flex: 1 1 auto !important;
     width: auto !important;
-    background: rgba(20, 120, 212, 0.88) !important;
+    background: rgba(20, 120, 212, 0.72) !important;
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
     color: #fff !important;
+    box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
   }
   .finance-filter-actions .export-icon-button {
     flex: 0 0 54px !important;
@@ -1445,6 +1446,7 @@ html[data-admin-theme="dark"] .plan-form-tab.active {
   align-items: center !important;
   justify-content: space-between !important;
   gap: 12px !important;
+  padding: 12px 14px !important;
 }
 
 #students-list .entity-main {
@@ -1453,6 +1455,13 @@ html[data-admin-theme="dark"] .plan-form-tab.active {
   gap: 3px !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
+}
+
+#students-list .entity-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 14.5px !important;
 }
 
 #students-list .student-card-email,
@@ -1469,33 +1478,159 @@ html[data-admin-theme="dark"] .plan-form-tab.active {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 4px !important;
-  margin-top: 2px !important;
+  margin-top: 3px !important;
 }
 
 #students-list .student-card-actions {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 6px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
   flex-shrink: 0 !important;
+  margin-left: auto !important;
 }
 
-#students-list .student-card-actions a,
-#students-list .student-card-actions button {
-  min-height: 32px !important;
-  padding: 5px 10px !important;
+#students-list .student-action-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  align-items: stretch !important;
+}
+
+#students-list .student-btn-whatsapp,
+#students-list .student-btn-qr {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 10px !important;
   font-size: 11.5px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  border-radius: 7px !important;
   white-space: nowrap !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+#students-list .student-btn-whatsapp {
+  background: #25d366 !important;
+  color: #fff !important;
+  border: none !important;
+  text-decoration: none !important;
+}
+
+#students-list .student-btn-qr {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+}
+
+#students-list .student-card-menu,
+#students-list .mobile-card-menu {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#students-list .mobile-card-menu-trigger {
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
   justify-content: center !important;
   margin: 0 !important;
 }
 
-/* Intl tel input mobile z-index & container */
+/* Intl tel input mobile fixed modal & container */
 .iti--container {
-  z-index: 100000 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100050 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
 }
+
 .iti__dropdown-content {
-  z-index: 100000 !important;
-  max-width: min(380px, 92vw) !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  max-width: min(390px, 92vw) !important;
+  max-height: 80vh !important;
+  background: var(--card, #ffffff) !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  z-index: 100051 !important;
+}
+
+.iti__search-input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+  border: none !important;
+  border-bottom: 1px solid var(--line, #e2e8f0) !important;
+  background: var(--surface, #f8fafc) !important;
+  color: var(--text, #0f172a) !important;
+  outline: none !important;
+  border-radius: 0 !important;
+}
+
+.iti__country-list {
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  margin: 0 !important;
+  padding: 4px 0 !important;
+  list-style: none !important;
+}
+
+/* Address mobile alignment */
+@media (max-width: 640px) {
+  .student-address-row-city-state-country .field-city {
+    flex: 1 1 calc(100% - 92px) !important;
+  }
+  .student-address-row-city-state-country .field-state {
+    flex: 0 0 80px !important;
+  }
+  .student-address-row-city-state-country .field-country {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+  .student-address-row-city-state-country .field-city label,
+  .student-address-row-city-state-country .field-state label {
+    white-space: nowrap !important;
+    min-height: 18px !important;
+    display: block !important;
+  }
+  .student-address-row-city-state-country select {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
 }
 

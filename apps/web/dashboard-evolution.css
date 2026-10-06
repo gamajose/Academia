@@ -142,11 +142,17 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
   }
 }
 
-@media (max-width: 760px) {
+.dashboard-summary-cards {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+@media (max-width: 768px) {
   .dashboard-summary-cards {
     display: grid !important;
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+    gap: 10px !important;
   }
   .dashboard-summary-cards > :nth-child(1),
   .dashboard-summary-cards > :nth-child(2),
@@ -158,6 +164,41 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
   .dashboard-summary-cards > :nth-child(6),
   .dashboard-summary-cards > :nth-child(7) {
     grid-column: span 2 !important;
+  }
+
+  .dashboard-summary-card {
+    min-height: 94px !important;
+    padding: 12px 10px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 4px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .dashboard-summary-card span {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+  }
+
+  .dashboard-summary-card strong {
+    font-size: 26px !important;
+    line-height: 1.15 !important;
+    font-weight: 850 !important;
+  }
+
+  .dashboard-summary-card small {
+    display: none !important;
   }
 
   .dashboard-assessment-grid {

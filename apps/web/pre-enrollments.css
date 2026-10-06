@@ -149,11 +149,12 @@ html[data-admin-theme="dark"] .modal-card .modal-close {
 }
 
 #check-code-button {
-  background: rgba(20, 120, 212, 0.88) !important;
+  background: rgba(20, 120, 212, 0.72) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
+  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
   min-height: 36px !important;
   height: 36px !important;
   padding: 0 16px !important;

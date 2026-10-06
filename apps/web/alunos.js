@@ -770,18 +770,25 @@ function render() {
     const whatsapp = whatsappLink(item.phone);
     const actions = document.createElement('div');
     actions.className = 'entity-actions student-card-actions';
+    const actionStack = document.createElement('div');
+    actionStack.className = 'student-action-stack';
     if (whatsapp) {
+      whatsapp.className = (whatsapp.className ? whatsapp.className + ' ' : '') + 'student-btn-whatsapp';
       whatsapp.addEventListener('click', (event) => event.stopPropagation());
-      actions.appendChild(whatsapp);
+      actionStack.appendChild(whatsapp);
     }
     if (window.AcademiaModules?.isEnabled?.('access') !== false) {
       const credentialButton = window.AcademiaIcons.button('qr', 'Abrir QR Code e credencial');
+      credentialButton.className = (credentialButton.className ? credentialButton.className + ' ' : '') + 'student-btn-qr';
       credentialButton.dataset.moduleFeature = 'access';
       credentialButton.addEventListener('click', (event) => {
         event.stopPropagation();
         openCredentialPreview(item);
       });
-      actions.appendChild(credentialButton);
+      actionStack.appendChild(credentialButton);
+    }
+    if (actionStack.children.length > 0) {
+      actions.appendChild(actionStack);
     }
     actions.appendChild(studentCardMenu(item));
     li.append(main, actions);
@@ -882,6 +889,9 @@ function initPhoneWidget() {
     nationalMode: true,
     showSelectedDialCode: true,
     countrySearch: true,
+    useFullscreenPopup: true,
+    i18n: { searchPlaceholder: 'Buscar país ou DDI...' },
+    uiTranslations: { searchPlaceholder: 'Buscar país ou DDI...' },
     dropdownContainer: document.body,
     autoPlaceholder: 'aggressive',
     formatAsYouType: true,

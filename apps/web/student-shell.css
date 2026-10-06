@@ -852,9 +852,24 @@ html[data-student-theme="dark"] body.student-page .student-day-picker button.act
 .student-form-hint { margin: 0; color: #5e7081; font-size: 13px; line-height: 1.45; }
 .student-workout-editor-card { width: min(540px, calc(100vw - 32px)) !important; max-width: 540px; border-radius: 18px; padding: 22px; max-height: min(92vh, 900px); overflow-y: auto; }
 .student-workout-editor-form { display: grid; gap: 16px; }
-.student-workout-editor-form > small { color: #5e7081; }
 .student-workout-editor-form .form-actions { margin-top: 0; }
-.student-picked-exercise-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-workout-editor-form .form-actions button[type="submit"],
+.student-workout-editor-form .form-actions .button:not(.secondary) {
+  background: rgba(20, 120, 212, 0.72) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
+}
+.student-workout-editor-form .form-actions .button.secondary,
+.student-workout-editor-form .form-actions button.secondary {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid var(--line, #cbd5e1) !important;
+  color: var(--text, #1e293b) !important;
+}
 .student-picked-exercise-header h4 { margin: 0; color: #101923; font-size: 16px; font-weight: 600; }
 .student-picked-exercise-header .icon-button { flex: 0 0 32px; width: 32px; min-width: 32px; height: 32px; min-height: 32px; margin: 0; border: 1px solid #e8b9c0; border-radius: 8px; background: #fff; color: #bd1f2d; font-size: 20px; line-height: 1; }
 .student-picked-exercise-header .icon-button:hover, .student-picked-exercise-header .icon-button:focus-visible { border-color: #bd1f2d; background: #fff4f5; outline: none; }
@@ -1114,6 +1129,37 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
   }
   .student-feed-title {
     font-size: 14.5px !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+  .student-feed-meta-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .student-feed-index {
+    align-self: center !important;
+    line-height: 1 !important;
+  }
+  .student-feed-badges-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin-top: 5px !important;
+  }
+  .student-feed-badges {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+  .student-feed-add-btn {
+    align-self: center !important;
+    flex-shrink: 0 !important;
   }
   .student-feed-overlay {
     padding: 36px 12px 10px !important;
@@ -1158,7 +1204,7 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
 }
 
 .student-goal-card.is-menu-open {
-  z-index: 100 !important;
+  z-index: 9999 !important;
 }
 
 .student-goal-card:hover {
@@ -1195,6 +1241,7 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+  z-index: 10000 !important;
 }
 
 .student-goal-card .student-feed-item-dropdown button {
@@ -1613,19 +1660,20 @@ html[data-student-theme="dark"] body.student-page .student-goal-card .student-fe
     white-space: nowrap !important;
   }
   .student-social-profile-shell {
-    padding-top: 44px !important;
+    padding-top: 48px !important;
   }
   .student-profile-avatar-section {
-    margin-top: 3px !important;
+    margin-top: 4px !important;
   }
 }
 
 #student-profile-save {
-  background: rgba(20, 120, 212, 0.88) !important;
+  background: rgba(20, 120, 212, 0.72) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
+  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
 }
 
 .profile-modal-pane.hidden {
