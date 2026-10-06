@@ -138,6 +138,23 @@ async function handleUserRoutes(req, res, user, url, helpers) {
     return send(res, 200, result.rows[0]);
   }
 
+  if (req.method === 'DELETE' && url.pathname === '/api/users') {
+    const input = await body(req);
+    const targetUserId = input.user_id || input.id;
+    if (!targetUserId) return send(res, 400, { error: 'user_id_obrigatorio' });
+    if (targetUserId === user.sub) return send(res, 400, { error: 'nao_pode_excluir_proprio_usuario' });
+    await query('UPDATE checkins SET created_by = NULL WHERE created_by = $1', [targetUserId]);
+    await query('UPDATE workout_day_logs SET created_by = NULL WHERE created_by = $1', [targetUserId]);
+    await query('UPDATE member_assessments SET created_by = NULL WHERE created_by = $1', [targetUserId]);
+    const result = await query(
+      'DELETE FROM users WHERE id = $1 AND gym_id = $2 RETURNING id, name, email',
+      [targetUserId, user.gym_id]
+    );
+    if (!result.rowCount) return send(res, 404, { error: 'usuario_nao_encontrado' });
+    await recordAudit(user, 'delete', 'user', result.rows[0].id, { email: result.rows[0].email });
+    return send(res, 200, { ok: true, user: result.rows[0] });
+  }
+
   return false;
 }
 

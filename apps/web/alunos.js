@@ -83,9 +83,26 @@ function closeStudentCardMenus() {
   document.querySelectorAll('#students-list li').forEach((li) => li.style.removeProperty('z-index'));
 }
 
-function studentMobileMenu(item, whatsappUrl = '') {
+async function deleteStudent(item) {
+  if (!window.confirm(`Tem certeza que deseja excluir o aluno "${item.name || 'selecionado'}"?\nEsta ação excluirá o cadastro e todo o seu histórico.`)) {
+    return;
+  }
+  $('students-status').textContent = 'Excluindo aluno...';
+  try {
+    await req('/api/members', {
+      method: 'DELETE',
+      body: JSON.stringify({ member_id: item.id })
+    });
+    $('students-status').textContent = 'Aluno excluído com sucesso.';
+    await load();
+  } catch (error) {
+    $('students-status').textContent = `Não foi possível excluir: ${error.message}`;
+  }
+}
+
+function studentCardMenu(item) {
   const wrap = document.createElement('div');
-  wrap.className = 'mobile-card-menu';
+  wrap.className = 'mobile-card-menu student-card-menu';
   const trigger = document.createElement('button');
   trigger.type = 'button';
   trigger.className = 'mobile-card-menu-trigger';
@@ -94,31 +111,26 @@ function studentMobileMenu(item, whatsappUrl = '') {
   trigger.setAttribute('aria-expanded', 'false');
   const dropdown = document.createElement('div');
   dropdown.className = 'mobile-card-menu-dropdown hidden';
-  if (whatsappUrl) {
-    const whatsapp = document.createElement('a');
-    whatsapp.href = whatsappUrl;
-    whatsapp.target = '_blank';
-    whatsapp.rel = 'noopener noreferrer';
-    whatsapp.textContent = 'WhatsApp';
-    whatsapp.addEventListener('click', closeStudentCardMenus);
-    dropdown.appendChild(whatsapp);
-  }
-  const credential = document.createElement('button');
-  credential.dataset.moduleFeature = 'access';
-  credential.type = 'button';
-  credential.textContent = 'QR Code';
-  credential.addEventListener('click', () => { closeStudentCardMenus(); openCredentialPreview(item); });
+
   const edit = document.createElement('button');
   edit.type = 'button';
-  edit.textContent = 'Editar cadastro';
+  edit.textContent = 'Editar aluno';
   edit.addEventListener('click', () => { closeStudentCardMenus(); openModal(item); });
+
   const status = document.createElement('button');
   status.type = 'button';
   status.className = item.status === 'active' ? 'danger' : '';
   status.textContent = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno';
   status.addEventListener('click', () => { closeStudentCardMenus(); void toggle(item); });
-  if (window.AcademiaModules?.isEnabled?.('access') !== false) dropdown.appendChild(credential);
-  dropdown.append(edit, status);
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'danger';
+  remove.textContent = 'Excluir aluno';
+  remove.addEventListener('click', () => { closeStudentCardMenus(); void deleteStudent(item); });
+
+  dropdown.append(edit, status, remove);
+
   trigger.addEventListener('click', (event) => {
     event.stopPropagation();
     const opening = dropdown.classList.contains('hidden');
@@ -664,19 +676,21 @@ function render() {
     const whatsapp = whatsappLink(item.phone);
     const actions = document.createElement('div');
     actions.className = 'entity-actions';
-    if (whatsapp) { whatsapp.addEventListener('click', (event) => event.stopPropagation()); actions.appendChild(whatsapp); }
+    if (whatsapp) {
+      whatsapp.addEventListener('click', (event) => event.stopPropagation());
+      actions.appendChild(whatsapp);
+    }
     if (window.AcademiaModules?.isEnabled?.('access') !== false) {
       const credentialButton = window.AcademiaIcons.button('qr', 'Abrir QR Code e credencial');
       credentialButton.dataset.moduleFeature = 'access';
-      credentialButton.addEventListener('click', (event) => { event.stopPropagation(); openCredentialPreview(item); });
+      credentialButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openCredentialPreview(item);
+      });
       actions.appendChild(credentialButton);
     }
-    const editButton = window.AcademiaIcons.button('edit', 'Editar cadastro');
-    editButton.addEventListener('click', (event) => { event.stopPropagation(); openModal(item); });
-    actions.appendChild(editButton);
-    actions.appendChild(button(item.status === 'active' ? '⊘' : '●', (event) => { event?.stopPropagation?.(); toggle(item); }, 'icon-button'));
-    actions.lastElementChild.title = item.status === 'active' ? 'Desativar aluno' : 'Ativar aluno'; actions.lastElementChild.setAttribute('aria-label', actions.lastElementChild.title);
-    li.append(main, actions, studentMobileMenu(item, whatsapp?.href || ''));
+    actions.appendChild(studentCardMenu(item));
+    li.append(main, actions);
     list.appendChild(li);
   }
 

@@ -153,7 +153,7 @@ body.admin-training-page #panel-plans .toolbar {
 
   body.admin-students-page #students-list .entity-main {
     width: 100%;
-    padding-right: 30px;
+    padding-right: 95px !important;
     gap: 3px;
   }
 
@@ -181,7 +181,13 @@ body.admin-training-page #panel-plans .toolbar {
   }
 
   body.admin-students-page #students-list .entity-actions {
-    display: none;
+    display: flex !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    gap: 4px !important;
+    align-items: center !important;
+    z-index: 6 !important;
   }
 
   /* Training */
@@ -585,13 +591,158 @@ body.admin-training-page #panel-plans .toolbar {
   max-height: 28px !important;
   padding: 0 !important;
   border: none !important;
+  border-radius: 6px !important;
   background: transparent !important;
   box-shadow: none !important;
-  font-size: 22px !important;
-  line-height: 1 !important;
   color: var(--muted, #64748b) !important;
   margin: 0 !important;
   cursor: pointer !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.student-more-btn:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text, #0f172a) !important;
+}
+
+html[data-admin-theme="dark"] .student-more-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+.student-more-btn svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Student card actions & 3-dots dropdown */
+body.admin-students-page #students-list .entity-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+}
+
+body.admin-students-page #students-list .entity-actions .student-card-menu,
+body.admin-students-page #students-list .entity-actions .mobile-card-menu {
+  display: inline-flex !important;
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  align-items: center !important;
+}
+
+body.admin-students-page #students-list .entity-actions .mobile-card-menu-trigger {
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  border-radius: 6px !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+body.admin-students-page #students-list .entity-actions .mobile-card-menu-trigger:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text, #0f172a) !important;
+}
+
+html[data-admin-theme="dark"] body.admin-students-page #students-list .entity-actions .mobile-card-menu-trigger:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+/* 3-dots dropdown menu styles for student cards (desktop & mobile) */
+body.admin-students-page .mobile-card-menu-dropdown {
+  position: absolute !important;
+  top: calc(100% + 5px) !important;
+  right: 0 !important;
+  z-index: 1300 !important;
+  display: grid !important;
+  width: 165px !important;
+  overflow: visible !important;
+  padding: 5px !important;
+  border: 1px solid #374151 !important;
+  border-radius: 10px !important;
+  background: #1f2937 !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .4) !important;
+}
+
+body.admin-students-page .mobile-card-menu-dropdown.hidden {
+  display: none !important;
+}
+
+body.admin-students-page .mobile-card-menu-dropdown button,
+body.admin-students-page .mobile-card-menu-dropdown a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  min-height: 32px !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #e5e7eb !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  text-align: left !important;
+}
+
+body.admin-students-page .mobile-card-menu-dropdown button:hover,
+body.admin-students-page .mobile-card-menu-dropdown button:focus-visible,
+body.admin-students-page .mobile-card-menu-dropdown a:hover,
+body.admin-students-page .mobile-card-menu-dropdown a:focus-visible {
+  background: #374151 !important;
+  color: #fff !important;
+  transform: none !important;
+}
+
+body.admin-students-page .mobile-card-menu-dropdown button.danger {
+  color: #f87171 !important;
+}
+
+body.admin-students-page .mobile-card-menu-dropdown button.danger:hover {
+  background: #451a1a !important;
+  color: #fca5a5 !important;
+}
+
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown button,
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown a {
+  color: #1f2937 !important;
+}
+
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown button:hover,
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown button:focus-visible,
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown a:hover,
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown a:focus-visible {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown button.danger {
+  color: #dc2626 !important;
+}
+
+html:not([data-admin-theme="dark"]) body.admin-students-page .mobile-card-menu-dropdown button.danger:hover {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
 }
 
 @media (max-width: 760px) {

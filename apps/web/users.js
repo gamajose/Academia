@@ -115,11 +115,16 @@ function createPresenceCell(user) {
   const cell = document.createElement('td');
   cell.className = 'status-cell';
   const presence = presenceFor(user);
-  const dot = document.createElement('span');
-  dot.className = `presence-dot presence-${presence.key}`;
-  dot.setAttribute('role', 'img');
-  dot.setAttribute('aria-label', presence.label);
-  dot.title = presence.label;
+  const dot = document.createElement('button');
+  dot.type = 'button';
+  dot.className = `presence-dot-btn presence-dot presence-${presence.key}`;
+  dot.title = `${presence.label} (clique para alternar status)`;
+  dot.setAttribute('aria-label', `${presence.label} - alternar status de ${user.name || 'funcionário'}`);
+  dot.addEventListener('click', async (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    await toggleUser(user);
+  });
   const label = document.createElement('span');
   label.className = 'presence-label';
   label.textContent = presence.label;
@@ -128,12 +133,29 @@ function createPresenceCell(user) {
 }
 
 function closeEmployeeMenus() {
-  document.querySelectorAll('.employee-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
-  document.querySelectorAll('.employee-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('.employee-menu-dropdown, .access-profile-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.employee-menu-trigger, .access-profile-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
   document.querySelectorAll('#users-table tr').forEach((el) => {
     el.classList.remove('menu-open');
     el.style.zIndex = '';
   });
+}
+
+async function deleteUser(user) {
+  if (!window.confirm(`Tem certeza que deseja excluir o funcionário "${user.name || 'selecionado'}"?\nEsta ação não poderá ser desfeita.`)) {
+    return;
+  }
+  setStatus('Excluindo funcionário...');
+  try {
+    await api('/api/users', {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: user.id })
+    });
+    setStatus('Funcionário excluído com sucesso.');
+    await loadUsers({ silent: true, force: true });
+  } catch (error) {
+    setStatus(friendly(error));
+  }
 }
 
 function employeeRowMenu(user) {
@@ -161,7 +183,15 @@ function employeeRowMenu(user) {
   perms.textContent = 'Permissões';
   perms.addEventListener('click', () => {
     closeEmployeeMenus();
-    openPermissionsManager();
+    openPermissionsModal();
+  });
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'danger';
+  remove.textContent = 'Excluir funcionário';
+  remove.addEventListener('click', () => {
+    closeEmployeeMenus();
+    void deleteUser(user);
   });
   trigger.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -179,7 +209,7 @@ function employeeRowMenu(user) {
   });
   wrap.addEventListener('click', (event) => event.stopPropagation());
   wrap.addEventListener('keydown', (event) => event.stopPropagation());
-  dropdown.append(details, toggle, perms);
+  dropdown.append(details, toggle, perms, remove);
   wrap.append(trigger, dropdown);
   return wrap;
 }
@@ -274,21 +304,6 @@ function renderUsers(rows, emptyMessage = 'Nenhum funcionário cadastrado.') {
 
     const actions = document.createElement('td');
     actions.className = 'employee-row-actions';
-    const actionButtons = document.createElement('div');
-    actionButtons.className = 'employee-action-buttons';
-
-    const edit = window.AcademiaIcons.button('edit', 'Editar funcionário');
-    edit.addEventListener('click', () => editUser(user));
-    actionButtons.appendChild(edit);
-
-    const toggle = window.AcademiaIcons.button(
-      user.is_active ? 'deactivate' : 'activate',
-      user.is_active ? 'Desativar funcionário' : 'Ativar funcionário',
-      user.is_active ? 'danger' : 'success'
-    );
-    toggle.addEventListener('click', () => toggleUser(user));
-    actionButtons.appendChild(toggle);
-    actions.appendChild(actionButtons);
     actions.appendChild(employeeRowMenu(user));
 
     row.appendChild(actions);
@@ -468,26 +483,66 @@ function renderPermissionProfiles() {
 
     const actions = document.createElement('div');
     actions.className = 'access-profile-actions';
-
-    const edit = window.AcademiaIcons.button('edit', 'Editar perfil de acesso');
-    edit.addEventListener('click', () => openPermissionsEditor(profile));
-    actions.appendChild(edit);
-
-    const toggle = window.AcademiaIcons.button(
-      profile.is_active ? 'deactivate' : 'activate',
-      profile.is_active ? 'Desativar perfil de acesso' : 'Ativar perfil de acesso',
-      profile.is_active ? 'danger' : 'success'
-    );
-    toggle.addEventListener('click', () => toggleAccessProfile(profile));
-    actions.appendChild(toggle);
-
-    const remove = window.AcademiaIcons.button('trash', 'Excluir perfil de acesso', 'danger');
-    remove.addEventListener('click', () => deleteAccessProfile(profile));
-    actions.appendChild(remove);
+    actions.appendChild(permissionProfileMenu(profile));
 
     card.append(info, actions);
     list.appendChild(card);
   }
+}
+
+function permissionProfileMenu(profile) {
+  const wrap = document.createElement('div');
+  wrap.className = 'access-profile-menu-wrap';
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'access-profile-menu-trigger';
+  trigger.textContent = '⋮';
+  trigger.setAttribute('aria-label', `Opções do perfil ${profile.name}`);
+  trigger.setAttribute('aria-expanded', 'false');
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'access-profile-menu-dropdown hidden';
+
+  const edit = document.createElement('button');
+  edit.type = 'button';
+  edit.textContent = 'Editar perfil';
+  edit.addEventListener('click', () => {
+    closeEmployeeMenus();
+    openPermissionsEditor(profile);
+  });
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = profile.is_active ? 'danger' : '';
+  toggle.textContent = profile.is_active ? 'Desativar perfil' : 'Ativar perfil';
+  toggle.addEventListener('click', () => {
+    closeEmployeeMenus();
+    void toggleAccessProfile(profile);
+  });
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'danger';
+  remove.textContent = 'Excluir perfil';
+  remove.addEventListener('click', () => {
+    closeEmployeeMenus();
+    void deleteAccessProfile(profile);
+  });
+
+  trigger.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const opening = dropdown.classList.contains('hidden');
+    closeEmployeeMenus();
+    if (opening) {
+      dropdown.classList.remove('hidden');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  wrap.addEventListener('click', (event) => event.stopPropagation());
+  dropdown.append(edit, toggle, remove);
+  wrap.append(trigger, dropdown);
+  return wrap;
 }
 
 async function loadAccessProfiles({ renderManager = false } = {}) {

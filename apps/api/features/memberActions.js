@@ -33,6 +33,16 @@ async function handleMemberActions(req, res, user, url, helpers) {
     return send(res, 200, result.rows[0]);
   }
 
+  if (req.method === 'DELETE' && url.pathname === '/api/members') {
+    const input = await body(req);
+    const memberId = input.member_id || input.id;
+    if (!memberId) return send(res, 400, { error: 'member_id_obrigatorio' });
+    const result = await query('DELETE FROM members WHERE id = $1 AND gym_id = $2 RETURNING id, name', [memberId, user.gym_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+    await recordAudit(user, 'delete', 'member', result.rows[0].id, { name: result.rows[0].name });
+    return send(res, 200, { ok: true, member: result.rows[0] });
+  }
+
   return false;
 }
 

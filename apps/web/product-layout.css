@@ -774,3 +774,65 @@ html[data-admin-theme="dark"] .student-form-tab.active {
   color: #38bdf8 !important;
   border-bottom-color: #38bdf8 !important;
 }
+
+/* Compact plan modal header */
+#plan-modal .modal-card {
+  position: relative !important;
+  padding: 16px 22px 20px !important;
+}
+
+#plan-modal .modal-header {
+  position: absolute !important;
+  top: 10px !important;
+  right: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+  z-index: 10 !important;
+}
+
+#plan-modal #close-plan-modal {
+  position: static !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--muted, #64748b) !important;
+  cursor: pointer !important;
+  opacity: 0.7 !important;
+  transition: opacity 0.15s ease, color 0.15s ease !important;
+}
+
+#plan-modal #close-plan-modal:hover {
+  opacity: 1 !important;
+  color: var(--text, #171717) !important;
+  background: transparent !important;
+}
+
+html[data-admin-theme="dark"] #plan-modal #close-plan-modal:hover {
+  color: #fff !important;
+}
+
+#plan-modal .form-section:first-of-type {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+#plan-modal .form-section:first-of-type h4 {
+  margin-top: 0 !important;
+  margin-bottom: 12px !important;
+  padding-top: 0 !important;
+}
+
