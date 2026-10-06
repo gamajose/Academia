@@ -187,6 +187,17 @@ function setStudentViewTab(tabName = 'registration') {
   }
 }
 
+function setStudentInfoTab(tabKey = 'objective') {
+  document.querySelectorAll('[data-student-info-tab]').forEach((button) => {
+    const active = button.dataset.studentInfoTab === tabKey;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('.student-view-info-tab-panels > div').forEach((panel) => {
+    panel.classList.toggle('hidden', panel.id !== `student-info-panel-${tabKey}`);
+  });
+}
+
 function contextDecimal(id) {
   const raw = val(id).replace(',', '.');
   if (!raw) return null;
@@ -458,17 +469,79 @@ function studentTrainingReviewHistoryEntry(review) {
   return details;
 }
 
-function renderStudentTrainingReviewHistory(rows, target) {
+const studentHistoryPageSize = 5;
+const studentHistoryCache = new Map();
+const studentHistoryOffset = new Map();
+
+function renderStudentTrainingReviewHistory(rows, target, { memberId = activeStudentView?.id, append = false } = {}) {
   if (!target) return;
-  target.replaceChildren();
-  if (!rows.length) {
+  const targetId = target.id || 'student-history-target';
+
+  if (memberId && Array.isArray(rows) && rows.length) {
+    studentHistoryCache.set(String(memberId), rows);
+  }
+
+  const allRecords = rows && rows.length ? rows : (studentHistoryCache.get(String(memberId)) || []);
+
+  if (!append) {
+    target.replaceChildren();
+    studentHistoryOffset.set(targetId, 0);
+  }
+
+  if (!allRecords.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
     empty.textContent = 'Nenhuma análise gerada na aba Treinos para este aluno.';
     target.appendChild(empty);
     return;
   }
-  rows.forEach((review) => target.appendChild(studentTrainingReviewHistoryEntry(review)));
+
+  const existingLoader = target.querySelector('.student-history-feed-loader');
+  if (existingLoader) existingLoader.remove();
+
+  const currentOffset = studentHistoryOffset.get(targetId) || 0;
+  const nextSlice = allRecords.slice(currentOffset, currentOffset + studentHistoryPageSize);
+
+  for (const review of nextSlice) {
+    target.appendChild(studentTrainingReviewHistoryEntry(review));
+  }
+
+  const newOffset = currentOffset + nextSlice.length;
+  studentHistoryOffset.set(targetId, newOffset);
+
+  if (newOffset < allRecords.length) {
+    const loaderWrap = document.createElement('div');
+    loaderWrap.className = 'student-history-feed-loader';
+    loaderWrap.style.cssText = 'text-align: center; padding: 14px 0; margin-top: 8px;';
+
+    const moreBtn = document.createElement('button');
+    moreBtn.type = 'button';
+    moreBtn.className = 'button secondary';
+    moreBtn.style.cssText = 'width: auto; margin: 0 auto; padding: 8px 18px; font-size: 13px; font-weight: 700;';
+    moreBtn.textContent = `Carregar mais análises (${newOffset} de ${allRecords.length})`;
+    moreBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      renderStudentTrainingReviewHistory(allRecords, target, { memberId, append: true });
+    });
+
+    loaderWrap.appendChild(moreBtn);
+    target.appendChild(loaderWrap);
+
+    const scrollParent = target.closest('.modal-card') || window;
+    const checkScroll = () => {
+      if (!loaderWrap.isConnected) {
+        scrollParent.removeEventListener('scroll', checkScroll);
+        return;
+      }
+      const rect = loaderWrap.getBoundingClientRect();
+      const parentBottom = scrollParent === window ? window.innerHeight : scrollParent.getBoundingClientRect().bottom;
+      if (rect.top <= parentBottom + 120) {
+        scrollParent.removeEventListener('scroll', checkScroll);
+        renderStudentTrainingReviewHistory(allRecords, target, { memberId, append: true });
+      }
+    };
+    scrollParent.addEventListener('scroll', checkScroll, { passive: true });
+  }
 }
 
 async function loadStudentTrainingReviewHistory(memberId = activeStudentView?.id) {
@@ -479,11 +552,16 @@ async function loadStudentTrainingReviewHistory(memberId = activeStudentView?.id
   if (profileStatus) profileStatus.textContent = 'Carregando análises da ficha...';
   if (modalStatus && !$('student-ai-history-modal').classList.contains('hidden')) modalStatus.textContent = 'Carregando análises da ficha...';
   try {
+    const cached = studentHistoryCache.get(String(memberId));
+    if (cached && cached.length) {
+      renderStudentTrainingReviewHistory(cached, $('student-view-ai-history-list'), { memberId });
+      renderStudentTrainingReviewHistory(cached, $('student-ai-history-modal-list'), { memberId });
+    }
     const result = await req(`/api/training/plans/reviews/member?member_id=${encodeURIComponent(memberId)}&limit=50`);
     if (String(activeStudentView?.id || '') !== String(memberId)) return;
     const records = Array.isArray(result.data) ? result.data : [];
-    renderStudentTrainingReviewHistory(records, $('student-view-ai-history-list'));
-    renderStudentTrainingReviewHistory(records, $('student-ai-history-modal-list'));
+    renderStudentTrainingReviewHistory(records, $('student-view-ai-history-list'), { memberId });
+    renderStudentTrainingReviewHistory(records, $('student-ai-history-modal-list'), { memberId });
     if (profileStatus) profileStatus.textContent = '';
     if (modalStatus) modalStatus.textContent = '';
   } catch (error) {
@@ -536,9 +614,22 @@ function closeStudentViewModal() {
 async function openStudentView(item) {
   activeStudentView = item;
   setStudentViewTab('registration');
+  setStudentInfoTab('objective');
   $('student-view-name').textContent = item.name || 'Aluno';
   $('student-view-contact').textContent = [item.email, item.phone ? formatPhone(item.phone) : ''].filter(Boolean).join(' · ') || 'Sem contato informado';
-  $('student-view-status').textContent = item.status === 'active' ? 'Ativo' : 'Inativo';
+  const isActive = item.status === 'active';
+  const statusDot = $('student-view-status-dot');
+  if (statusDot) {
+    statusDot.className = `status-toggle-dot ${isActive ? 'is-active' : 'is-inactive'}`;
+    statusDot.title = isActive ? 'Aluno ativo (clique para desativar)' : 'Aluno inativo (clique para ativar)';
+    statusDot.onclick = async (event) => {
+      event.stopPropagation();
+      await toggle(item);
+      item.status = item.status === 'active' ? 'inactive' : 'active';
+      void openStudentView(item);
+    };
+  }
+  $('student-view-status').textContent = isActive ? 'Ativo' : 'Inativo';
   $('student-view-plan').textContent = item.plan_name || 'Sem plano ativo';
   $('student-view-training').textContent = item.training_plan_name ? `${item.training_plan_name} · ${item.training_exercise_count || 0} exercício(s) · ${item.training_plan_age_days || 0} dias` : 'Sem ficha ativa';
   $('student-view-assessment-age').textContent = item.latest_assessment_date ? `${dateOnly(item.latest_assessment_date)} · ${assessmentAge(item.latest_assessment_date)}` : 'Nunca avaliado';
@@ -1091,6 +1182,68 @@ async function resetOfflinePin() {
   }
 }
 
+async function lookupCep(rawCep) {
+  const clean = digits(rawCep);
+  if (clean.length !== 8) return;
+  const statusEl = $('student-cep-status');
+  if (statusEl) statusEl.textContent = 'Buscando CEP...';
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+    if (!res.ok) throw new Error('CEP não encontrado');
+    const data = await res.json();
+    if (data.erro) {
+      if (statusEl) statusEl.textContent = 'CEP não encontrado.';
+      return;
+    }
+    if (data.logradouro) setValue('student-street', data.logradouro);
+    if (data.bairro) setValue('student-neighborhood', data.bairro);
+    if (data.localidade) setValue('student-city', data.localidade);
+    if (data.uf) setValue('student-state', data.uf.toUpperCase());
+    setValue('student-country', 'Brasil');
+    if (statusEl) statusEl.textContent = '';
+    $('student-address-number')?.focus();
+  } catch (_) {
+    if (statusEl) statusEl.textContent = '';
+  }
+}
+
+const defaultCountries = [
+  'Brasil', 'Afeganistão', 'África do Sul', 'Albânia', 'Alemanha', 'Andorra', 'Angola', 'Argentina',
+  'Armênia', 'Austrália', 'Áustria', 'Azerbaijão', 'Bahamas', 'Bangladesh', 'Bélgica', 'Belize',
+  'Bolívia', 'Bósnia e Herzegovina', 'Botsuana', 'Bulgária', 'Cabo Verde', 'Camarões', 'Camboja',
+  'Canadá', 'Catar', 'Chile', 'China', 'Chipre', 'Colômbia', 'Coreia do Sul', 'Costa Rica',
+  'Croácia', 'Cuba', 'Dinamarca', 'Egito', 'Emirados Árabes Unidos', 'Equador', 'Eslováquia',
+  'Eslovênia', 'Espanha', 'Estados Unidos', 'Estônia', 'Filipinas', 'Finlândia', 'França',
+  'Gana', 'Grécia', 'Guatemala', 'Haiti', 'Honduras', 'Hungria', 'Índia', 'Indonésia', 'Irlanda',
+  'Islândia', 'Israel', 'Itália', 'Jamaica', 'Japão', 'Jordânia', 'Líbano', 'Luxemburgo',
+  'Malásia', 'Marrocos', 'México', 'Moçambique', 'Noruega', 'Nova Zelândia', 'Países Baixos',
+  'Panamá', 'Paraguai', 'Peru', 'Polônia', 'Portugal', 'Reino Unido', 'República Dominicana',
+  'República Tcheca', 'Romênia', 'Rússia', 'Senegal', 'Singapura', 'Suécia', 'Suíça', 'Tailândia',
+  'Turquia', 'Ucrânia', 'Uruguai', 'Venezuela', 'Vietnã'
+];
+
+async function populateCountries() {
+  const select = $('student-country');
+  if (!select) return;
+  const currentVal = select.value || 'Brasil';
+  let countries = [...defaultCountries];
+  try {
+    const res = await fetch('https://restcountries.com/v3.1/all?fields=translations,name').then((r) => r.json());
+    if (Array.isArray(res) && res.length) {
+      const names = res.map((c) => c.translations?.por?.common || c.name?.common).filter(Boolean);
+      countries = Array.from(new Set(['Brasil', ...names.sort((a, b) => a.localeCompare(b, 'pt-BR'))]));
+    }
+  } catch (_) {}
+  select.innerHTML = '';
+  for (const country of countries) {
+    const opt = document.createElement('option');
+    opt.value = country;
+    opt.textContent = country;
+    if (country === currentVal) opt.selected = true;
+    select.appendChild(opt);
+  }
+}
+
 $('new-student-button').onclick = () => openModal();
 $('student-search-toggle').onclick = () => {
   const wrapper = $('student-search-wrap');
@@ -1102,6 +1255,7 @@ $('close-student-modal').onclick = closeModal;
 $('close-student-view-modal').onclick = closeStudentViewModal;
 document.querySelectorAll('.student-form-tab').forEach((button) => button.addEventListener('click', () => setStudentFormTab(button.dataset.studentTab)));
 document.querySelectorAll('[data-student-view-tab]').forEach((button) => button.addEventListener('click', () => setStudentViewTab(button.dataset.studentViewTab)));
+document.querySelectorAll('[data-student-info-tab]').forEach((button) => button.addEventListener('click', () => setStudentInfoTab(button.dataset.studentInfoTab)));
 $('student-view-new-assessment').onclick = openStudentAssessmentModal;
 $('student-view-summary').onclick = openStudentSummary;
 $('student-view-ai-history-button').onclick = openStudentAiHistoryModal;
@@ -1122,7 +1276,15 @@ $('student-search').oninput = () => { currentPage = 1; render(); };
 $('student-cpf').addEventListener('input', (event) => { event.target.value = formatCpf(event.target.value); });
 $('student-phone').addEventListener('input', (event) => { if (phoneWidget?.getSelectedCountryData()?.iso2 === 'br') event.target.value = formatPhone(event.target.value); });
 $('student-emergency-phone').addEventListener('input', (event) => { event.target.value = formatPhone(event.target.value); });
-$('student-postal-code').addEventListener('input', (event) => { event.target.value = formatCep(event.target.value); });
+$('student-postal-code').addEventListener('input', (event) => {
+  event.target.value = formatCep(event.target.value);
+  const clean = digits(event.target.value);
+  if (clean.length === 8) void lookupCep(clean);
+});
+$('student-postal-code').addEventListener('blur', (event) => {
+  const clean = digits(event.target.value);
+  if (clean.length === 8) void lookupCep(clean);
+});
 $('close-credential-preview').onclick = closeCredentialPreview;
 $('reset-offline-pin').onclick = resetOfflinePin;
 $('credential-preview-modal').addEventListener('click', (event) => {
@@ -1133,4 +1295,5 @@ $('student-view-modal').addEventListener('click', (event) => {
 });
 AcademiaRichEditor.initAll().catch((error) => { $('students-status').textContent = error.message; });
 initPhoneWidget();
+void populateCountries();
 load();

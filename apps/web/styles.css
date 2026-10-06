@@ -48,9 +48,39 @@ input, button, select, textarea {
   color: var(--text);
 }
 textarea { min-height: 96px; resize: vertical; }
-button { cursor: pointer; border: 0; background: var(--accent); color: #fff; font-weight: 800; }
-button:disabled { opacity: .55; cursor: not-allowed; }
-.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
+button, .button, input[type="submit"] {
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(20, 120, 212, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-weight: 750;
+  border-radius: 9px;
+  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.24);
+  transition: all 0.16s ease-in-out;
+}
+button:hover, .button:hover, input[type="submit"]:hover {
+  background: rgba(20, 120, 212, 0.98);
+  box-shadow: 0 6px 20px rgba(20, 120, 212, 0.38);
+  transform: translateY(-1px);
+}
+button:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+.secondary, button.secondary, .button.secondary {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 9px !important;
+}
+.secondary:hover, button.secondary:hover, .button.secondary:hover {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(0, 0, 0, 0.22) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-1px) !important;
+}
 .login-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .login-links a, .link-button { width: auto; padding: 0; border: 0; background: transparent; color: var(--accent); font-weight: 800; text-decoration: none; box-shadow: none; }
 .mini-button { width: auto; padding: 6px 10px; margin-left: 8px; border-radius: 8px; font-size: 12px; }
