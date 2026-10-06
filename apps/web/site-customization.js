@@ -4,8 +4,7 @@
   const token = localStorage.getItem('academiaToken') || '';
 
   const statusEl = document.getElementById('customization-status');
-  const btnTop = document.getElementById('btn-save-top');
-  const btnBottom = document.getElementById('btn-save-bottom');
+  const btnSave = document.getElementById('btn-save-bottom');
 
   const fields = {
     home_hero_image: {
@@ -218,12 +217,10 @@
   }
 
   async function saveSettings() {
-    [btnTop, btnBottom].forEach((btn) => {
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'Salvando...';
-      }
-    });
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.textContent = 'Salvando...';
+    }
     setStatus('Salvando alterações...');
 
     const payload = {
@@ -263,17 +260,14 @@
     } catch (err) {
       setStatus(`Erro: ${err.message}`, true);
     } finally {
-      [btnTop, btnBottom].forEach((btn) => {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = 'Salvar alterações';
-        }
-      });
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Salvar alterações';
+      }
     }
   }
 
-  btnTop?.addEventListener('click', saveSettings);
-  btnBottom?.addEventListener('click', saveSettings);
+  btnSave?.addEventListener('click', saveSettings);
   document.getElementById('customization-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     saveSettings();
