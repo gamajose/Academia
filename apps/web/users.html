@@ -7,7 +7,8 @@
   <title>Funcionários - BlueREC Academia</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./users-access.css?v=20261004-3" />
+  <link rel="stylesheet" href="./product-layout.css?v=20261006-4" />
+  <link rel="stylesheet" href="./users-access.css?v=20261006-4" />
 </head>
 <body>
   <main class="app-shell employees-page">
@@ -32,7 +33,7 @@
         <div class="field employee-filter-search"><label for="employee-filter-term">Buscar</label><input id="employee-filter-term" type="search" placeholder="Nome, e-mail ou telefone" /></div>
         <div class="field"><label for="employee-filter-job">Cargo</label><select id="employee-filter-job"><option value="">Todos</option></select></div>
         <div class="field"><label for="employee-filter-profile">Permissão</label><select id="employee-filter-profile"><option value="">Todas</option></select></div>
-        <div class="field"><label for="employee-filter-status">Status</label><select id="employee-filter-status"><option value="">Todos</option><option value="active">Ativo agora</option><option value="inactive">Inativo</option><option value="disabled">Desativado</option></select></div>
+        <div class="field"><label for="employee-filter-status">Status</label><select id="employee-filter-status"><option value="">Todos</option><option value="active">Ativo</option><option value="disabled">Desativado</option></select></div>
       </div>
       <p class="status-line" id="users-status" aria-live="polite"></p>
       <div class="table-wrap">
@@ -52,9 +53,8 @@
         </table>
       </div>
       <div class="presence-legend" aria-label="Legenda de status">
-        <span><i class="presence-dot presence-active" aria-hidden="true"></i> Ativo agora</span>
-        <span><i class="presence-dot presence-inactive" aria-hidden="true"></i> Inativo</span>
-        <span><i class="presence-dot presence-disabled" aria-hidden="true"></i> Desativado</span>
+        <span><i class="status-toggle-dot is-active" aria-hidden="true"></i> Ativo</span>
+        <span><i class="status-toggle-dot is-inactive" aria-hidden="true"></i> Desativado</span>
       </div>
     </section>
   </main>
@@ -167,6 +167,6 @@
 
 <script src="./nav.js?v=20260719-1"></script>
 <script src="./icon-utils.js"></script>
-<script src="./users.js?v=20260719-1"></script>
+<script src="./users.js?v=20261006-4"></script>
 </body>
 </html>

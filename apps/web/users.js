@@ -114,12 +114,14 @@ function presenceFor(user) {
 function createPresenceCell(user) {
   const cell = document.createElement('td');
   cell.className = 'status-cell';
-  const presence = presenceFor(user);
+  const isActive = Boolean(user.is_active);
   const dot = document.createElement('button');
   dot.type = 'button';
-  dot.className = `presence-dot-btn presence-dot presence-${presence.key}`;
-  dot.title = `${presence.label} (clique para alternar status)`;
-  dot.setAttribute('aria-label', `${presence.label} - alternar status de ${user.name || 'funcionário'}`);
+  dot.className = `status-toggle-dot ${isActive ? 'is-active' : 'is-inactive'}`;
+  dot.title = isActive
+    ? `${user.name || 'Funcionário'} ativo (clique para desativar)`
+    : `${user.name || 'Funcionário'} desativado (clique para ativar)`;
+  dot.setAttribute('aria-label', `${isActive ? 'Desativar' : 'Ativar'} funcionário ${user.name || ''}`);
   dot.addEventListener('click', async (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -127,13 +129,16 @@ function createPresenceCell(user) {
   });
   const label = document.createElement('span');
   label.className = 'presence-label';
-  label.textContent = presence.label;
+  label.textContent = isActive ? 'Ativo' : 'Desativado';
   cell.append(dot, label);
   return cell;
 }
 
 function closeEmployeeMenus() {
-  document.querySelectorAll('.employee-menu-dropdown, .access-profile-menu-dropdown').forEach((menu) => menu.classList.add('hidden'));
+  document.querySelectorAll('.employee-menu-dropdown, .access-profile-menu-dropdown').forEach((menu) => {
+    menu.classList.add('hidden');
+    menu.classList.remove('open-upwards');
+  });
   document.querySelectorAll('.employee-menu-trigger, .access-profile-menu-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
   document.querySelectorAll('#users-table tr').forEach((el) => {
     el.classList.remove('menu-open');
@@ -201,6 +206,13 @@ function employeeRowMenu(user) {
     if (opening) {
       dropdown.classList.remove('hidden');
       trigger.setAttribute('aria-expanded', 'true');
+      const rect = trigger.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 190) {
+        dropdown.classList.add('open-upwards');
+      } else {
+        dropdown.classList.remove('open-upwards');
+      }
       if (tr) {
         tr.classList.add('menu-open');
         tr.style.zIndex = '1200';
@@ -360,10 +372,14 @@ function renderFilteredUsers() {
   const status = get('employee-filter-status')?.value || '';
   const filtered = userRows.filter((user) => {
     const searchText = normalizeEmployeeSearch(`${user.name || ''} ${user.email || ''} ${user.phone || ''}`);
+    const matchesStatus = !status
+      || (status === 'active' && Boolean(user.is_active))
+      || (status === 'disabled' && !user.is_active)
+      || (status === 'inactive' && !user.is_active);
     return (!term || searchText.includes(term) || (digits(term) && digits(searchText).includes(digits(term))))
       && (!job || user.job_title === job)
       && (!profile || user.access_profile === profile)
-      && (!status || presenceFor(user).key === status);
+      && matchesStatus;
   });
   renderUsers(filtered, employeeFiltersActive() ? 'Nenhum funcionário encontrado.' : 'Nenhum funcionário cadastrado.');
 }
@@ -457,6 +473,22 @@ function renderPermissionProfiles() {
   for (const profile of accessProfiles) {
     const card = document.createElement('article');
     card.className = 'access-profile-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Editar perfil ${profile.name}`);
+    card.title = `Clique para editar permissão "${profile.name}"`;
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('button, .access-profile-menu-dropdown')) return;
+      closeEmployeeMenus();
+      openPermissionsEditor(profile);
+    });
+    card.addEventListener('keydown', (event) => {
+      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button, .access-profile-menu-dropdown')) {
+        event.preventDefault();
+        closeEmployeeMenus();
+        openPermissionsEditor(profile);
+      }
+    });
 
     const info = document.createElement('div');
     const title = document.createElement('strong');
@@ -536,6 +568,13 @@ function permissionProfileMenu(profile) {
     if (opening) {
       dropdown.classList.remove('hidden');
       trigger.setAttribute('aria-expanded', 'true');
+      const rect = trigger.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 190) {
+        dropdown.classList.add('open-upwards');
+      } else {
+        dropdown.classList.remove('open-upwards');
+      }
     }
   });
 
@@ -562,6 +601,8 @@ function openPermissionsEditor(profile = null) {
   form.classList.remove('hidden');
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
+  const card = modal.querySelector('.modal-card') || modal;
+  if (card) card.scrollTop = 0;
   get('access-profile-id').value = profile?.id || '';
   get('access-profile-name').value = profile?.name || '';
   const title = get('access-profile-modal-title');
@@ -592,6 +633,8 @@ async function openPermissionsModal() {
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
   syncModalState();
+  const card = modal.querySelector('.modal-card') || modal;
+  if (card) card.scrollTop = 0;
   closePermissionsEditor();
   setPermissionsStatus('Carregando perfis...');
 
@@ -741,6 +784,8 @@ function openUserModal() {
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
   syncModalState();
+  const card = modal.querySelector('.modal-card') || modal;
+  if (card) card.scrollTop = 0;
   requestAnimationFrame(() => get('user-name')?.focus());
 }
 
