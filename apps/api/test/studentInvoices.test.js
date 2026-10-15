@@ -387,6 +387,62 @@ test('tela de matrículas (vinculos) possui campo para dia de vencimento mensal'
   assert.match(vinculosJs, /link-due-day/);
 });
 
+test('syncMembershipInvoices remove duplicatas pendentes do mesmo mês', async () => {
+  const deleted = [];
+  const fakeDb = [
+    {
+      id: 'p-1',
+      due_date: '2026-11-13',
+      status: 'pending',
+      amount_cents: 11990
+    },
+    {
+      id: 'p-1-dup',
+      due_date: '2026-11-13',
+      status: 'pending',
+      amount_cents: 11990
+    }
+  ];
+
+  const fakeQuery = async (sql, params) => {
+    if (sql.includes('SELECT id, amount_cents, status, due_date')) {
+      return { rows: fakeDb };
+    }
+    if (sql.includes('DELETE FROM payments WHERE id = $1')) {
+      deleted.push(params[0]);
+      return { rowCount: 1 };
+    }
+    return { rowCount: 0, rows: [] };
+  };
+
+  const activeMem = {
+    id: 'mem-1',
+    starts_at: '2026-05-13',
+    plan_name: 'Plano Black',
+    price_cents: 11990
+  };
+
+  await syncMembershipInvoices({
+    query: fakeQuery,
+    gymId: 'gym-1',
+    memberId: 'mem-1',
+    activeMem,
+    dueDay: 13,
+    today: new Date('2026-10-15T12:00:00Z')
+  });
+
+  assert.ok(deleted.includes('p-1-dup'));
+});
+
+test('arquivo de migracao 065 de higienizacao de faturas existe e possui instrucoes necessarias', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const sql = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'database', '065_cleanup_and_align_student_invoices.sql'), 'utf8');
+  assert.match(sql, /2026-05-13/);
+  assert.match(sql, /2026-11-13/);
+  assert.match(sql, /DELETE FROM payments/);
+});
+
 
 
 

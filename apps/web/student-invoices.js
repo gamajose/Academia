@@ -10,10 +10,33 @@
     if (!isoOrDateStr || isoOrDateStr === '-' || isoOrDateStr === 'null' || isoOrDateStr === 'undefined') return '-';
     try {
       const str = String(isoOrDateStr).trim();
-      const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+
+      // 1. Se já estiver no formato brasileiro DD/MM/YYYY ou americano MM/DD/YYYY
+      const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (slashMatch) {
+        const p1 = parseInt(slashMatch[1], 10);
+        const p2 = parseInt(slashMatch[2], 10);
+        const y = slashMatch[3];
+        if (p1 <= 12 && p2 > 12) {
+          return `${String(p2).padStart(2, '0')}/${String(p1).padStart(2, '0')}/${y}`;
+        }
+        return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${y}`;
+      }
+
+      // 2. Se for formato ISO YYYY-MM-DD
+      const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoMatch) {
+        return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
+      }
+
+      // 3. Se for string com data por extenso ou timestamp (ex: Sun Sep 13 2026...)
       const d = new Date(str);
-      if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+      if (!isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
       return str;
     } catch (_) {
       return String(isoOrDateStr);
@@ -22,19 +45,7 @@
 
   function formatDateTime(isoStr) {
     if (!isoStr || isoStr === '-' || isoStr === 'null' || isoStr === 'undefined') return '-';
-    try {
-      const d = new Date(isoStr);
-      if (isNaN(d.getTime())) return formatDate(isoStr);
-      return d.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (_) {
-      return formatDate(isoStr);
-    }
+    return formatDate(isoStr);
   }
 
   function renderSummary(summary) {
@@ -64,7 +75,7 @@
     const nextDue = get('summary-next-due');
     const nextDesc = get('summary-next-desc');
     if (nextDue) {
-      nextDue.textContent = summary.next_due_date ? formatDate(summary.next_due_date) : 'Nenhuma';
+      nextDue.textContent = summary.next_due_date_formatted || (summary.next_due_date ? formatDate(summary.next_due_date) : 'Nenhuma');
     }
     if (nextDesc) {
       if (summary.due_day) {
@@ -92,11 +103,11 @@
     const container = get('invoices-list-container');
     if (!container) return;
 
-    let filtered = allInvoices;
+    let filtered = allInvoices.filter((i) => i && i.id && (i.due_date || i.due_date_formatted));
     if (currentFilter === 'pending') {
-      filtered = allInvoices.filter((i) => i.status === 'pending' || i.status === 'overdue');
+      filtered = filtered.filter((i) => i.status === 'pending' || i.status === 'overdue');
     } else if (currentFilter === 'paid') {
-      filtered = allInvoices.filter((i) => i.status === 'paid');
+      filtered = filtered.filter((i) => i.status === 'paid');
     }
 
     if (filtered.length === 0) {
@@ -128,7 +139,7 @@
         paymentMetaHtml = `
           <div class="invoice-info-item">
             <span class="invoice-info-label">Dia que pagou</span>
-            <span class="invoice-info-value paid-at">${formatDateTime(inv.paid_at)}</span>
+            <span class="invoice-info-value paid-at">${formatDate(inv.paid_at)}</span>
           </div>
           <div class="invoice-info-item">
             <span class="invoice-info-label">Forma de pagamento</span>
@@ -176,7 +187,7 @@
       return `
         <article class="invoice-card ${inv.status}">
           <div class="invoice-card-top">
-            <h2 class="invoice-plan-name">${StudentPortal.escapeHtml(inv.plan_name)}</h2>
+            <h2 class="invoice-plan-name">${StudentPortal.escapeHtml(inv.plan_name || 'Plano Mensal')}</h2>
             ${statusBadgeHtml}
           </div>
 
@@ -187,7 +198,7 @@
             </div>
             <div class="invoice-info-item">
               <span class="invoice-info-label">Vencimento</span>
-              <span class="invoice-info-value">${formatDate(inv.due_date)}</span>
+              <span class="invoice-info-value">${inv.due_date_formatted || formatDate(inv.due_date)}</span>
             </div>
             ${paymentMetaHtml}
           </div>

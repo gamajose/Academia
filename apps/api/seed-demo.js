@@ -39,9 +39,14 @@ async function main() {
       for (const paidMonth of ['2026-05-13', '2026-06-13', '2026-07-13']) {
         await client.query(
           "INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,original_amount_cents,status,due_date,paid_at,method,notes) " +
-          "SELECT $1,$2,$3,$4,$4,'paid',$5,($5 || ' 10:00:00Z')::timestamptz,'demo','Mensalidade ' || $6 || ' - Vencimento todo dia 13' " +
-          "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND due_date=$5)",
+          "SELECT $1,$2,$3,$4,$4,'paid',$5::date,($5 || ' 10:00:00Z')::timestamptz,'demo','Mensalidade ' || $6 || ' - Vencimento todo dia 13' " +
+          "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND to_char(due_date, 'YYYY-MM') = to_char($5::date, 'YYYY-MM'))",
           [gym.id, person.id, membership.id, selected.price_cents, paidMonth, selected.name || 'Plano']
+        );
+        await client.query(
+          "UPDATE payments SET due_date = $3::date, status = 'paid', paid_at = COALESCE(paid_at, ($3 || ' 10:00:00Z')::timestamptz), membership_id = $4 " +
+          "WHERE gym_id = $1 AND member_id = $2 AND to_char(due_date, 'YYYY-MM') = to_char($3::date, 'YYYY-MM')",
+          [gym.id, person.id, paidMonth, membership.id]
         );
       }
 
@@ -49,18 +54,37 @@ async function main() {
       for (const overdueMonth of ['2026-08-13', '2026-09-13', '2026-10-13']) {
         await client.query(
           "INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,original_amount_cents,status,due_date,notes) " +
-          "SELECT $1,$2,$3,$4,$4,'pending',$5,'Mensalidade ' || $6 || ' - Vencimento todo dia 13' " +
-          "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND due_date=$5)",
+          "SELECT $1,$2,$3,$4,$4,'pending',$5::date,'Mensalidade ' || $6 || ' - Vencimento todo dia 13' " +
+          "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND to_char(due_date, 'YYYY-MM') = to_char($5::date, 'YYYY-MM'))",
           [gym.id, person.id, membership.id, selected.price_cents, overdueMonth, selected.name || 'Plano']
+        );
+        await client.query(
+          "UPDATE payments SET due_date = $3::date, membership_id = $4, notes = 'Mensalidade ' || $5 || ' - Vencimento todo dia 13' " +
+          "WHERE gym_id = $1 AND member_id = $2 AND to_char(due_date, 'YYYY-MM') = to_char($3::date, 'YYYY-MM') AND status <> 'paid'",
+          [gym.id, person.id, overdueMonth, membership.id, selected.name || 'Plano']
         );
       }
 
       // Pagamento futuro / próximo vencimento: 13/11
       await client.query(
         "INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,original_amount_cents,status,due_date,notes) " +
-        "SELECT $1,$2,$3,$4,$4,'pending','2026-11-13','Mensalidade ' || $5 || ' - Vencimento todo dia 13' " +
-        "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND due_date='2026-11-13')",
+        "SELECT $1,$2,$3,$4,$4,'pending','2026-11-13'::date,'Mensalidade ' || $5 || ' - Vencimento todo dia 13' " +
+        "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND to_char(due_date, 'YYYY-MM') = '2026-11')",
         [gym.id, person.id, membership.id, selected.price_cents, selected.name || 'Plano']
+      );
+      await client.query(
+        "UPDATE payments SET due_date = '2026-11-13'::date, membership_id = $3, notes = 'Mensalidade ' || $4 || ' - Vencimento todo dia 13' " +
+        "WHERE gym_id = $1 AND member_id = $2 AND to_char(due_date, 'YYYY-MM') = '2026-11' AND status <> 'paid'",
+        [gym.id, person.id, membership.id, selected.name || 'Plano']
+      );
+
+      // Remove qualquer pagamento pendente duplicado
+      await client.query(
+        "DELETE FROM payments p1 USING payments p2 " +
+        "WHERE p1.gym_id = $1 AND p1.member_id = $2 AND p2.gym_id = $1 AND p2.member_id = $2 " +
+        "AND p1.status = 'pending' AND p2.status = 'pending' AND p1.id <> p2.id " +
+        "AND to_char(p1.due_date, 'YYYY-MM') = to_char(p2.due_date, 'YYYY-MM') AND p1.created_at >= p2.created_at",
+        [gym.id, person.id]
       );
 
       if (person.email) {

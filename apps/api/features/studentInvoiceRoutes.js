@@ -164,7 +164,8 @@ async function syncMembershipInvoices({ query, gymId, memberId, activeMem, dueDa
   const existingRes = await query(
     `SELECT id, amount_cents, status, due_date::text AS due_date, paid_at, notes, membership_id
      FROM payments
-     WHERE gym_id = $1 AND member_id = $2`,
+     WHERE gym_id = $1 AND member_id = $2
+     ORDER BY CASE WHEN status = 'paid' THEN 0 ELSE 1 END, created_at ASC`,
     [gymId, memberId]
   );
 
@@ -176,6 +177,12 @@ async function syncMembershipInvoices({ query, gymId, memberId, activeMem, dueDa
       const ym = dueIso.slice(0, 7);
       if (!byMonth.has(ym)) {
         byMonth.set(ym, { ...row, due_date: dueIso });
+      } else {
+        // Se já existe um pagamento registrado para este mês e o pagamento atual for pendente duplicado, remove o duplicado
+        const existingRow = byMonth.get(ym);
+        if (row.status === 'pending' && (existingRow.status === 'paid' || existingRow.status === 'pending')) {
+          await query('DELETE FROM payments WHERE id = $1', [row.id]);
+        }
       }
     }
   }
@@ -200,13 +207,14 @@ async function syncMembershipInvoices({ query, gymId, memberId, activeMem, dueDa
     } else if (existing.status !== 'paid' && existing.status !== 'cancelled') {
       // Ajusta data de vencimento da fatura aberta para garantir que obedece ao dia X da matrícula
       const curDueStr = toIsoDate(existing.due_date);
-      if (curDueStr !== cycleDueDate) {
+      if (curDueStr !== cycleDueDate || !existing.membership_id) {
         await query(
           `UPDATE payments
            SET due_date = $1,
-               notes = CASE WHEN notes NOT LIKE '%Vencimento todo dia%' THEN COALESCE(notes, '') || ' - Vencimento todo dia ' || $2 ELSE notes END
-           WHERE id = $3`,
-          [cycleDueDate, effectiveDueDay, existing.id]
+               membership_id = COALESCE(membership_id, $2),
+               notes = CASE WHEN notes NOT LIKE '%Vencimento todo dia%' THEN COALESCE(notes, '') || ' - Vencimento todo dia ' || $3 ELSE notes END
+           WHERE id = $4`,
+          [cycleDueDate, activeMem.id, effectiveDueDay, existing.id]
         );
       }
     }
@@ -289,14 +297,14 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
     const paymentsRes = await query(
       `SELECT p.id, p.amount_cents, p.original_amount_cents, p.discount_cents, p.fee_cents,
               p.status, p.due_date::text AS due_date, p.paid_at, p.method, p.notes, p.created_at,
-              pl.name AS plan_name,
+              COALESCE(pl.name, 'Plano Mensal') AS plan_name,
               r.receipt_number
        FROM payments p
        LEFT JOIN memberships m ON m.id = p.membership_id
        LEFT JOIN plans pl ON pl.id = m.plan_id
        LEFT JOIN payment_receipts r ON r.payment_id = p.id
        WHERE p.gym_id = $1 AND p.member_id = $2
-       ORDER BY p.due_date DESC, p.created_at DESC`,
+       ORDER BY p.due_date ASC, p.created_at ASC`,
       [user.gym_id, user.member_id]
     );
 
@@ -341,7 +349,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       const whatsappUrl = buildWhatsAppInvoiceUrl({
         phone: memberData.phone,
         memberName: memberData.name,
-        planName: row.plan_name || 'Plano LOBO',
+        planName: row.plan_name || activeMem?.plan_name || 'Plano LOBO',
         amountFormatted,
         dueDateFormatted,
         dueDay,
@@ -360,11 +368,12 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
         status: effectiveStatus,
         raw_status: row.status,
         due_date: dueDateStr,
+        due_date_formatted: dueDateFormatted,
         paid_at: row.paid_at || null,
         method: row.method || null,
         method_label: METHOD_LABELS[row.method] || (row.method ? String(row.method) : '-'),
         notes: row.notes || null,
-        plan_name: row.plan_name || 'Mensalidade',
+        plan_name: row.plan_name || activeMem?.plan_name || 'Plano Mensal',
         receipt_number: row.receipt_number || null,
         is_overdue: isOverdue,
         days_overdue: daysOverdue,
@@ -396,6 +405,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
     futureInvoices.sort((a, b) => new Date(`${a.due_date}T00:00:00`) - new Date(`${b.due_date}T00:00:00`));
     const nextUpcoming = futureInvoices[0];
     const nextMonthDueDate = calculateCycleDueDate(dueDay, today.getFullYear(), today.getMonth() + 1);
+    const nextDueDateStr = nextUpcoming ? nextUpcoming.due_date : nextMonthDueDate;
 
     const summary = {
       is_up_to_date: isUpToDate,
@@ -405,8 +415,9 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       pending_count: pendingCount,
       paid_count: paidCount,
       total_invoices: invoices.length,
-      next_due_date: nextUpcoming ? nextUpcoming.due_date : nextMonthDueDate,
-      last_payment_date: invoices.find((i) => i.status === 'paid')?.paid_at || null,
+      next_due_date: nextDueDateStr,
+      next_due_date_formatted: formatBrDate(nextDueDateStr),
+      last_payment_date: invoices.slice().reverse().find((i) => i.status === 'paid')?.paid_at || null,
       due_day: dueDay,
       due_day_label: `Todo dia ${dueDay}`,
       enrollment_date: enrollmentDate
