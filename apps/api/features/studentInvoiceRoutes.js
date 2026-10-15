@@ -81,6 +81,14 @@ function formatBrDate(isoOrDateStr) {
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
+function getPublicAppUrl() {
+  const envUrl = process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL;
+  if (envUrl && !envUrl.includes('192.168.3.200') && !envUrl.includes('127.0.0.1') && !envUrl.includes('localhost')) {
+    return envUrl.replace(/\/$/, '');
+  }
+  return 'http://45.162.245.7:8084';
+}
+
 function buildWhatsAppInvoiceUrl({
   phone,
   memberName,
@@ -93,7 +101,8 @@ function buildWhatsAppInvoiceUrl({
   pixKey,
   receiverName,
   pixPayload,
-  publicAppUrl
+  publicAppUrl,
+  invoiceId
 }) {
   const cleanPhone = String(phone || '').replace(/\D/g, '');
   const waPhone = cleanPhone ? (cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`) : '';
@@ -119,6 +128,10 @@ function buildWhatsAppInvoiceUrl({
       `⚡ *PAGAMENTO VIA PIX:*\nAcesse o portal no link abaixo para pagar via Pix com validação automática instantânea!\n\n`;
   }
 
+  const invoiceUrl = invoiceId
+    ? `${publicAppUrl}/fatura.html?id=${invoiceId}`
+    : `${publicAppUrl}/fatura.html`;
+
   const message =
     `*Academia LOBO - Fatura de Mensalidade* 🐺\n\n` +
     `Olá, *${memberName || 'Aluno'}*!\n\n` +
@@ -129,8 +142,8 @@ function buildWhatsAppInvoiceUrl({
     pixBlock +
     `💵 *PAGAMENTO EM DINHEIRO:*\n` +
     `Se preferir pagar em dinheiro, compareça à recepção da academia que o administrador dará a baixa no sistema.\n\n` +
-    `🌐 *Ver fatura e QR Code online:*\n` +
-    `${publicAppUrl}/student-invoices.html`;
+    `🌐 *Ver fatura online e pagar com QR Code (sem login):*\n` +
+    `${invoiceUrl}`;
 
   const encoded = encodeURIComponent(message);
   return waPhone
@@ -233,7 +246,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
   if (!url.pathname.startsWith('/api/student/invoices')) return false;
   if (!isStudent(user)) return send(res, 401, { error: 'nao_autorizado' });
 
-  const publicAppUrl = String(process.env.APP_PUBLIC_URL || process.env.PUBLIC_WEB_URL || 'http://192.168.3.200:8084').replace(/\/$/, '');
+  const publicAppUrl = getPublicAppUrl();
 
   // GET /api/student/invoices - Lista faturas do aluno e resumo financeiro
   if (req.method === 'GET' && url.pathname === '/api/student/invoices') {
@@ -245,7 +258,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
     const gym = gymRes.rows[0] || {};
     const paymentSettings = gym.payment_settings || {};
     const pixSettings = paymentSettings.pix || {};
-    const pixKey = gym.pix_key || pixSettings.key || '';
+    const pixKey = gym.pix_key || pixSettings.key || process.env.DEFAULT_PIX_KEY || 'financeiro@academialobo.com.br';
     const gymPix = {
       has_pix: Boolean(pixKey),
       key: pixKey,
@@ -358,7 +371,8 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
         pixKey: gymPix.key,
         receiverName: gymPix.receiver_name,
         pixPayload,
-        publicAppUrl
+        publicAppUrl,
+        invoiceId: row.id
       });
 
       return {
@@ -381,6 +395,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
         due_day_label: `Todo dia ${dueDay}`,
         whatsapp_url: whatsappUrl,
         pix_payload: pixPayload,
+        public_url: `${publicAppUrl}/fatura.html?id=${row.id}`,
         can_pay: effectiveStatus === 'pending' || effectiveStatus === 'overdue'
       };
     });
@@ -467,7 +482,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
     const gym = gymRes.rows[0] || {};
     const paymentSettings = gym.payment_settings || {};
     const pixSettings = paymentSettings.pix || {};
-    const pixKey = gym.pix_key || pixSettings.key || '';
+    const pixKey = gym.pix_key || pixSettings.key || process.env.DEFAULT_PIX_KEY || 'financeiro@academialobo.com.br';
 
     if (!pixKey) {
       return send(res, 400, {
@@ -517,7 +532,8 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       pixKey,
       receiverName,
       pixPayload,
-      publicAppUrl
+      publicAppUrl,
+      invoiceId: payment.id
     });
 
     return send(res, 200, {
@@ -529,6 +545,8 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       due_day: dueDay,
       due_day_label: `Todo dia ${dueDay}`,
       whatsapp_url: whatsappUrl,
+      public_url: `${publicAppUrl}/fatura.html?id=${payment.id}`,
+      gym_phone: gym.phone || '',
       pix_key: pixKey,
       receiver_name: receiverName,
       bank,

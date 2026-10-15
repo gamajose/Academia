@@ -215,10 +215,20 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 8px;">
-          <a id="pix-whatsapp-link" href="#" target="_blank" class="button" style="background: #25d366; color: #ffffff; border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px 18px; border-radius: 12px;">
+          <button id="pix-whatsapp-send-btn" type="button" class="button" style="background: #25d366; color: #ffffff; border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px 18px; border-radius: 12px; cursor: pointer; width: 100%;">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.41a8.175 8.175 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.31a8.167 8.167 0 0 1-1.25-4.47c0-4.54 3.7-8.24 8.24-8.24h.05zm-3.52 4.88c-.2 0-.42.02-.63.02-.31 0-.6.1-.8.31-.2.21-.78.76-.78 1.86s.8 2.16.91 2.31c.11.15 1.54 2.41 3.79 3.29.54.21.96.33 1.29.43.54.17 1.04.14 1.43.09.44-.07 1.34-.55 1.53-1.08.19-.53.19-.99.13-1.08-.06-.09-.22-.15-.46-.27-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.63.78-.77.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42z"/></svg>
-            <span>Cobrar no WhatsApp (1-Clique)</span>
-          </a>
+            <span id="pix-whatsapp-send-label">Enviar no WhatsApp (Automático)</span>
+          </button>
+          <div id="pix-whatsapp-status-msg" style="display: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center;"></div>
+          <div style="display: flex; gap: 8px;">
+            <button id="pix-copy-link-btn" type="button" class="button secondary" style="flex: 1; font-size: 13px; padding: 10px; border-radius: 10px; font-weight: 700;">
+              🔗 Copiar Link da Fatura
+            </button>
+            <a id="pix-open-invoice-link" href="#" target="_blank" class="button secondary" style="font-size: 13px; padding: 10px 14px; border-radius: 10px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px;">
+              <span>Ver Fatura</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
 
           <div class="pix-local-pay-box" style="width: 100%; padding: 12px; background: rgba(56, 189, 248, 0.06); border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.2); text-align: left;">
             <label for="pix-payment-method-select" style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px; color: var(--text);">

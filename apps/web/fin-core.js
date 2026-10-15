@@ -657,33 +657,21 @@ function openPixModal(item) {
     });
   }
 
-  // WhatsApp Pre-formatted Message
-  const phone = (item.phone || '').replace(/\D/g, '');
-  const waPhone = phone ? (phone.startsWith('55') ? phone : `55${phone}`) : '';
-  const dueDay = item.due_date ? String(item.due_date).split('T')[0].split('-')[2] || '10' : '10';
-  const portalUrl = `${window.location.origin}/student-invoices.html`;
+  // Public Invoice URL (External IP)
+  const invoicePublicUrl = `http://45.162.245.7:8084/fatura.html?id=${item.id}`;
+  const openLink = f('pix-open-invoice-link');
+  if (openLink) openLink.href = invoicePublicUrl;
 
-  const waMsg =
-    `*${gymName} - Fatura de Mensalidade* 🐺\n\n` +
-    `Olá, *${item.member_name || 'Aluno'}*!\n\n` +
-    `Sua fatura de mensalidade está pronta para pagamento:\n\n` +
-    `💰 *Valor:* ${formattedAmount}\n` +
-    `📅 *Vencimento:* ${formattedDueDate} (Vencimento todo dia ${dueDay})\n` +
-    `📌 *Situação:* ${label}\n\n` +
-    `👉 *ESCOLHA COMO DESEJA PAGAR:*\n\n` +
-    `1️⃣ *OPÇÃO 1 - PAGAR COM PIX (Instantâneo / 24h):*\n` +
-    `Pague pelo app do seu banco com o Pix Copia e Cola abaixo. A confirmação é *validada automaticamente na hora* direto no site:\n\n` +
-    `\`\`\`${pixPayload}\`\`\`\n\n` +
-    `2️⃣ *OPÇÃO 2 - PAGAR NO LOCAL (Recepção):*\n` +
-    `Prefere pagar presencialmente na academia? Compareça à recepção e pague em *Dinheiro, Cartão de Débito, Cartão de Crédito ou Pix no balcão*. O administrador confirmará a baixa no sistema.\n\n` +
-    `🌐 *Ver fatura e pagar online:*\n` +
-    `${portalUrl}`;
-
-  const waLink = f('pix-whatsapp-link');
-  if (waLink) {
-    waLink.href = waPhone
-      ? `https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
+  const statusMsg = f('pix-whatsapp-status-msg');
+  if (statusMsg) {
+    statusMsg.style.display = 'none';
+    statusMsg.innerHTML = '';
+  }
+  const sendBtn = f('pix-whatsapp-send-btn');
+  const sendLabel = f('pix-whatsapp-send-label');
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    if (sendLabel) sendLabel.textContent = 'Enviar no WhatsApp (Automático)';
   }
 
   modal.classList.remove('hidden');
@@ -699,6 +687,71 @@ f('pix-copy-btn')?.addEventListener('click', () => {
       btn.textContent = '✓ Copiado!';
       setTimeout(() => { btn.textContent = orig; }, 2000);
     });
+  }
+});
+
+// Copy Invoice public link button
+f('pix-copy-link-btn')?.addEventListener('click', () => {
+  if (!currentPixItem) return;
+  const url = `http://45.162.245.7:8084/fatura.html?id=${currentPixItem.id}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = f('pix-copy-link-btn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Link Copiado!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+});
+
+// Enviar fatura no WhatsApp diretamente da academia para o aluno (Automático)
+f('pix-whatsapp-send-btn')?.addEventListener('click', async () => {
+  if (!currentPixItem) return;
+  const sendBtn = f('pix-whatsapp-send-btn');
+  const sendLabel = f('pix-whatsapp-send-label');
+  const statusMsg = f('pix-whatsapp-status-msg');
+
+  sendBtn.disabled = true;
+  if (sendLabel) sendLabel.textContent = 'Enviando WhatsApp...';
+  if (statusMsg) {
+    statusMsg.style.display = 'block';
+    statusMsg.style.background = 'rgba(56, 189, 248, 0.1)';
+    statusMsg.style.color = '#38bdf8';
+    statusMsg.innerHTML = 'Enviando cobrança diretamente pelo WhatsApp da academia para o aluno...';
+  }
+
+  try {
+    const res = await rq(`/api/finance/invoices/${currentPixItem.id}/send-whatsapp`, {
+      method: 'POST'
+    });
+
+    if (res.delivered) {
+      if (sendLabel) sendLabel.textContent = '✓ Mensagem Enviada!';
+      if (statusMsg) {
+        statusMsg.style.background = 'rgba(34, 197, 94, 0.15)';
+        statusMsg.style.color = '#22c55e';
+        statusMsg.innerHTML = `✅ Fatura enviada com sucesso para o WhatsApp do aluno (${res.phone || ''})!`;
+      }
+    } else {
+      if (sendLabel) sendLabel.textContent = 'Enviar no WhatsApp';
+      sendBtn.disabled = false;
+      if (statusMsg) {
+        statusMsg.style.background = 'rgba(245, 158, 11, 0.15)';
+        statusMsg.style.color = '#f59e0b';
+        const fallbackLink = res.fallback_url
+          ? `<br><a href="${res.fallback_url}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; margin-top: 6px; display: inline-block;">👉 Abrir no WhatsApp Web para enviar manualmente</a>`
+          : '';
+        statusMsg.innerHTML = `⚠️ ${res.message || 'Gateway automático ainda não conectado.'}${fallbackLink}`;
+      }
+    }
+  } catch (err) {
+    if (sendLabel) sendLabel.textContent = 'Tentar Novamente';
+    sendBtn.disabled = false;
+    if (statusMsg) {
+      statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
+      statusMsg.style.color = '#ef4444';
+      statusMsg.innerHTML = `❌ Erro ao enviar: ${err.message}`;
+    }
   }
 });
 

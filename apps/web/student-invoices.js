@@ -158,29 +158,32 @@
       }
 
       let footerActionHtml = '';
+      const invoicePublicHref = `./fatura.html?id=${inv.id}`;
       if (inv.can_pay) {
-        const waLinkHtml = inv.whatsapp_url
-          ? `<a href="${inv.whatsapp_url}" target="_blank" rel="noopener noreferrer" class="invoice-wa-btn" title="Enviar dados desta fatura no WhatsApp">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.41a8.175 8.175 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.31a8.167 8.167 0 0 1-1.25-4.47c0-4.54 3.7-8.24 8.24-8.24h.05zm-3.52 4.88c-.2 0-.42.02-.63.02-.31 0-.6.1-.8.31-.2.21-.78.76-.78 1.86s.8 2.16.91 2.31c.11.15 1.54 2.41 3.79 3.29.54.21.96.33 1.29.43.54.17 1.04.14 1.43.09.44-.07 1.34-.55 1.53-1.08.19-.53.19-.99.13-1.08-.06-.09-.22-.15-.46-.27-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.63.78-.77.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42z"/></svg>
-              <span>WhatsApp</span>
-            </a>`
-          : '';
-
         footerActionHtml = `
           <div class="invoice-card-actions">
             <button type="button" class="invoice-pay-btn" data-pay-id="${inv.id}">
               <svg viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2zm0 3.83L18.17 12 12 18.17 5.83 12 12 5.83z"/></svg>
               <span>Pagar com Pix</span>
             </button>
-            ${waLinkHtml}
+            <a href="${invoicePublicHref}" target="_blank" class="invoice-link-btn" title="Ver fatura online e QR Code">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <span>Ver Fatura</span>
+            </a>
           </div>
         `;
-      } else if (inv.receipt_number) {
+      } else {
         footerActionHtml = `
-          <span class="invoice-receipt-tag">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Comprovante: ${StudentPortal.escapeHtml(inv.receipt_number)}
-          </span>
+          <div class="invoice-card-actions">
+            ${inv.receipt_number ? `<span class="invoice-receipt-tag">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Comprovante: ${StudentPortal.escapeHtml(inv.receipt_number)}
+            </span>` : ''}
+            <a href="${invoicePublicHref}" target="_blank" class="invoice-link-btn" title="Ver recibo e fatura quitada">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Ver Recibo</span>
+            </a>
+          </div>
         `;
       }
 
@@ -297,14 +300,23 @@
         }
       }
 
-      // Atualiza link de WhatsApp no modal
-      const waModalBtn = get('pix-modal-wa-btn');
-      if (waModalBtn) {
-        if (result.whatsapp_url) {
-          waModalBtn.href = result.whatsapp_url;
-          waModalBtn.classList.remove('hidden');
+      // Atualiza link de visualização direta da fatura
+      const linkModalBtn = get('pix-modal-link-btn');
+      if (linkModalBtn) {
+        linkModalBtn.href = `./fatura.html?id=${paymentId}`;
+      }
+
+      // Atualiza botão de contato com a recepção no WhatsApp
+      const supportBtn = get('pix-modal-support-btn');
+      if (supportBtn) {
+        const gymPhone = String(result.gym_phone || '').replace(/\D/g, '');
+        if (gymPhone) {
+          const waGym = gymPhone.startsWith('55') ? gymPhone : `55${gymPhone}`;
+          const msg = encodeURIComponent(`Olá! Sou aluno da academia e gostaria de tirar uma dúvida sobre a minha fatura (#${paymentId.slice(0, 8).toUpperCase()}).`);
+          supportBtn.href = `https://api.whatsapp.com/send?phone=${waGym}&text=${msg}`;
+          supportBtn.classList.remove('hidden');
         } else {
-          waModalBtn.classList.add('hidden');
+          supportBtn.classList.add('hidden');
         }
       }
 

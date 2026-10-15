@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fatura de Mensalidade - Academia LOBO</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
+  <style>
+    :root {
+      --card-bg: #0b1329;
+      --card-border: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --brand-primary: #3b82f6;
+      --brand-hover: #2563eb;
+      --badge-ok-bg: rgba(34, 197, 94, 0.15);
+      --badge-ok-color: #22c55e;
+      --badge-bad-bg: rgba(239, 68, 68, 0.15);
+      --badge-bad-color: #ef4444;
+      --badge-warn-bg: rgba(245, 158, 11, 0.15);
+      --badge-warn-color: #f59e0b;
+    }
+    body {
+      background-color: #030712;
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 24px 16px 48px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      box-sizing: border-box;
+    }
+    .fatura-container {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .fatura-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .fatura-brand img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+    .fatura-brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .fatura-brand-name span {
+      color: var(--brand-primary);
+    }
+    .fatura-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .fatura-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .fatura-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .fatura-member {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .fatura-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .fatura-badge.ok {
+      background: var(--badge-ok-bg);
+      color: var(--badge-ok-color);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .fatura-badge.bad {
+      background: var(--badge-bad-bg);
+      color: var(--badge-bad-color);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .fatura-badge.warn {
+      background: var(--badge-warn-bg);
+      color: var(--badge-warn-color);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .fatura-amount-box {
+      text-align: center;
+      padding: 18px 0;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 14px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .fatura-amount-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .fatura-amount-value {
+      font-size: 36px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-top: 4px;
+      letter-spacing: -1px;
+    }
+    .fatura-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .fatura-info-cell {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 14px;
+      border-radius: 12px;
+    }
+    .fatura-info-cell span {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .fatura-info-cell strong {
+      display: block;
+      font-size: 15px;
+      color: #ffffff;
+      margin-top: 3px;
+    }
+    .pix-section {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+    .pix-title {
+      font-size: 15px;
+      font-weight: 750;
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #38bdf8;
+    }
+    .pix-qr-wrap {
+      display: inline-block;
+      padding: 12px;
+      background: #ffffff;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .pix-qr-wrap img {
+      display: block;
+      width: 200px;
+      height: 200px;
+    }
+    .pix-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pix-textarea {
+      width: 100%;
+      height: 64px;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #94a3b8;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 10px;
+      resize: none;
+      box-sizing: border-box;
+    }
+    .btn-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 750;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .btn-copy {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+    }
+    .btn-copy:hover {
+      background: #334155;
+    }
+    .btn-confirm {
+      background: #16a34a;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+    .btn-confirm:hover {
+      background: #15803d;
+    }
+    .btn-wa {
+      background: #25d366;
+      color: #ffffff;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+    .btn-wa:hover {
+      background: #1ebe5d;
+    }
+    .success-box {
+      text-align: center;
+      padding: 32px 16px;
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(34, 197, 94, 0.15);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #22c55e;
+      margin-bottom: 16px;
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 8px;
+    }
+    .success-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0 0 20px;
+    }
+    .receipt-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .receipt-box strong {
+      color: #ffffff;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .fatura-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .status-alert {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      display: none;
+    }
+    .status-alert.error {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="fatura-container">
+    <a href="./index.html" class="fatura-brand">
+      <img src="./blue-rec-logo.png" alt="Academia LOBO" />
+      <span class="fatura-brand-name"><span>Academia</span> LOBO</span>
+    </a>
+
+    <div id="status-error" class="status-alert error hidden"></div>
+
+    <main class="fatura-card" id="fatura-card">
+      <div id="loading-state" style="text-align: center; padding: 48px 16px;">
+        <svg class="spinner" viewBox="0 0 50 50" style="width: 40px; height: 40px; stroke: var(--brand-primary);"><circle cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle></svg>
+        <p style="margin-top: 16px; color: var(--text-muted); font-size: 14px;">Carregando dados da fatura...</p>
+      </div>
+
+      <div id="fatura-content" class="hidden">
+        <header class="fatura-header">
+          <div>
+            <h1 class="fatura-title" id="fatura-plan-name">Plano Mensal</h1>
+            <div class="fatura-member" id="fatura-member-name">Aluno</div>
+          </div>
+          <span class="fatura-badge" id="fatura-status-badge">Pendente</span>
+        </header>
+
+        <div class="fatura-amount-box">
+          <div class="fatura-amount-label">Valor a pagar</div>
+          <div class="fatura-amount-value" id="fatura-amount">R$ 0,00</div>
+        </div>
+
+        <div class="fatura-info-grid">
+          <div class="fatura-info-cell">
+            <span>Data de Vencimento</span>
+            <strong id="fatura-due-date">--/--/----</strong>
+          </div>
+          <div class="fatura-info-cell">
+            <span>Identificador / Fatura</span>
+            <strong id="fatura-code">#---</strong>
+          </div>
+        </div>
+
+        <!-- Seção de Pagamento Pix (visível se pendente ou em atraso) -->
+        <section id="pix-section" class="pix-section hidden">
+          <h2 class="pix-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2L2 12l10 10 10-10L12 2zm0 3.83L18.17 12 12 18.17 5.83 12 12 5.83z"/></svg>
+            Pagar com Pix Instantâneo
+          </h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 16px;">
+            Aponte a câmera do seu banco para o QR Code ou copie o código Pix abaixo. A baixa é validada <strong>automaticamente no sistema</strong>.
+          </p>
+
+          <div class="pix-qr-wrap" id="pix-qr-wrap">
+            <img id="pix-qr-img" alt="QR Code Pix" />
+          </div>
+
+          <div class="pix-input-wrap">
+            <textarea id="pix-copia-cola" class="pix-textarea" readonly aria-label="Código Pix Copia e Cola"></textarea>
+            <button type="button" class="btn-action btn-copy" id="btn-copy-pix">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copiar Código Pix</span>
+            </button>
+            <button type="button" class="btn-action btn-confirm" id="btn-confirm-pix">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Já fiz o Pix (Validar Baixa)</span>
+            </button>
+          </div>
+
+          <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 12px; color: var(--text-muted);">
+            💵 <strong>Pagamento presencial:</strong> Se preferir pagar em dinheiro ou cartão, dirija-se à recepção da academia para dar baixa no balcão.
+          </div>
+        </section>
+
+        <!-- Seção de Pagamento Confirmado / Recibo (visível se pago) -->
+        <section id="paid-section" class="success-box hidden">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2 class="success-title">Pagamento Confirmado!</h2>
+          <p class="success-desc">
+            Esta mensalidade já foi quitada e a baixa foi confirmada automaticamente no sistema da academia.
+          </p>
+          <div class="receipt-box">
+            <div>Comprovante: <strong id="receipt-number">-</strong></div>
+            <div style="margin-top: 4px;">Data da confirmação: <strong id="receipt-date">-</strong></div>
+          </div>
+        </section>
+
+        <!-- Botão de Contato com a Academia (Dúvidas sobre a fatura) -->
+        <a id="btn-wa-support" href="#" target="_blank" rel="noopener noreferrer" class="btn-action btn-wa hidden">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.41a8.175 8.175 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.31a8.167 8.167 0 0 1-1.25-4.47c0-4.54 3.7-8.24 8.24-8.24h.05zm-3.52 4.88c-.2 0-.42.02-.63.02-.31 0-.6.1-.8.31-.2.21-.78.76-.78 1.86s.8 2.16.91 2.31c.11.15 1.54 2.41 3.79 3.29.54.21.96.33 1.29.43.54.17 1.04.14 1.43.09.44-.07 1.34-.55 1.53-1.08.19-.53.19-.99.13-1.08-.06-.09-.22-.15-.46-.27-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.63.78-.77.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42z"/></svg>
+          <span>Dúvidas? Fale com a Academia no WhatsApp</span>
+        </a>
+      </div>
+    </main>
+
+    <footer class="fatura-footer">
+      Ambiente seguro · Academia LOBO &copy; 2026 · Todos os direitos reservados.
+    </footer>
+  </div>
+
+  <script src="./fatura.js?v=20261015-1"></script>
+</body>
+</html>

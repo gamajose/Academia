@@ -26,6 +26,7 @@ const { handleFinanceSalesRoutes } = require('./features/financeSalesRoutes');
 const { handlePaymentWebhookRoutes } = require('./features/paymentWebhookRoutes');
 const { handleEditorRoutes } = require('./features/editorRoutes');
 const { handleAccessProfileRoutes } = require('./features/accessProfileRoutes');
+const { handlePublicInvoiceRoutes } = require('./features/publicInvoiceRoutes');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -268,6 +269,8 @@ const server = http.createServer(async (req, res) => {
     const helpers = { send: (response, status, data) => send(req, response, status, data), body, query };
     const paymentWebhookHandled = await handlePaymentWebhookRoutes(req, res, url, helpers);
     if (paymentWebhookHandled !== false) return paymentWebhookHandled;
+    const publicInvoiceHandled = await handlePublicInvoiceRoutes(req, res, null, url, helpers);
+    if (publicInvoiceHandled !== false) return publicInvoiceHandled;
     const publicFinanceHandled = await handleFinanceSalesRoutes(req, res, null, url, helpers);
     if (publicFinanceHandled !== false) return publicFinanceHandled;
     if (url.pathname.startsWith('/api/public')) return handleMemberDetailRoutes(req, res, null, url, helpers);
@@ -316,6 +319,8 @@ const server = http.createServer(async (req, res) => {
     if (signupHandled !== false) return signupHandled;
     const studentInvoiceHandled = await handleStudentInvoiceRoutes(req, res, user, url, helpers);
     if (studentInvoiceHandled !== false) return studentInvoiceHandled;
+    const adminInvoiceHandled = await handlePublicInvoiceRoutes(req, res, user, url, helpers);
+    if (adminInvoiceHandled !== false) return adminInvoiceHandled;
     const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
     if (studentHandled !== false) return studentHandled;
     const accessHandled = await handleAccessRoutes(req, res, user, url, helpers);

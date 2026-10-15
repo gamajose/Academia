@@ -169,7 +169,8 @@ test('buildWhatsAppInvoiceUrl formata mensagem completa com opções de pagament
     pixKey: '12345678000199',
     receiverName: 'Academia LOBO',
     pixPayload: '00020126...6304ABCD',
-    publicAppUrl: 'http://192.168.3.200:8084'
+    publicAppUrl: 'http://45.162.245.7:8084',
+    invoiceId: 'inv-123'
   });
 
   assert.ok(url.startsWith('https://wa.me/5511999998888?text='));
@@ -182,7 +183,7 @@ test('buildWhatsAppInvoiceUrl formata mensagem completa com opções de pagament
   assert.ok(decoded.includes('PAGAMENTO EM DINHEIRO'));
   assert.ok(decoded.includes('12345678000199'));
   assert.ok(decoded.includes('00020126...6304ABCD'));
-  assert.ok(decoded.includes('student-invoices.html'));
+  assert.ok(decoded.includes('fatura.html?id=inv-123'));
 });
 
 test('interface de faturas remove textos antigos, exibe apenas dois cards lado a lado sem seção de método', () => {
