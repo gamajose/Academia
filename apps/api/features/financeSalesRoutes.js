@@ -181,9 +181,90 @@ async function cashStatus(res,user,helpers){
   if(!isManager(user)) return helpers.send(res,403,{error:'sem_permissao'});
   const result=await helpers.query(
     `SELECT cs.*,
+      u1.name AS opened_by_name,
+      u2.name AS closed_by_name,
       COALESCE((SELECT sum(CASE WHEN movement_type IN ('income','deposit') THEN amount_cents ELSE -amount_cents END) FROM cash_movements WHERE cash_session_id=cs.id),0)::bigint AS movements_cents
-     FROM cash_sessions cs WHERE gym_id=$1 ORDER BY opened_at DESC LIMIT 20`,[user.gym_id]);
+     FROM cash_sessions cs
+     LEFT JOIN users u1 ON u1.id = cs.opened_by
+     LEFT JOIN users u2 ON u2.id = cs.closed_by
+     WHERE cs.gym_id=$1 ORDER BY cs.opened_at DESC LIMIT 30`,[user.gym_id]);
   return helpers.send(res,200,{data:result.rows});
+}
+
+async function currentCash(res,user,helpers){
+  if(!isManager(user)) return helpers.send(res,403,{error:'sem_permissao'});
+  const openSession = await helpers.query(
+    `SELECT cs.*, u.name AS opened_by_name
+     FROM cash_sessions cs
+     LEFT JOIN users u ON u.id = cs.opened_by
+     WHERE cs.gym_id = $1 AND cs.status = 'open'
+     ORDER BY cs.opened_at DESC LIMIT 1`,
+    [user.gym_id]
+  );
+  if (!openSession.rowCount) {
+    return helpers.send(res, 200, { open: false, session: null, movements: [], summary: null });
+  }
+  const session = openSession.rows[0];
+  const movements = await helpers.query(
+    `SELECT cm.*, u.name AS created_by_name, m.name AS member_name
+     FROM cash_movements cm
+     LEFT JOIN users u ON u.id = cm.created_by
+     LEFT JOIN payments p ON p.id = cm.payment_id
+     LEFT JOIN members m ON m.id = p.member_id
+     WHERE cm.cash_session_id = $1 AND cm.gym_id = $2
+     ORDER BY cm.created_at DESC`,
+    [session.id, user.gym_id]
+  );
+  let incomeCents = 0;
+  let expenseCents = 0;
+  for (const m of movements.rows) {
+    const amt = Number(m.amount_cents || 0);
+    if (m.movement_type === 'income' || m.movement_type === 'deposit') {
+      incomeCents += amt;
+    } else {
+      expenseCents += amt;
+    }
+  }
+  const openingCents = Number(session.opening_balance_cents || 0);
+  const currentBalanceCents = openingCents + incomeCents - expenseCents;
+  return helpers.send(res, 200, {
+    open: true,
+    session,
+    movements: movements.rows,
+    summary: {
+      opening_balance_cents: openingCents,
+      income_cents: incomeCents,
+      expense_cents: expenseCents,
+      current_balance_cents: currentBalanceCents,
+      movements_count: movements.rowCount
+    }
+  });
+}
+
+async function sessionMovements(res,user,url,helpers){
+  if(!isManager(user)) return helpers.send(res,403,{error:'sem_permissao'});
+  const sessionId = url.searchParams.get('id');
+  if (!sessionId) return helpers.send(res, 400, { error: 'id_obrigatorio' });
+  const sessionRes = await helpers.query(
+    `SELECT cs.*, u1.name AS opened_by_name, u2.name AS closed_by_name
+     FROM cash_sessions cs
+     LEFT JOIN users u1 ON u1.id = cs.opened_by
+     LEFT JOIN users u2 ON u2.id = cs.closed_by
+     WHERE cs.id = $1 AND cs.gym_id = $2`,
+    [sessionId, user.gym_id]
+  );
+  if (!sessionRes.rowCount) return helpers.send(res, 404, { error: 'sessao_nao_encontrada' });
+  const movements = await helpers.query(
+    `SELECT cm.*, u.name AS created_by_name, m.name AS member_name
+     FROM cash_movements cm
+     LEFT JOIN users u ON u.id = cm.created_by
+     LEFT JOIN payments p ON p.id = cm.payment_id
+     LEFT JOIN members m ON m.id = p.member_id
+     WHERE cm.cash_session_id = $1 AND cm.gym_id = $2
+     ORDER BY cm.created_at DESC`,
+    [sessionId, user.gym_id]
+  );
+  return helpers.send(res, 200, { session: sessionRes.rows[0], movements: movements.rows });
 }
 
 async function openCash(req,res,user,helpers){
@@ -202,7 +283,7 @@ async function openCash(req,res,user,helpers){
 async function cashMovement(req,res,user,helpers){
   if(!isManager(user)) return helpers.send(res,403,{error:'sem_permissao'});
   const input=await helpers.body(req);
-  if(!['expense','withdrawal','deposit'].includes(input.movement_type)) return helpers.send(res,400,{error:'tipo_invalido'});
+  if(!['expense','withdrawal','deposit','income'].includes(input.movement_type)) return helpers.send(res,400,{error:'tipo_invalido'});
   const cash=await helpers.query("SELECT id FROM cash_sessions WHERE gym_id=$1 AND status='open' ORDER BY opened_at DESC LIMIT 1",[user.gym_id]);
   if(!cash.rowCount) return helpers.send(res,409,{error:'caixa_fechado'});
   const result=await helpers.query(
@@ -224,7 +305,7 @@ async function closeCash(req,res,user,helpers){
   const expected=Number(cash.rows[0].opening_balance_cents)+Number(cash.rows[0].movements_cents);
   const result=await helpers.query(
     `UPDATE cash_sessions SET status='closed',closed_by=$3,closed_at=now(),closing_balance_cents=$4,
-     expected_balance_cents=$5,notes=concat_ws(' | ',notes,$6)
+     expected_balance_cents=$5,notes=concat_ws(' | ',notes,$6::text)
      WHERE id=$1 AND gym_id=$2 RETURNING *`,
     [cash.rows[0].id,user.gym_id,user.sub,boundedInteger(input.closing_balance_cents),expected,input.notes||null]
   );
@@ -339,6 +420,8 @@ async function handleFinanceSalesRoutes(req,res,user,url,helpers){
   if(req.method==='POST'&&url.pathname==='/api/finance/payments/settle') return settlePayment(req,res,user,helpers);
   if(req.method==='POST'&&url.pathname==='/api/finance/agreements') return createAgreement(req,res,user,helpers);
   if(req.method==='GET'&&url.pathname==='/api/finance/receipts') return receipts(res,user,url,helpers);
+  if(req.method==='GET'&&url.pathname==='/api/finance/cash/current') return currentCash(res,user,helpers);
+  if(req.method==='GET'&&url.pathname==='/api/finance/cash/session') return sessionMovements(res,user,url,helpers);
   if(req.method==='GET'&&url.pathname==='/api/finance/cash') return cashStatus(res,user,helpers);
   if(req.method==='POST'&&url.pathname==='/api/finance/cash/open') return openCash(req,res,user,helpers);
   if(req.method==='POST'&&url.pathname==='/api/finance/cash/movement') return cashMovement(req,res,user,helpers);

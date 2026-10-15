@@ -306,7 +306,7 @@ async function openContractModal(item) {
 
   let memberData = { name: item.member_name };
   let gymData = {
-    name: localStorage.getItem('gymName') || 'BlueREC Academia',
+    name: localStorage.getItem('gymName') || 'Academia LOBO',
     logo_url: localStorage.getItem('gymLogoUrl') || './blue-rec-logo.png'
   };
 
@@ -403,7 +403,7 @@ async function openReceiptModal(item) {
   const container = v('receipt-printable-container');
   if (!modal || !container) return;
 
-  const gymName = localStorage.getItem('gymName') || 'BlueREC Academia';
+  const gymName = localStorage.getItem('gymName') || 'Academia LOBO';
   const logoSrc = localStorage.getItem('gymLogoUrl') || './blue-rec-logo.png';
   const receiptNum = `REC-${(item.id || '00000000').slice(0, 8).toUpperCase()}`;
   const planPrice = money(item.plan_price_cents);

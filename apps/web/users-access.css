@@ -22,7 +22,7 @@
   transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 .access-profile-card:hover {
-  border-color: var(--accent, #1478d4);
+  border-color: var(--accent, #e55342);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
@@ -125,8 +125,8 @@ html[data-admin-theme="dark"] .access-profile-card:hover {
   color: var(--text, #171717) !important;
 }
 .employee-form-tab.active {
-  color: var(--accent, #1478d4) !important;
-  border-bottom-color: var(--accent, #1478d4) !important;
+  color: var(--accent, #e55342) !important;
+  border-bottom-color: var(--accent, #e55342) !important;
   font-weight: 700 !important;
 }
 .employee-form-panel.hidden {
@@ -191,8 +191,8 @@ html[data-admin-theme="dark"] .employee-modal-card .modal-close:hover {
   opacity: 1 !important;
 }
 .employee-row-interactive { cursor: pointer; transition: background-color 0.15s ease; }
-.employee-row-interactive:hover { background-color: rgba(20, 120, 212, 0.04); }
-.employee-row-interactive:focus-visible { outline: 2px solid var(--accent, #1478d4); outline-offset: -2px; }
+.employee-row-interactive:hover { background-color: rgba(229, 83, 66, 0.04); }
+.employee-row-interactive:focus-visible { outline: 2px solid var(--accent, #e55342); outline-offset: -2px; }
 .employee-list-toolbar .icon-button,
 #new-user-button,
 #employee-filter-toggle,
@@ -445,7 +445,7 @@ html[data-admin-theme="dark"] .employee-modal-card .employee-form-header {
 .employee-form-actions { position: sticky; bottom: -28px; z-index: 3; margin: 4px -28px -28px; padding: 18px 28px 24px; border-top: 1px solid #ebe4da; background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
 
 #save-user-button {
-  background: rgba(20, 120, 212, 0.88) !important;
+  background: rgba(229, 83, 66, 0.88) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -541,8 +541,8 @@ html[data-admin-theme="dark"] #cancel-user-button {
     text-align: center !important;
   }
   .employee-form-tab.active {
-    border-color: var(--accent, #1478d4) !important;
-    background: color-mix(in srgb, var(--accent, #1478d4) 8%, transparent) !important;
+    border-color: var(--accent, #e55342) !important;
+    background: color-mix(in srgb, var(--accent, #e55342) 8%, transparent) !important;
   }
 }
 
@@ -552,12 +552,12 @@ html[data-admin-theme="dark"] #cancel-user-button {
   gap: 12px !important;
 }
 .employee-form-actions #save-user-button {
-  background: rgba(20, 120, 212, 0.72) !important;
+  background: rgba(229, 83, 66, 0.72) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
-  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
+  box-shadow: 0 4px 14px rgba(229, 83, 66, 0.2) !important;
   min-height: 42px !important;
   font-weight: 750 !important;
   font-size: 14px !important;

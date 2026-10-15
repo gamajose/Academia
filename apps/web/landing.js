@@ -1,5 +1,11 @@
 const host = window.location.hostname || 'localhost';
-const API = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+function resolveApiBase() {
+  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+    return window.location.origin;
+  }
+  return localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+}
+const API = resolveApiBase();
 const box = document.getElementById('landing-plans');
 
 const samplePlans = [

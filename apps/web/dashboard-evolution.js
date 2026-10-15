@@ -363,7 +363,7 @@
             const item = document.createElement('div');
             item.className = 'cockpit-feed-item';
             const phoneClean = String(m.phone || '').replace(/\D/g, '');
-            const waMsg = encodeURIComponent(`Olá ${m.name}! Sentimos sua falta aqui na academia BlueREC. Como você está? Vamos agendar um treino essa semana?`);
+            const waMsg = encodeURIComponent(`Olá ${m.name}! Sentimos sua falta aqui na academia Academia LOBO. Como você está? Vamos agendar um treino essa semana?`);
             const waUrl = phoneClean ? `https://wa.me/55${phoneClean}?text=${waMsg}` : '#';
 
             item.innerHTML = `

@@ -69,7 +69,7 @@
 #student-goal-new:focus-visible {
   background: transparent !important;
   border: none !important;
-  color: #1478d4 !important;
+  color: #e55342 !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -166,7 +166,7 @@
 .student-goal-dots-btn:focus-visible {
   background: transparent !important;
   border: none !important;
-  color: #1478d4 !important;
+  color: #e55342 !important;
   transform: scale(1.15) !important;
   outline: none !important;
 }
@@ -194,8 +194,8 @@ html[data-student-theme="dark"] body.student-page .student-goal-dots-btn:focus-v
 
 .student-goal-card:hover,
 .student-goal-card:focus-visible {
-  border-color: #1478d4;
-  box-shadow: 0 5px 18px rgba(20, 120, 212, .12);
+  border-color: #e55342;
+  box-shadow: 0 5px 18px rgba(229, 83, 66, .12);
   outline: none;
   transform: translateY(-1px);
 }
@@ -260,7 +260,7 @@ html[data-student-theme="dark"] body.student-page .status-toggle-dot {
 
 .student-goal-card .entity-main strong {
   overflow: hidden;
-  color: #1478d4;
+  color: #e55342;
   font-size: 16px;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -303,13 +303,13 @@ html[data-student-theme="dark"] body.student-page .status-toggle-dot {
   border: 1px solid #c9dceb;
   border-radius: 8px;
   background: #fff;
-  color: #1478d4;
+  color: #e55342;
   cursor: pointer;
 }
 
 .student-goal-action:hover,
 .student-goal-action:focus-visible {
-  border-color: #1478d4;
+  border-color: #e55342;
   background: #eaf5ff;
   outline: none;
 }
@@ -451,8 +451,8 @@ html[data-student-theme="dark"] .student-goal-form .modal-close:hover {
 .student-goal-form input:focus,
 .student-goal-form select:focus,
 .student-goal-form textarea:focus {
-  border-color: #1478d4;
-  box-shadow: 0 0 0 3px rgba(20, 120, 212, .12);
+  border-color: #e55342;
+  box-shadow: 0 0 0 3px rgba(229, 83, 66, .12);
   outline: none;
 }
 
@@ -470,7 +470,7 @@ html[data-student-theme="dark"] .student-goal-form .modal-close:hover {
 }
 
 .student-goal-form .primary-button {
-  background: #1478d4;
+  background: #e55342;
   color: #fff;
 }
 

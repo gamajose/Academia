@@ -37,7 +37,7 @@
 .entity-main { display: grid; gap: 4px; min-width: 0; }
 .entity-main strong { font-size: 16px; }
 .entity-main span { color: var(--muted, #68716b); font-size: 13px; }
-.entity-card .video-preview-slot { flex: 0 0 84px; width: 84px; height: 84px; display: block; margin: 0; overflow: hidden; border: 1px solid var(--line, #d7e3ef); border-radius: 10px; background: #101814; }
+.entity-card .video-preview-slot { flex: 0 0 84px; width: 84px; height: 84px; display: block; margin: 0; overflow: hidden; border: 1px solid var(--line, #e1e4e8); border-radius: 10px; background: #101814; }
 .entity-card .video-preview-slot .exercise-video-preview, .entity-card .video-preview-slot .exercise-gif-preview, .entity-card .video-preview-slot .exercise-youtube-preview { width: 100%; height: 100%; min-height: 0; max-height: none; aspect-ratio: 1; object-fit: cover; border-radius: 0; }
 .entity-card .video-preview-slot .exercise-image-preview { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 0; }
 .entity-actions { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
@@ -64,12 +64,12 @@
 @media (max-width: 650px) { .plan-view-exercises li { grid-template-columns: 1fr; gap: 4px; } }
 @media (max-width: 620px) { .entity-card { align-items: center; } .entity-card .entity-main { flex: 1 1 auto; } }
 .student-progress-upload-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.student-progress-upload-preview { min-height: 140px; margin-top: 12px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); overflow: hidden; background: rgba(20, 120, 212, .04); }
+.student-progress-upload-preview { min-height: 140px; margin-top: 12px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); overflow: hidden; background: rgba(229, 83, 66, .04); }
 .student-progress-upload-preview img { display: block; width: 100%; max-height: 240px; object-fit: contain; }
 .student-progress-history-photo { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
 @media (max-width: 760px) { .student-progress-upload-grid { grid-template-columns: 1fr; } }
 .exercise-view-layout { display: flex; flex-direction: column; gap: 12px; }
-.exercise-view-media { min-height: 160px; max-height: 220px; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #243c55; border-radius: 12px; background: #08111c; overflow: hidden; }
+.exercise-view-media { min-height: 160px; max-height: 220px; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #2d3239; border-radius: 12px; background: #08111c; overflow: hidden; }
 .exercise-view-media .exercise-video-preview, .exercise-view-media .exercise-gif-preview { width: 100%; max-height: 200px; object-fit: contain; }
 .exercise-view-media .exercise-image-preview, .exercise-view-media img { display: block; width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; }
 .exercise-view-media .mini-button { margin: 0; background: #fff; color: #171717; }
@@ -87,13 +87,13 @@
 .exercise-view-tags em { color: #3d5870; font-style: normal; font-weight: 600; font-size: 12px; }
 html[data-student-theme="dark"] body.student-page .exercise-view-tags span,
 html[data-student-theme="dark"] body.student-page .exercise-view-muscle-chip {
-  border-color: #243c55 !important;
-  background: #182a3d !important;
+  border-color: #2d3239 !important;
+  background: #1e2227 !important;
   color: #e8f0f8 !important;
 }
 html[data-student-theme="dark"] body.student-page .exercise-view-tags strong,
 html[data-student-theme="dark"] body.student-page .exercise-view-muscle-chip strong {
-  color: #38bdf8 !important;
+  color: #e55342 !important;
 }
 html[data-student-theme="dark"] body.student-page .exercise-view-tags em,
 html[data-student-theme="dark"] body.student-page .exercise-view-muscle-chip span {
@@ -117,7 +117,7 @@ html[data-student-theme="dark"] body.student-page .exercise-view-copy p {
 .exercise-library-actions { display: flex; align-items: center; justify-content: flex-end; margin-left: auto; gap: 8px; }
 .exercise-library-actions .icon-button { margin: 0; }
 .exercise-library-actions .icon-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.exercise-library-filters { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(150px, 1fr)); gap: 10px; padding: 12px; border: 1px solid var(--line, #d7e3ef); border-radius: 10px; background: color-mix(in srgb, var(--surface, #fff) 72%, transparent); }
+.exercise-library-filters { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(150px, 1fr)); gap: 10px; padding: 12px; border: 1px solid var(--line, #e1e4e8); border-radius: 10px; background: color-mix(in srgb, var(--surface, #fff) 72%, transparent); }
 .exercise-library-filters label { display: grid; gap: 5px; min-width: 0; }
 .exercise-library-filters label > span { color: var(--muted, #68716b); font-size: 11px; font-weight: 600; }
 .exercise-library-filters input, .exercise-library-filters select { min-height: 36px; padding: 8px 10px; }
@@ -248,18 +248,18 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
 }
 
 #review-plan-button {
-  background: rgba(56, 189, 248, 0.16) !important;
-  border: 1px solid rgba(56, 189, 248, 0.45) !important;
-  color: #0284c7 !important;
+  background: rgba(229, 83, 66, 0.16) !important;
+  border: 1px solid rgba(229, 83, 66, 0.45) !important;
+  color: #e55342 !important;
   box-shadow: none !important;
   font-weight: 700 !important;
 }
 
 #review-plan-button:hover,
 #review-plan-button:focus-visible {
-  background: rgba(56, 189, 248, 0.28) !important;
-  border-color: #0284c7 !important;
-  color: #0369a1 !important;
+  background: rgba(229, 83, 66, 0.28) !important;
+  border-color: #e55342 !important;
+  color: #c73e2f !important;
 }
 
 #review-history-button {
@@ -277,14 +277,14 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
 }
 
 html[data-admin-theme="dark"] #review-plan-button {
-  background: rgba(56, 189, 248, 0.18) !important;
-  border-color: rgba(56, 189, 248, 0.45) !important;
-  color: #38bdf8 !important;
+  background: rgba(229, 83, 66, 0.18) !important;
+  border-color: rgba(229, 83, 66, 0.45) !important;
+  color: #e55342 !important;
 }
 
 html[data-admin-theme="dark"] #review-plan-button:hover {
-  background: rgba(56, 189, 248, 0.3) !important;
-  border-color: #38bdf8 !important;
+  background: rgba(229, 83, 66, 0.3) !important;
+  border-color: #e55342 !important;
   color: #e0f2fe !important;
 }
 
@@ -330,15 +330,15 @@ html[data-admin-theme="dark"] #review-history-button:hover {
     gap: 14px !important;
     padding: 10px 14px !important;
     border-radius: 12px !important;
-    border: 1px solid var(--line, #d7e3ef) !important;
+    border: 1px solid var(--line, #e1e4e8) !important;
     background: var(--card, #fff) !important;
     box-sizing: border-box !important;
     transition: all .16s ease !important;
   }
 
   .exercise-card:hover {
-    border-color: var(--accent, #1478d4) !important;
-    box-shadow: 0 4px 16px rgba(20, 120, 212, 0.10) !important;
+    border-color: var(--accent, #e55342) !important;
+    box-shadow: 0 4px 16px rgba(229, 83, 66, 0.10) !important;
     transform: translateY(-1px) !important;
   }
 
@@ -374,8 +374,8 @@ html[data-admin-theme="dark"] #review-history-button:hover {
     padding: 3px 8px !important;
     border-radius: 6px !important;
     background: #edf5fc !important;
-    color: var(--accent, #1478d4) !important;
-    border: 1px solid rgba(20, 120, 212, 0.15) !important;
+    color: var(--accent, #e55342) !important;
+    border: 1px solid rgba(229, 83, 66, 0.15) !important;
     font-size: 11px !important;
     font-weight: 750 !important;
     text-transform: capitalize !important;
@@ -439,32 +439,32 @@ html[data-admin-theme="dark"] #review-history-button:hover {
   }
 
   .icon-button.exercise-add-btn {
-    color: var(--accent, #1478d4) !important;
-    background: rgba(20, 120, 212, 0.05) !important;
-    border-color: rgba(20, 120, 212, 0.28) !important;
+    color: var(--accent, #e55342) !important;
+    background: rgba(229, 83, 66, 0.05) !important;
+    border-color: rgba(229, 83, 66, 0.28) !important;
   }
 
   .icon-button.exercise-add-btn:hover,
   .icon-button.exercise-add-btn:focus-visible {
     background: #eff6ff !important;
-    border-color: #1478d4 !important;
+    border-color: #e55342 !important;
     color: #0f66b6 !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 2px 8px rgba(20, 120, 212, 0.18) !important;
+    box-shadow: 0 2px 8px rgba(229, 83, 66, 0.18) !important;
   }
 
   html[data-admin-theme="dark"][data-admin-shell="true"] .icon-button.exercise-add-btn {
-    color: #38bdf8 !important;
-    background: rgba(56, 189, 248, 0.1) !important;
-    border-color: rgba(56, 189, 248, 0.3) !important;
+    color: #e55342 !important;
+    background: rgba(229, 83, 66, 0.1) !important;
+    border-color: rgba(229, 83, 66, 0.3) !important;
   }
 
   html[data-admin-theme="dark"][data-admin-shell="true"] .icon-button.exercise-add-btn:hover,
   html[data-admin-theme="dark"][data-admin-shell="true"] .icon-button.exercise-add-btn:focus-visible {
-    background: rgba(56, 189, 248, 0.2) !important;
-    border-color: #38bdf8 !important;
+    background: rgba(229, 83, 66, 0.2) !important;
+    border-color: #e55342 !important;
     color: #7dd3fc !important;
-    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25) !important;
+    box-shadow: 0 2px 8px rgba(229, 83, 66, 0.25) !important;
   }
 
   .exercise-card .mobile-card-menu {
@@ -514,14 +514,14 @@ html[data-admin-theme="dark"] #review-history-button:hover {
 }
 
 .compact-exercise-btn:hover {
-  border-color: var(--accent, #1478d4) !important;
-  color: var(--accent, #1478d4) !important;
+  border-color: var(--accent, #e55342) !important;
+  color: var(--accent, #e55342) !important;
 }
 
 .compact-exercise-btn.training-ai-button {
-  border-color: rgba(56, 189, 248, 0.4) !important;
-  background: color-mix(in srgb, var(--accent, #1478d4) 10%, var(--card, #fff)) !important;
-  color: var(--accent, #1478d4) !important;
+  border-color: rgba(229, 83, 66, 0.4) !important;
+  background: color-mix(in srgb, var(--accent, #e55342) 10%, var(--card, #fff)) !important;
+  color: var(--accent, #e55342) !important;
 }
 
 html[data-admin-theme="dark"] .compact-exercise-btn {
@@ -530,22 +530,22 @@ html[data-admin-theme="dark"] .compact-exercise-btn {
   color: #e2e8f0 !important;
 }
 html[data-admin-theme="dark"] .compact-exercise-btn:hover {
-  border-color: #38bdf8 !important;
-  color: #38bdf8 !important;
+  border-color: #e55342 !important;
+  color: #e55342 !important;
 }
 html[data-admin-theme="dark"] .compact-exercise-btn.training-ai-button {
-  background: #18334e !important;
-  border-color: #38bdf8 !important;
-  color: #38bdf8 !important;
+  background: #22262c !important;
+  border-color: #e55342 !important;
+  color: #e55342 !important;
 }
 
 html[data-admin-theme="dark"] .exercise-card-tag,
 html[data-admin-theme="dark"] .exercise-feed-tag,
 html[data-admin-theme="dark"] body.admin-training-page .exercise-card-tag,
 html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
-  background: #18334e !important;
-  color: #38bdf8 !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
+  background: #22262c !important;
+  color: #e55342 !important;
+  border-color: rgba(229, 83, 66, 0.3) !important;
 }
 
 /* Mobile view (<= 768px): Instagram-style feed, responsive, full visibility */
@@ -561,7 +561,7 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
     gap: 12px !important;
     padding: 16px !important;
     border-radius: 16px !important;
-    border: 1px solid var(--line, #d7e3ef) !important;
+    border: 1px solid var(--line, #e1e4e8) !important;
     background: var(--card, #fff) !important;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
     box-sizing: border-box !important;
@@ -606,8 +606,8 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
     padding: 3px 8px !important;
     border-radius: 6px !important;
     background: #edf5fc !important;
-    color: var(--accent, #1478d4) !important;
-    border: 1px solid rgba(20, 120, 212, 0.15) !important;
+    color: var(--accent, #e55342) !important;
+    border: 1px solid rgba(229, 83, 66, 0.15) !important;
     font-size: 11px !important;
     font-weight: 800 !important;
     text-transform: capitalize !important;
@@ -650,9 +650,9 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
     padding: 0 8px !important;
     font-size: 12px !important;
     font-weight: 750 !important;
-    background: var(--accent, #1478d4) !important;
+    background: var(--accent, #e55342) !important;
     color: #fff !important;
-    border: 1px solid var(--accent, #1478d4) !important;
+    border: 1px solid var(--accent, #e55342) !important;
   }
   body.admin-training-page .training-ai-button .training-ai-icon {
     color: #fff !important;
@@ -723,11 +723,11 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
-    background: var(--accent, #1478d4) !important;
+    background: var(--accent, #e55342) !important;
     color: #ffffff !important;
     border: 0 !important;
     cursor: pointer !important;
-    box-shadow: 0 3px 10px rgba(20, 120, 212, 0.20) !important;
+    box-shadow: 0 3px 10px rgba(229, 83, 66, 0.20) !important;
     transition: all .15s ease !important;
   }
 
@@ -849,10 +849,10 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
 
 .plan-picker-option:hover,
 .plan-picker-option:focus-visible {
-  border-color: #1478d4 !important;
+  border-color: #e55342 !important;
   background: #eff6ff !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(20, 120, 212, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(229, 83, 66, 0.12) !important;
   outline: none !important;
 }
 
@@ -861,14 +861,14 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1478d4 0%, #0c569c 100%);
+  background: linear-gradient(135deg, #e55342 0%, #0c569c 100%);
   color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 17px;
-  box-shadow: 0 2px 8px rgba(20, 120, 212, 0.3);
+  box-shadow: 0 2px 8px rgba(229, 83, 66, 0.3);
 }
 
 .picker-text-wrap {
@@ -896,12 +896,12 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
 
 .picker-action-arrow {
   flex-shrink: 0;
-  color: #1478d4;
+  color: #e55342;
   font-size: 13px;
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(20, 120, 212, 0.08);
+  background: rgba(229, 83, 66, 0.08);
 }
 
 .new-plan-from-picker-btn {
@@ -914,26 +914,26 @@ html[data-admin-theme="dark"] body.admin-training-page .exercise-feed-tag {
 
 /* Dark Theme Overrides for Picker & Tabs */
 html[data-admin-theme="dark"][data-admin-shell="true"] .exercise-plan-picker-card {
-  background: #122235 !important;
-  border-color: #29445d !important;
+  background: #1a1d21 !important;
+  border-color: #2d3239 !important;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .picker-search-field input {
-  background: #0e1b2a !important;
-  border-color: #34536e !important;
+  background: #22262c !important;
+  border-color: #383e47 !important;
   color: #e8f0f8 !important;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .plan-picker-option {
-  background: #162638 !important;
-  border-color: #29445d !important;
+  background: #1e2227 !important;
+  border-color: #2d3239 !important;
   color: #e8f0f8 !important;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .plan-picker-option:hover,
 html[data-admin-theme="dark"][data-admin-shell="true"] .plan-picker-option:focus-visible {
-  background: #1c334d !important;
-  border-color: #38bdf8 !important;
+  background: #282d34 !important;
+  border-color: #e55342 !important;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .picker-student-name {
@@ -945,13 +945,13 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .picker-plan-detail {
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .picker-action-arrow {
-  color: #38bdf8 !important;
-  background: rgba(56, 189, 248, 0.12) !important;
+  color: #e55342 !important;
+  background: rgba(229, 83, 66, 0.12) !important;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .mobile-training-tabs {
-  background: #0e1b2a !important;
-  border: 1px solid #29445d;
+  background: #22262c !important;
+  border: 1px solid #2d3239;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .mobile-tab-btn {

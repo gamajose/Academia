@@ -42,11 +42,11 @@
     : preference;
   const preference = isAdmin
     ? (localStorage.getItem('adminTheme') || 'light')
-    : (localStorage.getItem('studentTheme') || 'light');
+    : (localStorage.getItem('studentTheme') || (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   const theme = resolveTheme(['light', 'dark', 'system'].includes(preference) ? preference : 'light');
 
   root.classList.add('ui-booting');
-  root.style.backgroundColor = theme === 'dark' ? '#091522' : '#eef5fb';
+  root.style.backgroundColor = theme === 'dark' ? '#121518' : '#f4f5f7';
   root.style.colorScheme = theme;
   if (isAdmin) {
     root.dataset.adminShell = 'true';

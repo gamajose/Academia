@@ -93,7 +93,7 @@
 
 .progress-top-actions .student-workout-menu-btn:hover,
 .progress-top-actions .student-workout-menu-btn:focus-visible {
-  color: var(--accent, #1478d4) !important;
+  color: var(--accent, #e55342) !important;
   background: transparent !important;
 }
 
@@ -128,12 +128,12 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
 }
 
 #student-assessment-submit {
-  background: rgba(20, 120, 212, 0.72) !important;
+  background: rgba(229, 83, 66, 0.72) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
-  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
+  box-shadow: 0 4px 14px rgba(229, 83, 66, 0.2) !important;
 }
 
 .progress-browser-tab {
@@ -162,7 +162,7 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
 
 .progress-browser-tab.active {
   background: #ffffff;
-  color: var(--accent, #1478d4);
+  color: var(--accent, #e55342);
   font-weight: 750;
   border-bottom: 1px solid #ffffff;
   margin-bottom: -1px;
@@ -175,7 +175,7 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--accent, #1478d4);
+  background: var(--accent, #e55342);
   border-radius: 12px 12px 0 0;
 }
 
@@ -232,10 +232,10 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
 .progress-analysis-metric { display: grid; gap: 7px; min-width: 0; padding: 14px; overflow: hidden; border: 1px solid #cfe2f4; border-radius: 12px; background: #fff; }
 .progress-analysis-metric-heading { display: flex; align-items: center; justify-content: space-between; gap: 7px; }
 .progress-analysis-metric-heading span { color: #60778b; font-size: 12px; }
-.progress-analysis-metric-heading b { color: #1478d4; font-size: 12px; white-space: nowrap; }
+.progress-analysis-metric-heading b { color: #e55342; font-size: 12px; white-space: nowrap; }
 .progress-analysis-metric-heading b.is-neutral { color: #647787; }
 .progress-analysis-metric-heading b.is-muted { color: #8a9aa7; }
-.progress-analysis-metric > strong { color: #1478d4; font-size: 23px; }
+.progress-analysis-metric > strong { color: #e55342; font-size: 23px; }
 .progress-analysis-metric > small { min-height: 32px; color: #405d73; line-height: 1.35; }
 .progress-analysis-metric.is-estimated { border-style: dashed; }
 .progress-analysis-sparkline { width: 100%; height: 34px; margin-top: 2px; overflow: visible; }
@@ -244,7 +244,7 @@ html[data-student-theme="dark"] body.student-page .progress-top-actions .student
 .progress-analysis-projection { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .progress-analysis-projection > div { display: grid; gap: 4px; padding: 10px; border: 1px solid #cfe2f4; border-radius: 10px; background: #fff; }
 .progress-analysis-projection span { color: #60778b; font-size: 12px; }
-.progress-analysis-projection strong { color: #1478d4; }
+.progress-analysis-projection strong { color: #e55342; }
 .progress-analysis-disclaimer { color: #6c7e8d; font-size: 12px; }
 .progress-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .progress-summary-grid .student-stat { min-width: 0; padding: 10px 12px; }
@@ -298,7 +298,7 @@ html[data-student-theme="dark"] body.student-page #student-progress-list .entity
 .progress-baseline-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .progress-baseline-grid > div { display: grid; gap: 5px; min-width: 0; padding: 14px; border: 1px solid #cfe2f4; border-radius: 12px; background: #fff; }
 .progress-baseline-grid span { color: #60778b; font-size: 12px; }
-.progress-baseline-grid strong { color: #1478d4; font-size: 21px; }
+.progress-baseline-grid strong { color: #e55342; font-size: 21px; }
 html[data-student-theme="dark"] body.student-page .student-progress-baseline-panel,
 html[data-student-theme="dark"] body.student-page .progress-baseline-grid > div { border-color: #29445d; background: #102033; }
 html[data-student-theme="dark"] body.student-page .progress-baseline-grid span { color: #a9bed1; }
@@ -369,7 +369,7 @@ html[data-student-theme="dark"] body.student-page .student-history-pagination bu
 .student-goal-celebration-card h2 { margin: 4px 0 10px; font-size: clamp(30px, 5vw, 44px); }
 .student-goal-celebration-card p:not(.eyebrow) { margin: 8px auto; max-width: 430px; color: #526b7f; line-height: 1.5; }
 .student-goal-celebration-card .form-actions { justify-content: center; margin-top: 22px; }
-.student-goal-celebration-icon { font-size: 64px; line-height: 1; filter: drop-shadow(0 10px 14px rgba(20, 120, 212, .2)); animation: student-goal-pop .55s cubic-bezier(.2,.8,.2,1.2); }
+.student-goal-celebration-icon { font-size: 64px; line-height: 1; filter: drop-shadow(0 10px 14px rgba(229, 83, 66, .2)); animation: student-goal-pop .55s cubic-bezier(.2,.8,.2,1.2); }
 .student-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .student-confetti i { position: absolute; top: -24px; left: var(--confetti-x); width: 9px; height: 18px; border-radius: 2px; background: var(--confetti-color); animation: student-confetti-fall 2.2s var(--confetti-delay) ease-in forwards; }
 html[data-student-theme="dark"] body.student-page .student-goal-celebration-card p:not(.eyebrow) { color: #b7cadb; }

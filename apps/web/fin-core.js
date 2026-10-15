@@ -5,6 +5,7 @@ const f = (id) => document.getElementById(id);
 let rows = [];
 let currentPage = 1;
 let pageSize = 10;
+let activeQuickFilter = 'all';
 
 async function rq(path, options = {}) {
   const response = await fetch(`${FAPI}${path}`, {
@@ -35,6 +36,25 @@ function dateTime(value) {
   return parsed.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 }
 
+function isDateToday(dateValue) {
+  if (!dateValue) return false;
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return false;
+  const today = new Date();
+  return d.getFullYear() === today.getFullYear() &&
+         d.getMonth() === today.getMonth() &&
+         d.getDate() === today.getDate();
+}
+
+function isDateThisMonth(dateValue) {
+  if (!dateValue) return false;
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return false;
+  const today = new Date();
+  return d.getFullYear() === today.getFullYear() &&
+         d.getMonth() === today.getMonth();
+}
+
 function statusLabel(payment) {
   if (payment.status === 'paid') return 'Recebido';
   if (payment.status === 'overdue') return 'Vencido';
@@ -55,7 +75,16 @@ function financeStatusKey(item) {
 }
 
 function methodLabel(value) {
-  const labels = { demo: 'Demonstração', pix: 'Pix', paypal: 'PayPal', card: 'Cartão', cash: 'Dinheiro', transfer: 'Transferência', manual: 'Manual', other: 'Outro' };
+  const labels = {
+    pix: 'Pix',
+    card: 'Cartão',
+    cash: 'Dinheiro',
+    transfer: 'Transferência',
+    paypal: 'PayPal',
+    demo: 'Demonstração',
+    manual: 'Manual',
+    other: 'Outro'
+  };
   return labels[String(value || '').toLowerCase()] || value || 'Não informado';
 }
 
@@ -69,11 +98,27 @@ function filterRows() {
   const max = maxValue === '' ? Number.NaN : Number(maxValue);
   const from = f('finance-filter-from')?.value || '';
   const to = f('finance-filter-to')?.value || '';
+
   return rows.filter((item) => {
     const searchable = `${item.member_name || ''} ${item.member_email || ''} ${item.phone || ''}`.toLowerCase();
     const amount = Number(item.amount_cents || 0) / 100;
-    const itemStatus = item.status === 'paid' ? 'paid' : statusLabel(item) === 'Vencido' ? 'overdue' : item.status;
+    const label = statusLabel(item);
+    const itemStatus = item.status === 'paid' ? 'paid' : label === 'Vencido' ? 'overdue' : item.status;
     const dueDate = String(item.due_date || '').slice(0, 10);
+
+    // Quick filter check
+    if (activeQuickFilter === 'today') {
+      if (item.status !== 'paid' || !isDateToday(item.paid_at)) return false;
+    } else if (activeQuickFilter === 'month') {
+      const paidInMonth = item.status === 'paid' && isDateThisMonth(item.paid_at);
+      const dueInMonth = isDateThisMonth(item.due_date);
+      if (!paidInMonth && !dueInMonth) return false;
+    } else if (activeQuickFilter === 'overdue') {
+      if (label !== 'Vencido') return false;
+    } else if (activeQuickFilter === 'pending') {
+      if (label !== 'Pendente') return false;
+    }
+
     return (!member || searchable.includes(member))
       && (!status || itemStatus === status)
       && (!method || String(item.method || '').toLowerCase() === method)
@@ -84,15 +129,6 @@ function filterRows() {
   });
 }
 
-function actionButton(text, handler, disabled = false) {
-  const button = document.createElement('button');
-  button.className = 'mini-button';
-  button.textContent = text;
-  button.disabled = disabled;
-  button.addEventListener('click', handler);
-  return button;
-}
-
 function draw() {
   const list = f('financial-list');
   list.innerHTML = '';
@@ -101,26 +137,95 @@ function draw() {
   currentPage = Math.min(currentPage, pageCount);
   const pageRows = visibleRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const totals = visibleRows.reduce((acc, item) => {
-    const amount = Number(item.amount_cents || 0);
-    const label = statusLabel(item);
-    if (item.status === 'paid') {
-      acc.paid += amount;
-      acc.paidCount += 1;
-    } else if (item.status === 'pending' || item.status === 'overdue') {
-      acc.pending += amount;
-      acc.pendingCount += 1;
-      if (label === 'Vencido') acc.overdue += amount;
+  // Global calculations across ALL rows for accurate gym summary cards
+  const todayRows = rows.filter((r) => r.status === 'paid' && isDateToday(r.paid_at));
+  const todayAmount = todayRows.reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const todayCount = todayRows.length;
+
+  const todayPix = todayRows.filter((r) => (r.method || '').toLowerCase() === 'pix').reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const todayCard = todayRows.filter((r) => (r.method || '').toLowerCase() === 'card').reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const todayCash = todayRows.filter((r) => (r.method || '').toLowerCase() === 'cash').reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+
+  const monthRows = rows.filter((r) => r.status === 'paid' && isDateThisMonth(r.paid_at));
+  const monthAmount = monthRows.reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const monthCount = monthRows.length;
+
+  const pendingRows = rows.filter((r) => statusLabel(r) === 'Pendente');
+  const pendingAmount = pendingRows.reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const pendingCount = pendingRows.length;
+
+  const overdueRows = rows.filter((r) => statusLabel(r) === 'Vencido');
+  const overdueAmount = overdueRows.reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const overdueCount = overdueRows.length;
+
+  const paidRows = rows.filter((r) => r.status === 'paid');
+  const paidAmount = paidRows.reduce((acc, r) => acc + Number(r.amount_cents || 0), 0);
+  const paidCount = paidRows.length;
+
+  // Render cards
+  if (f('today-amount')) f('today-amount').textContent = brl(todayAmount);
+  if (f('today-count-label')) f('today-count-label').textContent = `${todayCount} ${todayCount === 1 ? 'pagamento hoje' : 'pagamentos hoje'}`;
+
+  const breakdownEl = f('today-breakdown');
+  if (breakdownEl) {
+    if (todayCount > 0) {
+      const parts = [];
+      if (todayPix > 0) parts.push(`<span class="pill-method">Pix: <strong>${brl(todayPix)}</strong></span>`);
+      if (todayCard > 0) parts.push(`<span class="pill-method">Cartão: <strong>${brl(todayCard)}</strong></span>`);
+      if (todayCash > 0) parts.push(`<span class="pill-method">Dinheiro: <strong>${brl(todayCash)}</strong></span>`);
+      const others = todayAmount - (todayPix + todayCard + todayCash);
+      if (others > 0) parts.push(`<span class="pill-method">Outros: <strong>${brl(others)}</strong></span>`);
+      breakdownEl.innerHTML = parts.join(' ');
+    } else {
+      breakdownEl.innerHTML = '<span class="today-empty-sub">Nenhum recebimento hoje ainda</span>';
     }
-    return acc;
-  }, { paid: 0, pending: 0, overdue: 0, paidCount: 0, pendingCount: 0 });
+  }
 
-  f('pending-amount').textContent = brl(totals.pending);
-  f('overdue-amount').textContent = brl(totals.overdue);
-  f('paid-amount').textContent = brl(totals.paid);
-  f('pending-count').textContent = totals.pendingCount;
-  f('paid-count').textContent = totals.paidCount;
+  if (f('month-amount')) f('month-amount').textContent = brl(monthAmount);
+  if (f('month-count-label')) f('month-count-label').textContent = `${monthCount} ${monthCount === 1 ? 'recebimento no mês' : 'recebimentos no mês'}`;
 
+  if (f('pending-amount')) f('pending-amount').textContent = brl(pendingAmount);
+  if (f('pending-count-label')) f('pending-count-label').textContent = `${pendingCount} ${pendingCount === 1 ? 'mensalidade a vencer' : 'mensalidades a vencer'}`;
+
+  if (f('overdue-amount')) f('overdue-amount').textContent = brl(overdueAmount);
+  if (f('overdue-count-label')) f('overdue-count-label').textContent = `${overdueCount} ${overdueCount === 1 ? 'em atraso' : 'em atraso'}`;
+
+  if (f('paid-amount')) f('paid-amount').textContent = brl(paidAmount);
+  if (f('paid-count-label')) f('paid-count-label').textContent = `${paidCount} ${paidCount === 1 ? 'mensalidade' : 'mensalidades'}`;
+
+  // Update Quick Filter Banner
+  const banner = f('finance-quick-filter-banner');
+  const bannerName = f('banner-filter-name');
+  const bannerDesc = f('banner-filter-desc');
+  const bannerTotal = f('banner-filter-total');
+
+  if (banner) {
+    if (activeQuickFilter === 'all') {
+      banner.classList.add('hidden');
+    } else {
+      banner.classList.remove('hidden');
+      if (activeQuickFilter === 'today') {
+        const todayStr = new Date().toLocaleDateString('pt-BR');
+        if (bannerName) bannerName.textContent = `📅 Recebidos Hoje (${todayStr})`;
+        if (bannerDesc) bannerDesc.textContent = 'Exibindo mensalidades e pagamentos confirmados no dia de hoje.';
+        if (bannerTotal) bannerTotal.textContent = `Total Recebido Hoje: ${brl(todayAmount)} (${todayCount} pagamentos)`;
+      } else if (activeQuickFilter === 'month') {
+        if (bannerName) bannerName.textContent = '🗓️ Movimentação do Mês Vigente';
+        if (bannerDesc) bannerDesc.textContent = 'Exibindo mensalidades recebidas e a vencer neste mês.';
+        if (bannerTotal) bannerTotal.textContent = `Total Recebido no Mês: ${brl(monthAmount)} (${monthCount} mensalidades)`;
+      } else if (activeQuickFilter === 'overdue') {
+        if (bannerName) bannerName.textContent = '⚠️ Mensalidades Vencidas (Em Atraso)';
+        if (bannerDesc) bannerDesc.textContent = 'Alunos com pagamento atrasado para envio de cobrança WhatsApp.';
+        if (bannerTotal) bannerTotal.textContent = `Total Vencido: ${brl(overdueAmount)} (${overdueCount} alunos)`;
+      } else if (activeQuickFilter === 'pending') {
+        if (bannerName) bannerName.textContent = '⏳ Mensalidades Pendentes a Vencer';
+        if (bannerDesc) bannerDesc.textContent = 'Previsão de recebimento das próximas mensalidades.';
+        if (bannerTotal) bannerTotal.textContent = `Total a Vencer: ${brl(pendingAmount)} (${pendingCount} mensalidades)`;
+      }
+    }
+  }
+
+  // Render Table Rows
   for (const item of pageRows) {
     const tr = document.createElement('tr');
     tr.className = 'finance-row-action';
@@ -128,17 +233,38 @@ function draw() {
     tr.setAttribute('role', 'button');
     tr.title = 'Abrir ajuste financeiro';
     const label = statusLabel(item);
+
+    const isPaidToday = item.status === 'paid' && isDateToday(item.paid_at);
+    let dateCellHtml = '';
+    if (isPaidToday) {
+      dateCellHtml = `<div class="date-today-wrap"><strong class="date-today-title">Recebido Hoje</strong><span class="badge-time-today">${dateTime(item.paid_at).split(' ')[1] || 'Hoje'}</span></div>`;
+    } else if (item.paid_at) {
+      dateCellHtml = `<strong>Recebido em</strong><span>${dateTime(item.paid_at)}</span>`;
+    } else {
+      dateCellHtml = `<strong>Vencimento</strong><span>${dateOnly(item.due_date)}</span>`;
+    }
+
     tr.innerHTML = `
-      <td class="finance-member-name">${item.member_name || '-'}</td>
+      <td class="finance-member-name">
+        <span class="name-text">${item.member_name || '-'}</span>
+        ${isPaidToday ? '<span class="pill-today-received">Hoje</span>' : ''}
+      </td>
       <td class="col-amount">${brl(item.amount_cents)}</td>
       <td><span class="badge ${statusClass(label)}">${label}</span></td>
-      <td class="finance-date-cell col-due">${item.paid_at ? `<strong>Recebido em</strong><span>${dateTime(item.paid_at)}</span>` : `<strong>Vencimento</strong><span>${dateOnly(item.due_date)}</span>`}</td>
-      <td>${methodLabel(item.method)}</td>
+      <td class="finance-date-cell col-due">${dateCellHtml}</td>
+      <td><span class="method-tag">${methodLabel(item.method)}</span></td>
       <td class="finance-actions-cell"></td>
     `;
+
     const actions = tr.querySelector('td:last-child');
     tr.addEventListener('click', () => openM(item));
-    tr.addEventListener('keydown', (event) => { if (event.target.closest('button, .finance-card-menu-dropdown')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openM(item); } });
+    tr.addEventListener('keydown', (event) => {
+      if (event.target.closest('button, .finance-card-menu-dropdown')) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openM(item);
+      }
+    });
 
     const actionWrap = document.createElement('div');
     actionWrap.className = 'finance-card-actions';
@@ -154,11 +280,10 @@ function draw() {
 
     const adjustBtn = document.createElement('button');
     adjustBtn.type = 'button';
-    adjustBtn.textContent = 'Ajustar';
+    adjustBtn.textContent = 'Ajustar / Detalhes';
     adjustBtn.addEventListener('click', (event) => {
       event.stopPropagation();
       menu.classList.add('hidden');
-      tr.classList.remove('menu-open');
       openM(item);
     });
     menu.appendChild(adjustBtn);
@@ -166,37 +291,28 @@ function draw() {
     if (item.status !== 'paid') {
       const pixBtn = document.createElement('button');
       pixBtn.type = 'button';
-      pixBtn.textContent = 'Cobrar Pix';
+      pixBtn.style.color = '#0284c7';
+      pixBtn.style.fontWeight = '700';
+      pixBtn.textContent = 'Cobrar Pix (WhatsApp)';
       pixBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         menu.classList.add('hidden');
-        tr.classList.remove('menu-open');
         openPixModal(item);
       });
       menu.appendChild(pixBtn);
 
-      const markPaidBtn = document.createElement('button');
-      markPaidBtn.type = 'button';
-      markPaidBtn.textContent = 'Marcar como recebido';
-      markPaidBtn.addEventListener('click', (event) => {
+      const settleBtn = document.createElement('button');
+      settleBtn.type = 'button';
+      settleBtn.style.color = '#10b981';
+      settleBtn.style.fontWeight = '700';
+      settleBtn.textContent = 'Confirmar Recebimento';
+      settleBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         menu.classList.add('hidden');
-        tr.classList.remove('menu-open');
         pay(item);
       });
-      menu.appendChild(markPaidBtn);
+      menu.appendChild(settleBtn);
     }
-
-    const detailsBtn = document.createElement('button');
-    detailsBtn.type = 'button';
-    detailsBtn.textContent = 'Ver detalhes';
-    detailsBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      menu.classList.add('hidden');
-      tr.classList.remove('menu-open');
-      openM(item);
-    });
-    menu.appendChild(detailsBtn);
 
     trigger.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -219,10 +335,11 @@ function draw() {
   }
 
   if (!rows.length) {
-    list.innerHTML = '<tr><td colspan="6">Nenhum lançamento financeiro encontrado.</td></tr>';
+    list.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 32px;">Nenhum lançamento financeiro encontrado.</td></tr>';
   } else if (!visibleRows.length) {
-    list.innerHTML = '<tr><td colspan="6">Nenhum lançamento corresponde aos filtros.</td></tr>';
+    list.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 32px;">Nenhum lançamento corresponde ao filtro selecionado.</td></tr>';
   }
+
   renderPagination(visibleRows.length, pageCount);
 }
 
@@ -279,7 +396,7 @@ async function load() {
       }
     }).catch(() => {});
   } catch (error) {
-    f('reports-status').textContent = `Erro: ${error.message}`;
+    f('reports-status').textContent = `Erro ao carregar finanças: ${error.message}`;
   }
 }
 
@@ -299,11 +416,19 @@ function closeM() {
 }
 
 function openFinanceStatus(kind) {
-  const labels = { pending: 'Lançamentos pendentes', overdue: 'Lançamentos vencidos', paid: 'Pagamentos recebidos', open: 'Lançamentos em aberto' };
+  const labels = {
+    pending: 'Lançamentos pendentes a vencer',
+    overdue: 'Lançamentos vencidos (Em atraso)',
+    paid: 'Mensalidades e pagamentos recebidos',
+    today: 'Pagamentos recebidos hoje',
+    open: 'Lançamentos em aberto'
+  };
   const matching = rows.filter((item) => {
+    if (kind === 'today') return item.status === 'paid' && isDateToday(item.paid_at);
     const key = financeStatusKey(item);
     return kind === 'open' ? key === 'pending' || key === 'overdue' : key === kind;
   });
+
   f('finance-status-title').textContent = labels[kind] || 'Lançamentos';
   const list = f('finance-status-list');
   list.innerHTML = '';
@@ -347,8 +472,12 @@ async function adjust() {
 }
 
 async function pay(item) {
-  await rq('/api/payments/mark-paid', { method: 'POST', body: JSON.stringify({ payment_id: item.id }) });
-  await load();
+  try {
+    await rq('/api/payments/mark-paid', { method: 'POST', body: JSON.stringify({ payment_id: item.id }) });
+    await load();
+  } catch (err) {
+    alert(`Erro ao confirmar recebimento: ${err.message}`);
+  }
 }
 
 function exportQuery() {
@@ -381,10 +510,42 @@ async function downloadExport(format) {
   URL.revokeObjectURL(link.href);
 }
 
+// Quick filter click handlers
+document.querySelectorAll('.finance-quick-pill').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.finance-quick-pill').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeQuickFilter = btn.dataset.quickFilter || 'all';
+    currentPage = 1;
+    draw();
+  });
+});
+
+f('btn-reset-quick-filter')?.addEventListener('click', () => {
+  activeQuickFilter = 'all';
+  document.querySelectorAll('.finance-quick-pill').forEach((b) => {
+    b.classList.toggle('active', b.dataset.quickFilter === 'all');
+  });
+  currentPage = 1;
+  draw();
+});
+
 f('load-button')?.addEventListener('click', load);
-f('finance-apply-filters')?.addEventListener('click', draw);
-['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => f(id)?.addEventListener('change', draw));
-f('finance-filter-member')?.addEventListener('input', draw);
+f('finance-apply-filters')?.addEventListener('click', () => {
+  currentPage = 1;
+  draw();
+});
+['finance-filter-member', 'finance-filter-status', 'finance-filter-method', 'finance-filter-min', 'finance-filter-max', 'finance-filter-from', 'finance-filter-to'].forEach((id) => {
+  f(id)?.addEventListener('change', () => {
+    currentPage = 1;
+    draw();
+  });
+});
+f('finance-filter-member')?.addEventListener('input', () => {
+  currentPage = 1;
+  draw();
+});
+
 function toggleFinanceFilters() {
   const panel = f('finance-filter-panel');
   const hidden = panel.classList.toggle('hidden');
@@ -408,12 +569,29 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-for (const [selector, kind] of [['.finance-pending', 'pending'], ['.finance-overdue', 'overdue'], ['.finance-paid', 'paid'], ['.finance-open', 'open'], ['.finance-paid-count', 'paid']]) {
-  document.querySelector(selector)?.addEventListener('click', () => openFinanceStatus(kind));
-  document.querySelector(selector)?.setAttribute('tabindex', '0');
-  document.querySelector(selector)?.setAttribute('role', 'button');
-  document.querySelector(selector)?.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openFinanceStatus(kind); } });
+// Card click listeners
+const cardSelectors = [
+  ['.finance-card-today', 'today'],
+  ['.finance-pending', 'pending'],
+  ['.finance-overdue', 'overdue'],
+  ['.finance-paid', 'paid'],
+  ['.finance-paid-count', 'paid']
+];
+for (const [selector, kind] of cardSelectors) {
+  const el = document.querySelector(selector);
+  if (el) {
+    el.addEventListener('click', () => openFinanceStatus(kind));
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    el.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openFinanceStatus(kind);
+      }
+    });
+  }
 }
+
 let currentPixItem = null;
 
 function closePixModal() {
@@ -427,8 +605,8 @@ function openPixModal(item) {
   const modal = f('pix-charge-modal');
   if (!modal) return;
 
-  const gymName = localStorage.getItem('gymPixReceiver') || localStorage.getItem('gymName') || 'BlueREC Academia';
-  const pixKey = localStorage.getItem('gymPixKey') || 'financeiro@academia.com.br';
+  const gymName = localStorage.getItem('gymPixReceiver') || localStorage.getItem('gymName') || 'Academia LOBO';
+  const pixKey = localStorage.getItem('gymPixKey') || 'financeiro@academialobo.com.br';
   const amountBrl = Number(item.amount_cents || 0) / 100;
   const formattedAmount = brl(item.amount_cents);
   const formattedDueDate = dateOnly(item.due_date);
@@ -520,5 +698,13 @@ document.addEventListener('click', (event) => {
     });
   }
 });
+
+// Set today's date badge text
+const todayDate = new Date();
+const todayFormatted = todayDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+const badgeTodayEl = f('today-date-badge');
+if (badgeTodayEl) {
+  badgeTodayEl.textContent = `Hoje (${todayFormatted})`;
+}
 
 load();

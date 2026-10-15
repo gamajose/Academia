@@ -525,7 +525,7 @@
   function importToCalendar() {
     if (!selectedEvent) return;
     const start = icsDate(String(selectedEvent.scheduled_date).slice(0, 10), timeLabel(selectedEvent.start_time)); const end = icsDate(String(selectedEvent.scheduled_date).slice(0, 10), timeLabel(selectedEvent.end_time || selectedEvent.start_time));
-    const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BlueREC//Treinos//PT-BR', 'BEGIN:VEVENT', `UID:${selectedEvent.id}@bluerec`, `DTSTAMP:${icsDate(toDateKey(new Date()), new Date().toTimeString().slice(0, 5))}`, `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${icsEscape(selectedEvent.title)}`, `DESCRIPTION:${icsEscape(selectedEvent.notes || '')}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Academia LOBO//Treinos//PT-BR', 'BEGIN:VEVENT', `UID:${selectedEvent.id}@academialobo`, `DTSTAMP:${icsDate(toDateKey(new Date()), new Date().toTimeString().slice(0, 5))}`, `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${icsEscape(selectedEvent.title)}`, `DESCRIPTION:${icsEscape(selectedEvent.notes || '')}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = `${normalize(selectedEvent.title).replace(/\s+/g, '-') || 'treino'}.ics`; link.click(); URL.revokeObjectURL(url); status('student-event-detail-status', 'Arquivo de agenda gerado. Abra-o no calendário do celular para importar o treino.');
   }
 

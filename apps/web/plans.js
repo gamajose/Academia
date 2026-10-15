@@ -1,7 +1,12 @@
 (() => {
   const params = new URLSearchParams(window.location.search);
   const defaultHost = window.location.hostname || 'localhost';
-  const apiBase = (params.get('api') || localStorage.getItem('apiBaseUrl') || `http://${defaultHost}:3004`).replace(/\/$/, '');
+  const resolveApiBase = () => {
+    if (params.get('api')) return params.get('api').replace(/\/$/, '');
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') return window.location.origin;
+    return (localStorage.getItem('apiBaseUrl') || `http://${defaultHost}:3004`).replace(/\/$/, '');
+  };
+  const apiBase = resolveApiBase();
   const gymSlug = params.get('gym') || '';
   const catalogUrl = `${apiBase}/api/public/catalog${gymSlug ? `?gym_slug=${encodeURIComponent(gymSlug)}` : ''}`;
 

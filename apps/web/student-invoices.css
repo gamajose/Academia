@@ -1,0 +1,695 @@
+/* Estilos do Portal do Aluno - Faturas e Pagamentos Pix */
+
+.student-invoices-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px 16px 80px;
+}
+
+.invoices-hero {
+  margin-bottom: 20px;
+}
+
+.invoices-hero h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 4px 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.invoices-hero p {
+  color: var(--muted, #687b8d);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Status Cards Grid */
+.invoices-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.invoice-summary-card {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line, #e1e4e8);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+html[data-student-theme="dark"] .invoice-summary-card {
+  background: #181d22;
+  border-color: #2b323a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.invoice-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.invoice-summary-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted, #687b8d);
+}
+
+.invoice-summary-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(229, 83, 66, 0.1);
+  color: #e55342;
+}
+
+.invoice-summary-icon.ok {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
+.invoice-summary-icon.bad {
+  background: rgba(239, 68, 68, 0.14);
+  color: #dc2626;
+}
+
+.invoice-summary-icon.warn {
+  background: rgba(245, 158, 11, 0.14);
+  color: #d97706;
+}
+
+.invoice-summary-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.invoice-summary-value {
+  font-size: 24px;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.invoice-summary-desc {
+  font-size: 13px;
+  color: var(--muted, #687b8d);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Badges */
+.inv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.inv-badge.ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.inv-badge.bad {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.inv-badge.warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+html[data-student-theme="dark"] .inv-badge.ok {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+html[data-student-theme="dark"] .inv-badge.bad {
+  background: rgba(239, 68, 68, 0.22);
+  color: #f87171;
+}
+
+html[data-student-theme="dark"] .inv-badge.warn {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+}
+
+/* Filter Tabs */
+.invoices-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.invoice-filter-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line, #e1e4e8);
+  background: var(--surface, #ffffff);
+  color: var(--text, #1c2024);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+html[data-student-theme="dark"] .invoice-filter-btn {
+  background: #181d22;
+  border-color: #2b323a;
+  color: #c9d1d9;
+}
+
+.invoice-filter-btn:hover {
+  border-color: #e55342;
+  color: #e55342;
+}
+
+.invoice-filter-btn.active {
+  background: #e55342;
+  color: #ffffff;
+  border-color: #e55342;
+  box-shadow: 0 2px 8px rgba(229, 83, 66, 0.35);
+}
+
+/* Invoices Cards List */
+.invoices-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.invoice-card {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line, #e1e4e8);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+html[data-student-theme="dark"] .invoice-card {
+  background: #181d22;
+  border-color: #2b323a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.invoice-card.overdue {
+  border-left: 5px solid #dc2626;
+}
+
+.invoice-card.pending {
+  border-left: 5px solid #f59e0b;
+}
+
+.invoice-card.paid {
+  border-left: 5px solid #16a34a;
+}
+
+.invoice-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.invoice-plan-name {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--text, #1c2024);
+  margin: 0;
+}
+
+html[data-student-theme="dark"] .invoice-plan-name {
+  color: #f0f6fc;
+}
+
+.invoice-card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+}
+
+html[data-student-theme="dark"] .invoice-card-body {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.invoice-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.invoice-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #687b8d);
+}
+
+.invoice-info-value {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text, #1c2024);
+}
+
+html[data-student-theme="dark"] .invoice-info-value {
+  color: #e6edf3;
+}
+
+.invoice-info-value.amount {
+  font-size: 18px;
+  font-weight: 850;
+  color: #e55342;
+}
+
+.invoice-info-value.paid-at {
+  color: #16a34a;
+}
+
+html[data-student-theme="dark"] .invoice-info-value.paid-at {
+  color: #4ade80;
+}
+
+.invoice-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.invoice-footer-meta {
+  font-size: 13px;
+  color: var(--muted, #687b8d);
+}
+
+.invoice-pay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  background: #00bdae;
+  background: linear-gradient(135deg, #00bdae 0%, #009387 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 750;
+  border: 0;
+  box-shadow: 0 4px 14px rgba(0, 189, 174, 0.35);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.invoice-pay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 189, 174, 0.45);
+  filter: brightness(1.05);
+}
+
+.invoice-pay-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.invoice-receipt-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted, #687b8d);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+html[data-student-theme="dark"] .invoice-receipt-tag {
+  background: rgba(255, 255, 255, 0.05);
+  color: #8b949e;
+}
+
+/* Pix Modal */
+.pix-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pix-modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface, #ffffff);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-student-theme="dark"] .pix-modal-card {
+  background: #181d22;
+  border: 1px solid #2b323a;
+}
+
+.pix-modal-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line, #e1e4e8);
+}
+
+html[data-student-theme="dark"] .pix-modal-header {
+  border-color: #2b323a;
+}
+
+.pix-modal-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pix-modal-close {
+  background: transparent;
+  border: 0;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--muted, #687b8d);
+  padding: 0;
+  line-height: 1;
+}
+
+.pix-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.pix-amount-badge {
+  background: rgba(0, 189, 174, 0.1);
+  color: #009387;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 850;
+  width: 100%;
+}
+
+html[data-student-theme="dark"] .pix-amount-badge {
+  background: rgba(0, 189, 174, 0.16);
+  color: #38ef7d;
+}
+
+/* QR Code Container */
+.pix-qr-container {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e1e4e8;
+}
+
+.pix-qr-container img,
+.pix-qr-container canvas {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+
+/* Favorecido Box */
+.pix-receiver-box {
+  width: 100%;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--line, #e1e4e8);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+html[data-student-theme="dark"] .pix-receiver-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: #2b323a;
+}
+
+.pix-receiver-box strong {
+  color: var(--text, #1c2024);
+}
+
+html[data-student-theme="dark"] .pix-receiver-box strong {
+  color: #f0f6fc;
+}
+
+/* Copia e Cola Field */
+.pix-copy-section {
+  width: 100%;
+  text-align: left;
+}
+
+.pix-copy-section label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted, #687b8d);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.pix-copy-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pix-copy-input {
+  flex: 1;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #e1e4e8);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text, #1c2024);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-student-theme="dark"] .pix-copy-input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #2b323a;
+  color: #c9d1d9;
+}
+
+.pix-copy-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #e55342;
+  color: #ffffff;
+  border: 0;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pix-copy-btn:hover {
+  background: #c73e2f;
+}
+
+/* Live Auto-validation Pulse */
+.pix-validation-status {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(229, 83, 66, 0.08);
+  color: #e55342;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+html[data-student-theme="dark"] .pix-validation-status {
+  background: rgba(229, 83, 66, 0.15);
+  color: #ff7b72;
+}
+
+.pix-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e55342;
+  box-shadow: 0 0 0 0 rgba(229, 83, 66, 0.7);
+  animation: pixPulse 1.5s infinite;
+}
+
+@keyframes pixPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(229, 83, 66, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(229, 83, 66, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(229, 83, 66, 0); }
+}
+
+.pix-check-now-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: #16a34a;
+  color: #ffffff;
+  border: 0;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+  transition: all 0.15s ease;
+}
+
+.pix-check-now-btn:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+/* Success State in Modal */
+.pix-success-box {
+  padding: 24px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.pix-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-student-theme="dark"] .pix-success-icon {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.pix-success-icon svg {
+  width: 36px;
+  height: 36px;
+}
+
+.pix-success-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #16a34a;
+  margin: 0;
+}
+
+html[data-student-theme="dark"] .pix-success-title {
+  color: #4ade80;
+}
+
+.pix-success-msg {
+  font-size: 14px;
+  color: var(--muted, #687b8d);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Empty State */
+.invoices-empty {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--surface, #ffffff);
+  border: 1px dashed var(--line, #e1e4e8);
+  border-radius: 16px;
+  color: var(--muted, #687b8d);
+}
+
+html[data-student-theme="dark"] .invoices-empty {
+  background: #181d22;
+  border-color: #2b323a;
+}
+
+@media (max-width: 600px) {
+  .student-invoices-shell {
+    padding: 12px 10px 74px;
+  }
+  .invoices-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .invoice-card {
+    padding: 14px 14px;
+  }
+  .invoice-card-body {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .pix-modal-card {
+    max-height: 95vh;
+  }
+  .pix-qr-container img,
+  .pix-qr-container canvas {
+    width: 190px;
+    height: 190px;
+  }
+}

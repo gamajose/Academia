@@ -19,15 +19,15 @@
   function getToken() {
     return localStorage.getItem('studentToken') || localStorage.getItem('academiaStudentToken') || getCookie('academiaStudentAuth') || '';
   }
-  const navigationIcons = { training: 'dumbbell', progress: 'chart', goals: 'target', share: 'upload', history: 'history', access: 'qr', profile: 'profile' };
-  const navigationLabels = { training: 'Treino', progress: 'Evolução', goals: 'Metas', share: 'Compartilhar', history: 'Histórico', access: 'Acesso', profile: 'Perfil' };
+  const navigationIcons = { training: 'dumbbell', progress: 'chart', goals: 'target', invoices: 'invoice', share: 'upload', history: 'history', access: 'qr', profile: 'profile' };
+  const navigationLabels = { training: 'Treino', progress: 'Evolução', goals: 'Metas', invoices: 'Faturas', share: 'Compartilhar', history: 'Histórico', access: 'Acesso', profile: 'Perfil' };
   const translations = {
     en: {
-      'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Compartilhar': 'Share', 'Histórico': 'History', 'Acesso': 'Access', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
+      'Comunidade': 'Community', 'Treino': 'Workout', 'Evolução': 'Progress', 'Metas': 'Goals', 'Faturas': 'Invoices', 'Compartilhar': 'Share', 'Histórico': 'History', 'Acesso': 'Access', 'Perfil': 'Profile', 'Minha conta': 'My account', 'Meu perfil': 'My profile', 'Sair': 'Sign out',
       'Editar perfil': 'Edit profile', 'Conta': 'Account', 'Dados da conta': 'Account details', 'Dados corporais': 'Body data', 'Segurança': 'Security', 'Preferências': 'Preferences', 'Idioma': 'Language', 'Tema': 'Theme', 'Exportar dados': 'Export data', 'Foto visível no seu perfil': 'Profile photo', 'Nome': 'Name', 'Bio': 'Bio', 'Link': 'Link', 'Deixar meu perfil privado': 'Make my profile private', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'On a private profile, only approved followers can see your posts.', 'Salvar alterações': 'Save changes', 'Cancelar': 'Cancel', 'Dados pessoais': 'Personal details', 'Contato': 'Contact', 'Endereço': 'Address', 'Sobre você': 'About you', 'Nome completo': 'Full name', 'Data de nascimento': 'Date of birth', 'CPF': 'Tax ID', 'RG': 'ID document', 'E-mail': 'Email', 'Telefone': 'Phone', 'Rua': 'Street', 'Número': 'Number', 'Bairro': 'Neighborhood', 'Cidade': 'City', 'Estado': 'State', 'Objetivo': 'Goal', 'Alergias e restrições': 'Allergies and restrictions', 'Observações': 'Notes', 'Salvar preferências': 'Save preferences', 'Salvar idioma': 'Save language', 'Salvar tema': 'Save theme', 'O idioma escolhido será aplicado à interface do aluno.': 'The selected language will be applied to the student interface.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'The appearance is applied immediately and kept on future screens.', 'Trocar senha': 'Change password', 'Senha atual': 'Current password', 'Nova senha': 'New password', 'Confirmar nova senha': 'Confirm new password', 'Atualizar senha': 'Update password', 'Português': 'Portuguese', 'Inglês': 'English', 'Espanhol': 'Spanish', 'Español': 'Spanish', 'Claro': 'Light', 'Escuro': 'Dark', 'Automático': 'System'
     },
     es: {
-      'Comunidade': 'Comunidad', 'Treino': 'Entrenamiento', 'Evolução': 'Progreso', 'Metas': 'Metas', 'Compartilhar': 'Compartir', 'Histórico': 'Historial', 'Acesso': 'Acceso', 'Perfil': 'Perfil', 'Minha conta': 'Mi cuenta', 'Meu perfil': 'Mi perfil', 'Sair': 'Cerrar sesión',
+      'Comunidade': 'Comunidad', 'Treino': 'Entrenamiento', 'Evolução': 'Progreso', 'Metas': 'Metas', 'Faturas': 'Facturas', 'Compartilhar': 'Compartir', 'Histórico': 'Historial', 'Acesso': 'Acceso', 'Perfil': 'Perfil', 'Minha conta': 'Mi cuenta', 'Meu perfil': 'Mi perfil', 'Sair': 'Cerrar sesión',
       'Editar perfil': 'Editar perfil', 'Conta': 'Cuenta', 'Dados da conta': 'Datos de la cuenta', 'Dados corporais': 'Datos corporales', 'Segurança': 'Seguridad', 'Preferências': 'Preferencias', 'Idioma': 'Idioma', 'Tema': 'Tema', 'Exportar dados': 'Exportar datos', 'Foto visível no seu perfil': 'Foto visible en tu perfil', 'Nome': 'Nombre', 'Bio': 'Biografía', 'Link': 'Enlace', 'Deixar meu perfil privado': 'Hacer mi perfil privado', 'Em um perfil privado, somente seguidores aprovados veem suas publicações.': 'En un perfil privado, solo los seguidores aprobados ven tus publicaciones.', 'Salvar alterações': 'Guardar cambios', 'Cancelar': 'Cancelar', 'Dados pessoais': 'Datos personales', 'Contato': 'Contacto', 'Endereço': 'Dirección', 'Sobre você': 'Sobre ti', 'Nome completo': 'Nombre completo', 'Data de nascimento': 'Fecha de nacimiento', 'CPF': 'Documento fiscal', 'RG': 'Documento de identidad', 'E-mail': 'Correo electrónico', 'Telefone': 'Teléfono', 'Rua': 'Calle', 'Número': 'Número', 'Bairro': 'Barrio', 'Cidade': 'Ciudad', 'Estado': 'Estado', 'Objetivo': 'Objetivo', 'Alergias e restrições': 'Alergias y restricciones', 'Observações': 'Observaciones', 'Salvar preferências': 'Guardar preferencias', 'Salvar idioma': 'Guardar idioma', 'Salvar tema': 'Guardar tema', 'O idioma escolhido será aplicado à interface do aluno.': 'El idioma elegido se aplicará a la interfaz del alumno.', 'A aparência será aplicada imediatamente e mantida nas próximas telas.': 'La apariencia se aplica inmediatamente y se mantiene en las próximas pantallas.', 'Trocar senha': 'Cambiar contraseña', 'Senha atual': 'Contraseña actual', 'Nova senha': 'Nueva contraseña', 'Confirmar nova senha': 'Confirmar nueva contraseña', 'Atualizar senha': 'Actualizar contraseña', 'Português': 'Portugués', 'Inglês': 'Inglés', 'Espanhol': 'Español', 'Español': 'Español', 'Claro': 'Claro', 'Escuro': 'Oscuro', 'Automático': 'Sistema'
     }
   };
@@ -58,15 +58,97 @@
     translatePage();
   }
 
+  function updateThemeToggleIcon(theme) {
+    const btn = document.getElementById('student-theme-toggle');
+    if (!btn) return;
+    btn.dataset.theme = theme;
+    btn.setAttribute('title', theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro');
+  }
+
+  function setupThemeToggle() {
+    if (document.getElementById('student-theme-toggle')) return;
+    const profileMenu = document.querySelector('.student-top-nav .profile-menu, .top-nav .profile-menu');
+    if (!profileMenu) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'student-theme-toggle';
+    btn.className = 'student-theme-toggle-btn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Alternar tema claro/escuro');
+    btn.setAttribute('title', 'Alternar tema claro/escuro');
+    btn.innerHTML = `
+      <span class="theme-icon-sun" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </span>
+      <span class="theme-icon-moon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </span>
+    `;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const current = document.documentElement.dataset.studentTheme || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+
+    let actionsWrap = profileMenu.parentElement.querySelector('.student-top-actions');
+    if (!actionsWrap) {
+      actionsWrap = document.createElement('div');
+      actionsWrap.className = 'student-top-actions';
+      actionsWrap.style.display = 'inline-flex';
+      actionsWrap.style.alignItems = 'center';
+      actionsWrap.style.gap = '8px';
+      actionsWrap.style.justifySelf = 'end';
+      profileMenu.parentNode.insertBefore(actionsWrap, profileMenu);
+      actionsWrap.appendChild(profileMenu);
+    }
+
+    actionsWrap.insertBefore(btn, profileMenu);
+    updateThemeToggleIcon(document.documentElement.dataset.studentTheme || 'light');
+  }
+
   function applyTheme(theme) {
     const preference = validThemes.includes(theme) ? theme : 'light';
     const effective = preference === 'system' ? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference;
     document.documentElement.dataset.studentTheme = effective;
     document.documentElement.dataset.studentThemePreference = preference;
+    document.documentElement.style.backgroundColor = effective === 'dark' ? '#121518' : '#f4f5f7';
+    document.documentElement.style.colorScheme = effective;
     localStorage.setItem('studentTheme', preference);
+    updateThemeToggleIcon(effective);
+    if (typeof window.onStudentThemeChange === 'function') {
+      window.onStudentThemeChange(effective);
+    }
   }
 
-  applyTheme(localStorage.getItem('studentTheme') || 'light');
+  function bootShellUi() {
+    setupThemeToggle();
+    if (document.body) {
+      createMobileNavigation();
+      setActiveLink();
+    }
+  }
+
+  applyTheme(localStorage.getItem('studentTheme') || (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootShellUi);
+  } else {
+    bootShellUi();
+  }
   window.clearTimeout(window.__uiBootFallback);
   document.documentElement.classList.remove('ui-booting');
 
@@ -79,6 +161,7 @@
       history: '<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5M12 7v5l3 2"/>',
       profile: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
       users: '<path d="M16 20v-1.5a4.5 4.5 0 0 0-9 0V20M12 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM19 11a2.8 2.8 0 0 0-1.8-5.2M19.5 20v-1a3.7 3.7 0 0 0-2.8-3.6"/>',
+      invoice: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
       qr: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z"/>'
     };
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.target}</svg>`;
@@ -93,6 +176,7 @@
       ['training', './student-portal.html', 'dumbbell', 'Treino'],
       ['progress', './student-progress.html', 'chart', 'Evolução'],
       ['goals', './student-goals.html', 'target', 'Metas'],
+      ['invoices', './student-invoices.html', 'invoice', 'Faturas'],
       ['access', './student-access.html', 'qr', 'Acesso']
     ];
     items.forEach(([key, href, iconText, label]) => {
@@ -169,14 +253,14 @@
         link.querySelector('.nav-label').textContent = translations[getLocale()]?.[navigationLabels[key]] || navigationLabels[key];
       }
     });
-    const mobileCurrent = current === 'goals' ? 'goals' : current === 'progress' ? 'progress' : current === 'access' ? 'access' : current === 'training' ? 'training' : '';
+    const mobileCurrent = current === 'goals' ? 'goals' : current === 'progress' ? 'progress' : current === 'access' ? 'access' : current === 'invoices' ? 'invoices' : current === 'training' ? 'training' : '';
     document.querySelectorAll('[data-mobile-student-link]').forEach((link) => link.classList.toggle('active', link.dataset.mobileStudentLink === mobileCurrent));
   }
 
   async function applyEnabledModules(token) {
     for (let attempt = 0; attempt < 20 && !window.AcademiaModules; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 25));
     const modules = window.AcademiaModules?.load ? await window.AcademiaModules.load(token) : {};
-    const linkModules = { training: 'training', complete: 'training', history: 'training', progress: 'assessments', goals: 'assessments', share: 'assessments', access: 'access' };
+    const linkModules = { training: 'training', complete: 'training', history: 'training', progress: 'assessments', goals: 'assessments', share: 'assessments', access: 'access', invoices: 'finance' };
     document.querySelectorAll('[data-student-link], [data-mobile-student-link]').forEach((link) => {
       const key = link.dataset.studentLink || link.dataset.mobileStudentLink;
       const module = linkModules[key];
@@ -199,7 +283,8 @@
       return null;
     }
     if (!localStorage.getItem('studentToken')) localStorage.setItem('studentToken', token);
-    setActiveLink();
+    document.cookie = `academiaStudentAuth=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
+    bootShellUi();
     if (!await applyEnabledModules(token)) return null;
     translatePage();
     const trigger = document.getElementById('student-profile-trigger');

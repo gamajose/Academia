@@ -1,5 +1,8 @@
 const host = window.location.hostname || 'localhost';
 function resolveApiBase() {
+  if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+    return window.location.origin;
+  }
   const fallback = `${window.location.protocol}//${host}:3004`;
   try {
     const stored = localStorage.getItem('apiBaseUrl') || '';

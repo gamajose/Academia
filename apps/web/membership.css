@@ -97,12 +97,12 @@ html[data-admin-shell="true"] body.admin-memberships-page .panel > .membership-f
 }
 
 #link-modal #save-link-button {
-  background: rgba(20, 120, 212, 0.72) !important;
+  background: rgba(229, 83, 66, 0.72) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #fff !important;
-  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2) !important;
+  box-shadow: 0 4px 14px rgba(229, 83, 66, 0.2) !important;
 }
 
 #link-modal #cancel-link-button {
@@ -191,8 +191,8 @@ html[data-admin-theme="dark"] #link-modal #cancel-link-button {
   font-weight: 600 !important;
 }
 .membership-card-menu-dropdown button:hover {
-  background: color-mix(in srgb, var(--accent, #1478d4) 12%, transparent) !important;
-  color: var(--accent, #1478d4) !important;
+  background: color-mix(in srgb, var(--accent, #e55342) 12%, transparent) !important;
+  color: var(--accent, #e55342) !important;
 }
 .membership-card-menu-dropdown button.danger {
   color: #dc2626 !important;

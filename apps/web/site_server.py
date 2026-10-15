@@ -12,7 +12,7 @@ UPLOAD_ROOT = Path(os.environ.get('EDITOR_UPLOAD_DIR', str(ROOT / 'uploads'))).r
 PUBLIC_HTML = {'', '/', 'index.html', 'plans.html', 'matricula-publica.html', 'payment-return.html', 'student-login.html', 'student-register.html', 'student-reset.html', 'student-confirm.html', 'home.html'}
 STUDENT_HTML = {
     'student-portal.html', 'student-complete.html', 'student-progress.html',
-    'student-goals.html', 'student-share.html', 'student-history.html', 'student-access.html',
+    'student-goals.html', 'student-invoices.html', 'student-share.html', 'student-history.html', 'student-access.html',
     'student-profile.html', 'student-security.html', 'student-change-password.html',
     'visitor-portal.html'
 }
@@ -75,6 +75,9 @@ class SiteHandler(SimpleHTTPRequestHandler):
         self.send_header('Location', location)
         self.end_headers()
 
+    def is_student_page(self, name):
+        return name in STUDENT_HTML or name.startswith('student-') or name.startswith('visitor-')
+
     def authorized_for_html(self, name):
         if name in PUBLIC_HTML or not name.endswith('.html'):
             return True
@@ -83,7 +86,7 @@ class SiteHandler(SimpleHTTPRequestHandler):
         admin_token = cookie_value(cookie, 'academiaAuth')
         student_token = cookie_value(cookie, 'academiaStudentAuth')
 
-        if name in STUDENT_HTML:
+        if self.is_student_page(name):
             student = api_get('/api/student/me', student_token)
             if not student:
                 student = api_get('/api/student/visitor/me', student_token)
@@ -159,7 +162,10 @@ class SiteHandler(SimpleHTTPRequestHandler):
             return
 
         if not self.authorized_for_html(name):
-            self.redirect('/student-login.html')
+            if self.is_student_page(name):
+                self.redirect('/student-login.html')
+            else:
+                self.redirect('/index.html')
             return
 
         if name.endswith('.html'):

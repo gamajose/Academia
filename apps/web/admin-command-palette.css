@@ -11,7 +11,7 @@
   padding: 0 12px;
   margin: 0 12px;
   background: rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--line, #d7e3ef);
+  border: 1px solid var(--line, #e1e4e8);
   border-radius: 9px;
   color: var(--muted, #64748b);
   font-size: 13px;
@@ -22,8 +22,8 @@
 }
 
 .nav-spotlight-btn:hover {
-  background: rgba(20, 120, 212, 0.08);
-  border-color: var(--accent, #1478d4);
+  background: rgba(229, 83, 66, 0.08);
+  border-color: var(--accent, #e55342);
   color: var(--text, #0f172a);
 }
 
@@ -176,7 +176,7 @@
 
 .cmd-item:hover,
 .cmd-item.is-selected {
-  background: var(--accent, #1478d4);
+  background: var(--accent, #e55342);
   color: #ffffff !important;
 }
 

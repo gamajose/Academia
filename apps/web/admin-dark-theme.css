@@ -6,8 +6,8 @@ html[data-admin-theme="dark"][data-admin-shell="true"] {
   --muted: #a9bed1;
   --text: #e8f0f8;
   --line: #29445d;
-  --accent: #2d9cff;
-  --accent-dark: #1478d4;
+  --accent: #e55342;
+  --accent-dark: #e55342;
   --shadow: 0 18px 48px rgba(0, 0, 0, .2);
 }
 
@@ -269,7 +269,7 @@ html[data-admin-theme="dark"][data-admin-shell="true"] .modal-card .tox .tox-edi
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .top-nav {
-  background: rgba(8, 26, 43, .98) !important;
+  background: rgba(31, 35, 40, .98) !important;
 }
 
 html[data-admin-theme="dark"][data-admin-shell="true"] .badge.ok,

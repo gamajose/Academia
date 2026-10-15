@@ -41,11 +41,25 @@ async function handleReportsRoutes(req, res, user, url, helpers) {
     const result = await query(
       `SELECT p.id, p.member_id, m.name AS member_name, m.email AS member_email, m.phone, p.membership_id, p.original_amount_cents, p.amount_cents, p.discount_cents, p.fee_cents, p.method, p.notes, p.status, p.due_date, p.paid_at, p.created_at, p.updated_at
        FROM payments p INNER JOIN members m ON m.id = p.member_id
-       WHERE p.gym_id = $1 ORDER BY p.due_date DESC LIMIT 250`,
+       WHERE p.gym_id = $1 ORDER BY p.due_date DESC LIMIT 500`,
       [user.gym_id]
     );
     const summary = await query(
-      "SELECT count(*) FILTER (WHERE status = 'pending') AS pending_count, count(*) FILTER (WHERE status = 'paid') AS paid_count, COALESCE(sum(amount_cents) FILTER (WHERE status = 'pending'), 0) AS pending_amount_cents, COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid'), 0) AS paid_amount_cents FROM payments WHERE gym_id = $1",
+      `SELECT
+         count(*) FILTER (WHERE status = 'pending') AS pending_count,
+         count(*) FILTER (WHERE status = 'paid') AS paid_count,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'pending'), 0) AS pending_amount_cents,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid'), 0) AS paid_amount_cents,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid' AND paid_at::date = current_date), 0) AS today_amount_cents,
+         count(*) FILTER (WHERE status = 'paid' AND paid_at::date = current_date) AS today_count,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid' AND paid_at >= date_trunc('month', now())), 0) AS month_amount_cents,
+         count(*) FILTER (WHERE status = 'paid' AND paid_at >= date_trunc('month', now())) AS month_count,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid' AND paid_at::date = current_date AND method = 'pix'), 0) AS today_pix_cents,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid' AND paid_at::date = current_date AND method = 'card'), 0) AS today_card_cents,
+         COALESCE(sum(amount_cents) FILTER (WHERE status = 'paid' AND paid_at::date = current_date AND method = 'cash'), 0) AS today_cash_cents,
+         COALESCE(sum(amount_cents) FILTER (WHERE status IN ('pending', 'overdue') AND due_date < current_date), 0) AS overdue_amount_cents,
+         count(*) FILTER (WHERE status IN ('pending', 'overdue') AND due_date < current_date) AS overdue_count
+       FROM payments WHERE gym_id = $1`,
       [user.gym_id]
     );
     return send(res, 200, { summary: summary.rows[0], data: result.rows });

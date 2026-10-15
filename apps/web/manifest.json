@@ -1,7 +1,7 @@
 {
-  "name": "BlueREC Academia",
-  "short_name": "BlueREC",
-  "description": "Sistema de gestão e treinos da BlueREC Academia",
+  "name": "Academia LOBO",
+  "short_name": "Academia LOBO",
+  "description": "Sistema de gestão e treinos da Academia LOBO",
   "start_url": "./student-portal.html",
   "display": "standalone",
   "background_color": "#091428",

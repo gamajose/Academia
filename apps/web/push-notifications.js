@@ -1,5 +1,5 @@
 // Gerenciador de Notificações Externas (Celular, Smartwatch e Navegador)
-// BlueREC Academia - Integração PWA e Service Worker
+// Academia LOBO - Integração PWA e Service Worker
 
 (function () {
   const SW_PATH = './sw.js';
@@ -55,7 +55,7 @@
         badge: options.badge || './blue-rec-logo.png',
         // Padrão de vibração para celular e smartwatch
         vibrate: options.vibrate || [250, 100, 250, 100, 250],
-        tag: options.tag || 'bluerec-notification',
+        tag: options.tag || 'academialobo-notification',
         renotify: true,
         data: {
           url: options.url || './student-progress.html?action=new-measurement',
@@ -102,7 +102,7 @@
 
       // Trava de ciclo: no máximo 1 notificação por mês (ex: 2026-10)
       const now = new Date();
-      const cycleKey = `bluerec_notified_cycle_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const cycleKey = `academialobo_notified_cycle_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}`;
       if (localStorage.getItem(cycleKey)) {
         return; // Já foi notificado neste ciclo, não repete
       }

@@ -32,6 +32,20 @@ async function handlePayments(req, res, user, url, helpers) {
       [input.payment_id, user.gym_id]
     );
     if (!result.rowCount) return send(res, 404, { error: 'pagamento_nao_encontrado' });
+
+    try {
+      const cash = await query("SELECT id FROM cash_sessions WHERE gym_id = $1 AND status = 'open' ORDER BY opened_at DESC LIMIT 1", [user.gym_id]);
+      if (cash.rowCount) {
+        const member = await query('SELECT name FROM members WHERE id = $1', [result.rows[0].member_id]);
+        const memberName = member.rowCount ? member.rows[0].name : 'Aluno';
+        await query(
+          `INSERT INTO cash_movements(gym_id, cash_session_id, payment_id, movement_type, amount_cents, description, created_by)
+           VALUES($1, $2, $3, 'income', $4, $5, $6)`,
+          [user.gym_id, cash.rows[0].id, input.payment_id, result.rows[0].amount_cents, `Recebimento - ${memberName}`, user.sub]
+        );
+      }
+    } catch (_) {}
+
     return send(res, 200, result.rows[0]);
   }
 

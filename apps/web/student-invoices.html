@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <script src="./ui-bootstrap.js?v=20261014-theme1"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minhas Faturas - Academia LOBO</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./premium-ui.css" />
+  <link rel="stylesheet" href="./blue-theme.css" />
+  <link rel="stylesheet" href="./student-shell.css?v=20261014-theme1" />
+  <link rel="stylesheet" href="./student-invoices.css?v=20261015-1" />
+  <link rel="manifest" href="./manifest.json" />
+</head>
+<body class="student-page student-invoices-page" data-student-page="invoices">
+  <nav class="top-nav student-top-nav">
+    <a class="top-nav-brand" href="./student-portal.html" aria-label="Academia LOBO, área do aluno">
+      <img class="top-nav-logo" src="./blue-rec-logo.png" alt="Academia LOBO" width="36" height="36" />
+      <span class="brand-wordmark"><strong><span class="brand-academia">Academia</span> LOBO</strong><span>área do aluno</span></span>
+    </a>
+    <div class="top-nav-links student-module-nav" aria-label="Navegação do aluno">
+      <a data-student-link="training" href="./student-portal.html">Meu treino</a>
+      <a data-student-link="progress" href="./student-progress.html">Minha evolução</a>
+      <a data-student-link="goals" href="./student-goals.html">Minhas metas</a>
+      <a data-student-link="invoices" href="./student-invoices.html">Faturas</a>
+      <a data-student-link="share" href="./student-share.html">Compartilhar foto</a>
+      <a data-student-link="access" href="./student-access.html">Acesso</a>
+    </div>
+    <div class="profile-menu">
+      <button class="profile-trigger" id="student-profile-trigger" type="button" aria-expanded="false" aria-haspopup="menu">
+        <span class="profile-avatar" data-student-avatar>A</span>
+        <span class="profile-copy"><strong data-student-name>Aluno</strong><span>Minha conta</span></span>
+      </button>
+      <div class="profile-dropdown hidden" id="student-profile-dropdown" role="menu">
+        <a href="./student-profile.html">Meu perfil</a>
+        <button class="logout-item" id="student-profile-logout" type="button">Sair</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="student-invoices-shell">
+    <header class="invoices-hero">
+      <p class="eyebrow">Financeiro & Mensalidades</p>
+      <h1>Minhas Faturas</h1>
+      <p>Acompanhe suas mensalidades, histórico de pagamentos e pague com Pix instantâneo.</p>
+    </header>
+
+    <!-- Resumo Financeiro / Situação Atual -->
+    <section class="invoices-summary-grid" id="invoices-summary-grid" aria-label="Resumo da situação financeira">
+      <!-- Card Situação Atual -->
+      <article class="invoice-summary-card">
+        <div class="invoice-summary-header">
+          <span class="invoice-summary-title">Situação Geral</span>
+          <span class="invoice-summary-icon" id="summary-status-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+        </div>
+        <div class="invoice-summary-main">
+          <span class="inv-badge" id="summary-status-badge">Carregando...</span>
+        </div>
+        <p class="invoice-summary-desc" id="summary-status-desc">Verificando dados financeiros...</p>
+      </article>
+
+      <!-- Card Próximo Vencimento / Último Pagamento -->
+      <article class="invoice-summary-card">
+        <div class="invoice-summary-header">
+          <span class="invoice-summary-title">Próximo Vencimento</span>
+          <span class="invoice-summary-icon ok">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+        </div>
+        <div class="invoice-summary-main">
+          <span class="invoice-summary-value" id="summary-next-due">--/--/----</span>
+        </div>
+        <p class="invoice-summary-desc" id="summary-next-desc">Nenhuma fatura pendente</p>
+      </article>
+
+      <!-- Card Histórico / Faturas Pagas -->
+      <article class="invoice-summary-card">
+        <div class="invoice-summary-header">
+          <span class="invoice-summary-title">Histórico de Pagamentos</span>
+          <span class="invoice-summary-icon ok">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </span>
+        </div>
+        <div class="invoice-summary-main">
+          <span class="invoice-summary-value" id="summary-paid-count">0</span>
+          <span style="font-size: 14px; color: var(--muted);">fatura(s) quitada(s)</span>
+        </div>
+        <p class="invoice-summary-desc" id="summary-last-paid-desc">Nenhum pagamento registrado</p>
+      </article>
+    </section>
+
+    <!-- Filtros de Faturas -->
+    <div class="invoices-filter-bar" role="tablist" aria-label="Filtro de faturas">
+      <button type="button" class="invoice-filter-btn active" data-filter="all">Todas as faturas</button>
+      <button type="button" class="invoice-filter-btn" data-filter="pending">Abertas & Atrasadas</button>
+      <button type="button" class="invoice-filter-btn" data-filter="paid">Pagas</button>
+    </div>
+
+    <!-- Lista de Faturas -->
+    <section class="invoices-list-container" id="invoices-list-container" aria-live="polite">
+      <div class="invoices-empty" id="invoices-loading">Carregando suas faturas...</div>
+    </section>
+
+    <p class="status-line" id="student-invoices-status" aria-live="polite" style="margin-top: 16px;"></p>
+  </main>
+
+  <!-- Modal Pix de Pagamento Instantâneo -->
+  <div class="pix-modal-overlay hidden" id="pix-payment-modal" role="dialog" aria-modal="true" aria-labelledby="pix-modal-title">
+    <article class="pix-modal-card">
+      <div class="pix-modal-header">
+        <h3 id="pix-modal-title">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="color: #00bdae;"><path d="M12 2L2 12l10 10 10-10L12 2zm0 3.83L18.17 12 12 18.17 5.83 12 12 5.83z"/></svg>
+          <span>Pagar Fatura com Pix</span>
+        </h3>
+        <button type="button" class="pix-modal-close" id="pix-modal-close" aria-label="Fechar">&times;</button>
+      </div>
+
+      <!-- Corpo Normal do Modal (QR Code & Copia e Cola) -->
+      <div class="pix-modal-body" id="pix-modal-normal-body">
+        <div class="pix-amount-badge" id="pix-modal-amount">R$ 0,00</div>
+
+        <!-- Box do Favorecido / Conta Admin -->
+        <div class="pix-receiver-box">
+          <div><span>Favorecido / Academia: </span><strong id="pix-modal-receiver">-</strong></div>
+          <div><span>Chave Pix da conta: </span><strong id="pix-modal-key">-</strong></div>
+          <div id="pix-modal-bank-row" class="hidden"><span>Banco: </span><strong id="pix-modal-bank">-</strong></div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="pix-qr-container">
+          <canvas id="pix-modal-qr-canvas" width="220" height="220"></canvas>
+        </div>
+        <small style="color: var(--muted); font-size: 12px;">Abra o app do seu banco e aponte a câmera para o QR Code acima</small>
+
+        <!-- Copia e Cola -->
+        <div class="pix-copy-section">
+          <label for="pix-copy-code">Ou utilize o Pix Copia e Cola:</label>
+          <div class="pix-copy-row">
+            <input id="pix-copy-code" class="pix-copy-input" readonly type="text" />
+            <button type="button" class="pix-copy-btn" id="pix-copy-btn">Copiar</button>
+          </div>
+          <span id="pix-copy-feedback" style="font-size: 11px; color: #16a34a; font-weight: 700; display: block; margin-top: 4px; min-height: 16px;"></span>
+        </div>
+
+        <!-- Status de Validação Automática -->
+        <div class="pix-validation-status">
+          <span class="pix-pulse-dot" aria-hidden="true"></span>
+          <span>Aguardando pagamento... Validação automática direta no site.</span>
+        </div>
+
+        <!-- Botão de Verificação Imediata -->
+        <button type="button" class="pix-check-now-btn" id="pix-check-now-btn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Já fiz o Pix / Validar pagamento</span>
+        </button>
+      </div>
+
+      <!-- Corpo de Sucesso (após validação automática) -->
+      <div class="pix-modal-body pix-success-box hidden" id="pix-modal-success-body">
+        <div class="pix-success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4 class="pix-success-title">Pagamento Confirmado!</h4>
+        <p class="pix-success-msg">
+          Seu pagamento via Pix caiu na conta da academia e foi <strong>validado automaticamente pelo site</strong> sem necessidade de aprovação manual.
+        </p>
+        <div class="pix-receiver-box" style="text-align: center; margin: 8px 0;">
+          <div><span>Comprovante: </span><strong id="pix-success-receipt">-</strong></div>
+          <div><span>Data da baixa: </span><strong id="pix-success-date">-</strong></div>
+        </div>
+        <button type="button" class="button" id="pix-success-close-btn" style="width: 100%; border-radius: 12px; padding: 12px; font-weight: 750;">Concluir e ver faturas</button>
+      </div>
+    </article>
+  </div>
+
+  <script src="./qrcode.min.js"></script>
+  <script src="./pix-utils.js"></script>
+  <script src="./student-shell.js?v=20261015-1"></script>
+  <script src="./student-invoices.js?v=20261015-1"></script>
+</body>
+</html>

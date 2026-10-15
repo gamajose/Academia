@@ -28,7 +28,7 @@
   padding: 0 24px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(20, 120, 212, 0.72);
+  background: rgba(229, 83, 66, 0.72);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #fff;
@@ -36,7 +36,7 @@
   font-size: 14px;
   cursor: pointer;
   transition: all .15s ease;
-  box-shadow: 0 4px 14px rgba(20, 120, 212, 0.2);
+  box-shadow: 0 4px 14px rgba(229, 83, 66, 0.2);
   flex-shrink: 0;
 }
 
@@ -91,7 +91,7 @@
 
 .customization-browser-tab.active {
   background: var(--card, #ffffff);
-  color: var(--wolf, #1478d4);
+  color: var(--wolf, #e55342);
   border-color: var(--line, #cbd5e1);
   border-bottom: 1px solid var(--card, #ffffff);
   font-weight: 800;
@@ -197,8 +197,8 @@
 }
 
 .image-controls .btn-upload:hover {
-  border-color: var(--wolf, #1478d4);
-  color: var(--wolf, #1478d4);
+  border-color: var(--wolf, #e55342);
+  color: var(--wolf, #e55342);
   background: #f0f7ff;
 }
 
@@ -245,8 +245,8 @@
 .custom-card input[type="url"]:focus,
 .custom-card textarea:focus {
   outline: none;
-  border-color: var(--wolf, #1478d4);
-  box-shadow: 0 0 0 3px rgba(20, 120, 212, 0.12);
+  border-color: var(--wolf, #e55342);
+  box-shadow: 0 0 0 3px rgba(229, 83, 66, 0.12);
 }
 
 .custom-card textarea {
@@ -337,7 +337,7 @@
   min-height: 22px;
   font-size: 13.5px;
   font-weight: 750;
-  color: var(--wolf, #1478d4);
+  color: var(--wolf, #e55342);
 }
 
 .customization-footer {
@@ -387,10 +387,10 @@
   }
   .customization-browser-tab.active {
     background: var(--card, #ffffff);
-    color: var(--wolf, #1478d4);
-    border-color: var(--wolf, #1478d4);
-    border-bottom: 1px solid var(--wolf, #1478d4);
-    box-shadow: 0 2px 8px rgba(20, 120, 212, 0.16);
+    color: var(--wolf, #e55342);
+    border-color: var(--wolf, #e55342);
+    border-bottom: 1px solid var(--wolf, #e55342);
+    box-shadow: 0 2px 8px rgba(229, 83, 66, 0.16);
   }
   .customization-footer {
     flex-direction: column;

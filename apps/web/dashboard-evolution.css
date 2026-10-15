@@ -30,7 +30,7 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
 }
 
 .dashboard-summary-card.alert-training strong {
-  color: #1478d4;
+  color: #e55342;
 }
 
 .dashboard-alert-modal-card {
@@ -246,9 +246,9 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
 }
 
 .cockpit-reception-trigger-btn:hover {
-  border-color: var(--accent, #1478d4);
-  color: var(--accent, #1478d4);
-  box-shadow: 0 4px 12px rgba(20, 120, 212, 0.12);
+  border-color: var(--accent, #e55342);
+  color: var(--accent, #e55342);
+  box-shadow: 0 4px 12px rgba(229, 83, 66, 0.12);
   transform: translateY(-1px);
 }
 
@@ -415,7 +415,7 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
 .cockpit-browser-tab.active {
   background: var(--card, #ffffff);
   border-color: var(--line, #cbd5e1);
-  color: var(--accent, #1478d4);
+  color: var(--accent, #e55342);
   margin-bottom: -1px;
   padding-bottom: 11px;
   z-index: 2;
@@ -429,7 +429,7 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--accent, #1478d4);
+  background: var(--accent, #e55342);
   border-radius: 12px 12px 0 0;
 }
 
@@ -479,8 +479,8 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
   font-weight: 750;
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(20, 120, 212, 0.1);
-  color: var(--accent, #1478d4);
+  background: rgba(229, 83, 66, 0.1);
+  color: var(--accent, #e55342);
 }
 
 .cockpit-tag.warning {
@@ -495,7 +495,7 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
 .cockpit-link-btn {
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent, #1478d4);
+  color: var(--accent, #e55342);
   text-decoration: none;
 }
 
@@ -584,7 +584,7 @@ html[data-admin-shell="true"] body.admin-dashboard-page .app-shell {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--accent, #1478d4);
+  background: var(--accent, #e55342);
   color: #fff;
   display: flex;
   align-items: center;

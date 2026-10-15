@@ -158,7 +158,7 @@
 }
 .access-member-row[role="button"]:hover, .access-member-row[role="button"]:focus-visible {
   border-color: var(--accent);
-  box-shadow: 0 8px 20px rgba(20, 120, 212, .12);
+  box-shadow: 0 8px 20px rgba(229, 83, 66, .12);
   transform: translateY(-1px);
   outline: none;
 }

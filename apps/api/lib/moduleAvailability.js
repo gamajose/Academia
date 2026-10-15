@@ -24,7 +24,7 @@ function moduleForRequest(pathname) {
   if (pathname.startsWith('/api/student/progress') || pathname.startsWith('/api/student/goals') || pathname.startsWith('/api/assessments') || pathname.startsWith('/api/goals')) return 'assessments';
   if (pathname.startsWith('/api/memberships')) return 'memberships';
   if (pathname.startsWith('/api/signups')) return 'pre_enrollments';
-  if (pathname.startsWith('/api/finance') || pathname.startsWith('/api/sales')) return 'finance';
+  if (pathname.startsWith('/api/finance') || pathname.startsWith('/api/sales') || pathname.startsWith('/api/student/invoices')) return 'finance';
   if (pathname.startsWith('/api/alerts') || pathname.startsWith('/api/notifications')) return 'alerts';
   if (pathname.startsWith('/api/plans')) return 'plans';
   if (pathname.startsWith('/api/members')) return 'members';

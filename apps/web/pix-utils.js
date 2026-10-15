@@ -84,8 +84,16 @@
     return payload;
   }
 
-  window.AcademiaPix = {
-    generatePixPayload,
-    crc16
-  };
+  if (typeof window !== 'undefined') {
+    window.AcademiaPix = {
+      generatePixPayload,
+      crc16
+    };
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      generatePixPayload,
+      crc16
+    };
+  }
 })();

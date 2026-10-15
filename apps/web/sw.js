@@ -1,4 +1,4 @@
-// Service Worker para BlueREC Academia
+// Service Worker para Academia LOBO
 // Permite notificações externas nativas no celular, tela de bloqueio e smartwatch
 
 self.addEventListener('install', (event) => {

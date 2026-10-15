@@ -125,7 +125,7 @@
             <span><kbd>↵</kbd> selecionar</span>
             <span><kbd>ESC</kbd> fechar</span>
           </div>
-          <div><strong style="color:var(--accent,#1478d4);">BlueREC</strong> Spotlight</div>
+          <div><strong style="color:var(--accent,#1478d4);">Academia LOBO</strong> Spotlight</div>
         </div>
       </div>
     `;

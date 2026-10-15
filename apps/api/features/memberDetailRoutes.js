@@ -148,9 +148,9 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
         accountCreated = true;
         const emailResult = await sendTransactionalEmail({
           to: values.email,
-          subject: 'Seu acesso à BlueREC Academia',
-          text: `Olá, ${result.rows[0].name}!\n\nSeu acesso ao portal da BlueREC Academia foi criado.\nE-mail: ${values.email}\nSenha inicial: ${ADMIN_DEFAULT_STUDENT_PASSWORD}\n\nNo primeiro acesso, você deverá criar uma nova senha pessoal.`,
-          html: `<p>Olá, ${result.rows[0].name}!</p><p>Seu acesso ao portal da BlueREC Academia foi criado.</p><p><strong>E-mail:</strong> ${values.email}<br><strong>Senha inicial:</strong> ${ADMIN_DEFAULT_STUDENT_PASSWORD}</p><p>No primeiro acesso, você deverá criar uma nova senha pessoal.</p>`
+          subject: 'Seu acesso à Academia LOBO',
+          text: `Olá, ${result.rows[0].name}!\n\nSeu acesso ao portal da Academia LOBO foi criado.\nE-mail: ${values.email}\nSenha inicial: ${ADMIN_DEFAULT_STUDENT_PASSWORD}\n\nNo primeiro acesso, você deverá criar uma nova senha pessoal.`,
+          html: `<p>Olá, ${result.rows[0].name}!</p><p>Seu acesso ao portal da Academia LOBO foi criado.</p><p><strong>E-mail:</strong> ${values.email}<br><strong>Senha inicial:</strong> ${ADMIN_DEFAULT_STUDENT_PASSWORD}</p><p>No primeiro acesso, você deverá criar uma nova senha pessoal.</p>`
         });
         emailDelivery = emailResult.sent ? 'sent' : emailResult.reason || 'pending';
       }

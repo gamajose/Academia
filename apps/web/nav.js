@@ -207,7 +207,7 @@ function renderNavigation() {
   };
 
   const savedLogo = localStorage.getItem('gymLogoUrl') || './blue-rec-logo.png';
-  const savedGymName = localStorage.getItem('gymName') || 'BlueREC Academia';
+  const savedGymName = localStorage.getItem('gymName') || 'Academia LOBO';
 
   const nav = document.createElement('nav');
   nav.className = 'top-nav';
@@ -339,7 +339,7 @@ function openBrandModal() {
         const file = fileInput.files?.[0];
         const token = localStorage.getItem('academiaToken') || '';
         const host = window.location.hostname || 'localhost';
-        const api = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+        const api = localStorage.getItem('apiBaseUrl') || (window.location.protocol.startsWith('http') ? window.location.origin : `http://${host}:3004`);
 
         if (file) {
           const form = new FormData();
@@ -475,7 +475,7 @@ function openGlobalPreferencesModal() {
 
         const token = localStorage.getItem('academiaToken') || '';
         const host = window.location.hostname || 'localhost';
-        const api = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+        const api = localStorage.getItem('apiBaseUrl') || (window.location.protocol.startsWith('http') ? window.location.origin : `http://${host}:3004`);
 
         if (token) {
           await fetch(`${api}/api/me/preferences`, {
@@ -568,7 +568,7 @@ async function loadProfile() {
   const token = localStorage.getItem('academiaToken') || '';
   if (!token) return;
   const host = window.location.hostname || 'localhost';
-  const api = localStorage.getItem('apiBaseUrl') || `http://${host}:3004`;
+  const api = localStorage.getItem('apiBaseUrl') || (window.location.protocol.startsWith('http') ? window.location.origin : `http://${host}:3004`);
   try {
     const response = await fetch(`${api}/api/me`, { headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) return;

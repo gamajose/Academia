@@ -13,6 +13,7 @@ const { handleMemberDetailRoutes } = require('./features/memberDetailRoutes');
 const { handleTrainingRoutes } = require('./features/trainingRoutes');
 const { handleTrainingPlansRoutes } = require('./features/trainingPlansRoutes');
 const { handleStudentRoutes } = require('./features/studentRoutes');
+const { handleStudentInvoiceRoutes } = require('./features/studentInvoiceRoutes');
 const { handleGoogleAuthRoutes } = require('./features/googleAuthRoutes');
 const { handleOnlineSignupRoutes } = require('./features/onlineSignupRoutes');
 const { handleAccessRoutes } = require('./features/accessRoutes');
@@ -158,7 +159,7 @@ async function forgotPassword(req, res) {
     await query('UPDATE user_password_reset_tokens SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [staff.rows[0].id]);
     await query('INSERT INTO user_password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, now() + interval \'30 minutes\')', [staff.rows[0].id, hashToken(token)]);
     const resetUrl = publicAppUrl(`/student-reset.html?token=${encodeURIComponent(token)}`);
-    await sendTransactionalEmail({ to: staff.rows[0].email, subject: 'Recuperação de acesso - BlueREC Academia', text: `Use este link para criar uma nova senha: ${resetUrl}`, html: `<p>Recebemos um pedido para redefinir seu acesso.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>` });
+    await sendTransactionalEmail({ to: staff.rows[0].email, subject: 'Recuperação de acesso - Academia LOBO', text: `Use este link para criar uma nova senha: ${resetUrl}`, html: `<p>Recebemos um pedido para redefinir seu acesso.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>` });
     return send(req, res, 202, generic);
   }
 
@@ -174,7 +175,7 @@ async function forgotPassword(req, res) {
     await query('UPDATE member_password_reset_tokens SET used_at = now() WHERE member_account_id = $1 AND used_at IS NULL', [student.rows[0].id]);
     await query('INSERT INTO member_password_reset_tokens (member_account_id, token_hash, expires_at) VALUES ($1, $2, now() + interval \'30 minutes\')', [student.rows[0].id, hashToken(token)]);
     const resetUrl = publicAppUrl(`/student-reset.html?token=${encodeURIComponent(token)}`);
-    await sendTransactionalEmail({ to: student.rows[0].email, subject: 'Recuperação de acesso - BlueREC Academia', text: `Use este link para criar uma nova senha: ${resetUrl}`, html: `<p>Recebemos um pedido para redefinir seu acesso.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>` });
+    await sendTransactionalEmail({ to: student.rows[0].email, subject: 'Recuperação de acesso - Academia LOBO', text: `Use este link para criar uma nova senha: ${resetUrl}`, html: `<p>Recebemos um pedido para redefinir seu acesso.</p><p><a href="${resetUrl}">Criar nova senha</a></p><p>O link expira em 30 minutos.</p>` });
   }
   return send(req, res, 202, generic);
 }
@@ -307,6 +308,8 @@ const server = http.createServer(async (req, res) => {
     if (signupHandled !== false) return signupHandled;
     const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
     if (studentHandled !== false) return studentHandled;
+    const studentInvoiceHandled = await handleStudentInvoiceRoutes(req, res, user, url, helpers);
+    if (studentInvoiceHandled !== false) return studentInvoiceHandled;
     const accessHandled = await handleAccessRoutes(req, res, user, url, helpers);
     if (accessHandled !== false) return accessHandled;
     const productToolsHandled = await handleProductToolsRoutes(req, res, user, url, helpers);
