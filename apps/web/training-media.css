@@ -144,12 +144,362 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
 .plan-day-builder-header h4 { margin: 0; color: var(--text, #171717); font-size: 15px; }
 .plan-day-builder-header p { margin: 4px 0 0; }
 .plan-day-exercise-list { display: grid; gap: 8px; }
-.plan-day-exercise-row { display: grid; grid-template-columns: minmax(0, 1fr) 72px 100px 94px 38px; gap: 8px; align-items: end; }
+.plan-day-exercise-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) 72px 100px 94px 38px; gap: 8px; align-items: end; }
+.plan-day-exercise-metrics { display: contents; }
 .plan-day-exercise-row .field { display: grid; gap: 5px; min-width: 0; }
 .plan-day-exercise-row .field > span { color: var(--muted, #68716b); font-size: 11px; font-weight: 600; }
 .plan-day-exercise-row .icon-button { width: 38px; height: 38px; padding: 0; border-radius: 9px; }
 .plan-day-exercise-row .remove-plan-day-exercise { color: var(--danger, #c5222b); }
 .plan-day-builder-status { margin: 0; }
+
+/* Plan Day Exercise Media Preview */
+.plan-day-exercise-media {
+  width: 56px;
+  height: 38px;
+  border-radius: 8px;
+  background: #0f172a;
+  border: 1px solid var(--line, #e2e8f0);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plan-day-exercise-media:hover,
+.plan-day-exercise-media:focus-visible {
+  border-color: var(--accent, #e55342);
+  transform: scale(1.04);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #e55342) 25%, transparent);
+}
+
+.plan-day-exercise-media video,
+.plan-day-exercise-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.plan-day-exercise-media .plan-media-empty {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.1;
+  padding: 2px;
+  user-select: none;
+}
+
+/* Custom Combobox Exercise Trigger & Dropdown */
+.plan-exercise-trigger {
+  width: 100%;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #ded6ca);
+  background: var(--surface, #ffffff);
+  color: var(--text, #171717);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.plan-exercise-trigger:hover,
+.plan-exercise-trigger:focus-visible {
+  border-color: var(--accent, #e55342);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #e55342) 20%, transparent);
+}
+
+.plan-exercise-trigger-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan-exercise-trigger-text.placeholder {
+  color: var(--muted, #8b949e);
+  font-weight: 500;
+}
+
+.plan-exercise-trigger-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--muted, #8b949e);
+}
+
+.plan-exercise-combobox-dropdown {
+  position: fixed;
+  z-index: 100000;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -4px rgba(0, 0, 0, 0.3), 0 8px 16px -2px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 340px;
+}
+
+.plan-exercise-combobox-dropdown.hidden {
+  display: none !important;
+}
+
+.combobox-search-wrap {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  background: color-mix(in srgb, var(--surface, #ffffff) 90%, #f1f5f9);
+}
+
+.combobox-search-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line, #cbd5e1);
+  background: #fff;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.combobox-search-input:focus {
+  border-color: var(--accent, #e55342);
+}
+
+.combobox-options-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 4px;
+  max-height: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.combobox-option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  user-select: none;
+}
+
+.combobox-option-item:hover,
+.combobox-option-item.highlighted {
+  background: color-mix(in srgb, var(--accent, #e55342) 12%, transparent);
+}
+
+.combobox-option-item.selected {
+  background: color-mix(in srgb, var(--accent, #e55342) 18%, transparent);
+  font-weight: 700;
+}
+
+.combobox-option-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text, #0f172a) 8%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.combobox-option-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.combobox-option-name {
+  font-size: 13px;
+  color: var(--text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combobox-option-meta {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combobox-video-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent, #e55342) 15%, transparent);
+  color: var(--accent, #e55342);
+  flex-shrink: 0;
+}
+
+.combobox-empty-message {
+  padding: 18px 12px;
+  font-size: 12px;
+  color: var(--muted, #64748b);
+  text-align: center;
+}
+
+/* Floating Hover Video Popover */
+.exercise-hover-popover {
+  position: fixed;
+  z-index: 100000;
+  width: 280px;
+  border-radius: 14px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.28), 0 6px 12px -2px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.exercise-hover-popover.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  visibility: hidden;
+}
+
+.exercise-hover-popover-media {
+  width: 100%;
+  height: 165px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.exercise-hover-popover-media video,
+.exercise-hover-popover-media img,
+.exercise-hover-popover-media iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  display: block;
+}
+
+.exercise-hover-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 11px;
+  text-align: center;
+  padding: 12px;
+}
+
+.exercise-hover-empty .hover-empty-icon {
+  font-size: 24px;
+}
+
+.exercise-hover-popover-info {
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--surface, #ffffff);
+}
+
+.exercise-hover-popover-title {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--text, #0f172a);
+  line-height: 1.3;
+}
+
+.exercise-hover-popover-muscle {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  font-weight: 600;
+}
+
+/* Dark Theme overrides */
+html[data-admin-theme="dark"] .plan-exercise-trigger {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-admin-theme="dark"] .plan-exercise-combobox-dropdown {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-admin-theme="dark"] .combobox-search-wrap {
+  background: #0f172a;
+  border-bottom-color: #334155;
+}
+
+html[data-admin-theme="dark"] .combobox-search-input {
+  background: #1e293b;
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+html[data-admin-theme="dark"] .combobox-option-name {
+  color: #f8fafc;
+}
+
+html[data-admin-theme="dark"] .combobox-option-meta {
+  color: #94a3b8;
+}
+
+html[data-admin-theme="dark"] .plan-day-exercise-media {
+  background: #0b1120;
+  border-color: #334155;
+}
+
+html[data-admin-theme="dark"] .exercise-hover-popover {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 20px 40px -6px rgba(0, 0, 0, 0.65);
+}
+
+html[data-admin-theme="dark"] .exercise-hover-popover-info {
+  background: #1e293b;
+}
+
+html[data-admin-theme="dark"] .exercise-hover-popover-title {
+  color: #f8fafc;
+}
+
+html[data-admin-theme="dark"] .exercise-hover-popover-muscle {
+  color: #94a3b8;
+}
 #training-levels-modal { z-index: 10001; }
 .training-modal-card .modal-header { margin-bottom: 2px; }
 .training-modal-card .modal-header p { margin: 4px 0 0; }
@@ -211,9 +561,29 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
   }
   .training-level-row button { justify-self: auto; }
   .training-week-calendar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .plan-day-exercise-row { grid-template-columns: minmax(0, 1fr) 38px; }
-  .plan-day-exercise-row .field:first-child { grid-column: 1 / -1; }
-  .plan-day-exercise-row .field:nth-child(2), .plan-day-exercise-row .field:nth-child(3), .plan-day-exercise-row .field:nth-child(4) { grid-column: span 1; }
+  .plan-day-exercise-row {
+    grid-template-columns: 56px minmax(0, 1fr) 38px !important;
+    gap: 8px 6px !important;
+  }
+  .plan-day-exercise-media-field {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+  .plan-day-exercise-picker-field {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+  .plan-day-exercise-row .remove-plan-day-exercise {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+  .plan-day-exercise-metrics {
+    display: grid !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    grid-template-columns: 1fr 1.2fr 1fr !important;
+    gap: 6px !important;
+  }
 }
 
 @media (max-width: 900px) {

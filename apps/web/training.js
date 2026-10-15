@@ -952,6 +952,8 @@ function configuredPlanDays() {
 }
 
 function resetPlanBuilder() {
+  closeComboboxDropdown();
+  hideExerciseHoverPopover();
   editingPlanId = null;
   planDayDrafts = new Map();
   activePlanWeekday = null;
@@ -1046,6 +1048,275 @@ async function deletePlan(item, button) {
   }
 }
 
+// Floating Video Preview Popover
+let hoverPopoverEl = null;
+let currentHoverExerciseId = null;
+
+function ensureHoverPopover() {
+  if (hoverPopoverEl && document.body.contains(hoverPopoverEl)) return hoverPopoverEl;
+  let popover = document.getElementById('exercise-hover-popover');
+  if (!popover) {
+    popover = document.createElement('div');
+    popover.id = 'exercise-hover-popover';
+    popover.className = 'exercise-hover-popover hidden';
+    popover.setAttribute('aria-hidden', 'true');
+    popover.innerHTML = `
+      <div class="exercise-hover-popover-media" id="hover-popover-media"></div>
+      <div class="exercise-hover-popover-info">
+        <strong class="exercise-hover-popover-title" id="hover-popover-title"></strong>
+        <span class="exercise-hover-popover-muscle" id="hover-popover-muscle"></span>
+      </div>
+    `;
+    document.body.appendChild(popover);
+  }
+  hoverPopoverEl = popover;
+  return hoverPopoverEl;
+}
+
+function showExerciseHoverPopover(exercise, anchorEl) {
+  if (!exercise || !anchorEl) return;
+  const popover = ensureHoverPopover();
+  const mediaContainer = popover.querySelector('#hover-popover-media');
+  const titleEl = popover.querySelector('#hover-popover-title');
+  const muscleEl = popover.querySelector('#hover-popover-muscle');
+
+  titleEl.textContent = exercise.name || 'Exercício';
+  const primaryMuscle = exercise.muscle_group_primary || exercise.muscle_group || 'Geral';
+  const secondaryMuscles = exercise.muscle_group_secondary ? ` · ${exercise.muscle_group_secondary}` : '';
+  muscleEl.textContent = `${primaryMuscle}${secondaryMuscles}`;
+
+  if (currentHoverExerciseId !== exercise.id) {
+    currentHoverExerciseId = exercise.id;
+    mediaContainer.replaceChildren();
+
+    if (exercise.video_url && window.AcademiaTrainingMedia) {
+      window.AcademiaTrainingMedia.appendVideoPreview(mediaContainer, exercise.video_url);
+      const vid = mediaContainer.querySelector('video');
+      if (vid) {
+        vid.controls = false;
+        vid.autoplay = true;
+        vid.loop = true;
+        vid.muted = true;
+        vid.playsInline = true;
+        vid.play().catch(() => {});
+      }
+    } else if (exercise.image_url) {
+      appendExerciseImage(mediaContainer, exercise.image_url, exercise.name);
+    } else {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'exercise-hover-empty';
+      emptyDiv.innerHTML = '<span class="hover-empty-icon" aria-hidden="true">🏋️</span><span>Sem vídeo demonstrativo</span>';
+      mediaContainer.appendChild(emptyDiv);
+    }
+  }
+
+  const rect = anchorEl.getBoundingClientRect();
+  const popoverWidth = 280;
+  const popoverHeight = 225;
+
+  let left = rect.right + 12;
+  if (left + popoverWidth > window.innerWidth - 10) {
+    left = rect.left - popoverWidth - 12;
+  }
+  if (left < 10) {
+    left = Math.max(10, (window.innerWidth - popoverWidth) / 2);
+  }
+
+  let top = rect.top - 20;
+  if (top + popoverHeight > window.innerHeight - 10) {
+    top = window.innerHeight - popoverHeight - 10;
+  }
+  if (top < 10) top = 10;
+
+  popover.style.left = `${Math.round(left)}px`;
+  popover.style.top = `${Math.round(top)}px`;
+  popover.classList.remove('hidden');
+  popover.setAttribute('aria-hidden', 'false');
+}
+
+function hideExerciseHoverPopover() {
+  if (!hoverPopoverEl) return;
+  hoverPopoverEl.classList.add('hidden');
+  hoverPopoverEl.setAttribute('aria-hidden', 'true');
+  const vid = hoverPopoverEl.querySelector('video');
+  if (vid) vid.pause();
+  currentHoverExerciseId = null;
+}
+
+// Combobox Dropdown for Exercise Selection
+let activeComboboxDropdown = null;
+let activeComboboxOnSelect = null;
+let activeComboboxTrigger = null;
+
+function ensureComboboxDropdown() {
+  if (activeComboboxDropdown && document.body.contains(activeComboboxDropdown)) return activeComboboxDropdown;
+  let dd = document.getElementById('plan-exercise-combobox-dropdown');
+  if (!dd) {
+    dd = document.createElement('div');
+    dd.id = 'plan-exercise-combobox-dropdown';
+    dd.className = 'plan-exercise-combobox-dropdown hidden';
+    dd.innerHTML = `
+      <div class="combobox-search-wrap">
+        <input type="search" class="combobox-search-input" placeholder="Pesquisar exercício..." autocomplete="off" />
+      </div>
+      <div class="combobox-options-list" role="listbox"></div>
+    `;
+    document.body.appendChild(dd);
+
+    const searchInput = dd.querySelector('.combobox-search-input');
+    searchInput.addEventListener('input', () => {
+      filterComboboxOptions(searchInput.value);
+    });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (!dd.classList.contains('hidden')) {
+        if (!dd.contains(e.target) && (!activeComboboxTrigger || !activeComboboxTrigger.contains(e.target))) {
+          closeComboboxDropdown();
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !dd.classList.contains('hidden')) {
+        closeComboboxDropdown();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      closeComboboxDropdown();
+      hideExerciseHoverPopover();
+    });
+
+    window.addEventListener('scroll', () => {
+      hideExerciseHoverPopover();
+    }, true);
+  }
+  activeComboboxDropdown = dd;
+  return activeComboboxDropdown;
+}
+
+function filterComboboxOptions(query = '') {
+  const dd = ensureComboboxDropdown();
+  const list = dd.querySelector('.combobox-options-list');
+  const norm = normalizeExerciseFilterValue(query);
+  const items = list.querySelectorAll('.combobox-option-item');
+  let visibleCount = 0;
+
+  items.forEach((item) => {
+    const text = item.dataset.searchIndex || '';
+    const match = !norm || text.includes(norm);
+    item.style.display = match ? 'flex' : 'none';
+    if (match) visibleCount++;
+  });
+
+  let emptyMsg = list.querySelector('.combobox-empty-message');
+  if (visibleCount === 0) {
+    if (!emptyMsg) {
+      emptyMsg = document.createElement('div');
+      emptyMsg.className = 'combobox-empty-message';
+      emptyMsg.textContent = 'Nenhum exercício encontrado.';
+      list.appendChild(emptyMsg);
+    }
+    emptyMsg.style.display = 'block';
+  } else if (emptyMsg) {
+    emptyMsg.style.display = 'none';
+  }
+}
+
+function openComboboxDropdown(triggerBtn, currentExerciseId, onSelect) {
+  if (activeComboboxTrigger === triggerBtn && activeComboboxDropdown && !activeComboboxDropdown.classList.contains('hidden')) {
+    closeComboboxDropdown();
+    return;
+  }
+  const dd = ensureComboboxDropdown();
+  activeComboboxTrigger = triggerBtn;
+  activeComboboxOnSelect = onSelect;
+
+  const searchInput = dd.querySelector('.combobox-search-input');
+  const list = dd.querySelector('.combobox-options-list');
+  searchInput.value = '';
+  list.replaceChildren();
+
+  exercises.forEach((ex) => {
+    const opt = document.createElement('div');
+    opt.className = 'combobox-option-item';
+    if (String(ex.id) === String(currentExerciseId)) opt.classList.add('selected');
+    opt.setAttribute('role', 'option');
+    opt.dataset.exerciseId = ex.id;
+    opt.dataset.searchIndex = normalizeExerciseFilterValue(`${ex.name} ${ex.muscle_group_primary || ex.muscle_group || ''} ${ex.muscle_group_secondary || ''} ${ex.level || ''}`);
+
+    const thumb = document.createElement('div');
+    thumb.className = 'combobox-option-thumb';
+    thumb.innerHTML = ex.video_url ? '<span class="play-indicator" aria-hidden="true">▶</span>' : '<span>🏋️</span>';
+
+    const info = document.createElement('div');
+    info.className = 'combobox-option-info';
+    const nameStrong = document.createElement('strong');
+    nameStrong.className = 'combobox-option-name';
+    nameStrong.textContent = ex.name;
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'combobox-option-meta';
+    const primaryMuscle = ex.muscle_group_primary || ex.muscle_group || 'Geral';
+    const secondary = ex.muscle_group_secondary ? ` · ${ex.muscle_group_secondary}` : '';
+    metaSpan.textContent = `${primaryMuscle}${secondary}`;
+    info.append(nameStrong, metaSpan);
+
+    opt.append(thumb, info);
+    if (ex.video_url) {
+      const badge = document.createElement('span');
+      badge.className = 'combobox-video-badge';
+      badge.textContent = 'Vídeo';
+      opt.appendChild(badge);
+    }
+
+    opt.addEventListener('mouseenter', () => {
+      showExerciseHoverPopover(ex, opt);
+    });
+    opt.addEventListener('mouseleave', () => {
+      hideExerciseHoverPopover();
+    });
+
+    opt.addEventListener('click', () => {
+      hideExerciseHoverPopover();
+      closeComboboxDropdown();
+      if (activeComboboxOnSelect) activeComboboxOnSelect(ex);
+    });
+
+    list.appendChild(opt);
+  });
+
+  const rect = triggerBtn.getBoundingClientRect();
+  const ddWidth = Math.max(rect.width, 320);
+  dd.style.width = `${Math.min(ddWidth, window.innerWidth - 20)}px`;
+
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const ddHeight = 320;
+  if (spaceBelow < 260 && rect.top > 280) {
+    dd.style.top = `${Math.max(10, rect.top - ddHeight - 4)}px`;
+  } else {
+    dd.style.top = `${rect.bottom + 4}px`;
+  }
+
+  let left = rect.left;
+  if (left + ddWidth > window.innerWidth - 10) {
+    left = window.innerWidth - ddWidth - 10;
+  }
+  if (left < 10) left = 10;
+  dd.style.left = `${Math.round(left)}px`;
+
+  dd.classList.remove('hidden');
+  setTimeout(() => searchInput.focus(), 20);
+}
+
+function closeComboboxDropdown() {
+  if (activeComboboxDropdown) {
+    activeComboboxDropdown.classList.add('hidden');
+  }
+  activeComboboxTrigger = null;
+  activeComboboxOnSelect = null;
+  hideExerciseHoverPopover();
+}
+
 function renderPlanDayBuilder() {
   const builder = t('plan-day-builder');
   const list = t('plan-day-exercise-list');
@@ -1055,6 +1326,7 @@ function renderPlanDayBuilder() {
     builder.classList.add('hidden');
     list.replaceChildren();
     activePlanWeekday = null;
+    closeComboboxDropdown();
     return;
   }
   if (!weekdays.includes(activePlanWeekday)) activePlanWeekday = weekdays[0];
@@ -1073,26 +1345,94 @@ function renderPlanDayBuilder() {
   draft.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'plan-day-exercise-row';
-    const exerciseField = document.createElement('label');
-    exerciseField.className = 'field';
+
+    // 1. Media Field (Thumbnail / Video)
+    const mediaField = document.createElement('div');
+    mediaField.className = 'field plan-day-exercise-media-field';
+    const mediaLabel = document.createElement('span');
+    mediaLabel.textContent = 'Vídeo';
+    const mediaSlot = document.createElement('div');
+    mediaSlot.className = 'plan-day-exercise-media';
+    mediaSlot.setAttribute('role', 'button');
+    mediaSlot.setAttribute('tabindex', '0');
+    mediaSlot.title = 'Prévia do exercício';
+
+    function updateRowMedia(ex) {
+      mediaSlot.replaceChildren();
+      if (ex) {
+        if (ex.video_url && window.AcademiaTrainingMedia) {
+          window.AcademiaTrainingMedia.appendVideoPreview(mediaSlot, ex.video_url);
+          const v = mediaSlot.querySelector('video');
+          if (v) {
+            v.controls = false;
+            v.autoplay = true;
+            v.loop = true;
+            v.muted = true;
+            v.playsInline = true;
+          }
+        } else if (ex.image_url) {
+          appendExerciseImage(mediaSlot, ex.image_url, ex.name);
+        } else {
+          mediaSlot.innerHTML = '<span class="plan-media-empty">Sem vídeo</span>';
+        }
+      } else {
+        mediaSlot.innerHTML = '<span class="plan-media-empty">—</span>';
+      }
+    }
+
+    let selectedEx = exercises.find((e) => String(e.id) === String(item.exercise_id));
+    updateRowMedia(selectedEx);
+
+    mediaSlot.addEventListener('mouseenter', () => {
+      if (selectedEx) showExerciseHoverPopover(selectedEx, mediaSlot);
+    });
+    mediaSlot.addEventListener('mouseleave', () => {
+      hideExerciseHoverPopover();
+    });
+    mediaField.append(mediaLabel, mediaSlot);
+
+    // 2. Exercise Selector Field (Interactive Picker)
+    const exerciseField = document.createElement('div');
+    exerciseField.className = 'field plan-day-exercise-picker-field';
     const exerciseLabel = document.createElement('span');
     exerciseLabel.textContent = 'Exercício';
-    const exerciseSelect = document.createElement('select');
-    exerciseSelect.required = true;
-    const emptyOption = document.createElement('option');
-    emptyOption.value = '';
-    emptyOption.textContent = 'Selecione o exercício';
-    exerciseSelect.appendChild(emptyOption);
-    for (const exercise of exercises) {
-      const option = document.createElement('option');
-      option.value = exercise.id;
-      option.textContent = exercise.name;
-      option.selected = exercise.id === item.exercise_id;
-      exerciseSelect.appendChild(option);
-    }
-    exerciseSelect.addEventListener('change', () => { item.exercise_id = exerciseSelect.value; });
-    exerciseField.append(exerciseLabel, exerciseSelect);
 
+    const triggerBtn = document.createElement('button');
+    triggerBtn.type = 'button';
+    triggerBtn.className = 'plan-exercise-trigger';
+    triggerBtn.setAttribute('aria-haspopup', 'listbox');
+
+    const triggerText = document.createElement('span');
+    triggerText.className = 'plan-exercise-trigger-text';
+    triggerText.textContent = selectedEx ? selectedEx.name : 'Selecione o exercício';
+    if (!selectedEx) triggerText.classList.add('placeholder');
+
+    const triggerIcon = document.createElement('span');
+    triggerIcon.className = 'plan-exercise-trigger-icon';
+    triggerIcon.innerHTML = `<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`;
+
+    triggerBtn.append(triggerText, triggerIcon);
+
+    triggerBtn.addEventListener('mouseenter', () => {
+      if (selectedEx) showExerciseHoverPopover(selectedEx, triggerBtn);
+    });
+    triggerBtn.addEventListener('mouseleave', () => {
+      hideExerciseHoverPopover();
+    });
+
+    triggerBtn.addEventListener('click', () => {
+      openComboboxDropdown(triggerBtn, item.exercise_id, (chosenEx) => {
+        item.exercise_id = chosenEx.id;
+        selectedEx = chosenEx;
+        triggerText.textContent = chosenEx.name;
+        triggerText.classList.remove('placeholder');
+        updateRowMedia(chosenEx);
+      });
+    });
+
+    exerciseField.append(exerciseLabel, triggerBtn);
+
+    // 3. Metrics inputs
     const makeInput = (label, key, type = 'text') => {
       const field = document.createElement('label');
       field.className = 'field';
@@ -1107,6 +1447,15 @@ function renderPlanDayBuilder() {
       return field;
     };
 
+    const metricsWrap = document.createElement('div');
+    metricsWrap.className = 'plan-day-exercise-metrics';
+    metricsWrap.append(
+      makeInput('Séries', 'sets', 'number'),
+      makeInput('Repetições', 'reps'),
+      makeInput('Descanso (s)', 'rest_seconds', 'number')
+    );
+
+    // 4. Remove button
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'icon-button remove-plan-day-exercise';
@@ -1114,10 +1463,13 @@ function renderPlanDayBuilder() {
     remove.title = 'Remover exercício';
     remove.textContent = '×';
     remove.addEventListener('click', () => {
+      hideExerciseHoverPopover();
+      closeComboboxDropdown();
       draft.splice(index, 1);
       renderPlanDayBuilder();
     });
-    row.append(exerciseField, makeInput('Séries', 'sets', 'number'), makeInput('Repetições', 'reps'), makeInput('Descanso (s)', 'rest_seconds', 'number'), remove);
+
+    row.append(mediaField, exerciseField, metricsWrap, remove);
     list.appendChild(row);
   });
   t('plan-day-builder-status').textContent = `${draft.length} exercício(s) configurado(s) para este dia.`;
@@ -1129,6 +1481,13 @@ function addPlanDayExercise() {
   if (!weekdays.includes(activePlanWeekday)) activePlanWeekday = weekdays[0];
   ensurePlanDayDraft(activePlanWeekday).push(emptyPlanDayExercise());
   renderPlanDayBuilder();
+  const list = t('plan-day-exercise-list');
+  const rows = list?.querySelectorAll('.plan-day-exercise-row');
+  const lastRow = rows?.[rows.length - 1];
+  const trigger = lastRow?.querySelector('.plan-exercise-trigger');
+  if (trigger) {
+    trigger.click();
+  }
 }
 
 function appendExerciseToCurrentPlan(exercise) {
@@ -1527,6 +1886,10 @@ function closeTrainingModal(id) {
   modal.classList.add('hidden');
   modal.setAttribute('aria-hidden', 'true');
   syncTrainingModalState();
+  if (id === 'plan-modal') {
+    closeComboboxDropdown();
+    hideExerciseHoverPopover();
+  }
 }
 
 [

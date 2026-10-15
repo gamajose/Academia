@@ -1208,15 +1208,35 @@ html[data-admin-theme="dark"] .student-form-tab.active {
 }
 
 body.admin-training-page #plan-modal .modal-header {
-  position: absolute !important;
-  top: 10px !important;
-  right: 12px !important;
-  margin: 0 !important;
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 0 12px 0 !important;
   padding: 0 !important;
   border: none !important;
   min-height: 0 !important;
   height: auto !important;
-  z-index: 10 !important;
+  z-index: 2 !important;
+}
+
+body.admin-training-page #plan-modal #plan-title,
+#plan-modal #plan-title {
+  display: block !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  color: var(--text, #171717) !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+html[data-admin-theme="dark"] body.admin-training-page #plan-modal #plan-title,
+html[data-admin-theme="dark"] #plan-modal #plan-title {
+  color: #f8fafc !important;
 }
 
 #plan-modal #close-plan-modal {

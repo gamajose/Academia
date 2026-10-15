@@ -282,14 +282,23 @@ body.admin-training-page #panel-plans .toolbar {
     line-height: 1.4 !important;
   }
 
-  #plan-modal .modal-header h3,
-  #plan-modal #plan-title {
-    display: none !important;
+  body.admin-training-page #plan-modal .modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin-bottom: 12px !important;
   }
 
-  #plan-modal .modal-header {
-    min-height: 24px !important;
-    margin-bottom: 4px !important;
+  body.admin-training-page #plan-modal #plan-title,
+  #plan-modal #plan-title {
+    display: block !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: var(--text, #171717) !important;
+    margin: 0 !important;
+    text-align: left !important;
   }
 
   .plan-level-picker {
