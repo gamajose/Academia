@@ -39,20 +39,21 @@ DECLARE
   plan_price integer;
   plan_title text;
   v_mem_id uuid;
+  v_plan_id uuid;
 BEGIN
   FOR rec IN
     SELECT m.id AS member_id, m.gym_id
     FROM members m
   LOOP
     -- Busca a matrícula ativa ou mais recente do aluno
-    SELECT ms.id, ms.plan_id INTO v_mem_id, m_plan
+    SELECT ms.id, ms.plan_id INTO v_mem_id, v_plan_id
     FROM memberships ms
     WHERE ms.member_id = rec.member_id AND ms.gym_id = rec.gym_id
     ORDER BY CASE WHEN ms.status = 'active' THEN 0 ELSE 1 END, ms.created_at DESC
     LIMIT 1;
 
     IF v_mem_id IS NOT NULL THEN
-      SELECT name, price_cents INTO m_plan FROM plans WHERE id = m_plan.plan_id;
+      SELECT name, price_cents INTO m_plan FROM plans WHERE id = v_plan_id;
       plan_price := COALESCE(m_plan.price_cents, 11990);
       plan_title := COALESCE(m_plan.name, 'Plano Mensal');
 
