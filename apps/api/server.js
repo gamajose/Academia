@@ -306,10 +306,10 @@ const server = http.createServer(async (req, res) => {
 
     const signupHandled = await handleOnlineSignupRoutes(req, res, user, url, helpers);
     if (signupHandled !== false) return signupHandled;
-    const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
-    if (studentHandled !== false) return studentHandled;
     const studentInvoiceHandled = await handleStudentInvoiceRoutes(req, res, user, url, helpers);
     if (studentInvoiceHandled !== false) return studentInvoiceHandled;
+    const studentHandled = await handleStudentRoutes(req, res, user, url, helpers);
+    if (studentHandled !== false) return studentHandled;
     const accessHandled = await handleAccessRoutes(req, res, user, url, helpers);
     if (accessHandled !== false) return accessHandled;
     const productToolsHandled = await handleProductToolsRoutes(req, res, user, url, helpers);
