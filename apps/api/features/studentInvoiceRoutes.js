@@ -29,7 +29,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
   if (req.method === 'GET' && url.pathname === '/api/student/invoices') {
     // Busca informações da academia e chave Pix cadastrada no admin
     const gymRes = await query(
-      'SELECT id, name, pix_key, payment_settings, city FROM gyms WHERE id = $1 LIMIT 1',
+      'SELECT id, name, pix_key, payment_settings, address FROM gyms WHERE id = $1 LIMIT 1',
       [user.gym_id]
     );
     const gym = gymRes.rows[0] || {};
@@ -41,7 +41,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       key: pixKey,
       receiver_name: pixSettings.receiver_name || gym.name || 'Academia LOBO',
       bank: pixSettings.bank || '',
-      city: pixSettings.city || gym.city || 'SAO PAULO'
+      city: pixSettings.city || 'SAO PAULO'
     };
 
     // Verifica se há pagamentos para o aluno
@@ -200,7 +200,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
 
     // Busca conta Pix configurada pelo administrador na academia
     const gymRes = await query(
-      'SELECT id, name, pix_key, payment_settings, city FROM gyms WHERE id = $1 LIMIT 1',
+      'SELECT id, name, pix_key, payment_settings, address FROM gyms WHERE id = $1 LIMIT 1',
       [user.gym_id]
     );
     const gym = gymRes.rows[0] || {};
@@ -216,7 +216,7 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
     }
 
     const receiverName = pixSettings.receiver_name || gym.name || 'Academia LOBO';
-    const city = pixSettings.city || gym.city || 'SAO PAULO';
+    const city = pixSettings.city || 'SAO PAULO';
     const bank = pixSettings.bank || '';
 
     // TXID identificador da fatura no Pix (padrão EMVCo alfanumérico)
