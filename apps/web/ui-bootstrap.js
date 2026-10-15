@@ -84,6 +84,24 @@
     });
   }
 
+  if (isStudent) {
+    const cachedLogo = localStorage.getItem('gymLogoUrl');
+    if (cachedLogo) {
+      const syncLogo = () => {
+        document.querySelectorAll('.top-nav-logo').forEach((img) => {
+          if (img.getAttribute('src') !== cachedLogo && img.src !== cachedLogo) {
+            img.src = cachedLogo;
+          }
+        });
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncLogo, { once: true });
+      } else {
+        syncLogo();
+      }
+    }
+  }
+
   window.__uiBootFallback = window.setTimeout(() => {
     root.classList.remove('ui-booting');
   }, 4000);

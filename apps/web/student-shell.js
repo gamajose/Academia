@@ -135,8 +135,31 @@
     }
   }
 
+  function applyBrandLogo(url) {
+    if (!url) return;
+    document.querySelectorAll('.top-nav-logo').forEach((img) => {
+      const current = img.getAttribute('src');
+      if (current !== url && img.src !== url) {
+        img.src = url;
+      }
+    });
+  }
+
+  function applyBrandName(name) {
+    if (!name) return;
+    document.querySelectorAll('.brand-wordmark strong').forEach((el) => {
+      if (el.textContent !== name) {
+        el.textContent = name;
+      }
+    });
+  }
+
   function bootShellUi() {
     setupThemeToggle();
+    const savedLogo = localStorage.getItem('gymLogoUrl');
+    if (savedLogo) applyBrandLogo(savedLogo);
+    const savedName = localStorage.getItem('gymName');
+    if (savedName) applyBrandName(savedName);
     if (document.body) {
       createMobileNavigation();
       setActiveLink();
@@ -310,18 +333,18 @@
 
       const savedLogo = localStorage.getItem('gymLogoUrl');
       const savedName = localStorage.getItem('gymName');
-      if (savedLogo) document.querySelectorAll('.top-nav-logo').forEach((img) => { img.src = savedLogo; });
-      if (savedName) document.querySelectorAll('.brand-wordmark strong').forEach((el) => { el.textContent = savedName; });
+      if (savedLogo) applyBrandLogo(savedLogo);
+      if (savedName) applyBrandName(savedName);
 
       try {
         const gym = await api('/api/gym/profile');
         if (gym.logo_url) {
           localStorage.setItem('gymLogoUrl', gym.logo_url);
-          document.querySelectorAll('.top-nav-logo').forEach((img) => { img.src = gym.logo_url; });
+          applyBrandLogo(gym.logo_url);
         }
         if (gym.name) {
           localStorage.setItem('gymName', gym.name);
-          document.querySelectorAll('.brand-wordmark strong').forEach((el) => { el.textContent = gym.name; });
+          applyBrandName(gym.name);
         }
       } catch (_) {}
 

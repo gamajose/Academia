@@ -3,14 +3,21 @@ html:not([data-student-theme="dark"]) .student-page {
 }
 
 .student-top-nav .top-nav-logo {
-  width: 94px;
-  height: 56px;
-  object-fit: cover;
+  width: auto;
+  max-width: 100px;
+  height: 44px;
+  max-height: 44px;
+  object-fit: contain;
   border-radius: 7px;
-  mix-blend-mode: screen;
+  display: block;
 }
 
-.student-top-nav .top-nav-brand { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.student-top-nav .top-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
 .student-top-nav .top-nav-brand .brand-wordmark { display: none !important; }
 .student-top-nav .top-nav-brand::after { display: none; }
 .student-top-nav .profile-copy { display: none; }
@@ -1038,14 +1045,39 @@ html[data-student-theme="dark"] body.student-page .student-workout-exercise-row 
 @media (max-width: 760px) {
   .student-page { padding-bottom: 54px !important; }
   .student-top-nav {
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    min-height: 42px !important;
-    padding: 4px 10px !important;
-    gap: 8px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-height: 44px !important;
+    padding: 6px 12px !important;
+    gap: 10px !important;
   }
   .student-top-nav .top-nav-links { display: none !important; }
-  .student-top-nav .top-nav-brand { min-width: 0; }
-  .student-top-nav .top-nav-logo { width: 52px !important; height: 30px !important; }
+  .student-top-nav .top-nav-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .student-top-nav .top-nav-logo {
+    width: auto !important;
+    max-width: 72px !important;
+    height: 32px !important;
+    max-height: 32px !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+  .student-top-nav .student-top-actions {
+    margin-left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 0 0 auto !important;
+  }
   .student-top-nav .profile-copy { display: none !important; }
   .student-top-nav .profile-trigger { padding: 3px 6px !important; min-height: 32px !important; }
   .student-top-nav .profile-avatar { width: 26px !important; height: 26px !important; font-size: 12px !important; }

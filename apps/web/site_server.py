@@ -104,6 +104,8 @@ class SiteHandler(SimpleHTTPRequestHandler):
         html = target.read_text(encoding='utf-8')
         versioned_nav = f'<script src="./nav.js?v={BUILD_VERSION}"></script>'
         html = NAV_SCRIPT_PATTERN.sub(versioned_nav, html)
+        if 'student-' in name or name == 'fatura.html':
+            html = html.replace('src="./blue-rec-logo.png"', 'src="/uploads/d46863cc-2bf1-45a3-82ae-c710ea755eb8.jpg"')
         body = html.encode('utf-8')
 
         self.send_response(200)
