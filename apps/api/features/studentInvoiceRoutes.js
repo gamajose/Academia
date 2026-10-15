@@ -59,6 +59,8 @@ function buildWhatsAppInvoiceUrl({
   dueDay,
   isOverdue,
   daysOverdue,
+  pixKey,
+  receiverName,
   pixPayload,
   publicAppUrl
 }) {
@@ -66,31 +68,121 @@ function buildWhatsAppInvoiceUrl({
   const waPhone = cleanPhone ? (cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`) : '';
 
   const statusText = isOverdue
-    ? `⚠️ *EM ATRASO* (${daysOverdue > 0 ? `${daysOverdue} dias de atraso` : 'regularize seu acesso'})`
+    ? `⚠️ *EM ATRASO* (${daysOverdue > 0 ? `${daysOverdue} dias de atraso` : 'regularize sua mensalidade'})`
     : '⏳ *Disponível para pagamento*';
 
-  const pixBlock = pixPayload
-    ? `1️⃣ *OPÇÃO 1 - PAGAR COM PIX (Instantâneo / 24h):*\nPague pelo app do seu banco com o Pix Copia e Cola abaixo. A confirmação é *validada automaticamente na hora* direto no site:\n\n\`\`\`${pixPayload}\`\`\`\n\n`
-    : `1️⃣ *OPÇÃO 1 - PAGAR COM PIX (Instantâneo / 24h):*\nAcesse o portal no link abaixo para gerar o QR Code Pix com validação automática instantânea!\n\n`;
+  let pixBlock = '';
+  if (pixKey) {
+    pixBlock =
+      `⚡ *PAGAMENTO VIA PIX (Online e Instantâneo):*\n` +
+      `Basta pagar pelo aplicativo do seu banco com o Pix Copia e Cola abaixo ou com a Chave Pix. A baixa é identificada e validada *automaticamente direto no sistema*!\n\n` +
+      `🔑 *Chave Pix:* ${pixKey}\n` +
+      `👤 *Favorecido:* ${receiverName || 'Academia LOBO'}\n\n`;
+
+    if (pixPayload) {
+      pixBlock +=
+        `📋 *Pix Copia e Cola:*\n\`\`\`${pixPayload}\`\`\`\n\n`;
+    }
+  } else {
+    pixBlock =
+      `⚡ *PAGAMENTO VIA PIX:*\nAcesse o portal no link abaixo para pagar via Pix com validação automática instantânea!\n\n`;
+  }
 
   const message =
     `*Academia LOBO - Fatura de Mensalidade* 🐺\n\n` +
     `Olá, *${memberName || 'Aluno'}*!\n\n` +
-    `Sua fatura da mensalidade (*${planName || 'Plano LOBO'}*) está pronta para pagamento:\n\n` +
+    `Sua fatura de mensalidade (*${planName || 'Plano LOBO'}*) está disponível para pagamento:\n\n` +
     `💰 *Valor:* ${amountFormatted}\n` +
     `📅 *Vencimento:* ${dueDateFormatted} (Vencimento todo dia ${dueDay})\n` +
     `📌 *Situação:* ${statusText}\n\n` +
-    `👉 *ESCOLHA COMO DESEJA PAGAR:*\n\n` +
     pixBlock +
-    `2️⃣ *OPÇÃO 2 - PAGAR NO LOCAL (Recepção):*\n` +
-    `Prefere pagar presencialmente na academia? Compareça à recepção e pague em *Dinheiro, Cartão de Débito, Cartão de Crédito ou Pix no balcão*. O administrador confirmará a baixa no sistema.\n\n` +
-    `🌐 *Ver fatura e pagar online:*\n` +
+    `💵 *PAGAMENTO EM DINHEIRO:*\n` +
+    `Se preferir pagar em dinheiro, compareça à recepção da academia que o administrador dará a baixa no sistema.\n\n` +
+    `🌐 *Ver fatura e QR Code online:*\n` +
     `${publicAppUrl}/student-invoices.html`;
 
   const encoded = encodeURIComponent(message);
   return waPhone
     ? `https://wa.me/${waPhone}?text=${encoded}`
     : `https://api.whatsapp.com/send?text=${encoded}`;
+}
+
+async function syncMembershipInvoices({ query, gymId, memberId, activeMem, dueDay, today }) {
+  if (!activeMem || !activeMem.id) return;
+
+  const defaultAmount = Number(activeMem.price_cents) || 11990;
+  const startRaw = activeMem.starts_at || activeMem.created_at || today.toISOString().slice(0, 10);
+  const startParts = String(startRaw).split('T')[0].split('-');
+  const startYear = parseInt(startParts[0], 10) || today.getFullYear();
+  const startMonth = (parseInt(startParts[1], 10) || (today.getMonth() + 1)) - 1; // 0-indexed
+
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth(); // 0-indexed
+
+  // Ciclo final: próximo mês (para já disponibilizar a próxima fatura do próximo mês a vencer)
+  let endYear = todayYear;
+  let endMonth = todayMonth + 1;
+  if (endMonth > 11) {
+    endMonth = 0;
+    endYear++;
+  }
+
+  // Busca todos os pagamentos existentes do aluno na academia
+  const existingRes = await query(
+    `SELECT id, amount_cents, status, due_date, paid_at, notes, membership_id
+     FROM payments
+     WHERE gym_id = $1 AND member_id = $2`,
+    [gymId, memberId]
+  );
+
+  // Mapeia lançamentos existentes pelo ano-mês de vencimento 'YYYY-MM'
+  const byMonth = new Map();
+  for (const row of existingRes.rows) {
+    if (row.due_date) {
+      const ym = String(row.due_date).split('T')[0].slice(0, 7);
+      if (!byMonth.has(ym)) {
+        byMonth.set(ym, row);
+      }
+    }
+  }
+
+  // Itera mês a mês de (startYear, startMonth) até (endYear, endMonth)
+  let curY = startYear;
+  let curM = startMonth;
+  let safetyLimit = 36; // Segurança máxima de 36 meses
+
+  while ((curY < endYear || (curY === endYear && curM <= endMonth)) && safetyLimit-- > 0) {
+    const cycleDueDate = calculateCycleDueDate(dueDay, curY, curM);
+    const ym = `${curY}-${String(curM + 1).padStart(2, '0')}`;
+
+    const existing = byMonth.get(ym);
+    if (!existing) {
+      // Cria a mensalidade do ciclo caso ainda não tenha sido faturada
+      await query(
+        `INSERT INTO payments (gym_id, member_id, membership_id, amount_cents, original_amount_cents, status, due_date, notes)
+         VALUES ($1, $2, $3, $4, $4, 'pending', $5, $6)`,
+        [gymId, memberId, activeMem.id, defaultAmount, cycleDueDate, `Mensalidade ${activeMem.plan_name} - Vencimento todo dia ${dueDay}`]
+      );
+    } else if (existing.status !== 'paid' && existing.status !== 'cancelled') {
+      // Ajusta data de vencimento da fatura aberta para garantir que obedece ao dia X da matrícula
+      const curDueStr = String(existing.due_date).split('T')[0];
+      if (curDueStr !== cycleDueDate) {
+        await query(
+          `UPDATE payments
+           SET due_date = $1,
+               notes = CASE WHEN notes NOT LIKE '%Vencimento todo dia%' THEN COALESCE(notes, '') || ' - Vencimento todo dia ' || $2 ELSE notes END
+           WHERE id = $3`,
+          [cycleDueDate, dueDay, existing.id]
+        );
+      }
+    }
+
+    curM++;
+    if (curM > 11) {
+      curM = 0;
+      curY++;
+    }
+  }
 }
 
 async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
@@ -143,11 +235,23 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
     const enrollmentDate = activeMem?.starts_at || activeMem?.created_at || memberData.created_at || new Date().toISOString().slice(0, 10);
     const dueDay = extractDueDay(enrollmentDate);
 
-    const now = new Date();
-    const currentCycleDueDate = calculateCycleDueDate(dueDay, now.getFullYear(), now.getMonth());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Verifica se há pagamentos para o aluno
-    let paymentsRes = await query(
+    // Sincroniza todas as mensalidades desde a matrícula até a próxima fatura do próximo mês
+    if (activeMem) {
+      await syncMembershipInvoices({
+        query,
+        gymId: user.gym_id,
+        memberId: user.member_id,
+        activeMem,
+        dueDay,
+        today
+      });
+    }
+
+    // Busca todos os pagamentos atualizados do aluno
+    const paymentsRes = await query(
       `SELECT p.id, p.amount_cents, p.original_amount_cents, p.discount_cents, p.fee_cents,
               p.status, p.due_date, p.paid_at, p.method, p.notes, p.created_at,
               pl.name AS plan_name,
@@ -160,52 +264,6 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
        ORDER BY p.due_date DESC, p.created_at DESC`,
       [user.gym_id, user.member_id]
     );
-
-    // Se o aluno não tiver nenhum pagamento gerado mas tiver matrícula ativa, cria a fatura inicial no dia X
-    if (paymentsRes.rowCount === 0 && activeMem) {
-      const defaultAmount = Number(activeMem.price_cents) || 11990;
-      await query(
-        `INSERT INTO payments (gym_id, member_id, membership_id, amount_cents, original_amount_cents, status, due_date, notes)
-         VALUES ($1, $2, $3, $4, $4, 'pending', $5, $6)`,
-        [user.gym_id, user.member_id, activeMem.id, defaultAmount, currentCycleDueDate, `Mensalidade ${activeMem.plan_name} - Vencimento todo dia ${dueDay}`]
-      );
-
-      paymentsRes = await query(
-        `SELECT p.id, p.amount_cents, p.original_amount_cents, p.discount_cents, p.fee_cents,
-                p.status, p.due_date, p.paid_at, p.method, p.notes, p.created_at,
-                pl.name AS plan_name,
-                r.receipt_number
-         FROM payments p
-         LEFT JOIN memberships m ON m.id = p.membership_id
-         LEFT JOIN plans pl ON pl.id = m.plan_id
-         LEFT JOIN payment_receipts r ON r.payment_id = p.id
-         WHERE p.gym_id = $1 AND p.member_id = $2
-         ORDER BY p.due_date DESC, p.created_at DESC`,
-        [user.gym_id, user.member_id]
-      );
-    } else if (paymentsRes.rowCount > 0 && activeMem) {
-      // Ajusta vencimentos em aberto da matrícula para garantir conformidade com o dia X
-      for (const row of paymentsRes.rows) {
-        if (row.status !== 'paid' && row.status !== 'cancelled' && row.due_date) {
-          const d = new Date(row.due_date);
-          const expectedDueDate = calculateCycleDueDate(dueDay, d.getUTCFullYear(), d.getUTCMonth());
-          const currentDateStr = String(row.due_date).split('T')[0];
-          if (currentDateStr !== expectedDueDate) {
-            await query(
-              `UPDATE payments
-               SET due_date = $1,
-                   notes = CASE WHEN notes NOT LIKE '%Vencimento todo dia%' THEN COALESCE(notes, '') || ' - Vencimento todo dia ' || $2 ELSE notes END
-               WHERE id = $3`,
-              [expectedDueDate, dueDay, row.id]
-            );
-            row.due_date = expectedDueDate;
-          }
-        }
-      }
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const invoices = paymentsRes.rows.map((row) => {
       const dueDate = row.due_date ? new Date(row.due_date) : null;
@@ -253,6 +311,8 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
         dueDay,
         isOverdue,
         daysOverdue,
+        pixKey: gymPix.key,
+        receiverName: gymPix.receiver_name,
         pixPayload,
         publicAppUrl
       });
@@ -295,8 +355,11 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       statusTheme = 'warn';
     }
 
-    const nextPending = invoices.find((i) => i.status === 'pending');
-    const lastPaid = invoices.find((i) => i.status === 'paid');
+    // Próximo Vencimento: a próxima fatura do próximo mês (ou a próxima fatura futura a vencer)
+    const futureInvoices = invoices.filter((i) => i.due_date && new Date(i.due_date) >= today && i.status !== 'paid' && i.status !== 'cancelled');
+    futureInvoices.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+    const nextUpcoming = futureInvoices[0];
+    const nextMonthDueDate = calculateCycleDueDate(dueDay, today.getFullYear(), today.getMonth() + 1);
 
     const summary = {
       is_up_to_date: isUpToDate,
@@ -306,8 +369,8 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       pending_count: pendingCount,
       paid_count: paidCount,
       total_invoices: invoices.length,
-      next_due_date: nextPending ? nextPending.due_date : null,
-      last_payment_date: lastPaid ? lastPaid.paid_at : null,
+      next_due_date: nextUpcoming ? nextUpcoming.due_date : nextMonthDueDate,
+      last_payment_date: invoices.find((i) => i.status === 'paid')?.paid_at || null,
       due_day: dueDay,
       due_day_label: `Todo dia ${dueDay}`,
       enrollment_date: enrollmentDate
@@ -404,6 +467,8 @@ async function handleStudentInvoiceRoutes(req, res, user, url, helpers) {
       dueDay,
       isOverdue: payment.due_date && new Date(payment.due_date) < new Date(),
       daysOverdue: 0,
+      pixKey,
+      receiverName,
       pixPayload,
       publicAppUrl
     });
@@ -492,5 +557,6 @@ module.exports = {
   handleStudentInvoiceRoutes,
   extractDueDay,
   calculateCycleDueDate,
-  buildWhatsAppInvoiceUrl
+  buildWhatsAppInvoiceUrl,
+  syncMembershipInvoices
 };

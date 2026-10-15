@@ -9,7 +9,8 @@ const {
   handleStudentInvoiceRoutes,
   extractDueDay,
   calculateCycleDueDate,
-  buildWhatsAppInvoiceUrl
+  buildWhatsAppInvoiceUrl,
+  syncMembershipInvoices
 } = require('../features/studentInvoiceRoutes');
 
 test('cleanString normalizes diacritics and removes special characters', () => {
@@ -163,6 +164,8 @@ test('buildWhatsAppInvoiceUrl formata mensagem completa com opções de pagament
     dueDay: 10,
     isOverdue: false,
     daysOverdue: 0,
+    pixKey: '12345678000199',
+    receiverName: 'Academia LOBO',
     pixPayload: '00020126...6304ABCD',
     publicAppUrl: 'http://192.168.3.200:8084'
   });
@@ -173,31 +176,29 @@ test('buildWhatsAppInvoiceUrl formata mensagem completa com opções de pagament
   assert.ok(decoded.includes('Plano Black'));
   assert.ok(decoded.includes('R$ 119,90'));
   assert.ok(decoded.includes('Vencimento todo dia 10'));
-  assert.ok(decoded.includes('OPÇÃO 1 - PAGAR COM PIX'));
-  assert.ok(decoded.includes('OPÇÃO 2 - PAGAR NO LOCAL'));
+  assert.ok(decoded.includes('PAGAMENTO VIA PIX'));
+  assert.ok(decoded.includes('PAGAMENTO EM DINHEIRO'));
+  assert.ok(decoded.includes('12345678000199'));
   assert.ok(decoded.includes('00020126...6304ABCD'));
   assert.ok(decoded.includes('student-invoices.html'));
 });
 
-test('interface de faturas remove textos antigos, exibe apenas dois cards lado a lado e opções de pagamento', () => {
+test('interface de faturas remove textos antigos, exibe apenas dois cards lado a lado sem seção de método', () => {
   const fs = require('node:fs');
   const path = require('node:path');
   const invoicesHtml = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'student-invoices.html'), 'utf8');
   const invoicesCss = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'student-invoices.css'), 'utf8');
 
-  // Textos removidos conforme solicitado
+  // Textos removidos conforme solicitado pelo usuário
   assert.doesNotMatch(invoicesHtml, /Financeiro & Mensalidades/);
   assert.doesNotMatch(invoicesHtml, /Acompanhe suas mensalidades/);
   assert.doesNotMatch(invoicesHtml, /Histórico de Pagamentos/);
+  assert.doesNotMatch(invoicesHtml, /invoices-payment-info-box/);
+  assert.doesNotMatch(invoicesHtml, /Escolha como deseja pagar sua fatura/);
 
-  // Cards mantidos
+  // Cards mantidos lado a lado
   assert.match(invoicesHtml, /Situação Geral/);
   assert.match(invoicesHtml, /Próximo Vencimento/);
-
-  // Seção de opções de pagamento online e local
-  assert.match(invoicesHtml, /invoices-payment-info-box/);
-  assert.match(invoicesHtml, /Opção 1: Pix Instantâneo/);
-  assert.match(invoicesHtml, /Opção 2: Pagar no Local/);
 
   // Botão de envio no WhatsApp no modal
   assert.match(invoicesHtml, /pix-modal-wa-btn/);
@@ -206,5 +207,68 @@ test('interface de faturas remove textos antigos, exibe apenas dois cards lado a
   assert.match(invoicesCss, /\.invoices-summary-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(invoicesCss, /@media\s*\(max-width:\s*600px\)[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)\s*!important/);
 });
+
+test('syncMembershipInvoices gera todas as mensalidades intermediarias em atraso e a proxima fatura futura', async () => {
+  const inserted = [];
+  const fakeDb = [
+    {
+      id: 'p-1',
+      due_date: '2026-07-13',
+      status: 'paid',
+      amount_cents: 11990,
+      paid_at: '2026-07-13T10:00:00Z',
+      notes: 'Matricula'
+    }
+  ];
+
+  const fakeQuery = async (sql, params) => {
+    if (sql.includes('SELECT id, amount_cents, status, due_date')) {
+      return { rows: [...fakeDb, ...inserted] };
+    }
+    if (sql.includes('INSERT INTO payments')) {
+      const row = {
+        id: `p-${inserted.length + 2}`,
+        amount_cents: params[3],
+        status: 'pending',
+        due_date: params[4],
+        notes: params[5]
+      };
+      inserted.push(row);
+      return { rowCount: 1, rows: [row] };
+    }
+    return { rowCount: 0, rows: [] };
+  };
+
+  const activeMem = {
+    id: 'mem-1',
+    starts_at: '2026-07-13',
+    plan_name: 'Plano Black',
+    price_cents: 11990
+  };
+
+  // Hoje sendo 15/10/2026
+  const simulatedToday = new Date('2026-10-15T12:00:00Z');
+  await syncMembershipInvoices({
+    query: fakeQuery,
+    gymId: 'gym-1',
+    memberId: 'mem-1',
+    activeMem,
+    dueDay: 13,
+    today: simulatedToday
+  });
+
+  // Deve gerar:
+  // 1. 2026-08-13 (em atraso)
+  // 2. 2026-09-13 (em atraso)
+  // 3. 2026-10-13 (em atraso)
+  // 4. 2026-11-13 (próximo mês / a vencer)
+  assert.equal(inserted.length, 4);
+  assert.equal(inserted[0].due_date, '2026-08-13');
+  assert.equal(inserted[1].due_date, '2026-09-13');
+  assert.equal(inserted[2].due_date, '2026-10-13');
+  assert.equal(inserted[3].due_date, '2026-11-13');
+  assert.ok(inserted[0].notes.includes('Vencimento todo dia 13'));
+});
+
 
 
