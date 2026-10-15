@@ -48,16 +48,11 @@
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .quick-card { text-decoration: none; color: #171717; border: 1px solid #ded6ca; border-radius: 8px; padding: 18px; background: #fff; }
 .quick-card strong { display: block; color: #e55342; font-size: 18px; margin-bottom: 8px; }
-.finance-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
-.finance-summary .finance-pending { grid-column: span 2; }
-.finance-summary .finance-overdue { grid-column: span 2; }
-.finance-summary .finance-paid { grid-column: span 2; }
-.finance-summary .finance-open { grid-column: 2 / span 2; }
-.finance-summary .finance-paid-count { grid-column: 4 / span 2; }
-.finance-summary article { min-height: 118px; display: grid; align-content: center; gap: 5px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.finance-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.finance-summary article { min-height: 84px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
 .finance-summary article:hover, .finance-summary article:focus-visible { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 10px 24px rgba(229, 83, 66, .12); outline: none; }
-.finance-summary article strong { font-size: 25px; }
-.finance-summary article span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.finance-summary article strong { font-size: 18px; }
+.finance-summary article span { color: var(--muted); font-size: 11px; font-weight: 750; }
 .finance-summary .finance-pending strong, .finance-summary .finance-open strong { color: #b45309; }
 .finance-summary .finance-overdue strong { color: #b91c1c; }
 .finance-summary .finance-paid strong, .finance-summary .finance-paid-count strong { color: #15803d; }
@@ -954,35 +949,31 @@ html[data-admin-theme="dark"] .plan-card-menu-dropdown button:hover {
     right: 8px;
   }
 
-  /* Financeiro summary mobile: 3 on top row, 2 centered on second row */
-  .finance-summary {
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+  /* Financeiro summary mobile: keep all in one row with horizontal scroll if needed */
+  .finance-summary,
+  .finance-summary-gym {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(130px, 1fr)) !important;
+    overflow-x: auto !important;
+    padding-bottom: 6px !important;
+    gap: 8px !important;
+    scrollbar-width: thin !important;
   }
-  .finance-summary .finance-pending {
-    grid-column: 1 / span 2 !important;
-  }
-  .finance-summary .finance-overdue {
-    grid-column: 3 / span 2 !important;
-  }
-  .finance-summary .finance-paid {
-    grid-column: 5 / span 2 !important;
-  }
-  .finance-summary .finance-open {
-    grid-column: 2 / span 2 !important;
-  }
-  .finance-summary .finance-paid-count {
-    grid-column: 4 / span 2 !important;
-  }
-  .finance-summary article {
-    min-height: 58px !important;
-    padding: 8px 6px !important;
+  .finance-summary > article,
+  .finance-summary-gym > article,
+  .finance-summary .finance-card,
+  .finance-summary-gym .finance-card {
+    grid-column: auto !important;
+    min-height: 72px !important;
+    padding: 8px 10px !important;
     border-radius: 10px !important;
   }
-  .finance-summary article strong {
-    font-size: 15px !important;
+  .finance-summary article strong,
+  .finance-summary-gym article strong {
+    font-size: 16px !important;
   }
-  .finance-summary article span {
+  .finance-summary article span,
+  .finance-summary-gym article span {
     font-size: 10px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -1701,21 +1692,35 @@ html[data-admin-theme="dark"] .student-form-tab[data-student-tab="health"].activ
    CONTROLE FINANCEIRO DA ACADEMIA (GYM FINANCIAL CONTROL)
    ========================================================= */
 .finance-summary-gym {
-  display: grid;
-  grid-template-columns: 1.25fr 1fr 1fr 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 22px;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-bottom: 18px !important;
+  align-items: stretch !important;
+}
+
+.finance-summary-gym > article,
+.finance-summary-gym .finance-card,
+.finance-summary-gym .finance-card-today,
+.finance-summary-gym .finance-paid,
+.finance-summary-gym .finance-pending,
+.finance-summary-gym .finance-overdue,
+.finance-summary-gym .finance-paid-count {
+  grid-column: auto !important;
+  width: auto !important;
+  min-width: 0 !important;
 }
 
 .finance-card {
-  padding: 16px 18px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--card);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
+  min-height: 84px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   cursor: pointer;
@@ -1738,14 +1743,18 @@ html[data-admin-theme="dark"] .finance-card-today {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 .finance-card-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 .finance-card-today .finance-card-title {
   color: #10b981;
@@ -1754,59 +1763,76 @@ html[data-admin-theme="dark"] .finance-card-today {
 .badge-today-live {
   background: rgba(16, 185, 129, 0.15);
   color: #10b981;
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: 10px;
+  padding: 1px 6px;
   border-radius: 999px;
   font-weight: 800;
   border: 1px solid rgba(16, 185, 129, 0.3);
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .finance-highlight-amount {
-  font-size: 26px;
-  font-weight: 900;
+  font-size: 18px !important;
+  font-weight: 850 !important;
   color: #10b981;
   line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 1px 0;
 }
 .finance-card strong {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 850;
   line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 1px 0;
 }
 
 .finance-card-footer {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 .finance-card-sub {
-  font-size: 12px;
+  font-size: 10.5px;
   color: var(--muted);
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .finance-today-breakdown {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 2px;
+  margin-top: 2px;
 }
 .pill-method {
   display: inline-block;
   background: rgba(148, 163, 184, 0.12);
-  border-radius: 6px;
-  padding: 2px 6px;
-  font-size: 10.5px;
+  border-radius: 5px;
+  padding: 1px 4px;
+  font-size: 9.5px;
   color: var(--text);
+  line-height: 1.2;
 }
 .pill-method strong {
-  font-size: 10.5px;
+  font-size: 9.5px !important;
   font-weight: 800;
 }
 .today-empty-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Toolbar & Quick Filters */
@@ -1961,20 +1987,15 @@ html[data-admin-theme="dark"] .pill-today-received {
   font-weight: 600;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 960px) {
   .finance-summary-gym {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-@media (max-width: 720px) {
-  .finance-summary-gym {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(5, minmax(130px, 1fr)) !important;
+    overflow-x: auto !important;
+    padding-bottom: 6px !important;
+    scrollbar-width: thin !important;
   }
 }
 @media (max-width: 500px) {
-  .finance-summary-gym {
-    grid-template-columns: 1fr;
-  }
   .finance-quick-filter-group {
     width: 100%;
     overflow-x: auto;

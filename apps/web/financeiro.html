@@ -7,7 +7,7 @@
   <title>Financeiro - Academia LOBO</title>
   <link rel="stylesheet" href="./styles.css?v=20261004-1" />
   <link rel="stylesheet" href="./theme-modern.css" />
-  <link rel="stylesheet" href="./product-layout.css?v=20261014-fin2" />
+  <link rel="stylesheet" href="./product-layout.css?v=20261015-fin3" />
 </head>
 <body class="admin-finance-page">
   <main class="app-shell">
@@ -18,12 +18,12 @@
       <!-- Card Destaque: Recebido Hoje -->
       <article class="finance-card finance-card-today">
         <div class="finance-card-header">
-          <span class="finance-card-title">Recebido Hoje (Dia)</span>
+          <span class="finance-card-title">Recebido Hoje</span>
           <span class="badge-today-live" id="today-date-badge">Hoje</span>
         </div>
         <strong id="today-amount" class="finance-highlight-amount">R$ 0,00</strong>
         <div class="finance-card-footer">
-          <span id="today-count-label" class="finance-card-sub">0 pagamentos hoje</span>
+          <span id="today-count-label" class="finance-card-sub">0 pagamentos</span>
           <div id="today-breakdown" class="finance-today-breakdown"></div>
         </div>
       </article>
@@ -42,18 +42,18 @@
       <!-- Card: A Vencer / Pendente -->
       <article class="finance-card finance-pending">
         <div class="finance-card-header">
-          <span class="finance-card-title">A Vencer / Pendente</span>
+          <span class="finance-card-title">A Vencer</span>
         </div>
         <strong id="pending-amount">R$ 0,00</strong>
         <div class="finance-card-footer">
-          <span id="pending-count-label" class="finance-card-sub">0 mensalidades</span>
+          <span id="pending-count-label" class="finance-card-sub">0 a vencer</span>
         </div>
       </article>
 
       <!-- Card: Vencidos / Em Atraso -->
       <article class="finance-card finance-overdue">
         <div class="finance-card-header">
-          <span class="finance-card-title">Vencidos (Em Atraso)</span>
+          <span class="finance-card-title">Vencidos</span>
         </div>
         <strong id="overdue-amount">R$ 0,00</strong>
         <div class="finance-card-footer">
@@ -64,7 +64,7 @@
       <!-- Card: Total Geral Pago -->
       <article class="finance-card finance-paid-count">
         <div class="finance-card-header">
-          <span class="finance-card-title">Total Geral Recebido</span>
+          <span class="finance-card-title">Total Geral</span>
         </div>
         <strong id="paid-amount">R$ 0,00</strong>
         <div class="finance-card-footer">
@@ -255,6 +255,6 @@
   <script src="./qrcode.min.js"></script>
   <script src="./pix-utils.js?v=20261004-1"></script>
   <script src="./nav.js?v=20260719-1"></script>
-  <script src="./fin-core.js?v=20261014-fin2"></script>
+  <script src="./fin-core.js?v=20261015-fin3"></script>
 </body>
 </html>

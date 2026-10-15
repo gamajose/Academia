@@ -166,7 +166,7 @@ function draw() {
 
   // Render cards
   if (f('today-amount')) f('today-amount').textContent = brl(todayAmount);
-  if (f('today-count-label')) f('today-count-label').textContent = `${todayCount} ${todayCount === 1 ? 'pagamento hoje' : 'pagamentos hoje'}`;
+  if (f('today-count-label')) f('today-count-label').textContent = `${todayCount} ${todayCount === 1 ? 'pagamento' : 'pagamentos'}`;
 
   const breakdownEl = f('today-breakdown');
   if (breakdownEl) {
@@ -179,15 +179,15 @@ function draw() {
       if (others > 0) parts.push(`<span class="pill-method">Outros: <strong>${brl(others)}</strong></span>`);
       breakdownEl.innerHTML = parts.join(' ');
     } else {
-      breakdownEl.innerHTML = '<span class="today-empty-sub">Nenhum recebimento hoje ainda</span>';
+      breakdownEl.innerHTML = '<span class="today-empty-sub">Nenhum recebimento hoje</span>';
     }
   }
 
   if (f('month-amount')) f('month-amount').textContent = brl(monthAmount);
-  if (f('month-count-label')) f('month-count-label').textContent = `${monthCount} ${monthCount === 1 ? 'recebimento no mês' : 'recebimentos no mês'}`;
+  if (f('month-count-label')) f('month-count-label').textContent = `${monthCount} ${monthCount === 1 ? 'recebimento' : 'recebimentos'}`;
 
   if (f('pending-amount')) f('pending-amount').textContent = brl(pendingAmount);
-  if (f('pending-count-label')) f('pending-count-label').textContent = `${pendingCount} ${pendingCount === 1 ? 'mensalidade a vencer' : 'mensalidades a vencer'}`;
+  if (f('pending-count-label')) f('pending-count-label').textContent = `${pendingCount} ${pendingCount === 1 ? 'a vencer' : 'a vencer'}`;
 
   if (f('overdue-amount')) f('overdue-amount').textContent = brl(overdueAmount);
   if (f('overdue-count-label')) f('overdue-count-label').textContent = `${overdueCount} ${overdueCount === 1 ? 'em atraso' : 'em atraso'}`;
