@@ -1187,8 +1187,13 @@ function ensureComboboxDropdown() {
       hideExerciseHoverPopover();
     });
 
-    window.addEventListener('scroll', () => {
-      hideExerciseHoverPopover();
+    window.addEventListener('scroll', (e) => {
+      if (!dd.contains(e.target)) {
+        closeComboboxDropdown();
+        hideExerciseHoverPopover();
+      } else {
+        hideExerciseHoverPopover();
+      }
     }, true);
   }
   activeComboboxDropdown = dd;
@@ -1289,12 +1294,19 @@ function openComboboxDropdown(triggerBtn, currentExerciseId, onSelect) {
   const ddWidth = Math.max(rect.width, 320);
   dd.style.width = `${Math.min(ddWidth, window.innerWidth - 20)}px`;
 
+  // Open upwards ("para cima") so options don't get cut off at the bottom
+  const spaceAbove = rect.top;
   const spaceBelow = window.innerHeight - rect.bottom;
-  const ddHeight = 320;
-  if (spaceBelow < 260 && rect.top > 280) {
-    dd.style.top = `${Math.max(10, rect.top - ddHeight - 4)}px`;
+  const openUp = spaceAbove >= 140 || spaceAbove >= spaceBelow;
+
+  if (openUp) {
+    dd.style.top = 'auto';
+    dd.style.bottom = `${Math.round(window.innerHeight - rect.top + 6)}px`;
+    dd.style.maxHeight = `${Math.min(340, Math.max(160, rect.top - 16))}px`;
   } else {
-    dd.style.top = `${rect.bottom + 4}px`;
+    dd.style.bottom = 'auto';
+    dd.style.top = `${Math.round(rect.bottom + 6)}px`;
+    dd.style.maxHeight = `${Math.min(340, Math.max(160, spaceBelow - 16))}px`;
   }
 
   let left = rect.left;

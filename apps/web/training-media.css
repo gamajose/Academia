@@ -249,7 +249,7 @@ html[data-admin-shell="true"] .plan-level-picker #open-plan-levels-button { alig
   background: var(--surface, #ffffff);
   border: 1px solid var(--line, #e2e8f0);
   border-radius: 12px;
-  box-shadow: 0 18px 40px -4px rgba(0, 0, 0, 0.3), 0 8px 16px -2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -8px 28px -4px rgba(0, 0, 0, 0.2), 0 16px 36px -4px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   overflow: hidden;
