@@ -1167,6 +1167,16 @@ function ensureComboboxDropdown() {
     searchInput.addEventListener('input', () => {
       filterComboboxOptions(searchInput.value);
     });
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const list = dd.querySelector('.combobox-options-list');
+        const firstVisible = list?.querySelector('.combobox-option-item:not([style*="display: none"])');
+        if (firstVisible) {
+          firstVisible.click();
+        }
+      }
+    });
 
     document.addEventListener('pointerdown', (e) => {
       if (!dd.classList.contains('hidden')) {
@@ -1281,10 +1291,17 @@ function openComboboxDropdown(triggerBtn, currentExerciseId, onSelect) {
       hideExerciseHoverPopover();
     });
 
-    opt.addEventListener('click', () => {
+    opt.addEventListener('click', (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const callback = activeComboboxOnSelect;
       hideExerciseHoverPopover();
       closeComboboxDropdown();
-      if (activeComboboxOnSelect) activeComboboxOnSelect(ex);
+      if (typeof callback === 'function') {
+        callback(ex);
+      }
     });
 
     list.appendChild(opt);
