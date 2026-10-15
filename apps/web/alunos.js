@@ -157,9 +157,13 @@ function plainText(value) {
 }
 
 function dateOnly(value) {
-  if (!value) return '-';
-  const parts = String(value).slice(0, 10).split('-').map(Number);
-  return parts.length === 3 && parts.every(Number.isFinite) ? new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('pt-BR') : String(value);
+  if (!value || value === '-') return '-';
+  const str = String(value).trim();
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+  return str;
 }
 
 function assessmentAge(value) {
@@ -934,6 +938,33 @@ function setStudentFormTab(tabKey) {
   });
 }
 
+let availablePlans = [];
+async function loadPlans() {
+  if (availablePlans.length > 0) return availablePlans;
+  try {
+    const res = await req('/api/plans');
+    availablePlans = (res.data || []).filter((p) => p.is_active);
+  } catch (_) {
+    availablePlans = [];
+  }
+  return availablePlans;
+}
+
+async function populatePlansSelect(selectedPlanId = '') {
+  const select = $('student-plan');
+  if (!select) return;
+  const plans = await loadPlans();
+  select.innerHTML = '<option value="">Sem plano vinculado</option>' + plans.map((p) => {
+    const price = (Number(p.price_cents) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return `<option value="${p.id}">${p.name} (${price})</option>`;
+  }).join('');
+  if (selectedPlanId) {
+    select.value = selectedPlanId;
+  } else if (plans.length > 0 && !select.value) {
+    select.value = plans[0].id;
+  }
+}
+
 function openModal(item = {}) {
   $('student-form-panel').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -950,6 +981,20 @@ function openModal(item = {}) {
   const countryCode = item.phone_country_code || '+55';
   selectPhoneCountry(countryCode);
   setValue('student-phone', countryCode === '+55' ? formatPhone(item.phone) : item.phone);
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const rawEnrollment = item.enrollment_date || (item.starts_at ? String(item.starts_at).slice(0, 10) : (item.created_at ? String(item.created_at).slice(0, 10) : todayIso));
+  const cleanEnrollment = rawEnrollment.slice(0, 10);
+  setValue('student-enrollment-date', cleanEnrollment);
+
+  let initialDueDay = item.due_day || item.membership_due_day;
+  if (!initialDueDay && cleanEnrollment) {
+    const parts = cleanEnrollment.split('-');
+    if (parts.length === 3) initialDueDay = parseInt(parts[2], 10);
+  }
+  setValue('student-due-day', initialDueDay || 13);
+  populatePlansSelect(item.plan_id);
+
   setValue('student-emergency-name', item.emergency_contact_name || (item.emergency_contact || '').split('|')[0]?.trim());
   setValue('student-emergency-phone', item.emergency_contact_phone || (item.emergency_contact || '').split('|')[1]?.trim());
   setValue('student-postal-code', formatCep(item.postal_code));
@@ -976,6 +1021,9 @@ function closeModal() {
   document.body.style.overflow = '';
   $('student-form').reset();
   setValue('student-country', 'Brasil');
+  setValue('student-enrollment-date', '');
+  setValue('student-due-day', '13');
+  setValue('student-plan', '');
   ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'].forEach((id) => AcademiaRichEditor.clearValue(id));
   selectPhoneCountry('+55');
 }
@@ -1004,6 +1052,11 @@ async function save(event) {
   const emergencyName = val('student-emergency-name');
   const emergencyPhone = digits(val('student-emergency-phone'));
   if (emergencyPhone && emergencyPhone.length !== 11) { setStudentFormTab('emergency'); $('students-status').textContent = 'O telefone de emergência deve ter 11 dígitos no Brasil.'; $('student-emergency-phone').focus(); return; }
+
+  const enrollmentDate = val('student-enrollment-date') || new Date().toISOString().slice(0, 10);
+  const dueDay = parseInt(val('student-due-day'), 10) || 13;
+  const planId = val('student-plan') || null;
+
   const richIds = ['student-objective', 'student-allergies', 'student-medical', 'student-nutrition', 'student-notes'];
   let richValues;
   try {
@@ -1023,6 +1076,9 @@ async function save(event) {
         document: val('student-rg') || cpf || null, email: email || null,
         phone_country_code: countryCode || null, phone: digits(val('student-phone')) || null,
         birth_date: val('student-birth') || null,
+        enrollment_date: enrollmentDate,
+        due_day: dueDay,
+        plan_id: planId,
         emergency_contact_name: emergencyName || null, emergency_contact_phone: emergencyPhone || null,
         emergency_contact: [emergencyName, emergencyPhone].filter(Boolean).join(' | ') || null,
         postal_code: digits(val('student-postal-code')) || null, street: val('student-street') || null,
@@ -1289,6 +1345,18 @@ $('close-student-ai-history-modal').onclick = () => setStudentContextModal('stud
 for (const id of ['student-assessment-modal', 'student-goal-modal', 'student-summary-modal', 'student-ai-history-modal']) $(id).addEventListener('click', (event) => { if (event.target === $(id)) setStudentContextModal(id, false); });
 $('cancel-student-button').onclick = closeModal;
 $('student-form').addEventListener('submit', save);
+$('student-enrollment-date')?.addEventListener('change', (e) => {
+  const d = e.target.value;
+  if (d) {
+    const parts = d.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[2], 10);
+      if (!isNaN(day) && day >= 1 && day <= 31) {
+        $('student-due-day').value = day;
+      }
+    }
+  }
+});
 $('student-search').oninput = () => { currentPage = 1; render(); };
 ['student-search-field', 'student-status-filter', 'student-payment-filter', 'student-training-filter'].forEach((id) => {
   $(id).addEventListener('change', () => { currentPage = 1; render(); });

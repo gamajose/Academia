@@ -7,19 +7,21 @@
   let isCheckingPix = false;
 
   function formatDate(isoOrDateStr) {
-    if (!isoOrDateStr) return '-';
+    if (!isoOrDateStr || isoOrDateStr === '-' || isoOrDateStr === 'null' || isoOrDateStr === 'undefined') return '-';
     try {
-      const parts = String(isoOrDateStr).split('T')[0].split('-');
-      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      const d = new Date(isoOrDateStr);
-      return d.toLocaleDateString('pt-BR');
+      const str = String(isoOrDateStr).trim();
+      const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+      return str;
     } catch (_) {
       return String(isoOrDateStr);
     }
   }
 
   function formatDateTime(isoStr) {
-    if (!isoStr) return '-';
+    if (!isoStr || isoStr === '-' || isoStr === 'null' || isoStr === 'undefined') return '-';
     try {
       const d = new Date(isoStr);
       if (isNaN(d.getTime())) return formatDate(isoStr);

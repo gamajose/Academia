@@ -188,7 +188,15 @@ async function listMembers(req, res, user) {
 async function createMember(req, res, user) {
   const input = await body(req);
   if (!input.name) return send(req, res, 400, { error: 'nome_obrigatorio' });
-  const result = await query('INSERT INTO members (gym_id, name, email, phone) VALUES ($1, $2, $3, $4) RETURNING id, name, email, phone, status, created_at', [user.gym_id, input.name, input.email || null, input.phone || null]);
+  const enrollmentDate = input.enrollment_date ? String(input.enrollment_date).slice(0, 10) : new Date().toISOString().slice(0, 10);
+  const rawDueDay = parseInt(input.due_day, 10);
+  const dueDay = (!isNaN(rawDueDay) && rawDueDay >= 1 && rawDueDay <= 31)
+    ? rawDueDay
+    : (parseInt(enrollmentDate.split('-')[2], 10) || 13);
+  const result = await query(
+    'INSERT INTO members (gym_id, name, email, phone, enrollment_date, due_day) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, phone, status, due_day, enrollment_date::text AS enrollment_date, created_at',
+    [user.gym_id, input.name, input.email || null, input.phone || null, enrollmentDate, dueDay]
+  );
   return send(req, res, 201, result.rows[0]);
 }
 

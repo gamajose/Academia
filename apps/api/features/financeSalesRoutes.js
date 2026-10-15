@@ -52,7 +52,7 @@ async function receivables(res, user, url, helpers) {
   const result = await helpers.query(
     `SELECT p.id,p.member_id,m.name AS member_name,m.phone,m.email,
             p.original_amount_cents,p.amount_cents,p.discount_cents,p.fee_cents,
-            p.status,p.due_date,p.paid_at,p.method,p.notes,p.created_at,
+            p.status,p.due_date::text AS due_date,p.paid_at,p.method,p.notes,p.created_at,
             GREATEST(0,current_date-p.due_date)::integer AS overdue_days
      FROM payments p INNER JOIN members m ON m.id=p.member_id
      WHERE p.gym_id=$1

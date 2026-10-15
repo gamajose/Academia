@@ -10,7 +10,7 @@ const PEOPLE = [
 ];
 
 async function first(client, sql, params = []) { const result = await client.query(sql, params); return result.rows[0] || null; }
-async function member(client, gymId, [name, email, phone]) { const found = await first(client, 'SELECT id FROM members WHERE gym_id=$1 AND lower(email)=lower($2) LIMIT 1', [gymId, email]); if (found) return found.id; return (await first(client, 'INSERT INTO members(gym_id,name,email,phone,status) VALUES($1,$2,$3,$4,\'active\') RETURNING id', [gymId, name, email, phone])).id; }
+async function member(client, gymId, [name, email, phone]) { const found = await first(client, 'SELECT id FROM members WHERE gym_id=$1 AND lower(email)=lower($2) LIMIT 1', [gymId, email]); if (found) return found.id; return (await first(client, "INSERT INTO members(gym_id,name,email,phone,status,enrollment_date,due_day,created_at) VALUES($1,$2,$3,$4,'active','2026-05-13',13,'2026-05-13 10:00:00Z') RETURNING id", [gymId, name, email, phone])).id; }
 async function plan(client, gymId, name, cents) { const found = await first(client, 'SELECT id,price_cents,duration_days FROM plans WHERE gym_id=$1 AND lower(name)=lower($2) LIMIT 1', [gymId, name]); if (found) return found; return first(client, 'INSERT INTO plans(gym_id,name,price_cents,duration_days,is_active) VALUES($1,$2,$3,30,true) RETURNING id,price_cents,duration_days', [gymId, name, cents]); }
 async function exercise(client, gymId, name, group, equipment, level, instructions, secondary = null) { const found = await first(client, 'SELECT id FROM exercise_library WHERE gym_id=$1 AND lower(name)=lower($2) LIMIT 1', [gymId, name]); if (found) return found.id; return (await first(client, 'INSERT INTO exercise_library(gym_id,name,muscle_group,muscle_group_primary,muscle_group_secondary,equipment,level,instructions,is_active) VALUES($1,$2,$3,$3,$4,$5,$6,$7,true) RETURNING id', [gymId,name,group,secondary,equipment,level,instructions])).id; }
 
@@ -27,9 +27,42 @@ async function main() {
     if (existingJose && !members.some((person) => person.id === existingJose.id)) members.unshift({ id: existingJose.id, email: existingJose.email });
     for (const [index, person] of members.entries()) {
       const selected = plans[index % 2];
+      await client.query("UPDATE members SET enrollment_date = '2026-05-13', due_day = 13 WHERE id = $1", [person.id]);
       let membership = await first(client, "SELECT id FROM memberships WHERE gym_id=$1 AND member_id=$2 AND status='active' LIMIT 1", [gym.id, person.id]);
-      if (!membership) membership = await first(client, "INSERT INTO memberships(gym_id,member_id,plan_id,starts_at,ends_at,status) VALUES($1,$2,$3,current_date,current_date+30,'active') RETURNING id", [gym.id,person.id,selected.id]);
-      await client.query("INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,status,due_date,paid_at,method) SELECT $1,$2,$3,$4,'paid',current_date,now(),'demo' WHERE NOT EXISTS (SELECT 1 FROM payments WHERE membership_id=$3 AND status='paid')", [gym.id,person.id,membership.id,selected.price_cents]);
+      if (!membership) {
+        membership = await first(client, "INSERT INTO memberships(gym_id,member_id,plan_id,starts_at,ends_at,due_day,status) VALUES($1,$2,$3,'2026-05-13','2027-05-13',13,'active') RETURNING id", [gym.id,person.id,selected.id]);
+      } else {
+        await client.query("UPDATE memberships SET starts_at = '2026-05-13', due_day = 13 WHERE id = $1", [membership.id]);
+      }
+
+      // Pagamentos históricos pagos: 13/05 (matrícula), 13/06, 13/07
+      for (const paidMonth of ['2026-05-13', '2026-06-13', '2026-07-13']) {
+        await client.query(
+          "INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,original_amount_cents,status,due_date,paid_at,method,notes) " +
+          "SELECT $1,$2,$3,$4,$4,'paid',$5,($5 || ' 10:00:00Z')::timestamptz,'demo','Mensalidade ' || $6 || ' - Vencimento todo dia 13' " +
+          "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND due_date=$5)",
+          [gym.id, person.id, membership.id, selected.price_cents, paidMonth, selected.name || 'Plano']
+        );
+      }
+
+      // Pagamentos em atraso: 13/08, 13/09, 13/10
+      for (const overdueMonth of ['2026-08-13', '2026-09-13', '2026-10-13']) {
+        await client.query(
+          "INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,original_amount_cents,status,due_date,notes) " +
+          "SELECT $1,$2,$3,$4,$4,'pending',$5,'Mensalidade ' || $6 || ' - Vencimento todo dia 13' " +
+          "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND due_date=$5)",
+          [gym.id, person.id, membership.id, selected.price_cents, overdueMonth, selected.name || 'Plano']
+        );
+      }
+
+      // Pagamento futuro / próximo vencimento: 13/11
+      await client.query(
+        "INSERT INTO payments(gym_id,member_id,membership_id,amount_cents,original_amount_cents,status,due_date,notes) " +
+        "SELECT $1,$2,$3,$4,$4,'pending','2026-11-13','Mensalidade ' || $5 || ' - Vencimento todo dia 13' " +
+        "WHERE NOT EXISTS (SELECT 1 FROM payments WHERE gym_id=$1 AND member_id=$2 AND due_date='2026-11-13')",
+        [gym.id, person.id, membership.id, selected.price_cents, selected.name || 'Plano']
+      );
+
       if (person.email) {
         const isDemoAccount = person.email.toLowerCase().startsWith('demo.');
         await client.query(

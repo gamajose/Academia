@@ -22,11 +22,13 @@ function brl(value) {
 }
 
 function dateOnly(value) {
-  if (!value) return '-';
-  const raw = String(value).slice(0, 10);
-  const parts = raw.split('-').map(Number);
-  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return String(value);
-  return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('pt-BR');
+  if (!value || value === '-') return '-';
+  const str = String(value).trim();
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+  return str;
 }
 
 function dateTime(value) {

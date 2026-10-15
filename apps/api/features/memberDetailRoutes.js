@@ -23,7 +23,10 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
         m.address_complement, m.neighborhood, m.city, m.state, m.country,
         m.emergency_contact, m.emergency_contact_name, m.emergency_contact_phone,
         m.allergies, m.medical_notes, m.nutrition_notes, m.objective, m.notes,
-        ms.id AS membership_id, ms.status AS membership_status, p.name AS plan_name,
+        m.due_day, m.enrollment_date::text AS enrollment_date,
+        ms.id AS membership_id, ms.status AS membership_status, ms.plan_id,
+        ms.starts_at::text AS starts_at, ms.due_day AS membership_due_day,
+        p.name AS plan_name,
         COALESCE(SUM(pay.amount_cents) FILTER (WHERE pay.status IN ('pending', 'overdue')), 0) AS pending_amount_cents,
         COALESCE(SUM(pay.amount_cents) FILTER (WHERE pay.status IN ('pending', 'overdue') AND pay.due_date < current_date), 0) AS overdue_amount_cents,
         (SELECT max(a.assessment_date) FROM member_assessments a WHERE a.gym_id = m.gym_id AND a.member_id = m.id) AS latest_assessment_date,
@@ -36,7 +39,7 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
        LEFT JOIN plans p ON p.id = ms.plan_id
        LEFT JOIN payments pay ON pay.member_id = m.id AND pay.gym_id = m.gym_id
        WHERE m.gym_id = $1
-       GROUP BY m.id, ms.id, p.name
+       GROUP BY m.id, ms.id, p.name, ms.plan_id, ms.starts_at, ms.due_day, m.due_day, m.enrollment_date
        ORDER BY m.created_at DESC`,
       [user.gym_id]
     );
@@ -89,7 +92,13 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
       medical_notes: nullable(rich.medical_notes),
       nutrition_notes: nullable(rich.nutrition_notes),
       objective: nullable(rich.objective),
-      notes: nullable(rich.notes)
+      notes: nullable(rich.notes),
+      enrollment_date: input.enrollment_date
+        ? String(input.enrollment_date).slice(0, 10)
+        : (input.starts_at ? String(input.starts_at).slice(0, 10) : new Date().toISOString().slice(0, 10)),
+      due_day: (!isNaN(parseInt(input.due_day, 10)) && parseInt(input.due_day, 10) >= 1 && parseInt(input.due_day, 10) <= 31)
+        ? parseInt(input.due_day, 10)
+        : (parseInt(String(input.enrollment_date || '').slice(0, 10).split('-')[2], 10) || 13)
     };
 
     const params = [
@@ -98,7 +107,8 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
       values.postal_code, values.street, values.address_number, values.address_complement,
       values.neighborhood, values.city, values.state, values.country, values.emergency_contact,
       values.emergency_contact_name, values.emergency_contact_phone, values.allergies,
-      values.medical_notes, values.nutrition_notes, values.objective, values.notes
+      values.medical_notes, values.nutrition_notes, values.objective, values.notes,
+      values.enrollment_date, values.due_day
     ];
 
     let result;
@@ -109,9 +119,9 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
           address=$11,postal_code=$12,street=$13,address_number=$14,address_complement=$15,
           neighborhood=$16,city=$17,state=$18,country=$19,emergency_contact=$20,
           emergency_contact_name=$21,emergency_contact_phone=$22,allergies=$23,medical_notes=$24,
-          nutrition_notes=$25,objective=$26,notes=$27,updated_at=now()
+          nutrition_notes=$25,objective=$26,notes=$27,enrollment_date=$28,due_day=$29,updated_at=now()
          WHERE id=$1 AND gym_id=$2
-         RETURNING id,name,email,phone,status,cpf,rg`,
+         RETURNING id,name,email,phone,status,cpf,rg,due_day,enrollment_date::text AS enrollment_date`,
         [input.member_id, ...params]
       );
     } else {
@@ -120,15 +130,67 @@ async function handleMemberDetailRoutes(req, res, user, url, helpers) {
           gym_id,name,email,phone,phone_country_code,birth_date,document,cpf,rg,address,
           postal_code,street,address_number,address_complement,neighborhood,city,state,country,
           emergency_contact,emergency_contact_name,emergency_contact_phone,allergies,medical_notes,
-          nutrition_notes,objective,notes
+          nutrition_notes,objective,notes,enrollment_date,due_day
         ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26
-        ) RETURNING id,name,email,phone,status,cpf,rg`,
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28
+        ) RETURNING id,name,email,phone,status,cpf,rg,due_day,enrollment_date::text AS enrollment_date`,
         params
       );
     }
 
     if (!result.rowCount) return send(res, 404, { error: 'aluno_nao_encontrado' });
+
+    // Se fornecido plano na matrícula/cadastro, cria ou atualiza vínculo e sincroniza faturas
+    if (input.plan_id) {
+      const planRes = await query(
+        'SELECT id, name, price_cents, duration_days FROM plans WHERE id = $1 AND gym_id = $2 LIMIT 1',
+        [input.plan_id, user.gym_id]
+      );
+      if (planRes.rowCount) {
+        const planObj = planRes.rows[0];
+        const durationDays = planObj.duration_days || 30;
+        const memCurrent = await query(
+          "SELECT id FROM memberships WHERE gym_id = $1 AND member_id = $2 AND status = 'active' ORDER BY created_at DESC LIMIT 1",
+          [user.gym_id, result.rows[0].id]
+        );
+        let membershipId;
+        if (memCurrent.rowCount) {
+          membershipId = memCurrent.rows[0].id;
+          await query(
+            `UPDATE memberships
+             SET plan_id = $3, starts_at = $4, due_day = $5,
+                 ends_at = ($4::date + ($6 || ' days')::interval)::date,
+                 updated_at = now()
+             WHERE id = $1 AND gym_id = $2`,
+            [membershipId, user.gym_id, input.plan_id, values.enrollment_date, values.due_day, durationDays]
+          );
+        } else {
+          const newMem = await query(
+            `INSERT INTO memberships (gym_id, member_id, plan_id, starts_at, ends_at, due_day, status)
+             VALUES ($1, $2, $3, $4, ($4::date + ($5 || ' days')::interval)::date, $6, 'active')
+             RETURNING id`,
+            [user.gym_id, result.rows[0].id, input.plan_id, values.enrollment_date, durationDays, values.due_day]
+          );
+          membershipId = newMem.rows[0].id;
+        }
+
+        const { syncMembershipInvoices } = require('./studentInvoiceRoutes');
+        await syncMembershipInvoices({
+          query,
+          gymId: user.gym_id,
+          memberId: result.rows[0].id,
+          activeMem: {
+            id: membershipId,
+            starts_at: values.enrollment_date,
+            due_day: values.due_day,
+            plan_name: planObj.name,
+            price_cents: planObj.price_cents
+          },
+          dueDay: values.due_day,
+          today: new Date()
+        });
+      }
+    }
     const offline = await ensureOfflineCredential(query, user.gym_id, result.rows[0].id);
     let account = await query('SELECT id, email, is_active FROM member_accounts WHERE gym_id = $1 AND member_id = $2 LIMIT 1', [user.gym_id, result.rows[0].id]);
     let accountCreated = false;

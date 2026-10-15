@@ -10,7 +10,9 @@ const {
   extractDueDay,
   calculateCycleDueDate,
   buildWhatsAppInvoiceUrl,
-  syncMembershipInvoices
+  syncMembershipInvoices,
+  toIsoDate,
+  formatBrDate
 } = require('../features/studentInvoiceRoutes');
 
 test('cleanString normalizes diacritics and removes special characters', () => {
@@ -269,6 +271,122 @@ test('syncMembershipInvoices gera todas as mensalidades intermediarias em atraso
   assert.equal(inserted[3].due_date, '2026-11-13');
   assert.ok(inserted[0].notes.includes('Vencimento todo dia 13'));
 });
+
+test('toIsoDate normaliza Date objects, ISO strings e timestamps para YYYY-MM-DD sem quebras', () => {
+  assert.equal(toIsoDate('2026-10-13'), '2026-10-13');
+  assert.equal(toIsoDate('2026-10-13T10:00:00.000Z'), '2026-10-13');
+  assert.equal(toIsoDate(new Date('2026-05-13T03:00:00.000Z')), '2026-05-13');
+  assert.equal(toIsoDate(null), null);
+  assert.equal(toIsoDate(''), null);
+});
+
+test('formatBrDate formata data corretamente em DD/MM/YYYY sem tracinho quando data existe', () => {
+  assert.equal(formatBrDate('2026-10-13'), '13/10/2026');
+  assert.equal(formatBrDate('2026-05-13T00:00:00.000Z'), '13/05/2026');
+  assert.equal(formatBrDate(null), '-');
+});
+
+test('syncMembershipInvoices respeita data de cadastro 13/05, pagamento 13/07 e gera atrasos de agosto a outubro mais novembro', async () => {
+  const inserted = [];
+  const fakeDb = [
+    {
+      id: 'p-1',
+      due_date: '2026-05-13',
+      status: 'paid',
+      amount_cents: 11990,
+      paid_at: '2026-05-13T10:00:00Z',
+      notes: 'Matrícula'
+    },
+    {
+      id: 'p-2',
+      due_date: '2026-06-13',
+      status: 'paid',
+      amount_cents: 11990,
+      paid_at: '2026-06-13T10:00:00Z',
+      notes: 'Mensalidade Junho'
+    },
+    {
+      id: 'p-3',
+      due_date: '2026-07-13',
+      status: 'paid',
+      amount_cents: 11990,
+      paid_at: '2026-07-13T10:00:00Z',
+      notes: 'Mensalidade Julho'
+    }
+  ];
+
+  const fakeQuery = async (sql, params) => {
+    if (sql.includes('SELECT id, amount_cents, status, due_date')) {
+      return { rows: [...fakeDb, ...inserted] };
+    }
+    if (sql.includes('INSERT INTO payments')) {
+      const row = {
+        id: `p-${inserted.length + 4}`,
+        amount_cents: params[3],
+        status: 'pending',
+        due_date: params[4],
+        notes: params[5]
+      };
+      inserted.push(row);
+      return { rowCount: 1, rows: [row] };
+    }
+    return { rowCount: 0, rows: [] };
+  };
+
+  const activeMem = {
+    id: 'mem-1',
+    starts_at: '2026-05-13',
+    plan_name: 'Plano Black',
+    price_cents: 11990
+  };
+
+  // Hoje sendo 15/10/2026
+  const simulatedToday = new Date('2026-10-15T12:00:00Z');
+  await syncMembershipInvoices({
+    query: fakeQuery,
+    gymId: 'gym-1',
+    memberId: 'mem-1',
+    activeMem,
+    dueDay: 13,
+    today: simulatedToday
+  });
+
+  // Pago até 13/07, portanto deve gerar as mensalidades que faltam:
+  // 1. 2026-08-13 (em atraso)
+  // 2. 2026-09-13 (em atraso)
+  // 3. 2026-10-13 (em atraso)
+  // 4. 2026-11-13 (próximo vencimento)
+  assert.equal(inserted.length, 4);
+  assert.equal(inserted[0].due_date, '2026-08-13');
+  assert.equal(inserted[1].due_date, '2026-09-13');
+  assert.equal(inserted[2].due_date, '2026-10-13');
+  assert.equal(inserted[3].due_date, '2026-11-13');
+});
+
+test('tela de alunos possui campos para data da matrícula, dia do vencimento mensal e plano', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const alunosHtml = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'alunos.html'), 'utf8');
+  const alunosJs = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'alunos.js'), 'utf8');
+
+  assert.match(alunosHtml, /id="student-enrollment-date"/);
+  assert.match(alunosHtml, /id="student-due-day"/);
+  assert.match(alunosHtml, /id="student-plan"/);
+  assert.match(alunosJs, /student-enrollment-date/);
+  assert.match(alunosJs, /student-due-day/);
+  assert.match(alunosJs, /student-plan/);
+});
+
+test('tela de matrículas (vinculos) possui campo para dia de vencimento mensal', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const vinculosHtml = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'vinculos.html'), 'utf8');
+  const vinculosJs = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'vinculos.js'), 'utf8');
+
+  assert.match(vinculosHtml, /id="link-due-day"/);
+  assert.match(vinculosJs, /link-due-day/);
+});
+
 
 
 

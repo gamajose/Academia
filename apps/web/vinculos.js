@@ -39,9 +39,13 @@ function mini(text, fn, disabled = false) {
 }
 
 function dateOnly(value) {
-  if (!value) return '-';
-  const raw = String(value).slice(0, 10).split('-').map(Number);
-  return raw.length === 3 && raw.every(Number.isFinite) ? new Date(raw[0], raw[1] - 1, raw[2]).toLocaleDateString('pt-BR') : String(value);
+  if (!value || value === '-') return '-';
+  const str = String(value).trim();
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+  return str;
 }
 
 function money(cents) {
@@ -246,7 +250,14 @@ function openModal(item = {}) {
   v('link-member').value = item.member_id || '';
   v('link-member').disabled = Boolean(editingLinkId);
   v('link-plan').value = item.plan_id || '';
-  v('link-start').value = String(item.starts_at || '').slice(0, 10);
+  const cleanStart = String(item.starts_at || '').slice(0, 10);
+  v('link-start').value = cleanStart;
+  let initialDue = item.due_day;
+  if (!initialDue && cleanStart) {
+    const parts = cleanStart.split('-');
+    if (parts.length === 3) initialDue = parseInt(parts[2], 10);
+  }
+  v('link-due-day').value = initialDue || 13;
   v('save-link-button').textContent = 'Salvar';
   v('link-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -259,6 +270,7 @@ function closeModal() {
   v('link-form').reset();
   editingLinkId = '';
   v('link-member').disabled = false;
+  v('link-due-day').value = '13';
   v('link-modal-title').textContent = 'Nova matrícula';
   v('save-link-button').textContent = 'Salvar';
 }
@@ -267,11 +279,12 @@ async function save() {
   if (!v('link-form').reportValidity()) return;
   try {
     v('save-link-button').disabled = true;
+    const dueDay = parseInt(v('link-due-day').value, 10) || 13;
     await call(editingLinkId ? '/api/memberships/update' : '/api/memberships', {
       method: 'POST',
       body: JSON.stringify(editingLinkId
-        ? { membership_id: editingLinkId, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined }
-        : { member_id: v('link-member').value, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined })
+        ? { membership_id: editingLinkId, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined, due_day: dueDay }
+        : { member_id: v('link-member').value, plan_id: v('link-plan').value, starts_at: v('link-start').value || undefined, due_day: dueDay })
     });
     v('link-start').value = '';
     closeModal();
@@ -454,6 +467,18 @@ v('link-filter-toggle').onclick = toggleLinkFilters;
 v('close-link-modal').onclick = closeModal;
 v('cancel-link-button').onclick = closeModal;
 v('link-form').addEventListener('submit', (event) => { event.preventDefault(); save(); });
+v('link-start')?.addEventListener('change', (e) => {
+  const d = e.target.value;
+  if (d) {
+    const parts = d.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[2], 10);
+      if (!isNaN(day) && day >= 1 && day <= 31) {
+        v('link-due-day').value = day;
+      }
+    }
+  }
+});
 v('link-search').oninput = () => { currentPage = 1; render(); };
 ['link-filter-plan', 'link-filter-status', 'link-filter-from', 'link-filter-to'].forEach((id) => v(id).addEventListener('change', () => { currentPage = 1; render(); }));
 document.addEventListener('click', (event) => {
