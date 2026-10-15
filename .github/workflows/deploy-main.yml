@@ -23,19 +23,20 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          trap 'echo "Deploy interrompido na linha $LINENO."' ERR
-
           PROJECT_DIR="/mnt/Projetos/Academia"
+          trap 'echo "Deploy interrompido na linha $LINENO (cmd: $BASH_COMMAND)" > "$PROJECT_DIR/deploy-error.log" 2>&1' ERR
+
           API_DIR="$PROJECT_DIR/apps/api"
           WEB_DIR="$PROJECT_DIR/apps/web"
           HEALTH_URL="http://127.0.0.1:3004/health"
           LOGIN_URL="http://127.0.0.1:3004/api/auth/login"
 
           exec 9>/tmp/academia-deploy.lock
-          flock -n 9 || {
-            echo "Outro deploy da Academia já está em execução."
-            exit 1
-          }
+          if ! flock -n 9; then
+            fuser /tmp/academia-deploy.lock || rm -f /tmp/academia-deploy.lock
+            exec 9>/tmp/academia-deploy.lock
+            flock -n 9 || { echo "Outro deploy da Academia ja esta em execucao." > "$PROJECT_DIR/deploy-error.log"; exit 1; }
+          fi
 
           git config --global --add safe.directory "$PROJECT_DIR"
           cd "$PROJECT_DIR"
