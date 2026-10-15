@@ -27,9 +27,12 @@ async function handlePayments(req, res, user, url, helpers) {
     const input = await body(req);
     if (!input.payment_id) return send(res, 400, { error: 'payment_id_obrigatorio' });
 
+    const method = input.method || 'cash';
+    const notes = input.notes || 'Recebido presencialmente na recepção pelo administrador';
+
     const result = await query(
-      "UPDATE payments SET status = 'paid', paid_at = now() WHERE id = $1 AND gym_id = $2 RETURNING id, member_id, amount_cents, status, due_date, paid_at",
-      [input.payment_id, user.gym_id]
+      "UPDATE payments SET status = 'paid', paid_at = now(), method = $1, notes = CASE WHEN notes IS NOT NULL AND notes <> '' THEN notes || ' | ' || $2 ELSE $2 END WHERE id = $3 AND gym_id = $4 RETURNING id, member_id, amount_cents, status, due_date, paid_at, method, notes",
+      [method, notes, input.payment_id, user.gym_id]
     );
     if (!result.rowCount) return send(res, 404, { error: 'pagamento_nao_encontrado' });
 
@@ -41,9 +44,17 @@ async function handlePayments(req, res, user, url, helpers) {
         await query(
           `INSERT INTO cash_movements(gym_id, cash_session_id, payment_id, movement_type, amount_cents, description, created_by)
            VALUES($1, $2, $3, 'income', $4, $5, $6)`,
-          [user.gym_id, cash.rows[0].id, input.payment_id, result.rows[0].amount_cents, `Recebimento - ${memberName}`, user.sub]
+          [user.gym_id, cash.rows[0].id, input.payment_id, result.rows[0].amount_cents, `Recebimento (${method}) - ${memberName}`, user.sub]
         );
       }
+    } catch (_) {}
+
+    // Ativa aluno caso estivesse inativo
+    try {
+      await query(
+        "UPDATE members SET status = 'active', updated_at = now() WHERE id = $1 AND gym_id = $2 AND status = 'inactive'",
+        [result.rows[0].member_id, user.gym_id]
+      );
     } catch (_) {}
 
     return send(res, 200, result.rows[0]);

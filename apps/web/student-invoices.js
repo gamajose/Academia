@@ -65,7 +65,13 @@
       nextDue.textContent = summary.next_due_date ? formatDate(summary.next_due_date) : 'Nenhuma';
     }
     if (nextDesc) {
-      nextDesc.textContent = summary.next_due_date ? 'Data da próxima fatura a vencer' : 'Sem faturas pendentes no momento';
+      if (summary.due_day) {
+        nextDesc.textContent = `Vencimento fixo todo dia ${summary.due_day}`;
+      } else if (summary.next_due_date) {
+        nextDesc.textContent = 'Data da próxima fatura a vencer';
+      } else {
+        nextDesc.textContent = 'Sem faturas pendentes no momento';
+      }
     }
 
     const paidCount = get('summary-paid-count');
@@ -140,11 +146,21 @@
 
       let footerActionHtml = '';
       if (inv.can_pay) {
+        const waLinkHtml = inv.whatsapp_url
+          ? `<a href="${inv.whatsapp_url}" target="_blank" rel="noopener noreferrer" class="invoice-wa-btn" title="Enviar dados desta fatura no WhatsApp">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.41a8.175 8.175 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.31a8.167 8.167 0 0 1-1.25-4.47c0-4.54 3.7-8.24 8.24-8.24h.05zm-3.52 4.88c-.2 0-.42.02-.63.02-.31 0-.6.1-.8.31-.2.21-.78.76-.78 1.86s.8 2.16.91 2.31c.11.15 1.54 2.41 3.79 3.29.54.21.96.33 1.29.43.54.17 1.04.14 1.43.09.44-.07 1.34-.55 1.53-1.08.19-.53.19-.99.13-1.08-.06-.09-.22-.15-.46-.27-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.63.78-.77.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.21-.72-.64-1.21-1.44-1.35-1.68-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42z"/></svg>
+              <span>WhatsApp</span>
+            </a>`
+          : '';
+
         footerActionHtml = `
-          <button type="button" class="invoice-pay-btn" data-pay-id="${inv.id}">
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2zm0 3.83L18.17 12 12 18.17 5.83 12 12 5.83z"/></svg>
-            <span>Pagar com Pix</span>
-          </button>
+          <div class="invoice-card-actions">
+            <button type="button" class="invoice-pay-btn" data-pay-id="${inv.id}">
+              <svg viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2zm0 3.83L18.17 12 12 18.17 5.83 12 12 5.83z"/></svg>
+              <span>Pagar com Pix</span>
+            </button>
+            ${waLinkHtml}
+          </div>
         `;
       } else if (inv.receipt_number) {
         footerActionHtml = `
@@ -265,6 +281,17 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           };
+        }
+      }
+
+      // Atualiza link de WhatsApp no modal
+      const waModalBtn = get('pix-modal-wa-btn');
+      if (waModalBtn) {
+        if (result.whatsapp_url) {
+          waModalBtn.href = result.whatsapp_url;
+          waModalBtn.classList.remove('hidden');
+        } else {
+          waModalBtn.classList.add('hidden');
         }
       }
 

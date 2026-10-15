@@ -471,9 +471,16 @@ async function adjust() {
   await load();
 }
 
-async function pay(item) {
+async function pay(item, method = 'cash') {
   try {
-    await rq('/api/payments/mark-paid', { method: 'POST', body: JSON.stringify({ payment_id: item.id }) });
+    await rq('/api/payments/mark-paid', {
+      method: 'POST',
+      body: JSON.stringify({
+        payment_id: item.id,
+        method: method,
+        notes: `Recebido presencialmente na recepção (${methodLabel(method)})`
+      })
+    });
     await load();
   } catch (err) {
     alert(`Erro ao confirmar recebimento: ${err.message}`);
@@ -651,7 +658,24 @@ function openPixModal(item) {
   // WhatsApp Pre-formatted Message
   const phone = (item.phone || '').replace(/\D/g, '');
   const waPhone = phone ? (phone.startsWith('55') ? phone : `55${phone}`) : '';
-  const waMsg = `Olá, *${item.member_name || 'Aluno'}*! Tudo bem?\n\nSegue a chave Pix para pagamento da sua mensalidade na *${gymName}*:\n\n💰 *Valor:* ${formattedAmount}\n📅 *Vencimento:* ${formattedDueDate}\n\n📋 *Pix Copia e Cola:*\n\`\`\`${pixPayload}\`\`\`\n\nQualquer dúvida, estamos à disposição!`;
+  const dueDay = item.due_date ? String(item.due_date).split('T')[0].split('-')[2] || '10' : '10';
+  const portalUrl = `${window.location.origin}/student-invoices.html`;
+
+  const waMsg =
+    `*${gymName} - Fatura de Mensalidade* 🐺\n\n` +
+    `Olá, *${item.member_name || 'Aluno'}*!\n\n` +
+    `Sua fatura de mensalidade está pronta para pagamento:\n\n` +
+    `💰 *Valor:* ${formattedAmount}\n` +
+    `📅 *Vencimento:* ${formattedDueDate} (Vencimento todo dia ${dueDay})\n` +
+    `📌 *Situação:* ${label}\n\n` +
+    `👉 *ESCOLHA COMO DESEJA PAGAR:*\n\n` +
+    `1️⃣ *OPÇÃO 1 - PAGAR COM PIX (Instantâneo / 24h):*\n` +
+    `Pague pelo app do seu banco com o Pix Copia e Cola abaixo. A confirmação é *validada automaticamente na hora* direto no site:\n\n` +
+    `\`\`\`${pixPayload}\`\`\`\n\n` +
+    `2️⃣ *OPÇÃO 2 - PAGAR NO LOCAL (Recepção):*\n` +
+    `Prefere pagar presencialmente na academia? Compareça à recepção e pague em *Dinheiro, Cartão de Débito, Cartão de Crédito ou Pix no balcão*. O administrador confirmará a baixa no sistema.\n\n` +
+    `🌐 *Ver fatura e pagar online:*\n` +
+    `${portalUrl}`;
 
   const waLink = f('pix-whatsapp-link');
   if (waLink) {
@@ -676,10 +700,12 @@ f('pix-copy-btn')?.addEventListener('click', () => {
   }
 });
 
-// Mark as paid button from modal
+// Mark as paid button from modal com método selecionado pelo admin
 f('pix-mark-paid-btn')?.addEventListener('click', () => {
   if (currentPixItem) {
-    pay(currentPixItem);
+    const methodSelect = f('pix-payment-method-select');
+    const selectedMethod = methodSelect ? methodSelect.value : 'cash';
+    pay(currentPixItem, selectedMethod);
     closePixModal();
   }
 });

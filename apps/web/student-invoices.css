@@ -23,12 +23,12 @@
   margin: 0;
 }
 
-/* Status Cards Grid */
+/* Status Cards Grid: Situação Geral e Próximo Vencimento lado a lado */
 .invoices-summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .invoice-summary-card {
@@ -353,9 +353,154 @@ html[data-student-theme="dark"] .invoice-info-value.paid-at {
   border-radius: 8px;
 }
 
-html[data-student-theme="dark"] .invoice-receipt-tag {
-  background: rgba(255, 255, 255, 0.05);
-  color: #8b949e;
+.invoice-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.invoice-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #25d366;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.28);
+  transition: all 0.15s ease;
+}
+
+.invoice-wa-btn:hover {
+  background: #20ba5a;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.38);
+  color: #ffffff;
+}
+
+.invoice-wa-btn svg {
+  fill: currentColor;
+}
+
+/* Payment Info Box: Pix Online ou Recepção */
+.invoices-payment-info-box {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--line, #e1e4e8);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+html[data-student-theme="dark"] .invoices-payment-info-box {
+  background: #181d22;
+  border-color: #2b323a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.invoices-payment-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text, #1c2024);
+  margin-bottom: 12px;
+}
+
+html[data-student-theme="dark"] .invoices-payment-info-header {
+  color: #f0f6fc;
+}
+
+.invoices-payment-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.invoices-payment-option-card {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--line, #e1e4e8);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+html[data-student-theme="dark"] .invoices-payment-option-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: #2b323a;
+}
+
+.invoices-payment-option-card .opt-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 750;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
+}
+
+.invoices-payment-option-card .opt-badge.neutral {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+html[data-student-theme="dark"] .invoices-payment-option-card .opt-badge.neutral {
+  color: #60a5fa;
+}
+
+.invoices-payment-option-card .opt-title {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--text, #1c2024);
+}
+
+html[data-student-theme="dark"] .invoices-payment-option-card .opt-title {
+  color: #f0f6fc;
+}
+
+.invoices-payment-option-card .opt-desc {
+  font-size: 12px;
+  color: var(--muted, #687b8d);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.pix-modal-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pix-modal-wa-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: #25d366;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.28);
+  transition: all 0.15s ease;
+}
+
+.pix-modal-wa-btn:hover {
+  background: #20ba5a;
+  transform: translateY(-1px);
+  color: #ffffff;
 }
 
 /* Pix Modal */
@@ -672,9 +817,42 @@ html[data-student-theme="dark"] .invoices-empty {
   .student-invoices-shell {
     padding: 12px 10px 74px;
   }
+  /* Situação Geral e Próximo Vencimento lado a lado no mobile */
   .invoices-summary-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px;
+  }
+  .invoice-summary-card {
+    padding: 12px 10px;
+    border-radius: 12px;
+  }
+  .invoice-summary-header {
+    margin-bottom: 8px;
+  }
+  .invoice-summary-title {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+  .invoice-summary-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+  .invoice-summary-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+  .invoice-summary-value {
+    font-size: 16px;
+    font-weight: 850;
+  }
+  .invoice-summary-desc {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .inv-badge {
+    padding: 3px 8px;
+    font-size: 11px;
   }
   .invoice-card {
     padding: 14px 14px;

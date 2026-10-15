@@ -5,7 +5,12 @@ process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://test:test@1
 
 const { generatePixPayload, crc16, cleanString } = require('../lib/pixUtils');
 const { receiptNumber } = require('../lib/invoicePayment');
-const { handleStudentInvoiceRoutes } = require('../features/studentInvoiceRoutes');
+const {
+  handleStudentInvoiceRoutes,
+  extractDueDay,
+  calculateCycleDueDate,
+  buildWhatsAppInvoiceUrl
+} = require('../features/studentInvoiceRoutes');
 
 test('cleanString normalizes diacritics and removes special characters', () => {
   assert.equal(cleanString('Academia LOBO - São Paulo!'), 'Academia LOBO  Sao Paulo');
@@ -126,4 +131,80 @@ test('página de faturas do aluno implementa resumo, lista e modal Pix com valid
   assert.match(invoicesJs, /\/api\/student\/invoices\/.*\/confirm-pix/);
   assert.match(invoicesJs, /\/api\/student\/invoices\/.*\/status/);
 });
+
+test('extrai o dia da matrícula para fixar o vencimento mensal (ex: dia 10)', () => {
+  assert.equal(extractDueDay('2026-08-10'), 10);
+  assert.equal(extractDueDay('2026-10-10'), 10);
+  assert.equal(extractDueDay('2026-12-25'), 25);
+  assert.equal(extractDueDay('2026-01-31'), 31);
+  assert.equal(extractDueDay(null), 10);
+});
+
+test('calcula a data de vencimento recorrente mantendo o dia X com ajuste para meses curtos', () => {
+  // Matrícula dia 10: todo dia 10 em qualquer mês
+  assert.equal(calculateCycleDueDate(10, 2026, 9), '2026-10-10'); // Outubro
+  assert.equal(calculateCycleDueDate(10, 2026, 1), '2026-02-10'); // Fevereiro
+  assert.equal(calculateCycleDueDate(10, 2026, 3), '2026-04-10'); // Abril
+
+  // Matrícula dia 31: ajusta para o último dia em meses com menos de 31 dias
+  assert.equal(calculateCycleDueDate(31, 2026, 9), '2026-10-31'); // Outubro (31)
+  assert.equal(calculateCycleDueDate(31, 2027, 1), '2027-02-28'); // Fevereiro não-bissexto (28)
+  assert.equal(calculateCycleDueDate(31, 2028, 1), '2028-02-29'); // Fevereiro bissexto (29)
+  assert.equal(calculateCycleDueDate(31, 2026, 3), '2026-04-30'); // Abril (30)
+});
+
+test('buildWhatsAppInvoiceUrl formata mensagem completa com opções de pagamento online e local', () => {
+  const url = buildWhatsAppInvoiceUrl({
+    phone: '11999998888',
+    memberName: 'João Silva',
+    planName: 'Plano Black',
+    amountFormatted: 'R$ 119,90',
+    dueDateFormatted: '10/10/2026',
+    dueDay: 10,
+    isOverdue: false,
+    daysOverdue: 0,
+    pixPayload: '00020126...6304ABCD',
+    publicAppUrl: 'http://192.168.3.200:8084'
+  });
+
+  assert.ok(url.startsWith('https://wa.me/5511999998888?text='));
+  const decoded = decodeURIComponent(url);
+  assert.ok(decoded.includes('João Silva'));
+  assert.ok(decoded.includes('Plano Black'));
+  assert.ok(decoded.includes('R$ 119,90'));
+  assert.ok(decoded.includes('Vencimento todo dia 10'));
+  assert.ok(decoded.includes('OPÇÃO 1 - PAGAR COM PIX'));
+  assert.ok(decoded.includes('OPÇÃO 2 - PAGAR NO LOCAL'));
+  assert.ok(decoded.includes('00020126...6304ABCD'));
+  assert.ok(decoded.includes('student-invoices.html'));
+});
+
+test('interface de faturas remove textos antigos, exibe apenas dois cards lado a lado e opções de pagamento', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const invoicesHtml = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'student-invoices.html'), 'utf8');
+  const invoicesCss = fs.readFileSync(path.join(__dirname, '..', '..', 'web', 'student-invoices.css'), 'utf8');
+
+  // Textos removidos conforme solicitado
+  assert.doesNotMatch(invoicesHtml, /Financeiro & Mensalidades/);
+  assert.doesNotMatch(invoicesHtml, /Acompanhe suas mensalidades/);
+  assert.doesNotMatch(invoicesHtml, /Histórico de Pagamentos/);
+
+  // Cards mantidos
+  assert.match(invoicesHtml, /Situação Geral/);
+  assert.match(invoicesHtml, /Próximo Vencimento/);
+
+  // Seção de opções de pagamento online e local
+  assert.match(invoicesHtml, /invoices-payment-info-box/);
+  assert.match(invoicesHtml, /Opção 1: Pix Instantâneo/);
+  assert.match(invoicesHtml, /Opção 2: Pagar no Local/);
+
+  // Botão de envio no WhatsApp no modal
+  assert.match(invoicesHtml, /pix-modal-wa-btn/);
+
+  // CSS: 2 colunas lado a lado no desktop e no mobile
+  assert.match(invoicesCss, /\.invoices-summary-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(invoicesCss, /@media\s*\(max-width:\s*600px\)[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)\s*!important/);
+});
+
 

@@ -220,9 +220,21 @@
             <span>Cobrar no WhatsApp (1-Clique)</span>
           </a>
 
-          <button id="pix-mark-paid-btn" type="button" class="button secondary" style="font-weight: 600;">
-            Confirmar Recebimento Agora
-          </button>
+          <div class="pix-local-pay-box" style="width: 100%; padding: 12px; background: rgba(56, 189, 248, 0.06); border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.2); text-align: left;">
+            <label for="pix-payment-method-select" style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px; color: var(--text);">
+              Se o aluno pagou no local (recepção), selecione a forma:
+            </label>
+            <select id="pix-payment-method-select" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 13px; font-weight: 600; background: var(--surface); color: var(--text);">
+              <option value="cash">💵 Dinheiro (Presencial)</option>
+              <option value="debit_card">💳 Cartão de Débito (Maquininha)</option>
+              <option value="credit_card">💳 Cartão de Crédito (Maquininha)</option>
+              <option value="pix">⚡ Pix Presencial (Balcão)</option>
+              <option value="other">📝 Outro método</option>
+            </select>
+            <button id="pix-mark-paid-btn" type="button" class="button secondary" style="width: 100%; margin-top: 10px; font-weight: 700;">
+              Confirmar Recebimento no Local
+            </button>
+          </div>
         </div>
       </div>
     </div>
