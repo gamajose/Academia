@@ -1,6 +1,7 @@
 [Unit]
 Description=Academia API
-After=network.target docker.service
+After=network.target postgresql.service docker.service
+Wants=postgresql.service
 
 [Service]
 Type=simple

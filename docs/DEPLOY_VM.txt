@@ -1,5 +1,9 @@
 Deploy na VM
 
+0. Instalacao automatizada em VM limpa (Ubuntu a seco):
+sudo ./scripts/install-ubuntu.sh
+(ou veja docs/INSTALACAO_UBUNTU.md)
+
 1. Atualizar projeto:
 cd /mnt/Projetos/Academia
 git pull
