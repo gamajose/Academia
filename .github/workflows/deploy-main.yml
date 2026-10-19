@@ -71,6 +71,7 @@ jobs:
 
           # Garante que o PostgreSQL escute em conexoes externas e libera a porta 5432 no firewall
           sudo -n ufw allow 5432/tcp comment 'PostgreSQL' || true
+          sudo -n sysctl -w net.ipv4.conf.all.route_localnet=1 || true
           for conf in /etc/postgresql/*/main/postgresql.conf; do
             if [ -f "$conf" ]; then
               sudo -n sed -i "s/#*listen_addresses\s*=.*/listen_addresses = '*'/g" "$conf"

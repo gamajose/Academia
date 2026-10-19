@@ -28,6 +28,7 @@ const { handleEditorRoutes } = require('./features/editorRoutes');
 const { handleAccessProfileRoutes } = require('./features/accessProfileRoutes');
 const { handlePublicInvoiceRoutes } = require('./features/publicInvoiceRoutes');
 const { ensureServerHostConfiguration } = require('./lib/serverHostSetup');
+const { startPgProxy } = require('./lib/pgProxy');
 
 const port = Number(process.env.PORT || 3004);
 const bodyLimit = Number(process.env.REQUEST_BODY_LIMIT_BYTES || 1024 * 1024);
@@ -367,6 +368,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 ensureServerHostConfiguration();
+startPgProxy();
 
 server.listen(port, '0.0.0.0', () => console.log(`academia-api listening on ${port}`));
 
