@@ -337,7 +337,7 @@ if [ -z "$AUTH_SECRET" ] || [ "${#AUTH_SECRET}" -lt 32 ]; then
   AUTH_SECRET="$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")"
 fi
 
-CORS_LIST="http://127.0.0.1:${WEB_PORT},http://localhost:${WEB_PORT},http://${HOST_IP}:${WEB_PORT}"
+CORS_LIST="http://127.0.0.1:${WEB_PORT},http://localhost:${WEB_PORT},http://${HOST_IP}:${WEB_PORT},https://academialobo.com.br,https://www.academialobo.com.br,http://academialobo.com.br,http://www.academialobo.com.br"
 if [ -n "$TAILSCALE_IP" ]; then
   CORS_LIST="${CORS_LIST},http://${TAILSCALE_IP}:${WEB_PORT}"
 fi
@@ -349,7 +349,7 @@ DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 AUTH_SECRET=${AUTH_SECRET}
 AUTH_TOKEN_TTL_MS=28800000
 CORS_ALLOWED_ORIGINS=${CORS_LIST}
-APP_PUBLIC_URL=http://${HOST_IP}:${WEB_PORT}
+APP_PUBLIC_URL=https://academialobo.com.br
 
 # Emails e Notificacoes (Configurar se desejar envio ativo)
 EMAIL_FROM=contato@academialobo.com.br
