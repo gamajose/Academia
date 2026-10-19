@@ -18,6 +18,12 @@ async function main() {
       const ports = execSync('ss -tlnp 2>&1 || true', { encoding: 'utf8' }).trim();
       console.log('[init-admin] ss -tlnp:\n' + ports);
 
+      const dockerPs = execSync('docker ps -a --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}" 2>&1 || true', { encoding: 'utf8' }).trim();
+      console.log('[init-admin] docker ps:\n' + dockerPs);
+
+      const dockerImages = execSync('docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" 2>&1 || true', { encoding: 'utf8' }).trim();
+      console.log('[init-admin] docker images:\n' + dockerImages);
+
       const confRes = await client.query('SHOW config_file');
       const hbaRes = await client.query('SHOW hba_file');
       const listenRes = await client.query('SHOW listen_addresses');
