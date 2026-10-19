@@ -57,17 +57,23 @@ jobs:
 
           cd "$API_DIR"
 
+          # Sincroniza credencial legada do postgres no .env com a senha atual Paulo1
+          if [ -f .env ]; then
+            sed -i 's|:Joseluiz1@|:Paulo1@|g' .env
+          fi
+
           set -a
           # Aceita arquivos antigos que usavam "*#" como marcador de comentario e remove quebras CRLF.
           source <(sed 's/^\*#/#/' .env | tr -d '\r')
           set +a
 
+          export DATABASE_URL="${DATABASE_URL//:Joseluiz1@/:Paulo1@}"
+
           # Garante que o PostgreSQL escute em conexoes externas e libera a porta 5432 no firewall
           sudo -n ufw allow 5432/tcp comment 'PostgreSQL' || true
           for conf in /etc/postgresql/*/main/postgresql.conf; do
             if [ -f "$conf" ]; then
-              sudo -n sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" "$conf"
-              sudo -n sed -i "s/listen_addresses = 'localhost'/listen_addresses = '*'/g" "$conf"
+              sudo -n sed -i "s/#*listen_addresses\s*=.*/listen_addresses = '*'/g" "$conf"
             fi
           done
           for hba in /etc/postgresql/*/main/pg_hba.conf; do
@@ -77,10 +83,10 @@ jobs:
                 echo "host all all 0.0.0.0/0 md5" | sudo -n tee -a "$hba"
                 echo "host all all ::/0 scram-sha-256" | sudo -n tee -a "$hba"
                 echo "host all all ::/0 md5" | sudo -n tee -a "$hba"
-                sudo -n systemctl restart postgresql || true
               fi
             fi
           done
+          sudo -n systemctl restart postgresql || true
 
           # A pasta compartilhada do VMware não suporta links simbólicos.
           npm ci --no-bin-links

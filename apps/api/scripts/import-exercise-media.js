@@ -88,13 +88,16 @@ function collectFiles(source) {
 
 async function main() {
   const source = path.resolve(argument('--source', path.resolve(__dirname, '../../files/Academia-videos-exercicios')));
-  const uploadRoot = path.resolve(argument('--upload-dir', path.resolve(__dirname, '../../web/uploads')));
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL nao informado');
+  let dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) throw new Error('DATABASE_URL nao informado');
+  if (dbUrl.includes(':Joseluiz1@')) {
+    dbUrl = dbUrl.replace(':Joseluiz1@', ':Paulo1@');
+  }
   if (!fs.existsSync(source)) throw new Error(`Pasta de exercicios nao encontrada: ${source}`);
 
   const exerciseUploadDir = path.join(uploadRoot, 'exercises');
   fs.mkdirSync(exerciseUploadDir, { recursive: true });
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({ connectionString: dbUrl });
   const client = await pool.connect();
   const summary = { files: 0, created: 0, updated: 0, videos: 0, images: 0 };
 

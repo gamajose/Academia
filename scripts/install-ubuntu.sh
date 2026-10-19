@@ -255,18 +255,22 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${DB_USER};
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${DB_USER_ALIAS};
 EOSQL
 
-# Garante autenticacao por senha para localhost caso necessario
+# Garante escuta externa e autenticacao por senha no PostgreSQL
 PG_VERSION="$(sudo -u postgres psql -t -A -c 'SHOW server_version;' | cut -d'.' -f1)"
+PG_CONF="/etc/postgresql/${PG_VERSION}/main/postgresql.conf"
 PG_HBA="/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
+if [ -f "$PG_CONF" ]; then
+  sed -i "s/#*listen_addresses\s*=.*/listen_addresses = '*'/g" "$PG_CONF"
+fi
 if [ -f "$PG_HBA" ]; then
-  if ! grep -qE "host\s+all\s+pauloacad" "$PG_HBA"; then
-    echo "host    all             pauloacad       127.0.0.1/32            scram-sha-256" >> "$PG_HBA"
-    echo "host    all             pauloacad       ::1/128                 scram-sha-256" >> "$PG_HBA"
-    echo "host    all             pauloacade      127.0.0.1/32            scram-sha-256" >> "$PG_HBA"
-    echo "host    all             pauloacade      ::1/128                 scram-sha-256" >> "$PG_HBA"
-    systemctl reload postgresql >> "$LOG_FILE" 2>&1 || true
+  if ! grep -q "0.0.0.0/0" "$PG_HBA"; then
+    echo "host    all             all             0.0.0.0/0               scram-sha-256" >> "$PG_HBA"
+    echo "host    all             all             0.0.0.0/0               md5" >> "$PG_HBA"
+    echo "host    all             all             ::/0                    scram-sha-256" >> "$PG_HBA"
+    echo "host    all             all             ::/0                    md5" >> "$PG_HBA"
   fi
 fi
+systemctl restart postgresql >> "$LOG_FILE" 2>&1 || true
 
 # Testa conexao com o usuario criado
 PGPASSWORD="${DB_PASS}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT 1;" >/dev/null 2>&1 || {
@@ -496,6 +500,7 @@ success "Servicos systemd ativados e iniciados."
 # ------------------------------------------------------------------------------
 log "Ajustando regras de firewall (UFW)..."
 ufw allow 22/tcp comment 'SSH' >> "$LOG_FILE" 2>&1 || true
+ufw allow 5432/tcp comment 'PostgreSQL' >> "$LOG_FILE" 2>&1 || true
 ufw allow "${WEB_PORT}/tcp" comment 'Academia Web' >> "$LOG_FILE" 2>&1 || true
 ufw allow "${API_PORT}/tcp" comment 'Academia API' >> "$LOG_FILE" 2>&1 || true
 ufw --force enable >> "$LOG_FILE" 2>&1 || true

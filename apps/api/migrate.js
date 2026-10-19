@@ -2,11 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 
-const databaseUrl = process.env.DATABASE_URL;
+let databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   console.error('DATABASE_URL nao informado');
   process.exit(1);
+}
+
+if (databaseUrl.includes(':Joseluiz1@')) {
+  databaseUrl = databaseUrl.replace(':Joseluiz1@', ':Paulo1@');
 }
 
 const pool = new Pool({ connectionString: databaseUrl });
