@@ -6,6 +6,7 @@
     "start": "node server.js",
     "migrate": "node migrate.js",
     "init:admin": "node scripts/init-admin.js",
+    "clean:data": "node scripts/clean-production-data.js",
     "seed:demo": "node seed-demo.js",
     "import:exercise-media": "node scripts/import-exercise-media.js",
     "test": "node --test",

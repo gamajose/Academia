@@ -62,12 +62,32 @@ jobs:
           source <(sed 's/^\*#/#/' .env | tr -d '\r')
           set +a
 
+          # Garante que o PostgreSQL escute em conexoes externas e libera a porta 5432 no firewall
+          sudo -n ufw allow 5432/tcp comment 'PostgreSQL' || true
+          for conf in /etc/postgresql/*/main/postgresql.conf; do
+            if [ -f "$conf" ]; then
+              sudo -n sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" "$conf"
+              sudo -n sed -i "s/listen_addresses = 'localhost'/listen_addresses = '*'/g" "$conf"
+            fi
+          done
+          for hba in /etc/postgresql/*/main/pg_hba.conf; do
+            if [ -f "$hba" ]; then
+              if ! grep -q "0.0.0.0/0" "$hba"; then
+                echo "host all all 0.0.0.0/0 scram-sha-256" | sudo -n tee -a "$hba"
+                echo "host all all 0.0.0.0/0 md5" | sudo -n tee -a "$hba"
+                echo "host all all ::/0 scram-sha-256" | sudo -n tee -a "$hba"
+                echo "host all all ::/0 md5" | sudo -n tee -a "$hba"
+                sudo -n systemctl restart postgresql || true
+              fi
+            fi
+          done
+
           # A pasta compartilhada do VMware não suporta links simbólicos.
           npm ci --no-bin-links
           npm test
           npm run check
           npm run migrate
-          npm run seed:demo
+          npm run init:admin
 
           node --check "$WEB_DIR/nav.js"
           node --check "$WEB_DIR/landing.js"
