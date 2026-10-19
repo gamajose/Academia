@@ -140,7 +140,32 @@ jobs:
             exit 1
           fi
 
+          # Configura e garante que o cloudflared funcione sempre como servico permanente no boot
+          CLOUDFLARED_BIN="$(command -v cloudflared || echo '/usr/local/bin/cloudflared')"
+          CLOUDFLARED_TOKEN="eyJhIjoiYjFkYjIxYmJhOGZhNjM3MzIwZmFlZDViNTM4NjRlNjkiLCJ0IjoiZDFhNjM2NTQtN2E1Ny00ZDRiLTgyY2UtZjg5NDU1MWUxZGEwIiwicyI6Ik5UTTNObVpqWm1VdE56WXhaQzAwT0RrMkxXRXpNVGt0Tm1KaU5UTTNPVFl3WTJSbCJ9"
+          if [ -x "$CLOUDFLARED_BIN" ]; then
+            sudo -n tee /etc/systemd/system/cloudflared.service >/dev/null <<SERVICE_EOF
+[Unit]
+Description=Cloudflare Tunnel
+After=network.target
+
+[Service]
+TimeoutStartSec=0
+Type=notify
+ExecStart=$CLOUDFLARED_BIN tunnel run --token $CLOUDFLARED_TOKEN
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+SERVICE_EOF
+            sudo -n systemctl daemon-reload
+            sudo -n systemctl enable cloudflared.service || true
+            sudo -n systemctl restart cloudflared.service || true
+          fi
+
           echo "Deploy concluído com sucesso no commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."
           echo "academia-api: $(sudo -n systemctl is-active academia-api.service)"
           echo "academia-web: $(sudo -n systemctl is-active academia-web.service)"
+          echo "cloudflared: $(sudo -n systemctl is-active cloudflared.service || echo 'inactive')"
           echo "login-api: HTTP $LOGIN_STATUS"

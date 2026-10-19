@@ -56,6 +56,38 @@ async function handlePlanActions(req, res, user, url, helpers) {
     return send(res, 200, result.rows[0]);
   }
 
+  if (req.method === 'POST' && (url.pathname === '/api/plans/delete' || url.pathname === '/api/plans/remove')) {
+    const input = await body(req);
+    const planId = input.plan_id || input.id;
+    if (!planId) return send(res, 400, { error: 'plan_id_obrigatorio' });
+
+    const checkMemberships = await query('SELECT count(*) FROM memberships WHERE plan_id = $1', [planId]);
+    if (Number(checkMemberships.rows[0].count) > 0) {
+      await query('UPDATE plans SET is_active = false, updated_at = now() WHERE id = $1 AND gym_id = $2', [planId, user.gym_id]);
+      return send(res, 400, { error: 'plano_com_matriculas', message: 'Este plano possui matrículas vinculadas. Ele foi desativado em vez de excluído para preservar o histórico financeiro.' });
+    }
+
+    const result = await query('DELETE FROM plans WHERE id = $1 AND gym_id = $2 RETURNING id, name', [planId, user.gym_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'plano_nao_encontrado' });
+    return send(res, 200, { ok: true, deleted: true, plan: result.rows[0] });
+  }
+
+  if (req.method === 'DELETE' && url.pathname.startsWith('/api/plans')) {
+    const segments = url.pathname.split('/').filter(Boolean);
+    const planId = segments[2] || url.searchParams.get('id');
+    if (!planId) return send(res, 400, { error: 'plan_id_obrigatorio' });
+
+    const checkMemberships = await query('SELECT count(*) FROM memberships WHERE plan_id = $1', [planId]);
+    if (Number(checkMemberships.rows[0].count) > 0) {
+      await query('UPDATE plans SET is_active = false, updated_at = now() WHERE id = $1 AND gym_id = $2', [planId, user.gym_id]);
+      return send(res, 400, { error: 'plano_com_matriculas', message: 'Este plano possui matrículas vinculadas. Ele foi desativado em vez de excluído para preservar o histórico financeiro.' });
+    }
+
+    const result = await query('DELETE FROM plans WHERE id = $1 AND gym_id = $2 RETURNING id, name', [planId, user.gym_id]);
+    if (!result.rowCount) return send(res, 404, { error: 'plano_nao_encontrado' });
+    return send(res, 200, { ok: true, deleted: true, plan: result.rows[0] });
+  }
+
   return false;
 }
 

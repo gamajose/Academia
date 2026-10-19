@@ -2,7 +2,7 @@ const { pool } = require('../lib/db');
 const { hashPassword } = require('../lib/security');
 
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@academia.com').trim().toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Paulo1';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Joseluiz1';
 const ADMIN_NAME = process.env.ADMIN_NAME || 'Administrador';
 
 async function main() {
@@ -105,38 +105,7 @@ async function main() {
       ON CONFLICT (gym_id, lower(slug)) DO NOTHING
     `, [gymId]);
 
-    // 4. Garantir planos padrao
-    await client.query(`
-      INSERT INTO plans (gym_id, name, price_cents, duration_days, description, benefits, rules, is_active)
-      SELECT $1, 'Essencial', 8990, 30,
-             'Para quem quer começar com uma rotina simples e consistente.',
-             '<ul><li>Musculação</li><li>Treino organizado</li><li>Acompanhamento da equipe</li></ul>',
-             '<p>Acesso durante o horário de funcionamento da academia.</p>',
-             true
-      WHERE NOT EXISTS (SELECT 1 FROM plans WHERE gym_id = $1 AND lower(name) = lower('Essencial'))
-    `, [gymId]);
-
-    await client.query(`
-      INSERT INTO plans (gym_id, name, price_cents, duration_days, description, benefits, rules, is_active)
-      SELECT $1, 'Performance', 12990, 30,
-             'Mais acompanhamento para acelerar sua evolução.',
-             '<ul><li>Musculação</li><li>Avaliação periódica</li><li>Revisão de treino</li></ul>',
-             '<p>Plano mensal com acesso às áreas previstas pela academia.</p>',
-             true
-      WHERE NOT EXISTS (SELECT 1 FROM plans WHERE gym_id = $1 AND lower(name) = lower('Performance'))
-    `, [gymId]);
-
-    await client.query(`
-      INSERT INTO plans (gym_id, name, price_cents, duration_days, description, benefits, rules, is_active)
-      SELECT $1, 'Premium', 17990, 30,
-             'Experiência completa para quem busca acompanhamento contínuo.',
-             '<ul><li>Todos os benefícios</li><li>Aulas incluídas</li><li>Atendimento prioritário</li></ul>',
-             '<p>Consulte a equipe para confirmar as modalidades incluídas.</p>',
-             true
-      WHERE NOT EXISTS (SELECT 1 FROM plans WHERE gym_id = $1 AND lower(name) = lower('Premium'))
-    `, [gymId]);
-
-    // 5. Criar ou atualizar usuario administrador
+    // 4. Criar ou atualizar usuario administrador
     const passwordHash = hashPassword(ADMIN_PASSWORD);
     const userResult = await client.query(`
       INSERT INTO users (gym_id, name, email, password_hash, role, access_profile, is_active)

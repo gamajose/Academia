@@ -135,7 +135,21 @@ function createPresenceCell(user) {
 }
 
 function closeEmployeeMenus() {
-  document.querySelectorAll('.employee-menu-dropdown, .access-profile-menu-dropdown').forEach((menu) => {
+  document.querySelectorAll('.employee-menu-dropdown[data-open="true"], .access-profile-menu-dropdown[data-open="true"]').forEach((menu) => {
+    menu.classList.add('hidden');
+    menu.removeAttribute('data-open');
+    menu.classList.remove('open-upwards');
+    menu.style.position = '';
+    menu.style.top = '';
+    menu.style.bottom = '';
+    menu.style.right = '';
+    menu.style.left = '';
+    menu.style.zIndex = '';
+    if (menu._parentWrap) {
+      menu._parentWrap.appendChild(menu);
+    }
+  });
+  document.querySelectorAll('.employee-menu-dropdown:not([data-open="true"]), .access-profile-menu-dropdown:not([data-open="true"])').forEach((menu) => {
     menu.classList.add('hidden');
     menu.classList.remove('open-upwards');
   });
@@ -144,6 +158,43 @@ function closeEmployeeMenus() {
     el.classList.remove('menu-open');
     el.style.zIndex = '';
   });
+}
+
+function openFloatingMenu(dropdown, trigger, wrap, tr) {
+  closeEmployeeMenus();
+  dropdown.classList.remove('hidden');
+  dropdown.dataset.open = 'true';
+  dropdown._parentWrap = wrap;
+  document.body.appendChild(dropdown);
+  trigger.setAttribute('aria-expanded', 'true');
+
+  const rect = trigger.getBoundingClientRect();
+  dropdown.style.position = 'fixed';
+  dropdown.style.zIndex = '999999';
+  dropdown.style.margin = '0';
+
+  const width = 190;
+  let right = window.innerWidth - rect.right;
+  if (right < 8) right = 8;
+  if (right + width > window.innerWidth) right = window.innerWidth - width - 8;
+  dropdown.style.right = `${right}px`;
+  dropdown.style.left = 'auto';
+
+  const spaceBelow = window.innerHeight - rect.bottom;
+  if (spaceBelow < 190 && rect.top > 190) {
+    dropdown.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+    dropdown.style.top = 'auto';
+    dropdown.classList.add('open-upwards');
+  } else {
+    dropdown.style.top = `${rect.bottom + 4}px`;
+    dropdown.style.bottom = 'auto';
+    dropdown.classList.remove('open-upwards');
+  }
+
+  if (tr) {
+    tr.classList.add('menu-open');
+    tr.style.zIndex = '1200';
+  }
 }
 
 async function deleteUser(user) {
@@ -200,23 +251,11 @@ function employeeRowMenu(user) {
   });
   trigger.addEventListener('click', (event) => {
     event.stopPropagation();
-    const opening = dropdown.classList.contains('hidden');
+    const isCurrentlyOpen = dropdown.dataset.open === 'true';
     const tr = wrap.closest('tr');
     closeEmployeeMenus();
-    if (opening) {
-      dropdown.classList.remove('hidden');
-      trigger.setAttribute('aria-expanded', 'true');
-      const rect = trigger.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      if (spaceBelow < 190) {
-        dropdown.classList.add('open-upwards');
-      } else {
-        dropdown.classList.remove('open-upwards');
-      }
-      if (tr) {
-        tr.classList.add('menu-open');
-        tr.style.zIndex = '1200';
-      }
+    if (!isCurrentlyOpen) {
+      openFloatingMenu(dropdown, trigger, wrap, tr);
     }
   });
   wrap.addEventListener('click', (event) => event.stopPropagation());
@@ -563,18 +602,10 @@ function permissionProfileMenu(profile) {
 
   trigger.addEventListener('click', (event) => {
     event.stopPropagation();
-    const opening = dropdown.classList.contains('hidden');
+    const isCurrentlyOpen = dropdown.dataset.open === 'true';
     closeEmployeeMenus();
-    if (opening) {
-      dropdown.classList.remove('hidden');
-      trigger.setAttribute('aria-expanded', 'true');
-      const rect = trigger.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      if (spaceBelow < 190) {
-        dropdown.classList.add('open-upwards');
-      } else {
-        dropdown.classList.remove('open-upwards');
-      }
+    if (!isCurrentlyOpen) {
+      openFloatingMenu(dropdown, trigger, wrap);
     }
   });
 
@@ -1028,8 +1059,9 @@ function bindEvents() {
   });
   get('employee-toolbar-new')?.addEventListener('click', () => { closeEmployeeMenus(); newUser(); });
   get('employee-toolbar-search')?.addEventListener('click', () => { closeEmployeeMenus(); toggleEmployeeFilters(); });
-  get('employee-toolbar-permissions')?.addEventListener('click', () => { closeEmployeeMenus(); void openPermissionsModal(); });
   document.addEventListener('click', closeEmployeeMenus);
+  window.addEventListener('scroll', closeEmployeeMenus, { passive: true, capture: true });
+  window.addEventListener('resize', closeEmployeeMenus, { passive: true });
   get('close-employee-modal')?.addEventListener('click', closeUserModal);
   get('cancel-user-button')?.addEventListener('click', closeUserModal);
   get('employee-form-panel')?.addEventListener('click', (event) => {

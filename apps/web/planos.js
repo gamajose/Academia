@@ -43,6 +43,63 @@ function plainText(html) {
   return node.textContent.trim();
 }
 
+function closePlanMenus() {
+  document.querySelectorAll('.plan-card-menu-dropdown[data-open="true"]').forEach((menu) => {
+    menu.classList.add('hidden');
+    menu.removeAttribute('data-open');
+    menu.style.position = '';
+    menu.style.top = '';
+    menu.style.bottom = '';
+    menu.style.right = '';
+    menu.style.left = '';
+    menu.style.zIndex = '';
+    if (menu._parentActions) {
+      menu._parentActions.appendChild(menu);
+    }
+  });
+  document.querySelectorAll('.plan-card-menu-dropdown:not([data-open="true"])').forEach((menu) => {
+    menu.classList.add('hidden');
+  });
+  document.querySelectorAll('#plans-page-list li.menu-open').forEach((el) => {
+    el.classList.remove('menu-open');
+    el.style.zIndex = '';
+  });
+}
+
+function openFloatingPlanMenu(menu, trigger, actions, li) {
+  closePlanMenus();
+  menu.classList.remove('hidden');
+  menu.dataset.open = 'true';
+  menu._parentActions = actions;
+  document.body.appendChild(menu);
+
+  const rect = trigger.getBoundingClientRect();
+  menu.style.position = 'fixed';
+  menu.style.zIndex = '999999';
+  menu.style.margin = '0';
+
+  const width = 180;
+  let right = window.innerWidth - rect.right;
+  if (right < 8) right = 8;
+  if (right + width > window.innerWidth) right = window.innerWidth - width - 8;
+  menu.style.right = `${right}px`;
+  menu.style.left = 'auto';
+
+  const spaceBelow = window.innerHeight - rect.bottom;
+  if (spaceBelow < 180 && rect.top > 180) {
+    menu.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+    menu.style.top = 'auto';
+  } else {
+    menu.style.top = `${rect.bottom + 4}px`;
+    menu.style.bottom = 'auto';
+  }
+
+  if (li) {
+    li.classList.add('menu-open');
+    li.style.zIndex = '1200';
+  }
+}
+
 function render() {
   const list = $('plans-page-list');
   list.innerHTML = '';
@@ -89,25 +146,38 @@ function render() {
     editBtn.textContent = 'Editar plano';
     editBtn.addEventListener('click', (event) => {
       event.stopPropagation();
-      menu.classList.add('hidden');
-      li.classList.remove('menu-open');
+      closePlanMenus();
       openPlan(plan);
     });
 
-    menu.append(editBtn);
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = plan.is_active ? 'danger' : '';
+    toggleBtn.textContent = plan.is_active ? 'Desativar plano' : 'Ativar plano';
+    toggleBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closePlanMenus();
+      void toggle(plan);
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'danger';
+    deleteBtn.textContent = 'Excluir plano';
+    deleteBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closePlanMenus();
+      void deletePlan(plan);
+    });
+
+    menu.append(editBtn, toggleBtn, deleteBtn);
 
     trigger.addEventListener('click', (event) => {
       event.stopPropagation();
-      const willOpen = menu.classList.contains('hidden');
-      document.querySelectorAll('.plan-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
-      document.querySelectorAll('#plans-page-list li').forEach((el) => {
-        el.classList.remove('menu-open');
-        el.style.zIndex = '';
-      });
-      if (willOpen) {
-        menu.classList.remove('hidden');
-        li.classList.add('menu-open');
-        li.style.zIndex = '1200';
+      const isCurrentlyOpen = menu.dataset.open === 'true';
+      closePlanMenus();
+      if (!isCurrentlyOpen) {
+        openFloatingPlanMenu(menu, trigger, actions, li);
       }
     });
 
@@ -201,6 +271,18 @@ function openPlan(plan = {}) {
   AcademiaRichEditor.setValue('plan-benefits-page', plan.benefits || '', { preserveDraft: true });
   AcademiaRichEditor.setValue('plan-rules-page', plan.rules || '', { preserveDraft: true });
   AcademiaRichEditor.restoreDraft(richIds);
+  const deleteModalBtn = $('delete-plan-modal-button');
+  if (deleteModalBtn) {
+    if (plan.id) {
+      deleteModalBtn.style.display = 'inline-block';
+      deleteModalBtn.onclick = () => {
+        void deletePlan(plan);
+      };
+    } else {
+      deleteModalBtn.style.display = 'none';
+      deleteModalBtn.onclick = null;
+    }
+  }
   setTimeout(() => $('plan-name-page').focus(), 50);
 }
 
@@ -208,6 +290,8 @@ function closePlan() {
   $('plan-modal').classList.add('hidden');
   document.body.style.overflow = '';
   $('plan-form').reset();
+  const deleteModalBtn = $('delete-plan-modal-button');
+  if (deleteModalBtn) deleteModalBtn.style.display = 'none';
   for (const id of ['plan-description-page', 'plan-benefits-page', 'plan-rules-page']) AcademiaRichEditor.clearValue(id);
 }
 
@@ -262,6 +346,28 @@ async function toggle(plan) {
   } catch (error) { $('plans-status').textContent = `Erro: ${error.message}`; }
 }
 
+async function deletePlan(plan) {
+  if (!plan || !plan.id) return;
+  const confirmed = window.confirm(`Tem certeza que deseja excluir o plano "${plan.name}"?`);
+  if (!confirmed) return;
+
+  try {
+    const res = await req('/api/plans/delete', {
+      method: 'POST',
+      body: JSON.stringify({ plan_id: plan.id })
+    });
+    if (res && res.error) {
+      alert(`Não foi possível excluir: ${res.error}`);
+      return;
+    }
+    closePlan();
+    await load();
+    $('plans-status').textContent = 'Plano excluído com sucesso.';
+  } catch (error) {
+    alert(`Erro ao excluir: ${error.message}`);
+  }
+}
+
 AcademiaRichEditor.initAll().catch((error) => { $('plans-status').textContent = error.message; });
 $('new-plan-button').onclick = () => openPlan();
 $('close-plan-modal').onclick = closePlan;
@@ -275,12 +381,10 @@ document.querySelectorAll('[data-plan-tab]').forEach((btn) => {
   btn.addEventListener('click', () => setPlanTab(btn.dataset.planTab));
 });
 document.addEventListener('click', (event) => {
-  if (!event.target.closest('.plan-card-actions')) {
-    document.querySelectorAll('.plan-card-menu-dropdown').forEach((d) => d.classList.add('hidden'));
-    document.querySelectorAll('#plans-page-list li').forEach((el) => {
-      el.classList.remove('menu-open');
-      el.style.zIndex = '';
-    });
+  if (!event.target.closest('.plan-card-actions') && !event.target.closest('.plan-card-menu-dropdown')) {
+    closePlanMenus();
   }
 });
+window.addEventListener('resize', closePlanMenus);
+window.addEventListener('scroll', closePlanMenus, true);
 load();
