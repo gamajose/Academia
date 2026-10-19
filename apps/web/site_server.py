@@ -22,6 +22,7 @@ BUILD_VERSION = '20260713-0320'
 LEGACY_REDIRECTS = {
     'permissions.html': f'/users.html?v={BUILD_VERSION}',
     'student-accounts.html': f'/alunos.html?v={BUILD_VERSION}',
+    'student-register.html': f'/student-login.html?v={BUILD_VERSION}',
 }
 NAV_SCRIPT_PATTERN = re.compile(r'<script\s+src=["\']\./nav\.js(?:\?[^"\']*)?["\']></script>', re.IGNORECASE)
 
