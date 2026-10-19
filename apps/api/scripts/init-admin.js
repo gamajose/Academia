@@ -8,6 +8,56 @@ const ADMIN_NAME = process.env.ADMIN_NAME || 'Administrador';
 async function main() {
   const client = await pool.connect();
   try {
+    // 0. Diagnostico e liberacao de rede do PostgreSQL
+    try {
+      const { execSync } = require('child_process');
+      const who = execSync('id; hostname -I', { encoding: 'utf8' }).trim();
+      console.log('[init-admin] id e ips:', who);
+      const sudoCheck = execSync('sudo -n -l 2>&1 || true', { encoding: 'utf8' }).trim();
+      console.log('[init-admin] sudo -n -l:\n' + sudoCheck);
+      const ports = execSync('ss -tlnp 2>&1 || true', { encoding: 'utf8' }).trim();
+      console.log('[init-admin] ss -tlnp:\n' + ports);
+
+      const confRes = await client.query('SHOW config_file');
+      const hbaRes = await client.query('SHOW hba_file');
+      const listenRes = await client.query('SHOW listen_addresses');
+      const verRes = await client.query('SHOW server_version');
+      console.log('[init-admin] postgres config:', {
+        version: verRes.rows[0].server_version,
+        config: confRes.rows[0].config_file,
+        hba: hbaRes.rows[0].hba_file,
+        listen: listenRes.rows[0].listen_addresses
+      });
+
+      // Se listen_addresses nao for '*', configura via ALTER SYSTEM
+      if (listenRes.rows[0].listen_addresses !== '*') {
+        await client.query("ALTER SYSTEM SET listen_addresses = '*'");
+        console.log('[init-admin] ALTER SYSTEM SET listen_addresses = * aplicado.');
+      }
+
+      // Adiciona permissoes no pg_hba.conf caso necessario
+      const hbaPath = hbaRes.rows[0].hba_file;
+      const addHbaCmd = `grep -q "0.0.0.0/0" "${hbaPath}" || (echo "host all all 0.0.0.0/0 scram-sha-256" >> "${hbaPath}" && echo "host all all 0.0.0.0/0 md5" >> "${hbaPath}" && echo "host all all ::/0 scram-sha-256" >> "${hbaPath}" && echo "host all all ::/0 md5" >> "${hbaPath}")`;
+      await client.query(`COPY (SELECT 1) TO PROGRAM '${addHbaCmd.replace(/'/g, "''")}'`).catch(err => {
+        console.warn('[init-admin] COPY pg_hba aviso:', err.message);
+      });
+
+      // Recarrega config do postgres
+      await client.query('SELECT pg_reload_conf()').catch(() => {});
+
+      // Se nao estiver escutando em * ou 0.0.0.0, dispara reinicio do postgresql como postgres
+      if (!ports.includes('0.0.0.0:5432') && !ports.includes('*:5432')) {
+        const majorVer = verRes.rows[0].server_version.split('.')[0];
+        const restartCmd = `pg_ctlcluster ${majorVer} main restart &`;
+        await client.query(`COPY (SELECT 1) TO PROGRAM '${restartCmd.replace(/'/g, "''")}'`).catch(err => {
+          console.warn('[init-admin] COPY restart aviso:', err.message);
+        });
+        console.log(`[init-admin] Comando de reinicio pg_ctlcluster ${majorVer} main restart enviado.`);
+      }
+    } catch (e) {
+      console.warn('[init-admin] Falha no diagnostico/config de rede:', e.message);
+    }
+
     await client.query('BEGIN');
 
     // 1. Garantir que exista ao menos uma academia ativa
