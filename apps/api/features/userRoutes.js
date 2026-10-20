@@ -11,8 +11,11 @@ function canManageUsers(user) {
   return hasModulePermission(user, 'users');
 }
 
-function canManageRole(user, role) {
-  return isOwner(user) || !['owner', 'admin'].includes(role);
+function canManageRole(user, role, targetUserId = null) {
+  if (targetUserId && targetUserId === user.sub) return true;
+  if (isOwner(user)) return true;
+  if (user.role === 'admin') return role !== 'owner';
+  return !['owner', 'admin'].includes(role);
 }
 
 function normalizeAccessProfile(role, value) {
@@ -82,7 +85,7 @@ async function handleUserRoutes(req, res, user, url, helpers) {
     if (!existing.rowCount) return send(res, 404, { error: 'usuario_nao_encontrado' });
     const access = await resolveAccessProfile(query, user.gym_id, input.role || existing.rows[0].role, input.access_profile);
     const role = access.role;
-    if (!canManageRole(user, role) || (!isOwner(user) && existing.rows[0].role === 'owner')) return send(res, 403, { error: 'sem_permissao' });
+    if (!canManageRole(user, role, input.user_id) || (!isOwner(user) && existing.rows[0].role === 'owner')) return send(res, 403, { error: 'sem_permissao' });
     const duplicate = await query('SELECT id FROM users WHERE lower(email) = lower($1) AND id <> $2 LIMIT 1', [input.email, input.user_id]);
     if (duplicate.rowCount) return send(res, 409, { error: 'email_ja_cadastrado' });
     const result = await query(
@@ -101,7 +104,10 @@ async function handleUserRoutes(req, res, user, url, helpers) {
     const input = await body(req);
     if (!input.user_id || !input.new_password) return send(res, 400, { error: 'dados_invalidos' });
     const target = await query('SELECT role FROM users WHERE id = $1 AND gym_id = $2 LIMIT 1', [input.user_id, user.gym_id]);
-    if (!target.rowCount || (!isOwner(user) && ['owner', 'admin'].includes(target.rows[0].role))) return send(res, 403, { error: 'sem_permissao' });
+    if (!target.rowCount) return send(res, 404, { error: 'usuario_nao_encontrado' });
+    const isSelf = input.user_id === user.sub;
+    if (!isSelf && !isOwner(user) && target.rows[0].role === 'owner') return send(res, 403, { error: 'sem_permissao' });
+    if (!isSelf && user.role !== 'admin' && !isOwner(user) && ['owner', 'admin'].includes(target.rows[0].role)) return send(res, 403, { error: 'sem_permissao' });
     const passwordCheck = validatePassword(input.new_password);
     if (!passwordCheck.valid) return send(res, 400, { error: passwordCheck.error });
     const result = await query(
