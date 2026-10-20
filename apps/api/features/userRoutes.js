@@ -4,7 +4,7 @@ const { digits, nullable, validEmail } = require('../lib/memberValidation');
 const { hasModulePermission } = require('../lib/accessControl');
 
 function isOwner(user) {
-  return user.role === 'owner';
+  return user.role === 'owner' || user.role === 'admin';
 }
 
 function canManageUsers(user) {
